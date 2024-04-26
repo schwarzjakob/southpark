@@ -12,6 +12,7 @@ Project SouthPark is a hands-on initiative that brings together Messe München a
   - [Setting up the Environment](#setting-up-the-environment)
     - [Cloning the Repository](#cloning-the-repository)
     - [Setting Up a Python Virtual Environment](#setting-up-a-python-virtual-environment)
+    - [Project Directory Structure](#project-directory-structure)
   - [Working with Git and GitHub](#working-with-git-and-github)
     - [Branching Strategy](#branching-strategy)
     - [Common Git Commands](#common-git-commands)
@@ -67,6 +68,38 @@ pip install -r requirements.txt
 Make sure the virtual environment is running while you are working on the project.
 
 **Disclaimer:** The choice of technology and environment setup may change as the project evolves and the full tech stack is finalized. Future updates may shift the development requirements, which will be reflected in this documentation accordingly.
+
+### Project Directory Structure
+
+Here is the recommended directory structure for this project, accommodating multiple aspects like frontend, backend, data processing, and script execution:
+
+```plaintext
+ProjectRoot/
+│
+├── frontend/              # React frontend
+│   ├── public/
+│   ├── src/
+│   └── package.json
+│
+├── backend/               # Flask backend
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── models/
+│   └── services/
+│
+├── notebooks/             # Jupyter notebooks for data exploration and initial algorithm development
+│   └── exploration.ipynb
+│
+├── data/                  # Data directory for storing CSV files and other data forms
+│   ├── raw/               # Unprocessed data
+│   └── processed/         # Data transformed from Jupyter notebooks
+│
+├── scripts/               # Standalone scripts for more structured or production-ready processes
+│   └── allocation_algorithm.py
+│
+├── .gitignore             # Specifies intentionally untracked files to ignore
+└── README.md              # Project overview and setup instructions
+```
 
 ## Working with Git and GitHub
 
