@@ -9,3 +9,4 @@ venv.bak/
 
 # Data
 /data
+__pycache__/
