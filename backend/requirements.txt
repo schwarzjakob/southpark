@@ -1,2 +1,6 @@
+# backend
+Flask==3.0.3
 pandas==2.2.2
+
+# allocation_algorithm
 PuLP==2.8.0
