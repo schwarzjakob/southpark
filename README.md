@@ -62,7 +62,7 @@ After cloning the repository, set up a Python virtual environment by running:
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 Make sure the virtual environment is running while you are working on the project.
