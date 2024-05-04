@@ -1,4 +1,5 @@
 # Import Libraries
+import os
 import pandas as pd
 import pulp as pl
 
@@ -7,10 +8,13 @@ def load_data():
     """
     Load the data from the CSV file
     """
-    df_events_parking_lot_min_capacity = pd.read_parquet(
-        "../data/processed/events_parking_lot_min_capacity.parquet"
+    base_dir = os.path.dirname(
+        os.path.dirname(__file__)
+    )  # Get the parent of the current file's directory
+    data_file = os.path.join(
+        base_dir, "data", "processed", "events_parking_lot_min_capacity.parquet"
     )
-
+    df_events_parking_lot_min_capacity = pd.read_parquet(data_file)
     return df_events_parking_lot_min_capacity
 
 
