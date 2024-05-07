@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import './App.css';
+import './styles/App.css';
 
 function App() {
-  return;
+  return (
+    <div>
+      <h1 className="test">South Park</h1>
+    </div>
+  );
 }
 
 export default App;
