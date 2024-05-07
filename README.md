@@ -128,35 +128,6 @@ ProjectRoot/
 └── README.md              # Project overview and setup instructions
 ```
 
-### React Frontend Structure
-
-```plaintext
-├── frontend/              # React frontend
-│   ├── public/
-│   │   ├── index.html     # Main HTML file
-│   │   └── favicon.ico    # Favicon icon
-│   ├── src/               # Source code
-│   │   ├── assets/        # Static assets
-│   │   │   └── images/    # Image files
-│   │   ├── components/    # Reusable React components
-│   │   │   ├── Header.js  # Example component
-│   │   │   └── ...
-│   │   ├── pages/         # Higher-level components representing pages/routes
-│   │   │   ├── Home/      # Example page directory
-│   │   │   │   ├── Home.js       # Example page component
-│   │   │   │   ├── Home.css      # Example page styles
-│   │   │   │   └── Home.test.js  # Example page tests
-│   │   │   └── ...
-│   │   ├── styles/        # CSS files, including normalize.css
-│   │   │   ├── normalize.css    # Normalize CSS file
-│   │   │   └── ...
-│   │   ├── App.js         # Main component
-│   │   └── index.js       # JavaScript entry point
-│   └── package.json       # Frontend dependencies and metadata
-```
-
-
-
 ## Working with Git and GitHub
 
 ### Branching Strategy
@@ -164,41 +135,41 @@ ProjectRoot/
 Effective use of Git branches can help manage the development process smoothly. Here’s how we structure our branches:
 
 1. **Main Branch**
-   
+
    - **Purpose**: Serves as the primary branch where the production-ready state of the software is maintained.
    - **Naming**: `main`
 
 2. **Development Branch**
-   
+
    - **Purpose**: Used for integrating various features and conducting all development work before being merged into `main`.
    - **Naming**: `develop`
 
 3. **Feature Branches**
-   
+
    - **Purpose**: Each new feature should be developed in its own branch to ensure that the `develop` branch always remains stable.
    - **Naming**: `feature/<feature-name>`
    - **Example**: `feature/backend-algorithm`
 
 4. **Bugfix Branches**
-   
+
    - **Purpose**: Quick fixes for bugs found in production are addressed here before merging into the main and development branches.
    - **Naming**: `bugfix/<bug-description>`
    - **Example**: `bugfix/routing-error-fix`
 
 5. **Documentation Branches**
-   
+
    - **Purpose**: Updates to documentation or comments.
    - **Naming**: `docs/<change-description>`
    - **Example**: `docs/update-readme`
 
 6. **Refactoring Branches**
-   
+
    - **Purpose**: Making code improvements without adding new features or fixing bugs.
    - **Naming**: `refactor/<description>`
    - **Example**: `refactor/optimize-event-search`
 
 7. **Test Branches**
-   
+
    - **Purpose**: Testing new ideas or changes in a controlled environment.
    - **Naming**: `test/<test-name>`
    - **Example**: `test/database-performance`
@@ -208,19 +179,19 @@ Effective use of Git branches can help manage the development process smoothly. 
 Here's a sequence of common Git commands you might use during development:
 
 - **Creating and Switching to a New Branch**:
-  
+
   ```bash
   git checkout -b <branch-name>
   ```
 
 - **Pulling Latest Changes from Remote**:
-  
+
   ```bash
   git pull origin <branch-name>
   ```
 
 - **Staging Changes**:
-  
+
   ```bash
   git add .
   ```
@@ -258,13 +229,13 @@ This command records your changes to the local repository with a message that de
 For more details on writing good commit messages, read [this guide on how to write a Git commit message](https://cbea.ms/git-commit/).
 
 - **Pushing Changes to Remote**:
-  
+
   ```bash
   git push origin <branch-name>
   ```
 
 - **Merging Develop into Your Feature Branch** (to update it with the latest changes):
-  
+
   ```bash
   git checkout <your-feature-branch>
   git merge develop
