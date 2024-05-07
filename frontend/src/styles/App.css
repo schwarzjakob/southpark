@@ -1,0 +1,11 @@
+/* 
+App.css:
+- Typically used for styles that are specific to components within your React application.
+- Can contain styles for components that are used across multiple pages or components.
+- Helps maintain component-specific styles in separate files, enhancing modularity and maintainability.
+- If the styles you provided are specific to components within your React application and are not intended to be global styles, you can consider placing them in here. 
+*/
+
+.test {
+  color: red;
+}
