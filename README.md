@@ -128,6 +128,35 @@ ProjectRoot/
 └── README.md              # Project overview and setup instructions
 ```
 
+### React Frontend Structure
+
+```plaintext
+├── frontend/              # React frontend
+│   ├── public/
+│   │   ├── index.html     # Main HTML file
+│   │   └── favicon.ico    # Favicon icon
+│   ├── src/               # Source code
+│   │   ├── assets/        # Static assets
+│   │   │   └── images/    # Image files
+│   │   ├── components/    # Reusable React components
+│   │   │   ├── Header.js  # Example component
+│   │   │   └── ...
+│   │   ├── pages/         # Higher-level components representing pages/routes
+│   │   │   ├── Home/      # Example page directory
+│   │   │   │   ├── Home.js       # Example page component
+│   │   │   │   ├── Home.css      # Example page styles
+│   │   │   │   └── Home.test.js  # Example page tests
+│   │   │   └── ...
+│   │   ├── styles/        # CSS files, including normalize.css
+│   │   │   ├── normalize.css    # Normalize CSS file
+│   │   │   └── ...
+│   │   ├── App.js         # Main component
+│   │   └── index.js       # JavaScript entry point
+│   └── package.json       # Frontend dependencies and metadata
+```
+
+
+
 ## Working with Git and GitHub
 
 ### Branching Strategy
@@ -183,11 +212,13 @@ Here's a sequence of common Git commands you might use during development:
   ```bash
   git checkout -b <branch-name>
   ```
+
 - **Pulling Latest Changes from Remote**:
   
   ```bash
   git pull origin <branch-name>
   ```
+
 - **Staging Changes**:
   
   ```bash
