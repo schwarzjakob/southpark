@@ -4,24 +4,8 @@ import pandas as pd
 import pulp as pl
 
 
-def load_data():
-    """
-    Load the data from the CSV file
-    """
-    base_dir = os.path.dirname(
-        os.path.dirname(__file__)
-    )  # Get the parent of the current file's directory
-    data_file = os.path.join(
-        base_dir, "data", "processed", "events_parking_lot_min_capacity.parquet"
-    )
-    df_events_parking_lot_min_capacity = pd.read_parquet(data_file)
-    return df_events_parking_lot_min_capacity
-
-
 def optimize_distance(df_events_parking_lot_min_capacity):
-    """
-    Optimize the allocation of events to parking lots to minimize the total minimum distance
-    """
+    """Optimize the allocation of events to parking lots to minimize the total minimum distance"""
 
     # Define the problem
     model = pl.LpProblem("Minimize_Distance", pl.LpMinimize)
@@ -30,12 +14,15 @@ def optimize_distance(df_events_parking_lot_min_capacity):
     assignments = pl.LpVariable.dicts(
         "Assign",
         (
-            (event, date, parking_lot)
+            (event_id, event_name, date, parking_lot)
             for index, (
-                event,
+                event_id,
+                event_name,
                 date,
                 parking_lot,
-            ) in df_events_parking_lot_min_capacity[["event", "date", "parking_lot"]]
+            ) in df_events_parking_lot_min_capacity[
+                ["event_id", "event", "date", "parking_lot"]
+            ]
             .drop_duplicates()
             .iterrows()
         ),
@@ -44,24 +31,29 @@ def optimize_distance(df_events_parking_lot_min_capacity):
 
     # Objective: Minimize the total minimum distance
     model += pl.lpSum(
-        assignments[(event, date, parking_lot)] * distance
+        assignments[(event_id, event_name, date, parking_lot)] * distance
         for index, (
-            event,
+            event_id,
+            event_name,
             date,
             parking_lot,
             distance,
         ) in df_events_parking_lot_min_capacity[
-            ["event", "date", "parking_lot", "distance"]
+            ["event_id", "event", "date", "parking_lot", "distance"]
         ].iterrows()
     )
 
     # Constraint: Each event on each date should have exactly one parking lot assigned
-    for (event, date), group in df_events_parking_lot_min_capacity.groupby(
-        ["event", "date"]
+    for (
+        event_id,
+        event_name,
+        date,
+    ), group in df_events_parking_lot_min_capacity.groupby(
+        ["event_id", "event", "date"]
     ):
         model += (
             pl.lpSum(
-                assignments[(event, date, parking_lot)]
+                assignments[(event_id, event_name, date, parking_lot)]
                 for parking_lot in group["parking_lot"]
             )
             == 1
@@ -74,8 +66,10 @@ def optimize_distance(df_events_parking_lot_min_capacity):
     ), group in df_events_parking_lot_min_capacity.groupby(["parking_lot", "date"]):
         model += (
             pl.lpSum(
-                assignments[(event, date, parking_lot)] * demand
-                for index, (event, demand) in group[["event", "demand"]].iterrows()
+                assignments[(event_id, event_name, date, parking_lot)] * demand
+                for index, (event_id, event_name, demand) in group[
+                    ["event_id", "event", "demand"]
+                ].iterrows()
             )
             <= group["capacity"].iloc[0]
         )
@@ -85,15 +79,20 @@ def optimize_distance(df_events_parking_lot_min_capacity):
 
     # Output results
     df_allocation_results = []
-    for (event, date, parking_lot), var in assignments.items():
+    for (event_id, event_name, date, parking_lot), var in assignments.items():
         if pl.value(var) == 1:
             df_allocation_results.append(
-                {"event": event, "date": date, "parking_lot": parking_lot}
+                {
+                    "event_id": event_id,
+                    "event_name": event_name,
+                    "date": date,
+                    "parking_lot": parking_lot,
+                }
             )
 
     df_allocation_results = pd.DataFrame(df_allocation_results)
 
-    # merge capacity onto df_allocation_results
+    # Merge capacity onto df_allocation_results
     df_allocation_results = df_allocation_results.merge(
         df_events_parking_lot_min_capacity[["parking_lot"]].drop_duplicates(),
         on="parking_lot",

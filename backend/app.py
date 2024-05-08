@@ -10,7 +10,7 @@ import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import allocation_algorithm module and its functions
-from scripts.allocation_algorithm import load_data, optimize_distance
+from scripts.allocation_algorithm import optimize_distance
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,21 +25,22 @@ logger_format = (
 logging.basicConfig(format=logger_format, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Initialize the Flask app
 app = Flask(__name__)
 
-
-# Function to connect to the database
+# Allocation Algorithm
 def get_db_connection():
+    """Connect to the database and return the connection"""
     conn = psycopg2.connect(database_url)
     return conn
 
 
 def fetch_data_from_database():
-    # Fetch data from the database and return df_events_parking_lot_min_capacity
+    """Fetch data from the database and return df_events_parking_lot_min_capacity"""
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
     try:
         query = """
-        SELECT e.name AS event, e.event_date AS date, e.demand,
+        SELECT e.id as event_id, e.name AS event, e.event_date AS date, e.demand,
                p.name AS parking_lot, pc.capacity, 
                pd.distance_north, pd.distance_north_east, pd.distance_east,
                pd.distance_west, pd.distance_north_west,
@@ -82,15 +83,23 @@ def fetch_data_from_database():
 
 
 def optimize_and_save_results(df_events_parking_lot_min_capacity):
-    # Perform optimization and save results to the database
+    """Optimize the parking lot allocation and save the results to the database"""
     df_allocation_results = optimize_distance(df_events_parking_lot_min_capacity)
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
     cur = conn.cursor()
+
+    # Sort df_allocation_results by event_id and date
+    df_allocation_results.sort_values(by=["event_id", "date"], inplace=True)
+    print(df_allocation_results.head())
+
+    # Delete all records from allocations table
+    cur.execute("DELETE FROM allocations;")
+
     try:
         for index, row in df_allocation_results.iterrows():
             cur.execute(
-                "INSERT INTO allocations (event_name, event_date, parking_lot) VALUES (%s, %s, %s)",
-                (row["event"], row["date"], row["parking_lot"]),
+                "INSERT INTO allocations (event_id, event_name, event_date, parking_lot) VALUES (%s, %s, %s, %s)",
+                (row["event_id"], row["event_name"], row["date"], row["parking_lot"]),
             )
         conn.commit()
     except Exception as e:
@@ -101,9 +110,16 @@ def optimize_and_save_results(df_events_parking_lot_min_capacity):
         conn.close()
 
 
-# Define a route to optimize the parking lot allocation
-@app.route("/optimize", methods=["POST"])
+@app.route("/optimize_distance", methods=["POST"])
 def optimize_parking():
+    """
+    Endpoint to optimize the parking lot allocation. It fetches data from the database, prepares the data,
+    optimizes the allocation, and saves the results back to the database.
+
+    Returns:
+        JSON response with a success message if the optimization is completed successfully,
+        or an error message if an exception is raised.
+    """
     try:
         df_events_parking_lot_min_capacity = fetch_data_from_database()
         optimize_and_save_results(df_events_parking_lot_min_capacity)
