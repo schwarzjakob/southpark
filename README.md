@@ -12,7 +12,10 @@ Project SouthPark is a hands-on initiative that brings together Messe München a
   - [Setting up the Environment](#setting-up-the-environment)
     - [Cloning the Repository](#cloning-the-repository)
     - [Setting Up a Python Virtual Environment](#setting-up-a-python-virtual-environment)
+    - [Setting up the Backend](#setting-up-the-backend)
+      - [Start the Backend](#start-the-backend)
     - [Setting Up React Frontend](#setting-up-react-frontend)
+      - [Source React + Vite](#source-react--vite)
     - [Project Directory Structure](#project-directory-structure)
   - [Working with Git and GitHub](#working-with-git-and-github)
     - [Branching Strategy](#branching-strategy)
@@ -71,6 +74,20 @@ pip install -r backend/requirements.txt
 Make sure the virtual environment is running while you are working on the project.
 
 **Disclaimer:** The choice of technology and environment setup may change as the project evolves and the full tech stack is finalized. Future updates may shift the development requirements, which will be reflected in this documentation accordingly.
+
+### Setting up the Backend
+
+To connect to the database, create a `backend/.env` file to store the `DATABASE_URL` which is available in our [Neon Database](https://console.neon.tech/app/projects/frosty-queen-29994181). Inside the `.env` it will look similar to:
+
+```bash
+DATABASE_URL=postgresql://neondb_owner:password@hostname:port/database_name
+```
+
+#### Start the Backend
+
+```bash
+python3 backend/app.py
+```
 
 ### Setting Up React Frontend
 
