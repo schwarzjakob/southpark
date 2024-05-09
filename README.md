@@ -16,6 +16,7 @@ Project SouthPark is a hands-on initiative that brings together Messe München a
       - [Start the Backend](#start-the-backend)
     - [Setting Up React Frontend](#setting-up-react-frontend)
       - [Source React + Vite](#source-react--vite)
+
     - [Project Directory Structure](#project-directory-structure)
   - [Working with Git and GitHub](#working-with-git-and-github)
     - [Branching Strategy](#branching-strategy)
@@ -88,6 +89,7 @@ DATABASE_URL=postgresql://neondb_owner:password@hostname:port/database_name
 ```bash
 python3 backend/app.py
 ```
+
 
 ### Setting Up React Frontend
 
