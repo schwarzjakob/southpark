@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 # Initialize the Flask app
 app = Flask(__name__)
 
+
 # Allocation Algorithm
 def get_db_connection():
     """Connect to the database and return the connection"""
@@ -36,47 +37,14 @@ def get_db_connection():
 
 
 def fetch_data_from_database():
-    """Fetch data from the database and return df_events_parking_lot_min_capacity"""
+    """Fetch distances between halls and parking lots suitable for given events from the database and return as df_events_parking_lot_min_capacity to trigger the allocation algorithm with it."""
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
     try:
         query = """
-        SELECT e.id as event_id, e.name AS event, e.event_date AS date, e.demand,
-               p.name AS parking_lot, pc.capacity, 
-               pd.distance_north, pd.distance_north_east, pd.distance_east,
-               pd.distance_west, pd.distance_north_west,
-               e.entrance
-        FROM events e
-        JOIN hall_parking_distances pd ON e.hall = pd.hall
-        JOIN parking_lots p ON pd.parking_lot = p.name
-        JOIN parking_capacity pc ON p.name = pc.parking_lot
-        WHERE pc.valid_from <= e.event_date 
-        AND pc.valid_to >= e.event_date 
-        AND pc.capacity >= e.demand;
+        SELECT *
+        FROM view_schema.view_events_parking_lot_min_capacity;
         """
         df_events_parking_lot_min_capacity = pd.read_sql_query(query, conn)
-
-        # Function to find distance based on entrance gate predefined in events
-        def get_distance(row):
-            entrance = row["entrance"]
-            distance = row[f"distance_{entrance}"]
-            return distance
-
-        # Get the distance via the entrance gate and drop distance columns
-        df_events_parking_lot_min_capacity["distance"] = (
-            df_events_parking_lot_min_capacity.apply(get_distance, axis=1)
-        )
-        df_events_parking_lot_min_capacity.drop(
-            columns=[
-                "distance_north",
-                "distance_north_east",
-                "distance_east",
-                "distance_west",
-                "distance_north_west",
-                "entrance",
-            ],
-            inplace=True,
-        )
-
         return df_events_parking_lot_min_capacity
     finally:
         conn.close()
@@ -113,7 +81,7 @@ def optimize_and_save_results(df_events_parking_lot_min_capacity):
 @app.route("/optimize_distance", methods=["POST"])
 def optimize_parking():
     """
-    Endpoint to optimize the parking lot allocation. It fetches data from the database, prepares the data,
+    Endpoint to optimize the parking lot allocation. It fetches data from the database,
     optimizes the allocation, and saves the results back to the database.
 
     Returns:
