@@ -1,6 +1,7 @@
 import sys
 import os
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from dotenv import load_dotenv
 import psycopg2
 import logging
@@ -27,15 +28,42 @@ logger = logging.getLogger(__name__)
 
 # Initialize the Flask app
 app = Flask(__name__)
+CORS(app)
 
 
-# Allocation Algorithm
+# Database connection
 def get_db_connection():
     """Connect to the database and return the connection"""
     conn = psycopg2.connect(database_url)
     return conn
 
 
+# Events parking lots allocation table view
+@app.route("/events_parking_lots_allocation", methods=["GET"])
+def get_events_parking_lots_allocation():
+    """
+    Endpoint to retrieve parking lot allocations for events.
+    Fetches data from the 'view_schema.view_events_parking_lots_allocations' view in the database.
+
+    Returns:
+        JSON response with the fetched data or an error message if an exception is raised.
+    """
+    conn = get_db_connection()
+    try:
+        query = """
+        SELECT *
+        FROM view_schema.view_events_parking_lots_allocation;
+        """
+        df_events_parking_lots_allocation = pd.read_sql_query(query, conn)
+        return jsonify(df_events_parking_lots_allocation.to_dict(orient="records")), 200
+    except Exception as e:
+        logger.error("Failed to fetch data from database", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+
+# Allocation Algorithm
 def fetch_data_from_database():
     """Fetch distances between halls and parking lots suitable for given events from the database and return as df_events_parking_lot_min_capacity to trigger the allocation algorithm with it."""
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
