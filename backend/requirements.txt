@@ -3,6 +3,7 @@ Flask==3.0.3
 pandas==2.2.2
 python-dotenv==1.0.1
 psycopg2-binary==2.9.9
+flask-cors==4.0.1
 
 # allocation_algorithm
 PuLP==2.8.0

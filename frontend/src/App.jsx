@@ -1,5 +1,5 @@
-import "./styles/App.css";
-import EventsAllocationTable from "./components/EventsAllocationTable";
+import './styles/App.css';
+import EventsAllocationTable from './components/EventsAllocationTable.jsx';
 
 function App() {
   return (

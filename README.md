@@ -9,15 +9,19 @@ Project SouthPark is a hands-on initiative that brings together Messe München a
   - [MVP Focus](#mvp-focus)
   - [Project Team](#project-team)
 - [Development](#development)
+
   - [Setting up the Environment](#setting-up-the-environment)
+
     - [Cloning the Repository](#cloning-the-repository)
     - [Setting Up a Python Virtual Environment](#setting-up-a-python-virtual-environment)
     - [Setting up the Backend](#setting-up-the-backend)
       - [Start the Backend](#start-the-backend)
     - [Setting Up React Frontend](#setting-up-react-frontend)
+
       - [Source React + Vite](#source-react--vite)
 
     - [Project Directory Structure](#project-directory-structure)
+
   - [Working with Git and GitHub](#working-with-git-and-github)
     - [Branching Strategy](#branching-strategy)
     - [Common Git Commands](#common-git-commands)
@@ -90,7 +94,6 @@ DATABASE_URL=postgresql://neondb_owner:password@hostname:port/database_name
 python3 backend/app.py
 ```
 
-
 ### Setting Up React Frontend
 
 To begin setting up the React frontend, ensure you have navigated to the frontend directory and execute the following command to install all necessary dependencies:
@@ -98,6 +101,7 @@ To begin setting up the React frontend, ensure you have navigated to the fronten
 ```zsh/bash
 cd frontend
 npm install
+npm install @mui/material @emotion/react @emotion/styled
 ```
 
 Once the installation process is complete, initiate React by running the following command:
