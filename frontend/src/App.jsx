@@ -1,10 +1,11 @@
-import { useState } from 'react';
 import './styles/App.css';
+import EventsAllocationTable from './components/EventsAllocationTable.jsx';
 
 function App() {
   return (
-    <div>
-      <h1 className="test">South Park</h1>
+    <div className="App">
+      <h1>Parkplatzzuweisungen </h1>
+      <EventsAllocationTable />
     </div>
   );
 }
