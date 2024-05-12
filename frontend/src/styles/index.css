@@ -56,6 +56,8 @@ html {
   --color-black-alpha-40: rgba(0, 0, 0, 0.4);
   --color-pure-white: #ffffff;
   --color-pure-white-800: rgba(255, 255, 255, .8);
+  --color-background-light-hover: #e8ebf1;
+  --color-background-dark: rgb(232, 235, 241);
   --color-signal-error: #ff566a;
   --color-red-light: #f8d7da;
   --color-red-dark: #842029;
@@ -208,6 +210,7 @@ ul {
   border-radius: var(--borderRadius);
   max-width: var(--max-width);
 }
+
 /* use class instead of img type since sometimes there will be icon
 and we don't want to put the style on the icon */
 .img {
@@ -293,6 +296,7 @@ and we don't want to put the style on the icon */
   background: var(--color-grey-50);
   border: 1px solid var(--color-grey-200);
 }
+
 .form-row {
   margin-bottom: 1rem;
 }
@@ -307,6 +311,7 @@ and we don't want to put the style on the icon */
 
 .form-alert {
   color: var(--color-signal-error);
+  color: var(--color-red-dark);
   letter-spacing: var(--letterSpacing);
   text-transform: capitalize;
   font-weight: bold;
@@ -321,9 +326,9 @@ and we don't want to put the style on the icon */
 .loading {
   width: 6rem;
   height: 6rem;
-  border: 5px solid var(--grey-400);
+  border: 5px solid var(--color-grey-400);
   border-radius: 50%;
-  border-top-color: var(--primary-500);
+  border-top-color: var(--color-primary-500);
   animation: spinner 0.6s linear infinite;
   margin: 0 auto;
 }
@@ -331,16 +336,19 @@ and we don't want to put the style on the icon */
 .title {
   text-align: center;
 }
-/* .title h2 {
+
+.title h2 {
   margin-bottom: 0.25rem;
-} */
+}
+
 .title-underline {
-  background: var(--primary-500);
+  background: var(--color-primary-500);
   width: 7rem;
   height: 0.25rem;
   margin: 0 auto;
   margin-bottom: -1;
 }
+
 /* Table styling */
 table {
   width: 100%;
@@ -396,7 +404,6 @@ table tfoot td:last-child {
   font-family: var(--brand-font-family);
   font-weight: var(--brand-font-weight);
 }
-
 
 .MuiDataGrid-main {
   font-family: var(--type-body-font-family) !important;
