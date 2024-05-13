@@ -700,7 +700,7 @@ a:not(.button, .chakra-linkbox__overlay):hover {
   text-align: center;
 }
 
-/* Sizing of map container */
+/* Sizing of map container (the vh/wh can be changed based on the slider's size */
 .leaflet-container {
   height: 70vh;
   width: 100vw;
