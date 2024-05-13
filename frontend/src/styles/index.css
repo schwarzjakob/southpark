@@ -674,6 +674,7 @@ a:not(.button, .chakra-linkbox__overlay):hover {
 
 .mapView-Container {
   display: grid;
+  height: 100vh; /* Can be changed, just put it here so the heights of slider's rows are not as big as map. */
   grid-template-columns: min-content auto; /* Schmalste mögliche erste Spalte */
   grid-template-rows: repeat(
     3,
