@@ -1,4 +1,5 @@
 import React from "react";
+const currentYear = new Date().getFullYear();
 
 const Footer = () => {
   return (
@@ -82,13 +83,9 @@ const Footer = () => {
       </div>
       <span className="madeWithLove">Made with ♥ in Munich</span>
       <br></br>
-      <span className="copyright">© 2025 Messe München GmbH</span>
+      <span className="copyright">© {currentYear} Messe München GmbH</span>
     </footer>
   );
 };
-
-function showPrivacyLayer() {
-  window.UC_UI.showSecondLayer();
-}
 
 export default Footer;
