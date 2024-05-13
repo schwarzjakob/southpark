@@ -9,19 +9,14 @@ Project SouthPark is a hands-on initiative that brings together Messe München a
   - [MVP Focus](#mvp-focus)
   - [Project Team](#project-team)
 - [Development](#development)
-
   - [Setting up the Environment](#setting-up-the-environment)
-
     - [Cloning the Repository](#cloning-the-repository)
     - [Setting Up a Python Virtual Environment](#setting-up-a-python-virtual-environment)
     - [Setting up the Backend](#setting-up-the-backend)
       - [Start the Backend](#start-the-backend)
     - [Setting Up React Frontend](#setting-up-react-frontend)
-
       - [Source React + Vite](#source-react--vite)
-
     - [Project Directory Structure](#project-directory-structure)
-
   - [Working with Git and GitHub](#working-with-git-and-github)
     - [Branching Strategy](#branching-strategy)
     - [Common Git Commands](#common-git-commands)
@@ -101,7 +96,6 @@ To begin setting up the React frontend, ensure you have navigated to the fronten
 ```zsh/bash
 cd frontend
 npm install
-npm install @mui/material @emotion/react @emotion/styled react-router-dom
 ```
 
 Once the installation process is complete, initiate React by running the following command:
