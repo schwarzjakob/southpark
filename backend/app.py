@@ -3,7 +3,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
-import psycopg2
+from sqlalchemy import create_engine, text
 import logging
 import pandas as pd
 
@@ -18,6 +18,7 @@ load_dotenv()
 
 # Retrieve the DATABASE_URL from environment variables
 database_url = os.getenv("DATABASE_URL")
+engine = create_engine(database_url)
 
 # Enabling logging (must come first to enable it globally, also for imported modules and packages)
 logger_format = (
@@ -32,13 +33,20 @@ CORS(app)
 
 
 # Database connection
-def get_db_connection():
-    """Connect to the database and return the connection"""
-    conn = psycopg2.connect(database_url)
-    return conn
+def get_data(query):
+    """Fetch data from the database using the provided SQL query."""
+    try:
+        logger.info(f"Executing query: {query}")
+        with engine.connect() as connection:
+            result = pd.read_sql_query(query, connection)
+        logger.info("Query executed successfully.")
+        return result
+    except Exception as e:
+        logger.error(f"Failed to execute query: {query}", exc_info=True)
+        raise e
 
 
-# Events parking lots allocation table view
+# Get events parking lots allocation for front-end table view
 @app.route("/events_parking_lots_allocation", methods=["GET"])
 def get_events_parking_lots_allocation():
     """
@@ -48,64 +56,67 @@ def get_events_parking_lots_allocation():
     Returns:
         JSON response with the fetched data or an error message if an exception is raised.
     """
-    conn = get_db_connection()
     try:
-        query = """
-        SELECT *
-        FROM view_schema.view_events_parking_lots_allocation;
-        """
-        df_events_parking_lots_allocation = pd.read_sql_query(query, conn)
+        logger.info("Fetching events parking lots allocation data from the database.")
+        query = "SELECT * FROM view_schema.view_events_parking_lots_allocation;"
+        df_events_parking_lots_allocation = get_data(query)
+        if df_events_parking_lots_allocation.empty:
+            logger.info("No data available.")
+            return jsonify({"message": "No data found"}), 204
+        logger.info("Events parking lots allocation data fetched successfully.")
         return jsonify(df_events_parking_lots_allocation.to_dict(orient="records")), 200
     except Exception as e:
         logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
-    finally:
-        conn.close()
 
 
 # Allocation Algorithm
-def fetch_data_from_database():
-    """Fetch distances between halls and parking lots suitable for given events from the database and return as df_events_parking_lot_min_capacity to trigger the allocation algorithm with it."""
-    conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+def get_events_parking_lots_min_capacity():
+    """Fetch events parking lot data with minimum capacity for the optimization."""
     try:
-        query = """
-        SELECT *
-        FROM view_schema.view_events_parking_lot_min_capacity;
-        """
-        df_events_parking_lot_min_capacity = pd.read_sql_query(query, conn)
-        return df_events_parking_lot_min_capacity
-    finally:
-        conn.close()
+        logger.info("Fetching data from the database for optimization.")
+        query = "SELECT * FROM view_schema.view_events_parking_lot_min_capacity;"
+        return get_data(query)
+    except Exception as e:
+        logger.error("Failed to fetch optimization data", exc_info=True)
+        raise e
 
 
 def optimize_and_save_results(df_events_parking_lot_min_capacity):
-    """Optimize the parking lot allocation and save the results to the database"""
-    df_allocation_results = optimize_distance(df_events_parking_lot_min_capacity)
-    conn = psycopg2.connect(os.getenv("DATABASE_URL"))
-    cur = conn.cursor()
-
-    # Sort df_allocation_results by event_id and date
-    df_allocation_results.sort_values(by=["event_id", "date"], inplace=True)
-    print(df_allocation_results.head())
-
-    # Delete all records from allocations table
-    cur.execute("DELETE FROM allocations;")
-
+    """Optimize the parking lot allocation and save the results to the database."""
     try:
-        for index, row in df_allocation_results.iterrows():
-            cur.execute(
-                "INSERT INTO allocations (event_id, event_name, event_date, parking_lot) VALUES (%s, %s, %s, %s)",
-                (row["event_id"], row["event_name"], row["date"], row["parking_lot"]),
+        logger.info("Optimizing parking lot allocation.")
+        df_allocation_results = optimize_distance(df_events_parking_lot_min_capacity)
+        df_allocation_results.sort_values(by=["event_id", "date"], inplace=True)
+        logger.info("Optimization successful. Proceeding to save results.")
+
+        with engine.begin() as connection:
+            logger.info("Clearing previous allocations from the database.")
+            connection.execute(text("DELETE FROM allocations;"))
+
+            logger.info("Inserting new allocation results into the database.")
+            insert_query = text(
+                "INSERT INTO allocations (event_id, event_name, event_date, parking_lot) VALUES (:event_id, :event_name, :event_date, :parking_lot)"
             )
-        conn.commit()
+            for index, row in df_allocation_results.iterrows():
+                connection.execute(
+                    insert_query,
+                    {
+                        "event_id": row["event_id"],
+                        "event_name": row["event_name"],
+                        "event_date": row["date"],
+                        "parking_lot": row["parking_lot"],
+                    },
+                )
+            logger.info("New allocations successfully saved.")
     except Exception as e:
-        conn.rollback()
+        logger.error(
+            "Failed to optimize and save parking lot allocation results", exc_info=True
+        )
         raise e
-    finally:
-        cur.close()
-        conn.close()
 
 
+# Optimize parking lot allocation
 @app.route("/optimize_distance", methods=["POST"])
 def optimize_parking():
     """
@@ -116,11 +127,20 @@ def optimize_parking():
         JSON response with a success message if the optimization is completed successfully,
         or an error message if an exception is raised.
     """
+    logger.info("Received request to optimize parking allocations.")
     try:
-        df_events_parking_lot_min_capacity = fetch_data_from_database()
+        logger.info("Fetching data from database for optimization.")
+        df_events_parking_lot_min_capacity = get_events_parking_lots_min_capacity()
+        if df_events_parking_lot_min_capacity.empty:
+            logger.info("No data available for optimization.")
+            return jsonify({"message": "No data available to optimize."}), 204
+
+        logger.info("Data fetched successfully, proceeding to optimization.")
         optimize_and_save_results(df_events_parking_lot_min_capacity)
+        logger.info("Optimization and saving of results completed successfully.")
         return jsonify({"message": "Optimization completed and results saved."}), 200
     except Exception as e:
+        logger.error("Error during optimization process", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
