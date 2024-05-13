@@ -25,6 +25,7 @@ const EventsAllocationTable = () => {
 
   return (
     <div>
+      <h2>Tabllenansicht</h2>
       <DataGrid
         rows={tableData}
         columns={columns}

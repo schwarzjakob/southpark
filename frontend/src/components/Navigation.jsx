@@ -26,7 +26,7 @@ const Navigation = ({ isOpen, toggleNav }) => {
       <div className="nav-menue__content">
         <ul>
           <li>
-            <Link to="/dashboard">
+            <Link to="/">
               <img src="src/assets/icons/dashboard.svg" alt="Dashboard" />
               <span>Dashboard</span>
             </Link>
