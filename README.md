@@ -101,7 +101,7 @@ To begin setting up the React frontend, ensure you have navigated to the fronten
 ```zsh/bash
 cd frontend
 npm install
-npm install @mui/material @emotion/react @emotion/styled
+npm install @mui/material @emotion/react @emotion/styled react-router-dom
 ```
 
 Once the installation process is complete, initiate React by running the following command:
