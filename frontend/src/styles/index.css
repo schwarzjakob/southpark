@@ -15,11 +15,6 @@ index.css:
   box-sizing: border-box;
 }
 
-body {
-  padding: 2rem 2rem;
-}
-/* temp */
-
 html {
   font-size: 100%;
 } /* 16px */
@@ -56,6 +51,7 @@ html {
   --color-black-alpha-40: rgba(0, 0, 0, 0.4);
   --color-pure-white: #ffffff;
   --color-pure-white-800: rgba(255, 255, 255, .8);
+  --color-background-light: #f5f6f8;
   --color-background-light-hover: #e8ebf1;
   --color-background-dark: rgb(232, 235, 241);
   --color-signal-error: #ff566a;
@@ -133,8 +129,8 @@ html {
   --smallText: 0.7em;
 
   /* rest of the vars */
-  --backgroundColor: var(--color-grey-50);
-  --textColor: var(--color-grey-900);
+  --backgroundColor: var(--color-gray-50);
+  --textColor: var(--color-gray-900);
   --borderRadius: 0.25rem;
   --letterSpacing: 1px;
   --transition: 0.3s ease-in-out all;
@@ -149,7 +145,7 @@ html {
 }
 
 body {
-  background: var(--backgroundColor);
+  background: var(--color-background-light);
   font-family: var(--type-body-font-family);
   font-weight: 400;
   line-height: 1.75;
@@ -293,8 +289,8 @@ and we don't want to put the style on the icon */
   width: 100%;
   padding: 0.375rem 0.75rem;
   border-radius: var(--borderRadius);
-  background: var(--color-grey-50);
-  border: 1px solid var(--color-grey-200);
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
 }
 
 .form-row {
@@ -306,7 +302,7 @@ and we don't want to put the style on the icon */
 }
 ::placeholder {
   font-family: inherit;
-  color: var(--color-grey-400);
+  color: var(--color-gray-400);
 }
 
 .form-alert {
@@ -326,7 +322,7 @@ and we don't want to put the style on the icon */
 .loading {
   width: 6rem;
   height: 6rem;
-  border: 5px solid var(--color-grey-400);
+  border: 5px solid var(--color-gray-400);
   border-radius: 50%;
   border-top-color: var(--color-primary-500);
   animation: spinner 0.6s linear infinite;
@@ -428,4 +424,272 @@ table tfoot td:last-child {
 
 .css-n3fyjk-MuiDataGrid-root .MuiDataGrid-columnHeader:focus, .css-n3fyjk-MuiDataGrid-root .MuiDataGrid-cell:focus {
   outline: none !important
+}
+
+.grid-parent {
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto ;
+}
+
+.grid-main {
+  min-height: 60vh;
+}
+
+.grid-navigation{
+  background: var(--color-pure-white);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  width: 100%;
+  max-width: 340px;
+  overflow-y: hidden;
+  transition: margin-left .3s ease-in-out;
+  z-index: 11;
+  margin-left: -340px;
+}
+
+.grid-main{
+  padding: 1rem;
+}
+
+.grid-footer {
+
+}
+
+/* Header */
+.header{
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 25px;
+  margin: 0;
+  height: auto;
+}
+.header .layout-desktop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px;
+}
+
+.nav-menue__header {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;;
+}
+
+
+.header .nav-left,
+.header .nav-right, 
+.nav-menue__header{
+  display: flex;
+  justify-items: center;
+  align-items: center;
+}
+
+.header .nav-left,
+.nav-menue__header {
+  gap: 20px !important;
+}
+
+.header .nav-left a,
+.header .nav-right a,
+.nav-menue__header a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-menue__content ul li a {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+}
+
+.nav-menue__content ul li a span {
+  color: var(--textColor);
+  margin-left: 10px;
+}
+
+.nav-menue__content ul li a span:hover {
+  color: var(--color-primary-600);
+}
+
+.nav-menue__content{
+  padding: 10px 20px;
+}
+
+.nav-menue__content ul li{
+  padding: 10px 0;
+}
+
+
+.header .logo {
+  height: 60px; 
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  height: auto;
+}
+.logo-container:hover {
+  color: var(--textColor);
+}
+
+.site-title {
+  font-size: var(--text-line-height-xs);
+  margin-left: 20px;
+  margin-bottom: 0;
+  margin-top: 10px;
+}
+
+.header .user-icon img {
+  width: 40px; 
+  height: 40px; 
+  margin-top: 10px;
+}
+
+.nav-open, .nav-close {
+  padding: 8px;
+  margin-right: -16px;
+  position: relative;
+  left: -8px;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  width: 34px;
+  height: 30px;
+  border: none; 
+}
+
+.nav-open{
+  background-color: var(--color-background-light);
+}
+
+.nav-close{
+  background-color: var(--color-pure-white);
+  cursor: pointer;
+}
+
+a:not(.button,.chakra-linkbox__overlay):hover {
+  color: var(--color-primary-600);
+}
+
+/* Menu & Navigation */
+.grid-navigation {
+  background: var(--color-pure-white);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: start;
+  flex-direction: column;
+  width: 100%;
+  max-width: 340px;
+  overflow-y: hidden;
+  transition: margin-left .3s ease-in-out;
+  z-index: 11;
+  margin-left: -340px; /* Hidden initially */
+  left: 0;
+}
+
+.grid-navigation__visible {
+  margin-left: 0;
+}
+
+.close-nav img {
+  cursor: pointer;
+  border: none;
+}
+
+.nav-open {
+  cursor: pointer;
+}
+
+/* Footer */
+#footer {
+  background: var(--color-background-light);
+  padding: 20px;
+  text-align: center;
+}
+.social-footer {
+  margin-bottom: 5px;
+}
+
+.social-footer ul, .navigation-footer ul {
+  list-style: none;
+  padding: 0;
+}
+
+.social-footer ul li, .navigation-footer ul li {
+  display: inline;
+  margin-right: 25px;
+}
+
+.social-footer a, .navigation-footer a {
+  text-decoration: none;
+  color: var(--textColor);
+}
+
+.social-footer ul li img{
+  width: 22px;
+  height: 22px;
+  margin: 7px;
+}
+
+.social-footer {
+  width: 100%;
+  text-align: center;
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: 28px;
+  margin-bottom: 28px;
+  order: 3;
+}
+
+.copyright {
+  font-size: 0.8rem;
+}
+
+.madeWithLove {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+#footer>div:last-child .navigation-footer li a {
+  color: var(--color-gray-800);
+  border: none;
+  padding: 0 1.5em;
+  border-right: 1px solid var(--color-gray-100);
+}
+
+.mapView-Container {
+  display: grid;
+  grid-template-columns: min-content auto; /* Schmalste mögliche erste Spalte */
+  grid-template-rows: repeat(3, 1fr); /* Drei Zeilen, die den verfügbaren Platz gleichmäßig aufteilen */
+  gap: 0; /* Kein Abstand zwischen den Zellen */
+  border: thin solid var(--color-gray-300); /* Grauer Rahmen */
+}
+
+.mapView__item {
+  display: flex;
+  align-items: center; /* Vertikale Zentrierung */
+  justify-content: center;
+  border-right: thin solid var(--color-gray-300);
+  border-bottom: thin solid var(--color-gray-300);
+}
+
+.mapView__item:last-child {
+  border-bottom: none;
+}
+
+.mapView__item:nth-child(odd) {
+  writing-mode: vertical-lr; /* Vertikale Ausrichtung der Schrift */
+  text-align: center;
 }
