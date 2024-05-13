@@ -703,6 +703,7 @@ a:not(.button, .chakra-linkbox__overlay):hover {
 
 /* Sizing of map container (the vh/wh can be changed based on the slider's size */
 .leaflet-container {
-  height: 70vh;
+  height: 80vh;
   width: 100vw;
+  z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
 }
