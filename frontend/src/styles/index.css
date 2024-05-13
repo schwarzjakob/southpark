@@ -575,6 +575,7 @@ table tfoot td:last-child {
 
 .nav-close{
   background-color: var(--color-pure-white);
+  cursor: pointer;
 }
 
 a:not(.button,.chakra-linkbox__overlay):hover {
@@ -668,3 +669,27 @@ a:not(.button,.chakra-linkbox__overlay):hover {
   border-right: 1px solid var(--color-gray-100);
 }
 
+.mapView-Container {
+  display: grid;
+  grid-template-columns: min-content auto; /* Schmalste mögliche erste Spalte */
+  grid-template-rows: repeat(3, 1fr); /* Drei Zeilen, die den verfügbaren Platz gleichmäßig aufteilen */
+  gap: 0; /* Kein Abstand zwischen den Zellen */
+  border: thin solid var(--color-gray-300); /* Grauer Rahmen */
+}
+
+.mapView__item {
+  display: flex;
+  align-items: center; /* Vertikale Zentrierung */
+  justify-content: center;
+  border-right: thin solid var(--color-gray-300);
+  border-bottom: thin solid var(--color-gray-300);
+}
+
+.mapView__item:last-child {
+  border-bottom: none;
+}
+
+.mapView__item:nth-child(odd) {
+  writing-mode: vertical-lr; /* Vertikale Ausrichtung der Schrift */
+  text-align: center;
+}
