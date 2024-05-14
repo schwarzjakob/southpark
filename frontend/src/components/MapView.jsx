@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import CalendarSlider from "./CalendarSlider.jsx";
-import MapComponent from "./MapComponent.jsx";
+import React, { useEffect, useState } from 'react';
+import CalendarSlider from './CalendarSlider.jsx';
+import MapComponent from './MapComponent.jsx';
 
 const MapView = () => {
   return (
@@ -16,7 +16,7 @@ const MapView = () => {
           <CalendarSlider />
         </div>
         <div className="mapView__item label">Map</div>
-        <div className="mapView__item content">
+        <div>
           <MapComponent />
         </div>
       </div>
