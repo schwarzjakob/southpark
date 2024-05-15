@@ -1,8 +1,23 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import axios from 'axios';  // Import axios for making HTTP requests
+
+const phaseLabels = {
+  assembly: 'Aufbau',
+  runtime: 'Laufzeit',
+  disassembly: 'Abbau',
+};
+
+const entranceLabels = {
+  west: 'Westen',
+  north_west: 'Nordwesten',
+  north: 'Norden',
+  north_east: 'Nordosten',
+  east: 'Osten',
+};
 
 function AddEvent() {
-  const [eventData, setEventData] = useState({
+  const initialEventData = {
     name: '',
     dates: {
       assembly: { start: '', end: '', allDates: [] },
@@ -10,13 +25,15 @@ function AddEvent() {
       disassembly: { start: '', end: '', allDates: [] },
     },
     hall: 'A1',
-    entrance: 'West',
+    entrance: 'west',
     demands: {
       assembly: {},
       runtime: {},
       disassembly: {}
     }
-  });
+  };
+
+  const [eventData, setEventData] = useState(initialEventData);
 
   const isValidDate = (date) => {
     return date && !isNaN(new Date(date).getTime());
@@ -98,17 +115,16 @@ function AddEvent() {
       }
 
       if (phase === 'assembly') {
-        dates.disassembly.start = new Date(new Date(dates.runtime.end).setDate(new Date(dates.runtime.end).getDate() + 1)).toISOString().slice(0, 10);
-        if (!isValidDate(disassembly.end) || new Date(dates.disassembly.start) > new Date(disassembly.end)) {
-          dates.disassembly.end = dates.disassembly.start;
+        if (!isValidDate(assembly.start)) {
+          dates.assembly.start = value;
         }
         dates.runtime.start = new Date(new Date(value).setDate(new Date(value).getDate() + 1)).toISOString().slice(0, 10);
         if (!isValidDate(runtime.end) || new Date(dates.runtime.start) > new Date(runtime.end)) {
           dates.runtime.end = dates.runtime.start;
         }
-        dates.assembly.end = new Date(new Date(dates.runtime.start).setDate(new Date(dates.runtime.start).getDate() - 1)).toISOString().slice(0, 10);
-        if (!isValidDate(assembly.start) || new Date(dates.assembly.end) < new Date(assembly.start)) {
-          dates.assembly.start = dates.assembly.end;
+        dates.disassembly.start = new Date(new Date(dates.runtime.end).setDate(new Date(dates.runtime.end).getDate() + 1)).toISOString().slice(0, 10);
+        if (!isValidDate(disassembly.end) || new Date(dates.disassembly.start) > new Date(disassembly.end)) {
+          dates.disassembly.end = dates.disassembly.start;
         }
       }
     }
@@ -160,10 +176,28 @@ function AddEvent() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(eventData);
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/add_event', eventData);
+      console.log('Event created successfully:', response.data);
+      handleResetDates(); // Reset the form after successful submission
+    } catch (error) {
+      console.error('Error creating event:', error);
+    }
+
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/optimize_distance');
+      console.log('Optimization triggered successfully:', response.data);
+    } catch (error) {
+      console.error('Error triggering optimization:', error);
+    }
   };
+
+  const handleResetDates = () => {
+    setEventData(initialEventData);
+  };
+
 
   return (
     <form onSubmit={handleSubmit} className="add-event-form">
@@ -171,7 +205,7 @@ function AddEvent() {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <TextField
-            label="Event Name"
+            label="Event"
             value={eventData.name}
             onChange={(e) => setEventData({ ...eventData, name: e.target.value })}
             required
@@ -198,20 +232,20 @@ function AddEvent() {
               value={eventData.entrance}
               onChange={(e) => setEventData({ ...eventData, entrance: e.target.value })}
             >
-              {['West', 'Nordwesten', 'Norden', 'Nordosten', 'Osten'].map(entrance => (
-                <MenuItem key={entrance} value={entrance}>{entrance}</MenuItem>
+              {Object.entries(entranceLabels).map(([value, label]) => (
+                <MenuItem key={value} value={value}>{label}</MenuItem>
               ))}
             </Select>
           </FormControl>
         </Grid>
-        {['assembly', 'runtime', 'disassembly'].map(phase => (
+        {Object.keys(phaseLabels).map(phase => (
           <React.Fragment key={phase}>
             <Grid item xs={12}>
-              <h3>{phase.charAt(0).toUpperCase() + phase.slice(1)}</h3>
+              <h3>{phaseLabels[phase]}</h3>
             </Grid>
             <Grid item xs={6}>
               <TextField
-                label="Start Date"
+                label="Startdatum"
                 type="date"
                 value={eventData.dates[phase].start}
                 onChange={(e) => handleDateChange(phase, 'start', e.target.value)}
@@ -222,7 +256,7 @@ function AddEvent() {
             </Grid>
             <Grid item xs={6}>
               <TextField
-                label="End Date"
+                label="Enddatum"
                 type="date"
                 value={eventData.dates[phase].end}
                 onChange={(e) => handleDateChange(phase, 'end', e.target.value)}
@@ -234,7 +268,7 @@ function AddEvent() {
             {eventData.dates[phase].allDates?.map(date => (
               <Grid item xs={12} key={date}>
                 <TextField
-                  label={`${date} Demand`}
+                  label={`${date} Bedarf`}
                   type="number"
                   value={eventData.demands[phase][date] || ''}
                   onChange={(e) => handleDemandChange(phase, date, e.target.value)}
@@ -245,9 +279,14 @@ function AddEvent() {
             ))}
           </React.Fragment>
         ))}
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <Button variant="contained" color="primary" type="submit" fullWidth>
-            Create Event
+            Event anlegen
+          </Button>
+        </Grid>
+        <Grid item xs={6}>
+          <Button variant="contained" color="secondary" fullWidth onClick={handleResetDates}>
+            Zurücksetzen
           </Button>
         </Grid>
       </Grid>
