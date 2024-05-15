@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Grid, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { TextField, Button, Grid, Select, MenuItem, FormControl, InputLabel, Box } from '@mui/material';
 import axios from 'axios';  // Import axios for making HTTP requests
 
 const phaseLabels = {
@@ -198,7 +198,6 @@ function AddEvent() {
     setEventData(initialEventData);
   };
 
-
   return (
     <form onSubmit={handleSubmit} className="add-event-form">
       <h2>Add New Event</h2>
@@ -213,11 +212,12 @@ function AddEvent() {
           />
         </Grid>
         <Grid item xs={6}>
-          <FormControl fullWidth required>
-            <InputLabel>Hall</InputLabel>
+          <FormControl fullWidth required variant="outlined">
+            <InputLabel>Halle</InputLabel>
             <Select
               value={eventData.hall}
               onChange={(e) => setEventData({ ...eventData, hall: e.target.value })}
+              label="Halle"
             >
               {['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6'].map(hall => (
                 <MenuItem key={hall} value={hall}>{hall}</MenuItem>
@@ -226,11 +226,12 @@ function AddEvent() {
           </FormControl>
         </Grid>
         <Grid item xs={6}>
-          <FormControl fullWidth required>
-            <InputLabel>Entrance</InputLabel>
+          <FormControl fullWidth required variant="outlined">
+            <InputLabel>Eingang</InputLabel>
             <Select
               value={eventData.entrance}
               onChange={(e) => setEventData({ ...eventData, entrance: e.target.value })}
+              label="Eingang"
             >
               {Object.entries(entranceLabels).map(([value, label]) => (
                 <MenuItem key={value} value={value}>{label}</MenuItem>
@@ -252,6 +253,7 @@ function AddEvent() {
                 required
                 fullWidth
                 InputLabelProps={{ shrink: true }}
+                variant="outlined"
               />
             </Grid>
             <Grid item xs={6}>
@@ -263,6 +265,7 @@ function AddEvent() {
                 required
                 fullWidth
                 InputLabelProps={{ shrink: true }}
+                variant="outlined"
               />
             </Grid>
             {eventData.dates[phase].allDates?.map(date => (
@@ -274,6 +277,7 @@ function AddEvent() {
                   onChange={(e) => handleDemandChange(phase, date, e.target.value)}
                   required
                   fullWidth
+                  variant="outlined"
                 />
               </Grid>
             ))}
