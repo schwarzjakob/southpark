@@ -82,6 +82,7 @@ def calculate_date_range(start_date, end_date):
 
 
 @app.route("/add_event", methods=["POST"])
+@app.route("/add_event", methods=["POST"])
 def add_event():
     """
     Endpoint to add a new event to the database.
@@ -90,7 +91,7 @@ def add_event():
         data = request.json
         name = data["name"]
         dates = data["dates"]
-        hall = data["hall"]
+        hall_name = data["hall"]
         entrance = data["entrance"]
         demands = data["demands"]
 
@@ -138,6 +139,34 @@ def add_event():
             for query, params in queries:
                 connection.execute(text(query), params)
 
+            # Insert into the hall_occupation table
+            hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
+            hall_id = connection.execute(
+                text(hall_id_query), {"hall_name": hall_name}
+            ).fetchone()[0]
+
+            hall_occupation_queries = []
+            for phase in ["assembly", "runtime", "disassembly"]:
+                all_dates = calculate_date_range(
+                    dates[phase]["start"], dates[phase]["end"]
+                )
+                for event_date in all_dates:
+                    query_hall_occupation = """
+                    INSERT INTO hall_occupation (event_id, hall_id, date)
+                    VALUES (:event_id, :hall_id, :date)
+                    """
+                    params_hall_occupation = {
+                        "event_id": event_id,
+                        "hall_id": hall_id,
+                        "date": event_date,
+                    }
+                    hall_occupation_queries.append(
+                        (query_hall_occupation, params_hall_occupation)
+                    )
+
+            for query, params in hall_occupation_queries:
+                connection.execute(text(query), params)
+
         return jsonify({"message": "Event added successfully"}), 200
     except Exception as e:
         logger.error("Failed to add event", exc_info=True)
@@ -156,6 +185,7 @@ def get_events_parking_lots_min_capacity():
         raise e
 
 
+# Optimize and save results
 def optimize_and_save_results(df_events_parking_lot_min_capacity):
     """Optimize the parking lot allocation and save the results to the database."""
     try:
@@ -166,20 +196,20 @@ def optimize_and_save_results(df_events_parking_lot_min_capacity):
 
         with engine.begin() as connection:
             logger.info("Clearing previous allocations from the database.")
-            connection.execute(text("DELETE FROM allocations;"))
+            connection.execute(text("DELETE FROM parking_lot_allocation;"))
 
             logger.info("Inserting new allocation results into the database.")
             insert_query = text(
-                "INSERT INTO allocations (event_id, event_name, event_date, parking_lot) VALUES (:event_id, :event_name, :event_date, :parking_lot)"
+                "INSERT INTO parking_lot_allocation (event_id, parking_lot_id, date, allocated_capacity) VALUES (:event_id, :parking_lot_id, :date, :allocated_capacity)"
             )
             for index, row in df_allocation_results.iterrows():
                 connection.execute(
                     insert_query,
                     {
                         "event_id": row["event_id"],
-                        "event_name": row["event_name"],
-                        "event_date": row["date"],
-                        "parking_lot": row["parking_lot"],
+                        "parking_lot_id": row["parking_lot_id"],
+                        "date": row["date"],
+                        "allocated_capacity": row["allocated_capacity"],
                     },
                 )
             logger.info("New allocations successfully saved.")
