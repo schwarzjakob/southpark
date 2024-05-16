@@ -5,10 +5,6 @@ import pulp as pl
 def optimize_distance(df_events_parking_lot_min_capacity):
     """Optimize the allocation of events to parking lots to minimize the total minimum distance"""
 
-    # Log the columns and first few rows of the DataFrame
-    print("DataFrame columns:", df_events_parking_lot_min_capacity.columns)
-    print("DataFrame head:\n", df_events_parking_lot_min_capacity.head())
-
     # Ensure all required columns are present
     required_columns = {
         "event_id",
@@ -105,8 +101,7 @@ def optimize_distance(df_events_parking_lot_min_capacity):
     df_allocation_results = pd.DataFrame(df_allocation_results)
 
     # Log the intermediate results
-    print("df_allocation_results columns:", df_allocation_results.columns)
-    print("df_allocation_results \n", df_allocation_results)
+    print("df_allocation_results \n", df_allocation_results.head(5))
 
     # Ensure the DataFrame has the necessary columns before sorting
     if not df_allocation_results.empty:
