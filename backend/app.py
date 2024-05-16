@@ -70,6 +70,67 @@ def get_events_parking_lots_allocation():
         return jsonify({"error": str(e)}), 500
 
 
+def calculate_date_range(start_date, end_date):
+    """Calculate the date range between the start and end dates of an events phase."""
+    current_date = pd.to_datetime(start_date)
+    end = pd.to_datetime(end_date)
+    date_array = []
+    while current_date <= end:
+        date_array.append(current_date.strftime("%Y-%m-%d"))
+        current_date += pd.DateOffset(days=1)
+    return date_array
+
+
+@app.route("/add_event", methods=["POST"])
+def add_event():
+    """
+    Endpoint to add a new event to the database.
+    """
+    try:
+        data = request.json
+        name = data["name"]
+        dates = data["dates"]
+        hall = data["hall"]
+        entrance = data["entrance"]
+        demands = data["demands"]
+
+        # Prepare the queries and parameters for each phase
+        queries = []
+        phases = ["assembly", "runtime", "disassembly"]
+        statuses = ["aufbau", "laufzeit", "abbau"]
+
+        for phase, status in zip(phases, statuses):
+            start_date = dates[phase]["start"]
+            end_date = dates[phase]["end"]
+            all_dates = calculate_date_range(start_date, end_date)
+
+            for event_date in all_dates:
+                demand = demands[phase].get(event_date, 0)
+                query = """
+                INSERT INTO events (name, event_date, status, demand, hall, entrance)
+                VALUES (:name, :event_date, :status, :demand, :hall, :entrance)
+                """
+                params = {
+                    "name": name,
+                    "event_date": event_date,
+                    "status": status,
+                    "demand": demand,
+                    "hall": hall,
+                    "entrance": entrance,
+                }
+                queries.append((query, params))
+
+        # Execute the queries
+        with engine.begin() as connection:
+            for query, params in queries:
+                connection.execute(text(query), params)
+
+        return jsonify({"message": "Event added successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to add event", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 # Allocation Algorithm
 def get_events_parking_lots_min_capacity():
     """Fetch events parking lot data with minimum capacity for the optimization."""
