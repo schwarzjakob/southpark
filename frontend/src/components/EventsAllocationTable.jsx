@@ -6,11 +6,11 @@ import { GridToolbarExport } from "@mui/x-data-grid";
 const columns = [
   // { field: "event_id", headerName: "Event ID", flex: 1 }, // Uncomment this line to show the event_id
   { field: "event", headerName: "Event", flex: 1 },
-  { field: "date", headerName: "Datum", flex: 1 },
-  { field: "demand", headerName: "Bedarf", flex: 1 },
-  { field: "parking_lot", headerName: "Parkplatz", flex: 1 },
-  { field: "capacity", headerName: "Kapazität", flex: 1 },
-  { field: "distance", headerName: "Distanz", flex: 1 },
+  { field: "date", headerName: "Date", flex: 1 },
+  { field: "demand", headerName: "Demand", flex: 1 },
+  { field: "parking_lot", headerName: "Parking lot", flex: 1 },
+  { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
+  { field: "distance", headerName: "Distance", flex: 1 },
 ];
 
 const EventsAllocationTable = () => {
@@ -25,7 +25,7 @@ const EventsAllocationTable = () => {
 
   return (
     <div>
-      <h2>Tabllenansicht</h2>
+      <h2>Allocated Parking Lots For Each Event Date</h2>
       <DataGrid
         rows={tableData}
         columns={columns}

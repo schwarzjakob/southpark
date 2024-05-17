@@ -90,39 +90,80 @@ def add_event():
         data = request.json
         name = data["name"]
         dates = data["dates"]
-        hall = data["hall"]
+        hall_name = data["hall"]
         entrance = data["entrance"]
         demands = data["demands"]
 
-        # Prepare the queries and parameters for each phase
-        queries = []
-        phases = ["assembly", "runtime", "disassembly"]
-        statuses = ["aufbau", "laufzeit", "abbau"]
+        # Insert into the event table
+        query_event = """
+        INSERT INTO event (name, entrance, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date)
+        VALUES (:name, :entrance, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date)
+        RETURNING id
+        """
+        params_event = {
+            "name": name,
+            "entrance": entrance,
+            "assembly_start_date": dates["assembly"]["start"],
+            "assembly_end_date": dates["assembly"]["end"],
+            "runtime_start_date": dates["runtime"]["start"],
+            "runtime_end_date": dates["runtime"]["end"],
+            "disassembly_start_date": dates["disassembly"]["start"],
+            "disassembly_end_date": dates["disassembly"]["end"],
+        }
 
-        for phase, status in zip(phases, statuses):
-            start_date = dates[phase]["start"]
-            end_date = dates[phase]["end"]
-            all_dates = calculate_date_range(start_date, end_date)
-
-            for event_date in all_dates:
-                demand = demands[phase].get(event_date, 0)
-                query = """
-                INSERT INTO events (name, event_date, status, demand, hall, entrance)
-                VALUES (:name, :event_date, :status, :demand, :hall, :entrance)
-                """
-                params = {
-                    "name": name,
-                    "event_date": event_date,
-                    "status": status,
-                    "demand": demand,
-                    "hall": hall,
-                    "entrance": entrance,
-                }
-                queries.append((query, params))
-
-        # Execute the queries
         with engine.begin() as connection:
+            result = connection.execute(text(query_event), params_event)
+            event_id = result.fetchone()[0]
+
+            # Insert into the visitor_demand table
+            queries = []
+            for phase in ["assembly", "runtime", "disassembly"]:
+                all_dates = calculate_date_range(
+                    dates[phase]["start"], dates[phase]["end"]
+                )
+                for event_date in all_dates:
+                    demand = demands[phase].get(event_date, 0)
+                    query_demand = """
+                    INSERT INTO visitor_demand (event_id, date, demand, status)
+                    VALUES (:event_id, :date, :demand, :status)
+                    """
+                    params_demand = {
+                        "event_id": event_id,
+                        "date": event_date,
+                        "demand": demand,
+                        "status": phase,
+                    }
+                    queries.append((query_demand, params_demand))
+
             for query, params in queries:
+                connection.execute(text(query), params)
+
+            # Insert into the hall_occupation table
+            hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
+            hall_id = connection.execute(
+                text(hall_id_query), {"hall_name": hall_name}
+            ).fetchone()[0]
+
+            hall_occupation_queries = []
+            for phase in ["assembly", "runtime", "disassembly"]:
+                all_dates = calculate_date_range(
+                    dates[phase]["start"], dates[phase]["end"]
+                )
+                for event_date in all_dates:
+                    query_hall_occupation = """
+                    INSERT INTO hall_occupation (event_id, hall_id, date)
+                    VALUES (:event_id, :hall_id, :date)
+                    """
+                    params_hall_occupation = {
+                        "event_id": event_id,
+                        "hall_id": hall_id,
+                        "date": event_date,
+                    }
+                    hall_occupation_queries.append(
+                        (query_hall_occupation, params_hall_occupation)
+                    )
+
+            for query, params in hall_occupation_queries:
                 connection.execute(text(query), params)
 
         return jsonify({"message": "Event added successfully"}), 200
@@ -143,6 +184,7 @@ def get_events_parking_lots_min_capacity():
         raise e
 
 
+# Optimize and save results
 def optimize_and_save_results(df_events_parking_lot_min_capacity):
     """Optimize the parking lot allocation and save the results to the database."""
     try:
@@ -153,20 +195,20 @@ def optimize_and_save_results(df_events_parking_lot_min_capacity):
 
         with engine.begin() as connection:
             logger.info("Clearing previous allocations from the database.")
-            connection.execute(text("DELETE FROM allocations;"))
+            connection.execute(text("DELETE FROM parking_lot_allocation;"))
 
             logger.info("Inserting new allocation results into the database.")
             insert_query = text(
-                "INSERT INTO allocations (event_id, event_name, event_date, parking_lot) VALUES (:event_id, :event_name, :event_date, :parking_lot)"
+                "INSERT INTO parking_lot_allocation (event_id, parking_lot_id, date, allocated_capacity) VALUES (:event_id, :parking_lot_id, :date, :allocated_capacity)"
             )
             for index, row in df_allocation_results.iterrows():
                 connection.execute(
                     insert_query,
                     {
                         "event_id": row["event_id"],
-                        "event_name": row["event_name"],
-                        "event_date": row["date"],
-                        "parking_lot": row["parking_lot"],
+                        "parking_lot_id": row["parking_lot_id"],
+                        "date": row["date"],
+                        "allocated_capacity": row["allocated_capacity"],
                     },
                 )
             logger.info("New allocations successfully saved.")
