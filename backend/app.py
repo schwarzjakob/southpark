@@ -82,7 +82,6 @@ def calculate_date_range(start_date, end_date):
 
 
 @app.route("/add_event", methods=["POST"])
-@app.route("/add_event", methods=["POST"])
 def add_event():
     """
     Endpoint to add a new event to the database.
