@@ -186,6 +186,11 @@ h5 {
   font-size: 1.25rem;
 }
 
+.grid-main {
+  min-height: 80vh;
+  margin: 2rem;
+}
+
 small,
 .text-small {
   font-size: var(--smallText);
@@ -393,6 +398,7 @@ table tfoot td:last-child {
   border-bottom-right-radius: var(--radius-small-bottom-right);
 }
 
+
 /* MuiDataGrid styling */
 
 .MuiDataGrid-columnHeader {
@@ -428,207 +434,11 @@ table tfoot td:last-child {
   outline: none !important;
 }
 
-.grid-parent {
-  display: grid;
-  grid-template-columns: auto;
-  grid-template-rows: auto;
-}
-
-.grid-main {
-  min-height: 60vh;
-}
-
-.grid-navigation {
-  background: var(--color-pure-white);
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  width: 100%;
-  max-width: 340px;
-  overflow-y: hidden;
-  transition: margin-left 0.3s ease-in-out;
-  z-index: 11;
-  margin-left: -340px;
-}
-
-.grid-main {
-  padding: 1rem;
-}
-
-.grid-footer {
-}
-
-/* Header */
-.header {
-  width: 100%;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 25px;
-  margin: 0;
-  height: auto;
-}
-.header .layout-desktop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2px;
-}
-
-.nav-menue__header {
-  display: flex;
-  align-items: center;
-  padding: 10px 20px;
-}
-
-.header .nav-left,
-.header .nav-right,
-.nav-menue__header {
-  display: flex;
-  justify-items: center;
-  align-items: center;
-}
-
-.header .nav-left,
-.nav-menue__header {
-  gap: 20px !important;
-}
-
-.header .nav-left a,
-.header .nav-right a,
-.nav-menue__header a {
-  text-decoration: none;
-  color: inherit;
-}
-
-.nav-menue__content ul li a {
-  display: flex;
-  align-items: center;
-  justify-self: start;
-}
-
-.nav-menue__content ul li a span {
-  color: var(--textColor);
-  margin-left: 10px;
-}
-
-.nav-menue__content ul li a span:hover {
-  color: var(--color-primary-600);
-}
-
-.nav-menue__content {
-  padding: 10px 20px;
-}
-
-.nav-menue__content ul li {
-  padding: 10px 0;
-}
-
-.header .logo {
-  height: 60px;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  justify-items: center;
-  height: auto;
-}
-.logo-container:hover {
-  color: var(--textColor);
-}
-
-.site-title {
-  font-size: var(--text-line-height-xs);
-  margin-left: 20px;
-  margin-bottom: 0;
-  margin-top: 10px;
-}
-
-.header .user-icon img {
-  width: 40px;
-  height: 40px;
-  margin-top: 10px;
-}
-
-.nav-open,
-.nav-close {
-  padding: 8px;
-  margin-right: -16px;
-  position: relative;
-  left: -8px;
-  display: flex;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  width: 34px;
-  height: 30px;
-  border: none;
-}
-
-.nav-open {
-  background-color: var(--color-background-light);
-}
-
-.nav-close {
-  background-color: var(--color-pure-white);
-  cursor: pointer;
-}
-
 a:not(.button, .chakra-linkbox__overlay):hover {
   color: var(--color-primary-600);
 }
 
-/* Menu & Navigation */
-.grid-navigation {
-  background: var(--color-pure-white);
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: start;
-  flex-direction: column;
-  width: 100%;
-  max-width: 340px;
-  overflow-y: hidden;
-  transition: margin-left 0.3s ease-in-out;
-  z-index: 11;
-  margin-left: -340px; /* Hidden initially */
-  left: 0;
-}
-
-.grid-navigation__visible {
-  margin-left: 0;
-}
-
-.close-nav img {
-  cursor: pointer;
-  border: none;
-}
-
-.nav-open {
-  cursor: pointer;
-}
-
 /* Footer */
-#footer {
-  background: var(--color-background-light);
-  padding: 20px;
-  text-align: center;
-}
-.social-footer {
-  margin-bottom: 5px;
-}
-
-.social-footer ul,
-.navigation-footer ul {
-  list-style: none;
-  padding: 0;
-}
-
 .social-footer ul li,
 .navigation-footer ul li {
   display: inline;
@@ -642,27 +452,14 @@ a:not(.button, .chakra-linkbox__overlay):hover {
 }
 
 .social-footer ul li img {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   margin: 7px;
 }
 
 .social-footer {
-  width: 100%;
   text-align: center;
-  border-top: 1px solid var(--color-gray-100);
-  padding-top: 28px;
-  margin-bottom: 28px;
   order: 3;
-}
-
-.copyright {
-  font-size: 0.8rem;
-}
-
-.madeWithLove {
-  font-size: 0.8rem;
-  font-weight: bold;
 }
 
 #footer > div:last-child .navigation-footer li a {
@@ -672,38 +469,56 @@ a:not(.button, .chakra-linkbox__overlay):hover {
   border-right: 1px solid var(--color-gray-100);
 }
 
-.mapView-Container {
-  display: grid;
-  height: 100vh; /* Can be changed, just put it here so the heights of slider's rows are not as big as map. */
-  grid-template-columns: min-content auto; /* Schmalste mögliche erste Spalte */
-  grid-template-rows: repeat(
-    3,
-    1fr
-  ); /* Drei Zeilen, die den verfügbaren Platz gleichmäßig aufteilen */
-  gap: 0; /* Kein Abstand zwischen den Zellen */
-  border: thin solid var(--color-gray-300); /* Grauer Rahmen */
-}
-
-.mapView__item {
-  display: flex;
-  align-items: center; /* Vertikale Zentrierung */
-  justify-content: center;
-  border-right: thin solid var(--color-gray-300);
-  border-bottom: thin solid var(--color-gray-300);
-}
-
-.mapView__item:last-child {
-  border-bottom: none;
-}
-
-.mapView__item:nth-child(odd) {
-  writing-mode: vertical-lr; /* Vertikale Ausrichtung der Schrift */
-  text-align: center;
-}
-
 /* Sizing of map container (the vh/wh can be changed based on the slider's size */
 .leaflet-container {
   height: 80vh;
   width: 100vw;
   z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
+}
+
+/* MUI navigation slide */
+.css-1j7dv1j {
+  width: 350px !important;
+}
+/* MUI navigation, header title */
+.css-13sgaq-MuiTypography-root, .css-183ssja {
+  font-size: 1rem !important;
+  color: var(--color-gray-800) !important;
+}
+
+/* MUI header title */
+.css-13sgaq-MuiTypography-root, .css-183ssja {
+  font-size: 1rem !important;
+  color: var(--white) !important;
+}
+/* MUI burger menu icon  */
+.css-1d6w9lk-MuiButtonBase-root-MuiIconButton-root{
+  margin-right: 16px !important;
+}
+
+/* MUI header  */
+.css-hyum1k-MuiToolbar-root {
+  padding: 10px 24px !important;
+}
+
+/* MUI nav bar header  */
+.css-st88xl {
+  padding: 10px 24px !important;
+}
+
+/* MUI nav bar header  */
+.css-aw0axs-MuiDrawer-paper {
+  border: none !important;
+}
+
+/* MUI table header fix  */
+div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
+  background-color: var(--color-primary-500);
+}
+
+/* MUI nav bar header  */
+.css-156pbz3 {
+  max-width: 120vh;
+  margin-left: auto;
+  margin-right: auto;
 }
