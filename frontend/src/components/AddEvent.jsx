@@ -313,7 +313,7 @@ function AddEvent() {
               </React.Fragment>
             ))}
             <Grid item xs={6}>
-              <Button variant="contained" color="primary" type="submit" onClick={handleNext} fullWidth>
+              <Button variant="contained" color="primary" type="button" onClick={handleNext} fullWidth>
                 Continue with Demands
               </Button>
             </Grid>
