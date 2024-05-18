@@ -46,6 +46,67 @@ def get_data(query):
         raise e
 
 
+# Dashboard section
+@app.route("/capacity_utilization", methods=["GET"])
+def get_capacity_utilization():
+    """
+    Endpoint to retrieve capacity utilization data.
+    Fetches data where visitor demand exceeds or is close to the parking lot capacity.
+
+    Returns:
+        JSON response with the fetched data or an error message if an exception is raised.
+    """
+    try:
+        logger.info("Fetching capacity utilization data from the database.")
+
+        # Fetch dates where demand exceeds capacity
+        query_exceeds_capacity = """
+        SELECT date, total_demand, total_capacity
+        FROM view_schema.visitor_demand
+        WHERE total_demand > total_capacity
+        ORDER BY date;
+        """
+        exceeds_capacity = get_data(query_exceeds_capacity)
+
+        # Fetch dates where demand is between 80% and 100% of capacity
+        query_between_80_and_100 = """
+        SELECT date, total_demand, total_capacity
+        FROM view_schema.visitor_demand
+        WHERE total_demand BETWEEN total_capacity * 0.8 AND total_capacity
+        ORDER BY date;
+        """
+        between_80_and_100 = get_data(query_between_80_and_100)
+
+        # Fetch total demands and capacities for each day
+        query_total_capacity_utilization = """
+        SELECT date, SUM(demand) AS total_demand, SUM(capacity) AS total_capacity
+        FROM (
+            SELECT vd.date, vd.demand, plc.capacity
+            FROM public.visitor_demand vd
+            JOIN public.parking_lot_allocation pla ON vd.event_id = pla.event_id AND vd.date = pla.date
+            JOIN public.parking_lot_capacity plc ON pla.parking_lot_id = plc.parking_lot_id
+            WHERE vd.date BETWEEN plc.valid_from AND plc.valid_to
+        ) AS subquery
+        GROUP BY date
+        ORDER BY date;
+        """
+        total_capacity_utilization = get_data(query_total_capacity_utilization)
+
+        data = {
+            "exceeds_capacity": exceeds_capacity.to_dict(orient="records"),
+            "between_80_and_100": between_80_and_100.to_dict(orient="records"),
+            "total_capacity_utilization": total_capacity_utilization.to_dict(
+                orient="records"
+            ),
+        }
+
+        logger.info("Capacity utilization data fetched successfully.")
+        return jsonify(data), 200
+    except Exception as e:
+        logger.error("Failed to fetch capacity utilization data", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 # Get events parking lots allocation for front-end table view
 @app.route("/events_parking_lots_allocation", methods=["GET"])
 def get_events_parking_lots_allocation():

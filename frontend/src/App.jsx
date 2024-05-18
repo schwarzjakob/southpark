@@ -10,6 +10,8 @@ import Dashboard from "./components/Dashboard.jsx";
 import MapView from "./components/MapView.jsx";
 import AddEvent from "./components/AddEvent.jsx";
 import EventsAllocationTable from "./components/EventsAllocationTable.jsx";
+import ExceedsCapacity from "./components/dashboard/ExceedsCapacity.jsx";
+import Between80And100 from "./components/dashboard/Between80And100.jsx";
 
 import theme from "./styles/muiCustomTheme"; // Import custom mui theme
 
@@ -34,6 +36,8 @@ function App() {
                 <Route path="/mapview" element={<MapView />} />
                 <Route path="/tableview" element={<EventsAllocationTable />} />
                 <Route path="/addEvent" element={<AddEvent />} />
+                <Route path="/exceedsCapacity" element={<ExceedsCapacity />} />
+                <Route path="/between80And100" element={<Between80And100 />} />
               </Routes>
             </div>
             <Footer />
