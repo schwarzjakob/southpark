@@ -41,6 +41,13 @@ function AddEvent() {
     return date && !isNaN(new Date(date).getTime());
   };
 
+  const isDateRangeValid = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const oneYear = 365 * 24 * 60 * 60 * 1000; // One year in milliseconds
+    return (end - start) <= oneYear;
+  };
+
   const adjustDates = (dates, phase, dateType, value) => {
     const { assembly, runtime, disassembly } = dates;
 
@@ -215,6 +222,16 @@ function AddEvent() {
       setFeedback({ open: true, message: 'Please fill all required fields.', severity: 'warning' });
       return;
     }
+
+    // Check if any date range exceeds one year
+    for (const phase in eventData.dates) {
+      const { start, end } = eventData.dates[phase];
+      if (isValidDate(start) && isValidDate(end) && !isDateRangeValid(start, end)) {
+        alert(`The date range for ${phaseLabels[phase]} exceeds one year.`);
+        return;
+      }
+    }
+
     setStep(2);
   };
 
