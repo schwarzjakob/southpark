@@ -44,7 +44,11 @@ function AddEvent() {
   const adjustDates = (dates, phase, dateType, value) => {
     const { assembly, runtime, disassembly } = dates;
 
-    // Handle forward propagation
+    if (!isValidDate(value)) {
+      return dates;
+    }
+
+    // Handle forward date propagation
     if (dateType === 'start') {
       if (phase === 'assembly') {
         if (!isValidDate(assembly.end) || new Date(value) > new Date(assembly.end)) {
@@ -89,7 +93,7 @@ function AddEvent() {
       }
     }
 
-    // Handle backwards propagation
+    // Handle backward date propagation
     if (dateType === 'end') {
       if (phase === 'disassembly') {
         if (!isValidDate(disassembly.start) || new Date(value) < new Date(disassembly.start)) {
@@ -133,13 +137,6 @@ function AddEvent() {
         }
       }
     }
-
-    // Recalculate date ranges for all phases
-    Object.keys(dates).forEach(phase => {
-      if (isValidDate(dates[phase].start) && isValidDate(dates[phase].end)) {
-        dates[phase].allDates = calculateDateRange(dates[phase].start, dates[phase].end);
-      }
-    });
 
     return dates;
   };
