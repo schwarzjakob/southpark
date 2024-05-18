@@ -161,17 +161,6 @@ function AddEvent() {
     });
   };
 
-  const calculateDateRange = (startDate, endDate) => {
-    let currentDate = new Date(startDate);
-    const end = new Date(endDate);
-    const dateArray = [];
-    while (currentDate <= end) {
-      dateArray.push(new Date(currentDate).toISOString().slice(0, 10));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return dateArray;
-  };
-
   const handleDemandChange = (phase, date, value) => {
     setEventData(prevState => ({
       ...prevState,
@@ -192,7 +181,7 @@ function AddEvent() {
       console.log('Event created successfully:', response.data);
       setFeedback({ open: true, message: response.data.message, severity: 'success' });
       handleResetDates(); // Reset the form after successful submission
-  
+
       try {
         const optimizeResponse = await axios.post('http://127.0.0.1:5000/optimize_distance');
         console.log('Optimization triggered successfully:', optimizeResponse.data);
@@ -206,7 +195,7 @@ function AddEvent() {
       setFeedback({ open: true, message: 'Error creating event', severity: 'error' });
     }
   };
-  
+
 
   const handleResetDates = () => {
     setEventData(initialEventData);
