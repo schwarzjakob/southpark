@@ -1,4 +1,4 @@
-import "leaflet/dist/leaflet.css";
+import 'leaflet/dist/leaflet.css';
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -325,9 +325,8 @@ const parkingLots = [
 // Define an array of colors
 const colors = ['red', 'blue', 'green'];
 
-const MapComponent = () => {
+const MapComponent = ({ selectedDate }) => {
   const [events, setEvents] = useState([]);
-  const [selectedDate, setSelectedDate] = useState('2025-02-22');
   const [eventMapping, setEventMapping] = useState({});
   const [colorMapping, setColorMapping] = useState({});
 
@@ -357,6 +356,7 @@ const MapComponent = () => {
             }
           });
           setEventMapping(eventMap);
+          console.log(eventMap);
 
           // Create a mapping of event names to colors
           const colorMap = {};
@@ -366,8 +366,8 @@ const MapComponent = () => {
 
           setColorMapping(colorMap);
 
-          console.log(eventMap);
-          console.log(colorMap);
+          // console.log(eventMap);
+          // console.log(colorMap);
         }
       })
       .catch((error) => {

@@ -8,20 +8,16 @@ import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 
-const DateInputComponent = () => {
-  const [selectedDate, setSelectedDate] = useState(dayjs(new Date()));
-
-  useEffect(() => {
-    setSelectedDate(dayjs('2025-02-22'));
-  }, []);
-
+const DateInputComponent = ({ selectedDate, setSelectedDate }) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'de'}>
       <Grid>
         <DatePicker
           label="Choose a Date"
-          value={selectedDate}
-          onChange={(newValue) => setSelectedDate(newValue)}
+          value={dayjs(selectedDate)}
+          onChange={(newValue) =>
+            setSelectedDate(newValue.format('YYYY-MM-DD'))
+          }
           slots={{
             textField: (params) => <TextField {...params} />,
           }}
