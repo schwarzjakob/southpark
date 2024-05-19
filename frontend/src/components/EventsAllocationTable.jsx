@@ -26,7 +26,7 @@ const EventsAllocationTable = () => {
       <Typography variant="h3" component="h2" gutterBottom>
         Allocated Parking Lots For Each Event Date
       </Typography>
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: "100%" }}>
         <DataGrid
           rows={tableData}
           columns={columns}

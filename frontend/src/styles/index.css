@@ -398,7 +398,6 @@ table tfoot td:last-child {
   border-bottom-right-radius: var(--radius-small-bottom-right);
 }
 
-
 /* MuiDataGrid styling */
 
 .MuiDataGrid-columnHeader {
@@ -481,18 +480,20 @@ a:not(.button, .chakra-linkbox__overlay):hover {
   width: 350px !important;
 }
 /* MUI navigation, header title */
-.css-13sgaq-MuiTypography-root, .css-183ssja {
+.css-13sgaq-MuiTypography-root,
+.css-183ssja {
   font-size: 1rem !important;
   color: var(--color-gray-800) !important;
 }
 
 /* MUI header title */
-.css-13sgaq-MuiTypography-root, .css-183ssja {
+.css-13sgaq-MuiTypography-root,
+.css-183ssja {
   font-size: 1rem !important;
   color: var(--white) !important;
 }
 /* MUI burger menu icon  */
-.css-1d6w9lk-MuiButtonBase-root-MuiIconButton-root{
+.css-1d6w9lk-MuiButtonBase-root-MuiIconButton-root {
   margin-right: 16px !important;
 }
 
