@@ -301,7 +301,7 @@ const parkingLots = [
   },
   {
     id: 'P9 - 12',
-    name: 'P9-12',
+    name: 'P9 - P12',
     coords: [
       [48.13781, 11.7071893],
       [48.137823, 11.7109108],
@@ -323,7 +323,21 @@ const parkingLots = [
 ];
 
 // Define an array of colors
-const colors = ['red', 'blue', 'green'];
+const colors = [
+  'purple',
+  'orange',
+  'cyan',
+  'pink',
+  'teal',
+  'indigo',
+  'lime',
+  'amber',
+  'deepOrange',
+  'deepPurple',
+  'lightBlue',
+  'lightGreen',
+  'yellow',
+];
 
 const MapComponent = ({ selectedDate }) => {
   const [events, setEvents] = useState([]);
@@ -341,33 +355,26 @@ const MapComponent = ({ selectedDate }) => {
           // Create a mapping of event names to colors
           const eventMap = {};
           eventsData.forEach((event) => {
-            if (event.status === 'runtime') {
-              if (!eventMap[event.event_name]) {
-                eventMap[event.event_name] = { halls: [], parkingLots: [] };
-              }
-              if (event.hall_name) {
-                eventMap[event.event_name].halls.push(event.hall_name);
-              }
-              if (event.parking_lot_name) {
-                eventMap[event.event_name].parkingLots.push(
-                  event.parking_lot_name
-                );
-              }
+            if (!eventMap[event.event_name]) {
+              eventMap[event.event_name] = { halls: [], parkingLots: [] };
+            }
+            if (event.hall_name) {
+              eventMap[event.event_name].halls.push(event.hall_name);
+            }
+            if (event.parking_lot_name) {
+              eventMap[event.event_name].parkingLots.push(
+                event.parking_lot_name
+              );
             }
           });
           setEventMapping(eventMap);
-          console.log(eventMap);
 
           // Create a mapping of event names to colors
           const colorMap = {};
           Object.keys(eventMap).forEach((eventName, index) => {
             colorMap[eventName] = colors[index % colors.length];
           });
-
           setColorMapping(colorMap);
-
-          // console.log(eventMap);
-          // console.log(colorMap);
         }
       })
       .catch((error) => {
@@ -376,17 +383,32 @@ const MapComponent = ({ selectedDate }) => {
   }, [selectedDate]);
 
   const getPopupContent = (id) => {
-    const event = events.find((event) => event.hall_name === id);
+    const event = events.find(
+      (event) => event.hall_name === id || event.parking_lot_name === id
+    );
 
     if (event) {
-      return (
-        <div className="cap">
-          <h4>{event.event_name}</h4>
-          <p>Status: {event.status}</p>
-          <p>Entrance: {event.event_entrance}</p>
-          <p>Allocated Parking Lots: {event.parking_lot_name}</p>
-        </div>
-      );
+      if (event.hall_name === id) {
+        // This is a hall
+        return (
+          <div className="cap">
+            <h4>{event.event_name}</h4>
+            <p>Status: {event.status}</p>
+            <p>Entrance: {event.event_entrance}</p>
+            <p>Allocated Parking Lots: {event.parking_lot_name}</p>
+          </div>
+        );
+      } else {
+        // This is a parking lot
+        return (
+          <div className="cap">
+            <h4>{event.event_name}</h4>
+            <p>Status: {event.status}</p>
+            <p>Entrance: {event.event_entrance}</p>
+            <p>Associated Hall: {event.hall_name}</p>
+          </div>
+        );
+      }
     }
     return <span>No Event!</span>;
   };
@@ -450,5 +472,4 @@ const MapComponent = ({ selectedDate }) => {
     </MapContainer>
   );
 };
-
 export default MapComponent;

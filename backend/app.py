@@ -191,31 +191,33 @@ def get_events_map(date):
         logger.info("Fetching events timeline data from the database.")
         query = f"""
         SELECT
-    ho.date AS occupation_date,
+    ho.event_id AS event_id,
     e.name AS event_name,
     e.entrance AS event_entrance,
     h.name AS hall_name,
-    pl.name AS parking_lot_name,
-    CASE
-        WHEN ho.date BETWEEN e.assembly_start_date AND e.assembly_end_date THEN 'assembly'
-        WHEN ho.date BETWEEN e.runtime_start_date AND e.runtime_end_date THEN 'runtime'
-        WHEN ho.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date THEN 'disassembly'
-        ELSE 'unknown'
-    END AS status
+    ho.date AS occupation_date,
+    p.name AS parking_lot_name, 
+        CASE
+            WHEN ho.date BETWEEN e.assembly_start_date AND e.assembly_end_date THEN 'assembly'
+            WHEN ho.date BETWEEN e.runtime_start_date AND e.runtime_end_date THEN 'runtime'
+            WHEN ho.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date THEN 'disassembly'
+            ELSE 'unknown'
+        END AS status
 FROM
-    public.parking_lot_allocation pa
+    public.hall_occupation ho
 JOIN
-    public.event e ON e.id = pa.event_id
-JOIN
-    public.parking_lot pl ON pl.id = pa.parking_lot_id
-JOIN
-    public.hall_occupation ho ON ho.date = pa.date
+    public.event e ON e.id = ho.event_id
 JOIN
     public.hall h ON h.id = ho.hall_id
+JOIN
+    public.parking_lot_allocation pa ON pa.event_id = ho.event_id 
+    AND pa.date = ho.date
+JOIN
+    public.parking_lot p ON pa.parking_lot_id = p.id
 WHERE
     ho.date = '{date}'
 ORDER BY
-    ho.date, e.name, h.name, pl.name;"""
+    ho.event_id;"""
 
         df_events_timeline = get_data(query)
         if df_events_timeline.empty:
