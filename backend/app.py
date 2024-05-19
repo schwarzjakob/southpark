@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 import logging
 import pandas as pd
+import datetime
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
