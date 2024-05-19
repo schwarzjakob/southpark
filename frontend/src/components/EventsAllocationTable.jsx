@@ -6,19 +6,27 @@ const columns = [
   { field: "event", headerName: "Event", flex: 1 },
   { field: "date", headerName: "Date", flex: 1 },
   { field: "demand", headerName: "Demand", flex: 1 },
-  { field: "parking_lot", headerName: "Parking lot", flex: 1 },
+  { field: "parking_lot", headerName: "Parking Lot", flex: 1 },
   { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
   { field: "distance", headerName: "Distance", flex: 1 },
 ];
 
 const EventsAllocationTable = () => {
   const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/events_parking_lots_allocation")
       .then((response) => response.json())
-      .then((data) => setTableData(data))
-      .catch((error) => console.error("There was an error!", error));
+      .then((data) => {
+        console.log("Backend data:", data); // Log the data to debug
+        setTableData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("There was an error!", error);
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -30,12 +38,13 @@ const EventsAllocationTable = () => {
         <DataGrid
           rows={tableData}
           columns={columns}
-          getRowId={(row) => row.event_id}
+          getRowId={(row) => row.id} // Ensure row ID is correct
           components={{
             Toolbar: GridToolbarExport,
           }}
           disableSelectionOnClick
           autoHeight
+          loading={loading}
         />
       </Box>
     </Box>
