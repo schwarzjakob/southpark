@@ -524,9 +524,6 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   width: 100vw;
   z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
 }
-/* .tags {
-  background-color: var(--color-gray-200);
-} */
 .cap {
   text-transform: capitalize;
 }
