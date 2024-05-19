@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 import logging
 import pandas as pd
-import datetime
+from datetime import datetime, timedelta
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -129,6 +129,61 @@ def add_event():
         return jsonify({"message": "Event added successfully"}), 200
     except Exception as e:
         logger.error("Failed to add event", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/events_map/<date>", methods=["GET"])
+def get_events_map(date):
+    """
+    Endpoint to retrieve event data for the map component.
+
+    Parameters:
+        date (str): The date around which to fetch the data. Expected format is 'YYYY-MM-DD'.
+
+    Returns:
+        JSON response with the fetched data or an error message if an exception is raised.
+    """
+    try:
+        # Convert the date string to a datetime object
+        date = datetime.strptime(date, "%Y-%m-%d")
+
+        logger.info("Fetching events timeline data from the database.")
+        query = f"""
+        SELECT
+    ho.date AS occupation_date,
+    e.name AS event_name,
+    e.entrance AS event_entrance,
+    h.name AS hall_name,
+    pl.name AS parking_lot_name,
+    CASE
+        WHEN ho.date BETWEEN e.assembly_start_date AND e.assembly_end_date THEN 'assembly'
+        WHEN ho.date BETWEEN e.runtime_start_date AND e.runtime_end_date THEN 'runtime'
+        WHEN ho.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date THEN 'disassembly'
+        ELSE 'unknown'
+    END AS status
+FROM
+    public.parking_lot_allocation pa
+JOIN
+    public.event e ON e.id = pa.event_id
+JOIN
+    public.parking_lot pl ON pl.id = pa.parking_lot_id
+JOIN
+    public.hall_occupation ho ON ho.date = pa.date
+JOIN
+    public.hall h ON h.id = ho.hall_id
+WHERE
+    ho.date = '{date}'
+ORDER BY
+    ho.date, e.name, h.name, pl.name;"""
+
+        df_events_timeline = get_data(query)
+        if df_events_timeline.empty:
+            logger.info("No data available.")
+            return jsonify({"message": "No data found"}), 204
+        logger.info("Events timeline data fetched successfully.")
+        return jsonify(df_events_timeline.to_dict(orient="records")), 200
+    except Exception as e:
+        logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
