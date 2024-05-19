@@ -701,9 +701,16 @@ a:not(.button, .chakra-linkbox__overlay):hover {
   text-align: center;
 }
 
+/* Map Component */
 /* Sizing of map container (the vh/wh can be changed based on the slider's size */
 .leaflet-container {
   height: 80vh;
   width: 100vw;
   z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
+}
+.tags {
+  background-color: var(--color-gray-200);
+}
+.cap {
+  text-transform: capitalize;
 }

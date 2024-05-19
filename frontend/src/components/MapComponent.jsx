@@ -1,11 +1,20 @@
 import 'leaflet/dist/leaflet.css';
 
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Polygon, Rectangle } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  Polygon,
+  Tooltip,
+  Popup,
+} from 'react-leaflet';
+import dayjs from 'dayjs';
+import axios from 'axios';
 
 const halls = [
   {
     id: 'A1',
+    name: 'A1',
     coords: [
       [48.1352644, 11.6943111],
       [48.1338789, 11.6943299],
@@ -15,6 +24,7 @@ const halls = [
   },
   {
     id: 'A2',
+    name: 'A2',
     coords: [
       [48.1352782, 11.6957927],
       [48.1338892, 11.6958115],
@@ -24,6 +34,7 @@ const halls = [
   },
   {
     id: 'A3',
+    name: 'A3',
     coords: [
       [48.1352833, 11.6972707],
       [48.1338978, 11.6972868],
@@ -33,6 +44,7 @@ const halls = [
   },
   {
     id: 'A4',
+    name: 'A4',
     coords: [
       [48.1352981, 11.698881],
       [48.1339126, 11.6988998],
@@ -42,6 +54,7 @@ const halls = [
   },
   {
     id: 'A5',
+    name: 'A5',
     coords: [
       [48.135309, 11.7003617],
       [48.1339217, 11.7003778],
@@ -51,6 +64,7 @@ const halls = [
   },
   {
     id: 'A6',
+    name: 'A6',
     coords: [
       [48.135315, 11.7018373],
       [48.1339313, 11.7018587],
@@ -60,6 +74,7 @@ const halls = [
   },
   {
     id: 'B1',
+    name: 'B1',
     coords: [
       [48.1372428, 11.6942775],
       [48.1358609, 11.694291],
@@ -69,6 +84,7 @@ const halls = [
   },
   {
     id: 'B2',
+    name: 'B2',
     coords: [
       [48.1373246, 11.6957605],
       [48.1358658, 11.6957739],
@@ -78,6 +94,7 @@ const halls = [
   },
   {
     id: 'B3',
+    name: 'B3',
     coords: [
       [48.1373359, 11.6972353],
       [48.1358824, 11.6972567],
@@ -87,6 +104,7 @@ const halls = [
   },
   {
     id: 'B4',
+    name: 'B4',
     coords: [
       [48.1373458, 11.6988463],
       [48.1358905, 11.6988651],
@@ -96,6 +114,7 @@ const halls = [
   },
   {
     id: 'B5',
+    name: 'B5',
     coords: [
       [48.1373561, 11.7003262],
       [48.1358955, 11.7003477],
@@ -105,6 +124,7 @@ const halls = [
   },
   {
     id: 'B6',
+    name: 'B6',
     coords: [
       [48.1373666, 11.7018049],
       [48.1359042, 11.7018236],
@@ -114,6 +134,7 @@ const halls = [
   },
   {
     id: 'C1',
+    name: 'C1',
     coords: [
       [48.1386835, 11.6942591],
       [48.1374234, 11.6942725],
@@ -123,6 +144,7 @@ const halls = [
   },
   {
     id: 'C2',
+    name: 'C2',
     coords: [
       [48.1386945, 11.695738],
       [48.1374039, 11.6957541],
@@ -132,6 +154,7 @@ const halls = [
   },
   {
     id: 'C3',
+    name: 'C3',
     coords: [
       [48.138707, 11.6972158],
       [48.1374147, 11.6972319],
@@ -141,6 +164,7 @@ const halls = [
   },
   {
     id: 'C4',
+    name: 'C4',
     coords: [
       [48.1387157, 11.6988308],
       [48.1374467, 11.6988442],
@@ -150,6 +174,7 @@ const halls = [
   },
   {
     id: 'C5',
+    name: 'C5',
     coords: [
       [48.1387257, 11.7002968],
       [48.1374334, 11.7003102],
@@ -159,6 +184,7 @@ const halls = [
   },
   {
     id: 'C6',
+    name: 'C6',
     coords: [
       [48.1387363, 11.7017778],
       [48.1374422, 11.7017993],
@@ -170,7 +196,8 @@ const halls = [
 
 const parkingLots = [
   {
-    id: 'P1Nord West',
+    id: 'P1-north-west',
+    name: 'P1 North West',
     coords: [
       [48.1412926, 11.6975452],
       [48.1404584, 11.6981824],
@@ -180,7 +207,8 @@ const parkingLots = [
     ],
   },
   {
-    id: 'P1Nord East',
+    id: 'P1-north-east',
+    name: 'P1 North East',
     coords: [
       [48.1417206, 11.700205],
       [48.1417708, 11.7006773],
@@ -196,6 +224,7 @@ const parkingLots = [
   },
   {
     id: 'P2',
+    name: 'P2',
     coords: [
       [48.1408516, 11.7073096],
       [48.1385636, 11.7094934],
@@ -211,6 +240,7 @@ const parkingLots = [
   },
   {
     id: 'P3',
+    name: 'P3',
     coords: [
       [48.1390493, 11.6972283],
       [48.1390558, 11.6980711],
@@ -223,6 +253,7 @@ const parkingLots = [
   },
   {
     id: 'P4',
+    name: 'P4',
     coords: [
       [48.1396359, 11.6989453],
       [48.1394766, 11.6997899],
@@ -232,6 +263,7 @@ const parkingLots = [
   },
   {
     id: 'P5',
+    name: 'P5',
     coords: [
       [48.1394505, 11.7001903],
       [48.1390535, 11.7001831],
@@ -241,6 +273,7 @@ const parkingLots = [
   },
   {
     id: 'P7',
+    name: 'P7',
     coords: [
       [48.1385681, 11.7034823],
       [48.1361815, 11.7035074],
@@ -255,6 +288,7 @@ const parkingLots = [
   },
   {
     id: 'P8',
+    name: 'P8',
     coords: [
       [48.1380376, 11.704922],
       [48.1380497, 11.7058797],
@@ -267,6 +301,7 @@ const parkingLots = [
   },
   {
     id: 'P9-12',
+    name: 'P9-12',
     coords: [
       [48.13781, 11.7071893],
       [48.137823, 11.7109108],
@@ -280,28 +315,79 @@ const parkingLots = [
 ];
 
 const MapComponent = () => {
+  const [events, setEvents] = useState([]);
+  const [selectedDate, setSelectedDate] = useState('2025-02-20');
+
+  useEffect(() => {
+    axios
+      .get(`http://127.0.0.1:5000/events_map/${selectedDate}`)
+      .then((response) => {
+        if (response.status === 200) {
+          setEvents(response.data);
+          console.log(selectedDate);
+        }
+      })
+      .catch((error) => {
+        console.error('There was an error fetching the events data!', error);
+      });
+  }, []);
+
+  const getPopupContent = (name) => {
+    const event = events.find((event) => event.hall_name === name);
+    console.log(event);
+
+    if (event) {
+      return (
+        <div className="cap">
+          <h4>{event.event_name}</h4>
+          <p>Status: {event.status}</p>
+          <p>Entrance: {event.event_entrance}</p>
+          <p>Allocated Parking Lots: {event.parking_lot_name}</p>
+        </div>
+      );
+    }
+    return <span>No Event!</span>;
+  };
+
   return (
-    <MapContainer
-      center={[48.1375, 11.702]}
-      zoom={16}
-      scrollWheelZoom={false}
-      // doubleClickZoom={false}
-    >
+    <MapContainer center={[48.1375, 11.702]} zoom={16} scrollWheelZoom={false}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {/* Rendering halls */}
       {halls.map((hall) => (
         <Polygon
           key={hall.id}
           positions={hall.coords}
-          color="gray"
-          // fillColor="red"
-          // fillOpacity="0.8"
-        />
+          className={`halls hall-${hall.id}`}
+          color="var(--color-gray-300)"
+          fillOpacity="1"
+        >
+          <Tooltip
+            direction="center"
+            offset={[0, 0]}
+            permanent
+            className="tags"
+          >
+            <span>{hall.name}</span>
+          </Tooltip>
+          <Popup>{getPopupContent(hall.name)}</Popup>
+        </Polygon>
       ))}
+      {/* Rendering parking lots */}
       {parkingLots.map((lot) => (
-        <Polygon key={lot.id} positions={lot.coords} color="gray" />
+        <Polygon
+          key={lot.id}
+          positions={lot.coords}
+          className={`parking-lots parking-${lot.id}`}
+          color="gray"
+          fillOpacity="0.9"
+        >
+          <Tooltip direction="center" offset={[0, 0]} permanent>
+            <span>{lot.name}</span>
+          </Tooltip>
+        </Polygon>
       ))}
     </MapContainer>
   );
