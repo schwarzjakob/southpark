@@ -1,28 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { Box, Typography } from '@mui/material';
 import CalendarSlider from './CalendarSlider.jsx';
 import MapComponent from './MapComponent.jsx';
+import React, { useEffect, useState } from 'react';
 import DateInputComponent from './DateInputComponent.jsx';
 
 const MapView = () => {
   return (
-    <div>
-      <h2>MapView</h2>
+    <Box>
       <DateInputComponent />
-      <div className="mapView-Container">
-        <div className="mapView__item label">Events</div>
-        <div className="mapView__item content">
+      <Typography variant="h3" component="h2" gutterBottom>
+        Add Event
+      </Typography>
+      <Box display="flex" flexDirection="column" gap={2}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          border="1px solid"
+          borderColor="grey.300"
+          p={2}
+        >
           <CalendarSlider />
-        </div>
-        <div className="mapView__item label">Parking Lots</div>
-        <div className="mapView__item content">
+        </Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          border="1px solid"
+          borderColor="grey.300"
+          p={2}
+        >
           <CalendarSlider />
-        </div>
-        <div className="mapView__item label">Map</div>
-        <div>
+        </Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          border="1px solid"
+          borderColor="grey.300"
+          p={2}
+        >
           <MapComponent />
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

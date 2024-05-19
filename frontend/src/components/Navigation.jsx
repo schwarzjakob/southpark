@@ -1,57 +1,132 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import {
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  Box,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import MapIcon from "@mui/icons-material/Map";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AddIcon from "@mui/icons-material/Add";
 
 const Navigation = ({ isOpen, toggleNav }) => {
   return (
-    <div
-      className={`grid-navigation ${isOpen ? "grid-navigation__visible" : ""}`}
-    >
-      <div className="nav-menue__header">
-        <button className="nav-close" onClick={toggleNav}>
-          <img src="src/assets/icons/close.svg" alt="Close" />
-        </button>
-        <Link to="/" title="Home">
-          <div className="logo-container">
+    <Drawer anchor="left" open={isOpen} onClose={toggleNav}>
+      <Box
+        sx={{
+          width: 340,
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            p: 2,
+            borderBottom: "1px solid #ddd",
+          }}
+        >
+          <IconButton onClick={toggleNav} edge="start" sx={{ marginRight: 2 }}>
+            <CloseIcon />
+          </IconButton>
+          <Link
+            to="/"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <img
-              src="src/assets//logo.svg"
+              src="src/assets/logo.svg"
               alt="Messe München"
-              className="logo"
+              style={{ marginRight: 16 }}
             />
-            <h1 className="site-title">
-              Parking Area<br></br>Management
-            </h1>
-          </div>
-        </Link>
-      </div>
-      <div className="nav-menue__content">
-        <ul>
-          <li>
-            <Link to="/">
-              <img src="src/assets/icons/dashboard.svg" alt="Dashboard" />
-              <span>Dashboard</span>
+            <Typography variant="h6">
+              Parking Area
+              <br />
+              Management
+            </Typography>
+          </Link>
+        </Box>
+        <List>
+          <ListItem button onClick={toggleNav}>
+            <Link
+              to="/"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <ListItemIcon>
+                <DashboardIcon />
+              </ListItemIcon>
+              <ListItemText primary="Dashboard" />
             </Link>
-          </li>
-          <li>
-            <Link to="/mapview">
-              <img src="src/assets/icons/map.svg" alt="Kartenansicht" />
-              <span>Kartenansicht</span>
+          </ListItem>
+          <ListItem button onClick={toggleNav}>
+            <Link
+              to="/mapview"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <ListItemIcon>
+                <MapIcon />
+              </ListItemIcon>
+              <ListItemText primary="Map View" />
             </Link>
-          </li>
-          <li>
-            <Link to="/tableview">
-              <img src="src/assets/icons/calendar.svg" alt="Tabellenansichtt" />
-              <span>Tabellenansichtt</span>
+          </ListItem>
+          <ListItem button onClick={toggleNav}>
+            <Link
+              to="/tableview"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <ListItemIcon>
+                <CalendarTodayIcon />
+              </ListItemIcon>
+              <ListItemText primary="Table View" />
             </Link>
-          </li>
-          <li>
-            <Link to="/addEvent">
-              <img src="src/assets/icons/add.svg" alt="Neues Event" />
-              <span>Neues Event</span>
+          </ListItem>
+          <ListItem button onClick={toggleNav}>
+            <Link
+              to="/addEvent"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <ListItemIcon>
+                <AddIcon />
+              </ListItemIcon>
+              <ListItemText primary="Add Event" />
             </Link>
-          </li>
-        </ul>
-      </div>
-    </div>
+          </ListItem>
+        </List>
+      </Box>
+    </Drawer>
   );
 };
 

@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import Button from "@mui/material/Button"; // Going to be used for export function later
-import { GridToolbarExport } from "@mui/x-data-grid";
+import { DataGrid, GridToolbarExport } from "@mui/x-data-grid";
+import { Box, Typography } from "@mui/material";
 
 const columns = [
-  // { field: "event_id", headerName: "Event ID", flex: 1 }, // Uncomment this line to show the event_id
   { field: "event", headerName: "Event", flex: 1 },
-  { field: "date", headerName: "Datum", flex: 1 },
-  { field: "demand", headerName: "Bedarf", flex: 1 },
-  { field: "parking_lot", headerName: "Parkplatz", flex: 1 },
-  { field: "capacity", headerName: "Kapazität", flex: 1 },
-  { field: "distance", headerName: "Distanz", flex: 1 },
+  { field: "date", headerName: "Date", flex: 1 },
+  { field: "demand", headerName: "Demand", flex: 1 },
+  { field: "parking_lot", headerName: "Parking lot", flex: 1 },
+  { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
+  { field: "distance", headerName: "Distance", flex: 1 },
 ];
 
 const EventsAllocationTable = () => {
@@ -24,19 +22,23 @@ const EventsAllocationTable = () => {
   }, []);
 
   return (
-    <div>
-      <h2>Tabllenansicht</h2>
-      <DataGrid
-        rows={tableData}
-        columns={columns}
-        getRowId={(row) => row.event_id}
-        components={{
-          Toolbar: GridToolbarExport,
-        }}
-        checkboxSelection
-        disableSelectionOnClick
-      />
-    </div>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h3" component="h2" gutterBottom>
+        Allocated Parking Lots For Each Event Date
+      </Typography>
+      <Box sx={{ width: "100%" }}>
+        <DataGrid
+          rows={tableData}
+          columns={columns}
+          getRowId={(row) => row.event_id}
+          components={{
+            Toolbar: GridToolbarExport,
+          }}
+          disableSelectionOnClick
+          autoHeight
+        />
+      </Box>
+    </Box>
   );
 };
 
