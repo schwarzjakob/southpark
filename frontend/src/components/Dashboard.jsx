@@ -45,13 +45,13 @@ const Dashboard = () => {
         <Grid item xs={12} sm={6}>
           <Paper onClick={() => navigate("/exceedsCapacity")} style={{ padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <Typography variant="h4">Capacity Exceeded</Typography>
-            <Box style={circleStyle}>{data.exceeds_capacity.length}</Box>
+            <Box style={circleStyle}>{data.exceeds_capacity?.length || 0}</Box>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={6}>
           <Paper onClick={() => navigate("/between80And100")} style={{ padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <Typography variant="h4">Capacity Over 80% Utilized</Typography>
-            <Box style={circleStyle}>{data.between_80_and_100.length}</Box>
+            <Box style={circleStyle}>{data.between_80_and_100?.length || 0}</Box>
           </Paper>
         </Grid>
         <Grid item xs={12}>

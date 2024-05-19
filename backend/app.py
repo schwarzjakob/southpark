@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 import logging
 import pandas as pd
+from datetime import datetime
+
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -47,6 +49,28 @@ def get_data(query):
 
 
 # Dashboard section
+
+
+@app.route("/available_years", methods=["GET"])
+def get_available_years():
+    """
+    Endpoint to retrieve available years.
+    """
+    try:
+        logger.info("Fetching available years from the database.")
+        query_years = """
+        SELECT DISTINCT EXTRACT(YEAR FROM date) AS year
+        FROM view_schema.demand_vs_capacity
+        ORDER BY year;
+        """
+        result = get_data(query_years)
+        years = result["year"].tolist()
+        return jsonify({"years": years}), 200
+    except Exception as e:
+        logger.error("Failed to fetch available years", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/capacity_utilization", methods=["GET"])
 def get_capacity_utilization():
     """
@@ -62,7 +86,7 @@ def get_capacity_utilization():
         # Fetch dates where demand exceeds capacity
         query_exceeds_capacity = """
         SELECT date, total_demand, total_capacity
-        FROM view_schema.visitor_demand
+        FROM view_schema.demand_vs_capacity
         WHERE total_demand > total_capacity
         ORDER BY date;
         """
@@ -71,20 +95,21 @@ def get_capacity_utilization():
         # Fetch dates where demand is between 80% and 100% of capacity
         query_between_80_and_100 = """
         SELECT date, total_demand, total_capacity
-        FROM view_schema.visitor_demand
+        FROM view_schema.demand_vs_capacity
         WHERE total_demand BETWEEN total_capacity * 0.8 AND total_capacity
         ORDER BY date;
         """
         between_80_and_100 = get_data(query_between_80_and_100)
 
+        year = request.args.get("year", default=datetime.now().year, type=int)
         # Fetch total demands and capacities for each day
-        query_total_capacity_utilization = """
-        SELECT date, total_demand, total_capacity
-        FROM view_schema.visitor_demand
+        query_total_capacity_utilization = f"""
+        SELECT date, total_demand, COALESCE(total_capacity, 1) AS total_capacity
+        FROM view_schema.demand_vs_capacity
+        WHERE EXTRACT(YEAR FROM date) = {year}
         ORDER BY date;
         """
         total_capacity_utilization = get_data(query_total_capacity_utilization)
-        print(total_capacity_utilization)
 
         data = {
             "exceeds_capacity": exceeds_capacity.to_dict(orient="records"),

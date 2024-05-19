@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import moment from 'moment';
+import { MenuItem, FormControl, Select, InputLabel, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -23,23 +25,45 @@ ChartJS.register(
 
 const CapacityUtilization = () => {
   const [data, setData] = useState([]);
+  const [year, setYear] = useState('');
+  const [availableYears, setAvailableYears] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://127.0.0.1:5000/capacity_utilization');
-        setData(response.data.total_capacity_utilization); // Adjust this line if needed based on your API response structure
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
+    fetchAvailableYears();
   }, []);
 
+  useEffect(() => {
+    if (year) {
+      fetchData(year);
+    }
+  }, [year]);
+
+  const fetchAvailableYears = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:5000/available_years');
+      const years = response.data.years;
+      setAvailableYears(years);
+      if (years.length > 0 && !years.includes(year)) {
+        setYear(years[0]); // Set the first available year as default if the current year is not available
+      }
+    } catch (error) {
+      console.error('Error fetching available years:', error);
+    }
+  };
+
+  const fetchData = async (year) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:5000/capacity_utilization?year=${year}`);
+      setData(response.data.total_capacity_utilization);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   const labels = data.map((d) => moment(d.date).format('DD.MM.YYYY'));
-  const utilization = data.map((d) => d.total_demand / d.total_capacity);
-  const freeCapacity = data.map((d) => 1 - (d.total_demand / d.total_capacity));
+  const utilization = data.map((d) => d.total_capacity > 0 ? d.total_demand / d.total_capacity : 0);
+  const freeCapacity = data.map((d) => d.total_capacity > 0 ? 1 - (d.total_demand / d.total_capacity) : 1);
 
   const chartData = {
     labels: labels,
@@ -77,6 +101,21 @@ const CapacityUtilization = () => {
         }
       },
     },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const index = context.dataIndex;
+            const totalDemand = data[index]?.total_demand || 0;
+            const totalCapacity = data[index]?.total_capacity || 0;
+            const relativeValue = totalCapacity > 0 ? context.raw * 100 : 0;
+            const label = context.dataset.label;
+
+            return `${label}: ${relativeValue.toFixed(2)}% (${label === 'Capacity Utilization' ? totalDemand : totalCapacity - totalDemand})`;
+          }
+        }
+      }
+    },
     title: {
       display: true,
       text: 'Capacity Utilization per Day',
@@ -90,8 +129,20 @@ const CapacityUtilization = () => {
 
   return (
     <div>
+      <FormControl variant="outlined" style={{ marginBottom: '20px', minWidth: 120 }}>
+        <InputLabel>Year</InputLabel>
+        <Select
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          label="Year"
+        >
+          {availableYears.map((year) => (
+            <MenuItem key={year} value={year}>{year}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       {data.length === 0 ? (
-        <div>Loading...</div>
+        <div>No data available for the selected year.</div>
       ) : (
         <Bar data={chartData} options={options} />
       )}
