@@ -131,7 +131,7 @@ def get_capacity_utilization():
 def get_events_parking_lots_allocation():
     """
     Endpoint to retrieve parking lot allocations for events.
-    Fetches data from the 'view_schema.view_events_parking_lots_allocations' view in the database.
+    Fetches data from the 'view_schema.view_events_parking_lots_allocation' view in the database.
 
     Returns:
         JSON response with the fetched data or an error message if an exception is raised.
@@ -140,6 +140,7 @@ def get_events_parking_lots_allocation():
         logger.info("Fetching events parking lots allocation data from the database.")
         query = "SELECT * FROM view_schema.view_events_parking_lots_allocation;"
         df_events_parking_lots_allocation = get_data(query)
+        df_events_parking_lots_allocation['id'] = df_events_parking_lots_allocation.index  # Add unique ID
         if df_events_parking_lots_allocation.empty:
             logger.info("No data available.")
             return jsonify({"message": "No data found"}), 204
