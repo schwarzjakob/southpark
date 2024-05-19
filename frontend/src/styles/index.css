@@ -708,9 +708,9 @@ a:not(.button, .chakra-linkbox__overlay):hover {
   width: 100vw;
   z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
 }
-.tags {
+/* .tags {
   background-color: var(--color-gray-200);
-}
+} */
 .cap {
   text-transform: capitalize;
 }

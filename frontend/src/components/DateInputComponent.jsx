@@ -12,7 +12,7 @@ const DateInputComponent = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs(new Date()));
 
   useEffect(() => {
-    setSelectedDate(dayjs('2025-02-20'));
+    setSelectedDate(dayjs('2025-02-22'));
   }, []);
 
   return (

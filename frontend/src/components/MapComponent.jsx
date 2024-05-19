@@ -196,19 +196,8 @@ const halls = [
 
 const parkingLots = [
   {
-    id: 'P1-north-west',
-    name: 'P1 North West',
-    coords: [
-      [48.1412926, 11.6975452],
-      [48.1404584, 11.6981824],
-      [48.1401018, 11.7001409],
-      [48.1416906, 11.7000933],
-      [48.141649, 11.6976807],
-    ],
-  },
-  {
-    id: 'P1-north-east',
-    name: 'P1 North East',
+    id: 'P1 Nord (Tor 17a - Tor 11c)',
+    name: 'P1 Nord (Tor 17a - Tor 11c)',
     coords: [
       [48.1417206, 11.700205],
       [48.1417708, 11.7006773],
@@ -223,8 +212,19 @@ const parkingLots = [
     ],
   },
   {
-    id: 'P2',
-    name: 'P2',
+    id: 'P1 Nord (westl. Tor 17a)',
+    name: 'P1 Nord (westl. Tor 17a)',
+    coords: [
+      [48.1412926, 11.6975452],
+      [48.1404584, 11.6981824],
+      [48.1401018, 11.7001409],
+      [48.1416906, 11.7000933],
+      [48.141649, 11.6976807],
+    ],
+  },
+  {
+    id: 'P2 Nord (östl. Tor 11c)',
+    name: 'P2 Nord (östl. Tor 11c)',
     coords: [
       [48.1408516, 11.7073096],
       [48.1385636, 11.7094934],
@@ -300,7 +300,7 @@ const parkingLots = [
     ],
   },
   {
-    id: 'P9-12',
+    id: 'P9 - 12',
     name: 'P9-12',
     coords: [
       [48.13781, 11.7071893],
@@ -310,31 +310,73 @@ const parkingLots = [
       [48.1358736, 11.7060593],
     ],
   },
-
-  // Add more parking lots as needed
+  {
+    id: 'Parkhaus West',
+    name: 'Parkhaus West',
+    coords: [
+      [48.1389099, 11.6903538],
+      [48.1379863, 11.6912121],
+      [48.1387381, 11.6931111],
+      [48.1396832, 11.6922742],
+    ],
+  },
 ];
+
+// Define an array of colors
+const colors = ['red', 'blue', 'green'];
 
 const MapComponent = () => {
   const [events, setEvents] = useState([]);
-  const [selectedDate, setSelectedDate] = useState('2025-02-20');
+  const [selectedDate, setSelectedDate] = useState('2025-02-22');
+  const [eventMapping, setEventMapping] = useState({});
+  const [colorMapping, setColorMapping] = useState({});
 
   useEffect(() => {
     axios
       .get(`http://127.0.0.1:5000/events_map/${selectedDate}`)
       .then((response) => {
         if (response.status === 200) {
-          setEvents(response.data);
-          console.log(selectedDate);
+          const eventsData = response.data;
+          setEvents(eventsData);
+
+          // Create a mapping of event names to colors
+          const eventMap = {};
+          eventsData.forEach((event) => {
+            if (event.status === 'runtime') {
+              if (!eventMap[event.event_name]) {
+                eventMap[event.event_name] = { halls: [], parkingLots: [] };
+              }
+              if (event.hall_name) {
+                eventMap[event.event_name].halls.push(event.hall_name);
+              }
+              if (event.parking_lot_name) {
+                eventMap[event.event_name].parkingLots.push(
+                  event.parking_lot_name
+                );
+              }
+            }
+          });
+          setEventMapping(eventMap);
+
+          // Create a mapping of event names to colors
+          const colorMap = {};
+          Object.keys(eventMap).forEach((eventName, index) => {
+            colorMap[eventName] = colors[index % colors.length];
+          });
+
+          setColorMapping(colorMap);
+
+          console.log(eventMap);
+          console.log(colorMap);
         }
       })
       .catch((error) => {
         console.error('There was an error fetching the events data!', error);
       });
-  }, []);
+  }, [selectedDate]);
 
-  const getPopupContent = (name) => {
-    const event = events.find((event) => event.hall_name === name);
-    console.log(event);
+  const getPopupContent = (id) => {
+    const event = events.find((event) => event.hall_name === id);
 
     if (event) {
       return (
@@ -349,6 +391,16 @@ const MapComponent = () => {
     return <span>No Event!</span>;
   };
 
+  const getPolygonColor = (name) => {
+    for (const eventName in eventMapping) {
+      const { halls, parkingLots } = eventMapping[eventName];
+      if (halls.includes(name) || parkingLots.includes(name)) {
+        return `${colorMapping[eventName]}`;
+      }
+    }
+    return 'gray';
+  };
+
   return (
     <MapContainer center={[48.1375, 11.702]} zoom={16} scrollWheelZoom={false}>
       <TileLayer
@@ -356,39 +408,45 @@ const MapComponent = () => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {/* Rendering halls */}
-      {halls.map((hall) => (
-        <Polygon
-          key={hall.id}
-          positions={hall.coords}
-          className={`halls hall-${hall.id}`}
-          color="var(--color-gray-300)"
-          fillOpacity="1"
-        >
-          <Tooltip
-            direction="center"
-            offset={[0, 0]}
-            permanent
-            className="tags"
+      {halls.map((hall) => {
+        const color = getPolygonColor(hall.name);
+        return (
+          <Polygon
+            key={hall.id}
+            positions={hall.coords}
+            className={`halls hall-${hall.id}`}
+            pathOptions={{ color: color, fillColor: color, fillOpacity: 0.9 }}
           >
-            <span>{hall.name}</span>
-          </Tooltip>
-          <Popup>{getPopupContent(hall.name)}</Popup>
-        </Polygon>
-      ))}
+            <Tooltip
+              direction="center"
+              offset={[0, 0]}
+              permanent
+              className="tags"
+            >
+              <span>{hall.name}</span>
+            </Tooltip>
+            <Popup>{getPopupContent(hall.name)}</Popup>
+          </Polygon>
+        );
+      })}
       {/* Rendering parking lots */}
-      {parkingLots.map((lot) => (
-        <Polygon
-          key={lot.id}
-          positions={lot.coords}
-          className={`parking-lots parking-${lot.id}`}
-          color="gray"
-          fillOpacity="0.9"
-        >
-          <Tooltip direction="center" offset={[0, 0]} permanent>
-            <span>{lot.name}</span>
-          </Tooltip>
-        </Polygon>
-      ))}
+      {parkingLots.map((lot) => {
+        const color = getPolygonColor(lot.name);
+        console.log(lot.name, color);
+        return (
+          <Polygon
+            key={lot.id}
+            positions={lot.coords}
+            className={`parking-lots parking-${lot.id}`}
+            pathOptions={{ color: color, fillColor: color, fillOpacity: 0.9 }}
+          >
+            <Tooltip direction="center" offset={[0, 0]} permanent>
+              <span>{lot.name}</span>
+            </Tooltip>
+            <Popup>{getPopupContent(lot.name)}</Popup>
+          </Polygon>
+        );
+      })}
     </MapContainer>
   );
 };
