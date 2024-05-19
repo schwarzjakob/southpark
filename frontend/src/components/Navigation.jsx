@@ -31,7 +31,6 @@ const Navigation = ({ isOpen, toggleNav }) => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            
             p: 2,
             borderBottom: '1px solid #ddd',
           }}
@@ -51,29 +50,37 @@ const Navigation = ({ isOpen, toggleNav }) => {
           </Link>
         </Box>
         <List>
-          <ListItem button component={Link} to="/">
-            <ListItemIcon>
-              <DashboardIcon />
-            </ListItemIcon>
-            <ListItemText primary="Dashboard" />
+          <ListItem button onClick={toggleNav}>
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+              <ListItemIcon>
+                <DashboardIcon />
+              </ListItemIcon>
+              <ListItemText primary="Dashboard" />
+            </Link>
           </ListItem>
-          <ListItem button component={Link} to="/mapview">
-            <ListItemIcon>
-              <MapIcon />
-            </ListItemIcon>
-            <ListItemText primary="Kartenansicht" />
+          <ListItem button onClick={toggleNav}>
+            <Link to="/mapview" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+              <ListItemIcon>
+                <MapIcon />
+              </ListItemIcon>
+              <ListItemText primary="Map View" />
+            </Link>
           </ListItem>
-          <ListItem button component={Link} to="/tableview">
-            <ListItemIcon>
-              <CalendarTodayIcon />
-            </ListItemIcon>
-            <ListItemText primary="Tabellenansicht" />
+          <ListItem button onClick={toggleNav}>
+            <Link to="/tableview" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+              <ListItemIcon>
+                <CalendarTodayIcon />
+              </ListItemIcon>
+              <ListItemText primary="Table View" />
+            </Link>
           </ListItem>
-          <ListItem button component={Link} to="/addEvent">
-            <ListItemIcon>
-              <AddIcon />
-            </ListItemIcon>
-            <ListItemText primary="Neues Event" />
+          <ListItem button onClick={toggleNav}>
+            <Link to="/addEvent" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+              <ListItemIcon>
+                <AddIcon />
+              </ListItemIcon>
+              <ListItemText primary="Add Event" />
+            </Link>
           </ListItem>
         </List>
       </Box>

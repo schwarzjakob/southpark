@@ -26,7 +26,7 @@ const EventsAllocationTable = () => {
       <Typography variant="h3" component="h2" gutterBottom>
         Allocated Parking Lots For Each Event Date
       </Typography>
-      <Box sx={{ height: 1000, width: '100%' }}>
+      <Box sx={{ width: '100%' }}>
         <DataGrid
           rows={tableData}
           columns={columns}
@@ -34,8 +34,8 @@ const EventsAllocationTable = () => {
           components={{
             Toolbar: GridToolbarExport,
           }}
-          checkboxSelection
           disableSelectionOnClick
+          autoHeight
         />
       </Box>
     </Box>
