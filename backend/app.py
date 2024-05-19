@@ -79,18 +79,12 @@ def get_capacity_utilization():
 
         # Fetch total demands and capacities for each day
         query_total_capacity_utilization = """
-        SELECT date, SUM(demand) AS total_demand, SUM(capacity) AS total_capacity
-        FROM (
-            SELECT vd.date, vd.demand, plc.capacity
-            FROM public.visitor_demand vd
-            JOIN public.parking_lot_allocation pla ON vd.event_id = pla.event_id AND vd.date = pla.date
-            JOIN public.parking_lot_capacity plc ON pla.parking_lot_id = plc.parking_lot_id
-            WHERE vd.date BETWEEN plc.valid_from AND plc.valid_to
-        ) AS subquery
-        GROUP BY date
+        SELECT date, total_demand, total_capacity
+        FROM view_schema.visitor_demand
         ORDER BY date;
         """
         total_capacity_utilization = get_data(query_total_capacity_utilization)
+        print(total_capacity_utilization)
 
         data = {
             "exceeds_capacity": exceeds_capacity.to_dict(orient="records"),
