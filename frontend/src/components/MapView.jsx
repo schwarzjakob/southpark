@@ -1,9 +1,12 @@
-import React from "react";
-import { Box, Typography } from "@mui/material";
-import CalendarSlider from "./CalendarSlider.jsx";
-import MapComponent from "./MapComponent.jsx";
+import React, { useState } from 'react';
+import { Box, Typography } from '@mui/material';
+import CalendarSlider from './CalendarSlider.jsx';
+import MapComponent from './MapComponent.jsx';
+import DateInputComponent from './DateInputComponent.jsx';
 
 const MapView = () => {
+  const [selectedDate, setSelectedDate] = useState('2025-02-22');
+
   return (
     <Box>
       <Typography variant="h3" component="h2" gutterBottom>
@@ -13,12 +16,14 @@ const MapView = () => {
         <Box
           display="flex"
           alignItems="center"
-          justifyContent="center"
-          border="1px solid"
+          justifyContent="left"
           borderColor="grey.300"
-          p={2}
+          p={1}
         >
-          <CalendarSlider />
+          <DateInputComponent
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+          />
         </Box>
         <Box
           display="flex"
@@ -38,7 +43,17 @@ const MapView = () => {
           borderColor="grey.300"
           p={2}
         >
-          <MapComponent />
+          <CalendarSlider />
+        </Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          border="1px solid"
+          borderColor="grey.300"
+          p={2}
+        >
+          <MapComponent selectedDate={selectedDate} />
         </Box>
       </Box>
     </Box>

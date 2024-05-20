@@ -468,13 +468,6 @@ a:not(.button, .chakra-linkbox__overlay):hover {
   border-right: 1px solid var(--color-gray-100);
 }
 
-/* Sizing of map container (the vh/wh can be changed based on the slider's size */
-.leaflet-container {
-  height: 80vh;
-  width: 100vw;
-  z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
-}
-
 /* MUI navigation slide */
 .css-1j7dv1j {
   width: 350px !important;
@@ -522,4 +515,15 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   max-width: 120vh;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Map Component */
+/* Sizing of map container (the vh/wh can be changed based on the slider's size */
+.leaflet-container {
+  height: 80vh;
+  width: 100vw;
+  z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
+}
+.cap {
+  text-transform: capitalize;
 }
