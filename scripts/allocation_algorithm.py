@@ -14,6 +14,9 @@ def optimize_distance(df_events_parking_lot_min_capacity):
         "distance",
         "demand",
         "capacity",
+        "hall",
+        "entrance",
+        "status",
     }
     if not required_columns.issubset(df_events_parking_lot_min_capacity.columns):
         missing_cols = required_columns - set(
@@ -74,6 +77,30 @@ def optimize_distance(df_events_parking_lot_min_capacity):
             <= group["capacity"].iloc[0]
         )
 
+    # Constraint: Ensure parking lots do not change within the assembly, runtime, or disassembly period of an event
+    for event_id, event_group in df_events_parking_lot_min_capacity.groupby("event_id"):
+        for phase in ["assembly", "runtime", "disassembly"]:
+            phase_group = event_group[event_group["status"] == phase]
+            if not phase_group.empty:
+                first_date = phase_group["date"].min()
+                last_date = phase_group["date"].max()
+                dates_in_phase = pd.date_range(first_date, last_date).date
+                for parking_lot_id in phase_group["parking_lot_id"].unique():
+                    valid_dates = [
+                        date
+                        for date in dates_in_phase
+                        if (event_id, date, parking_lot_id) in assignments
+                    ]
+                    if valid_dates:
+                        model += (
+                            pl.lpSum(
+                                assignments[(event_id, date, parking_lot_id)]
+                                for date in valid_dates
+                            )
+                            == len(valid_dates)
+                            * assignments[(event_id, valid_dates[0], parking_lot_id)]
+                        )
+
     # Solve the model
     model.solve()
 
@@ -81,22 +108,24 @@ def optimize_distance(df_events_parking_lot_min_capacity):
     df_allocation_results = []
     for (event_id, date, parking_lot_id), var in assignments.items():
         if pl.value(var) == 1:
-            allocated_capacity = df_events_parking_lot_min_capacity[
+            allocated_capacity_rows = df_events_parking_lot_min_capacity[
                 (df_events_parking_lot_min_capacity["event_id"] == event_id)
                 & (df_events_parking_lot_min_capacity["date"] == date)
                 & (
                     df_events_parking_lot_min_capacity["parking_lot_id"]
                     == parking_lot_id
                 )
-            ]["capacity"].iloc[0]
-            df_allocation_results.append(
-                {
-                    "event_id": event_id,
-                    "date": date,
-                    "parking_lot_id": parking_lot_id,
-                    "allocated_capacity": allocated_capacity,
-                }
-            )
+            ]
+            if not allocated_capacity_rows.empty:
+                allocated_capacity = allocated_capacity_rows["capacity"].iloc[0]
+                df_allocation_results.append(
+                    {
+                        "event_id": event_id,
+                        "date": date,
+                        "parking_lot_id": parking_lot_id,
+                        "allocated_capacity": allocated_capacity,
+                    }
+                )
 
     df_allocation_results = pd.DataFrame(df_allocation_results)
 
