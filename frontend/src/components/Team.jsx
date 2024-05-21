@@ -17,7 +17,7 @@ const teamMembers = [
   {
     name: "Sven Tiefenthaler",
     img: eric,
-    linkedin: "#", // Placeholder link
+    linkedin: "mailto:s.tiefenthaler@campus.lmu.de",
     position: "Co-Founder, Head of User Experience (UX)",
   },
   {
