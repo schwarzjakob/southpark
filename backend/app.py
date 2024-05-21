@@ -171,7 +171,7 @@ def add_event():
         data = request.json
         name = data["name"]
         dates = data["dates"]
-        hall_name = data["hall"]
+        halls = data["halls"]
         entrance = data["entrance"]
         demands = data["demands"]
 
@@ -219,30 +219,31 @@ def add_event():
             for query, params in queries:
                 connection.execute(text(query), params)
 
-            # Insert into the hall_occupation table
+            # Insert into the hall_occupation table for each selected hall
             hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
-            hall_id = connection.execute(
-                text(hall_id_query), {"hall_name": hall_name}
-            ).fetchone()[0]
-
             hall_occupation_queries = []
-            for phase in ["assembly", "runtime", "disassembly"]:
-                all_dates = calculate_date_range(
-                    dates[phase]["start"], dates[phase]["end"]
-                )
-                for event_date in all_dates:
-                    query_hall_occupation = """
-                    INSERT INTO hall_occupation (event_id, hall_id, date)
-                    VALUES (:event_id, :hall_id, :date)
-                    """
-                    params_hall_occupation = {
-                        "event_id": event_id,
-                        "hall_id": hall_id,
-                        "date": event_date,
-                    }
-                    hall_occupation_queries.append(
-                        (query_hall_occupation, params_hall_occupation)
+            for hall_name in halls:
+                hall_id = connection.execute(
+                    text(hall_id_query), {"hall_name": hall_name}
+                ).fetchone()[0]
+
+                for phase in ["assembly", "runtime", "disassembly"]:
+                    all_dates = calculate_date_range(
+                        dates[phase]["start"], dates[phase]["end"]
                     )
+                    for event_date in all_dates:
+                        query_hall_occupation = """
+                        INSERT INTO hall_occupation (event_id, hall_id, date)
+                        VALUES (:event_id, :hall_id, :date)
+                        """
+                        params_hall_occupation = {
+                            "event_id": event_id,
+                            "hall_id": hall_id,
+                            "date": event_date,
+                        }
+                        hall_occupation_queries.append(
+                            (query_hall_occupation, params_hall_occupation)
+                        )
 
             for query, params in hall_occupation_queries:
                 connection.execute(text(query), params)
