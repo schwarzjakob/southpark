@@ -5,6 +5,8 @@ import { Box, Typography } from "@mui/material";
 const columns = [
   { field: "event", headerName: "Event", flex: 1 },
   { field: "date", headerName: "Date", flex: 1 },
+  { field: "status", headerName: "Phase", flex: 1 },
+  { field: "hall", headerName: "Hall", flex: 1 },
   { field: "demand", headerName: "Demand", flex: 1 },
   { field: "parking_lot", headerName: "Parking Lot", flex: 1 },
   { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
