@@ -6,11 +6,11 @@ const columns = [
   { field: "event", headerName: "Event", flex: 1 },
   { field: "date", headerName: "Date", flex: 1 },
   { field: "status", headerName: "Phase", flex: 1 },
-  { field: "hall", headerName: "Hall", flex: 1 },
+  { field: "halls", headerName: "Halls", flex: 1 }, // Adjusted to reflect aggregated halls
   { field: "demand", headerName: "Demand", flex: 1 },
   { field: "parking_lot", headerName: "Parking Lot", flex: 1 },
   { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
-  { field: "distance", headerName: "Distance", flex: 1 },
+  { field: "average_distance", headerName: "Average Distance", flex: 1 }, // Adjusted to reflect average distance
 ];
 
 const EventsAllocationTable = () => {

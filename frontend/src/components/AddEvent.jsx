@@ -11,6 +11,8 @@ import {
   Alert,
   Typography,
   Box,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import axios from "axios";
 
@@ -28,6 +30,27 @@ const entranceLabels = {
   east: "East",
 };
 
+const hallOptions = [
+  "A1",
+  "A2",
+  "A3",
+  "A4",
+  "A5",
+  "A6",
+  "B1",
+  "B2",
+  "B3",
+  "B4",
+  "B5",
+  "B6",
+  "C1",
+  "C2",
+  "C3",
+  "C4",
+  "C5",
+  "C6",
+];
+
 function AddEvent() {
   const initialEventData = {
     name: "",
@@ -36,7 +59,7 @@ function AddEvent() {
       runtime: { start: "", end: "" },
       disassembly: { start: "", end: "" },
     },
-    hall: "A1",
+    halls: [],
     entrance: "west",
     demands: {
       assembly: {},
@@ -363,7 +386,7 @@ function AddEvent() {
     // Validate required fields before proceeding to the next step
     if (
       !eventData.name ||
-      !eventData.hall ||
+      !eventData.halls.length ||
       !eventData.entrance ||
       !isValidDate(eventData.dates.assembly.start) ||
       !isValidDate(eventData.dates.assembly.end) ||
@@ -422,36 +445,20 @@ function AddEvent() {
             </Grid>
             <Grid item xs={6}>
               <FormControl fullWidth required variant="outlined">
-                <InputLabel>Hall</InputLabel>
+                <InputLabel>Halls</InputLabel>
                 <Select
-                  value={eventData.hall}
+                  multiple
+                  value={eventData.halls}
                   onChange={(e) =>
-                    setEventData({ ...eventData, hall: e.target.value })
+                    setEventData({ ...eventData, halls: e.target.value })
                   }
-                  label="Hall"
+                  label="Halls"
+                  renderValue={(selected) => selected.join(", ")}
                 >
-                  {[
-                    "A1",
-                    "A2",
-                    "A3",
-                    "A4",
-                    "A5",
-                    "A6",
-                    "B1",
-                    "B2",
-                    "B3",
-                    "B4",
-                    "B5",
-                    "B6",
-                    "C1",
-                    "C2",
-                    "C3",
-                    "C4",
-                    "C5",
-                    "C6",
-                  ].map((hall) => (
+                  {hallOptions.map((hall) => (
                     <MenuItem key={hall} value={hall}>
-                      {hall}
+                      <Checkbox checked={eventData.halls.indexOf(hall) > -1} />
+                      <ListItemText primary={hall} />
                     </MenuItem>
                   ))}
                 </Select>
