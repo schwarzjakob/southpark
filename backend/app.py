@@ -13,7 +13,7 @@ from datetime import datetime
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import allocation_algorithm module and its functions
-from scripts.allocation_algorithm import optimize_distance
+from scripts.allocation_algorithm import fetch_and_optimize_parking_lots
 
 # Load environment variables from .env file
 load_dotenv()
@@ -327,111 +327,6 @@ def get_events_map(date):
         return jsonify({"error": str(e)}), 500
 
 
-# Allocation Algorithm
-def get_events_parking_lots_min_capacity():
-    """Fetch events parking lot data with minimum capacity for the optimization."""
-    try:
-        logger.info("Fetching data from the database for optimization.")
-        query = """
-        WITH EventHalls AS (
-            SELECT 
-                e.id AS event_id, 
-                e.name AS event, 
-                e.entrance, 
-                h.id AS hall_id, 
-                h.name AS hall, 
-                vd.date AS date, 
-                vd.demand, 
-                pl.id AS parking_lot_id, 
-                pl.name AS parking_lot, 
-                pc.capacity, 
-                vd.status, 
-                CASE 
-                    WHEN e.entrance = 'north' THEN hp.distance_north 
-                    WHEN e.entrance = 'north_east' THEN hp.distance_north_east 
-                    WHEN e.entrance = 'east' THEN hp.distance_east 
-                    WHEN e.entrance = 'west' THEN hp.distance_west 
-                    WHEN e.entrance = 'north_west' THEN hp.distance_north_west 
-                    ELSE 0  -- Handle any other cases or set a default value
-                END AS distance 
-            FROM 
-                public.event e 
-                JOIN public.visitor_demand vd ON e.id = vd.event_id 
-                JOIN public.hall_occupation ho ON e.id = ho.event_id AND vd.date = ho.date 
-                JOIN public.hall h ON ho.hall_id = h.id 
-                JOIN public.hall_parking_lot_distances hp ON h.id = hp.hall_id 
-                JOIN public.parking_lot pl ON hp.parking_lot_id = pl.id 
-                JOIN public.parking_lot_capacity pc ON pl.id = pc.parking_lot_id AND vd.date BETWEEN pc.valid_from AND pc.valid_to 
-            WHERE 
-                pc.capacity >= vd.demand 
-        )
-        SELECT 
-            event_id, 
-            event, 
-            entrance, 
-            STRING_AGG(DISTINCT hall_id::TEXT, ', ') AS hall_ids,  -- Aggregate distinct hall IDs
-            STRING_AGG(DISTINCT hall, ', ') AS halls,  -- Aggregate distinct hall names
-            date, 
-            demand, 
-            parking_lot_id, 
-            parking_lot, 
-            capacity, 
-            status, 
-            ROUND(AVG(distance)) AS average_distance  -- Calculate and round the average distance
-        FROM 
-            EventHalls
-        GROUP BY 
-            event_id, 
-            event, 
-            entrance, 
-            date, 
-            demand, 
-            parking_lot_id, 
-            parking_lot, 
-            capacity, 
-            status;
-        """
-        return get_data(query)
-    except Exception as e:
-        logger.error("Failed to fetch optimization data", exc_info=True)
-        raise e
-
-
-# Optimize and save results
-def optimize_and_save_results(df_events_parking_lot_min_capacity):
-    """Optimize the parking lot allocation and save the results to the database."""
-    try:
-        logger.info("Optimizing parking lot allocation.")
-        df_allocation_results = optimize_distance(df_events_parking_lot_min_capacity)
-        df_allocation_results.sort_values(by=["event_id", "date"], inplace=True)
-        logger.info("Optimization successful. Proceeding to save results.")
-
-        with engine.begin() as connection:
-            logger.info("Clearing previous allocations from the database.")
-            connection.execute(text("DELETE FROM parking_lot_allocation;"))
-
-            logger.info("Inserting new allocation results into the database.")
-            insert_query = text(
-                "INSERT INTO parking_lot_allocation (event_id, parking_lot_id, date, allocated_capacity) VALUES (:event_id, :parking_lot_id, :date, :allocated_capacity)"
-            )
-            for index, row in df_allocation_results.iterrows():
-                connection.execute(
-                    insert_query,
-                    {
-                        "event_id": row["event_id"],
-                        "parking_lot_id": row["parking_lot_id"],
-                        "date": row["date"],
-                        "allocated_capacity": row["allocated_capacity"],
-                    },
-                )
-            logger.info("New allocations successfully saved.")
-    except Exception as e:
-        logger.error(
-            "Failed to optimize and save parking lot allocation results", exc_info=True
-        )
-        raise e
-
-
 # Optimize parking lot allocation
 @app.route("/optimize_distance", methods=["POST"])
 def optimize_parking():
@@ -445,16 +340,10 @@ def optimize_parking():
     """
     logger.info("Received request to optimize parking allocations.")
     try:
-        logger.info("Fetching data from database for optimization.")
-        df_events_parking_lot_min_capacity = get_events_parking_lots_min_capacity()
-        if df_events_parking_lot_min_capacity.empty:
-            logger.info("No data available for optimization.")
-            return jsonify({"message": "No data available to optimize."}), 204
-
-        logger.info("Data fetched successfully, proceeding to optimization.")
-        optimize_and_save_results(df_events_parking_lot_min_capacity)
+        logger.info("Fetching and optimizing parking lot allocations.")
+        message = fetch_and_optimize_parking_lots(engine)
         logger.info("Optimization and saving of results completed successfully.")
-        return jsonify({"message": "Optimization completed and results saved."}), 200
+        return jsonify({"message": message}), 200
     except Exception as e:
         logger.error("Error during optimization process", exc_info=True)
         return jsonify({"error": str(e)}), 500

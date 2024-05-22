@@ -1,7 +1,7 @@
 import pandas as pd
 import pulp as pl
 import logging
-
+from sqlalchemy import text
 
 # Enabling logging (must come first to enable it globally, also for imported modules and packages)
 logger_format = (
@@ -9,6 +9,88 @@ logger_format = (
 )
 logging.basicConfig(format=logger_format, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+
+def get_data(query, engine):
+    """Fetch data from the database using the provided SQL query."""
+    try:
+        logger.info(f"Executing query: {query}")
+        with engine.connect() as connection:
+            result = pd.read_sql_query(query, connection)
+        logger.info("Query executed successfully.")
+        return result
+    except Exception as e:
+        logger.error(f"Failed to execute query: {query}", exc_info=True)
+        raise e
+
+
+def fetch_events_parking_lots_min_capacity(engine):
+    """Fetch events parking lot data with minimum capacity for the optimization."""
+    try:
+        logger.info("Fetching data from the database for optimization.")
+        query = """
+        WITH EventHalls AS (
+            SELECT 
+                e.id AS event_id, 
+                e.name AS event, 
+                e.entrance, 
+                h.id AS hall_id, 
+                h.name AS hall, 
+                vd.date AS date, 
+                vd.demand, 
+                pl.id AS parking_lot_id, 
+                pl.name AS parking_lot, 
+                pc.capacity, 
+                vd.status, 
+                CASE 
+                    WHEN e.entrance = 'north' THEN hp.distance_north 
+                    WHEN e.entrance = 'north_east' THEN hp.distance_north_east 
+                    WHEN e.entrance = 'east' THEN hp.distance_east 
+                    WHEN e.entrance = 'west' THEN hp.distance_west 
+                    WHEN e.entrance = 'north_west' THEN hp.distance_north_west 
+                    ELSE 0  -- Handle any other cases or set a default value
+                END AS distance 
+            FROM 
+                public.event e 
+                JOIN public.visitor_demand vd ON e.id = vd.event_id 
+                JOIN public.hall_occupation ho ON e.id = ho.event_id AND vd.date = ho.date 
+                JOIN public.hall h ON ho.hall_id = h.id 
+                JOIN public.hall_parking_lot_distances hp ON h.id = hp.hall_id 
+                JOIN public.parking_lot pl ON hp.parking_lot_id = pl.id 
+                JOIN public.parking_lot_capacity pc ON pl.id = pc.parking_lot_id AND vd.date BETWEEN pc.valid_from AND pc.valid_to 
+            WHERE 
+                pc.capacity >= vd.demand 
+        )
+        SELECT 
+            event_id, 
+            event, 
+            entrance, 
+            STRING_AGG(DISTINCT hall_id::TEXT, ', ') AS hall_ids,  -- Aggregate distinct hall IDs
+            STRING_AGG(DISTINCT hall, ', ') AS halls,  -- Aggregate distinct hall names
+            date, 
+            demand, 
+            parking_lot_id, 
+            parking_lot, 
+            capacity, 
+            status, 
+            ROUND(AVG(distance)) AS average_distance  -- Calculate and round the average distance
+        FROM 
+            EventHalls
+        GROUP BY 
+            event_id, 
+            event, 
+            entrance, 
+            date, 
+            demand, 
+            parking_lot_id, 
+            parking_lot, 
+            capacity, 
+            status;
+        """
+        return get_data(query, engine)
+    except Exception as e:
+        logger.error("Failed to fetch optimization data", exc_info=True)
+        raise e
 
 
 def optimize_distance(df_events_parking_lot_min_capacity):
@@ -154,3 +236,51 @@ def optimize_distance(df_events_parking_lot_min_capacity):
         df_allocation_results.sort_values(by=["event_id", "date"], inplace=True)
 
     return df_allocation_results
+
+
+def save_allocation_results(df_allocation_results, engine):
+    """Save the optimized parking lot allocation results to the database."""
+    try:
+        with engine.begin() as connection:
+            logger.info("Clearing previous allocations from the database.")
+            connection.execute(text("DELETE FROM parking_lot_allocation;"))
+
+            logger.info("Inserting new allocation results into the database.")
+            insert_query = text(
+                "INSERT INTO parking_lot_allocation (event_id, parking_lot_id, date, allocated_capacity) VALUES (:event_id, :parking_lot_id, :date, :allocated_capacity)"
+            )
+            for index, row in df_allocation_results.iterrows():
+                connection.execute(
+                    insert_query,
+                    {
+                        "event_id": row["event_id"],
+                        "parking_lot_id": row["parking_lot_id"],
+                        "date": row["date"],
+                        "allocated_capacity": row["allocated_capacity"],
+                    },
+                )
+            logger.info("New allocations successfully saved.")
+    except Exception as e:
+        logger.error("Failed to save parking lot allocation results", exc_info=True)
+        raise e
+
+
+def fetch_and_optimize_parking_lots(engine):
+    """Fetch data, optimize parking lot allocation, and save results."""
+    try:
+        df_events_parking_lot_min_capacity = fetch_events_parking_lots_min_capacity(
+            engine
+        )
+        if df_events_parking_lot_min_capacity.empty:
+            return "No data available to optimize."
+
+        df_allocation_results = optimize_distance(df_events_parking_lot_min_capacity)
+        save_allocation_results(df_allocation_results, engine)
+
+        return "Optimization completed and results saved."
+    except Exception as e:
+        logger.error(
+            "Error in fetching, optimizing, or saving parking lot allocations",
+            exc_info=True,
+        )
+        raise e
