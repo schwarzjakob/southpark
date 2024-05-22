@@ -136,7 +136,21 @@ def get_events_parking_lots_allocation():
     """
     try:
         logger.info("Fetching events parking lots allocation data from the database.")
-        query = "SELECT * FROM view_schema.view_events_parking_lots_allocation;"
+        query = """
+        SELECT
+            event_id,
+            event,
+            date,
+            demand,
+            status,
+            STRING_AGG(DISTINCT hall, ', ') AS halls,
+            parking_lot,
+            allocated_capacity,
+            ROUND(AVG(distance)) AS average_distance
+        FROM view_schema.view_events_parking_lots_allocation
+        GROUP BY event_id, event, date, demand, status, parking_lot, allocated_capacity
+        ORDER BY event_id, date;
+        """
         df_events_parking_lots_allocation = get_data(query)
         df_events_parking_lots_allocation["id"] = (
             df_events_parking_lots_allocation.index
@@ -272,33 +286,35 @@ def get_events_map(date):
         logger.info("Fetching events timeline data from the database.")
         query = f"""
         SELECT
-    ho.event_id AS event_id,
-    e.name AS event_name,
-    e.entrance AS event_entrance,
-    h.name AS hall_name,
-    ho.date AS occupation_date,
-    p.name AS parking_lot_name, 
-        CASE
-            WHEN ho.date BETWEEN e.assembly_start_date AND e.assembly_end_date THEN 'assembly'
-            WHEN ho.date BETWEEN e.runtime_start_date AND e.runtime_end_date THEN 'runtime'
-            WHEN ho.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date THEN 'disassembly'
-            ELSE 'unknown'
-        END AS status
-FROM
-    public.hall_occupation ho
-JOIN
-    public.event e ON e.id = ho.event_id
-JOIN
-    public.hall h ON h.id = ho.hall_id
-JOIN
-    public.parking_lot_allocation pa ON pa.event_id = ho.event_id 
-    AND pa.date = ho.date
-JOIN
-    public.parking_lot p ON pa.parking_lot_id = p.id
-WHERE
-    ho.date = '{date}'
-ORDER BY
-    ho.event_id;"""
+            e.id AS event_id,
+            e.name AS event_name,
+            e.entrance AS event_entrance,
+            STRING_AGG(DISTINCT h.name, ', ') AS halls,
+            ho.date AS occupation_date,
+            p.name AS parking_lot_name,
+            CASE
+                WHEN ho.date BETWEEN e.assembly_start_date AND e.assembly_end_date THEN 'assembly'
+                WHEN ho.date BETWEEN e.runtime_start_date AND e.runtime_end_date THEN 'runtime'
+                WHEN ho.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date THEN 'disassembly'
+                ELSE 'unknown'
+            END AS status
+        FROM
+            public.hall_occupation ho
+        JOIN
+            public.event e ON e.id = ho.event_id
+        JOIN
+            public.hall h ON h.id = ho.hall_id
+        JOIN
+            public.parking_lot_allocation pa ON pa.event_id = ho.event_id AND pa.date = ho.date
+        JOIN
+            public.parking_lot p ON pa.parking_lot_id = p.id
+        WHERE
+            ho.date = '{date}'
+        GROUP BY
+            e.id, e.name, e.entrance, ho.date, p.name
+        ORDER BY
+            e.id;
+        """
 
         df_events_timeline = get_data(query)
         if df_events_timeline.empty:
@@ -316,7 +332,65 @@ def get_events_parking_lots_min_capacity():
     """Fetch events parking lot data with minimum capacity for the optimization."""
     try:
         logger.info("Fetching data from the database for optimization.")
-        query = "SELECT * FROM view_schema.view_events_parking_lot_min_capacity;"
+        query = """
+        WITH EventHalls AS (
+            SELECT 
+                e.id AS event_id, 
+                e.name AS event, 
+                e.entrance, 
+                h.id AS hall_id, 
+                h.name AS hall, 
+                vd.date AS date, 
+                vd.demand, 
+                pl.id AS parking_lot_id, 
+                pl.name AS parking_lot, 
+                pc.capacity, 
+                vd.status, 
+                CASE 
+                    WHEN e.entrance = 'north' THEN hp.distance_north 
+                    WHEN e.entrance = 'north_east' THEN hp.distance_north_east 
+                    WHEN e.entrance = 'east' THEN hp.distance_east 
+                    WHEN e.entrance = 'west' THEN hp.distance_west 
+                    WHEN e.entrance = 'north_west' THEN hp.distance_north_west 
+                    ELSE 0  -- Handle any other cases or set a default value
+                END AS distance 
+            FROM 
+                public.event e 
+                JOIN public.visitor_demand vd ON e.id = vd.event_id 
+                JOIN public.hall_occupation ho ON e.id = ho.event_id AND vd.date = ho.date 
+                JOIN public.hall h ON ho.hall_id = h.id 
+                JOIN public.hall_parking_lot_distances hp ON h.id = hp.hall_id 
+                JOIN public.parking_lot pl ON hp.parking_lot_id = pl.id 
+                JOIN public.parking_lot_capacity pc ON pl.id = pc.parking_lot_id AND vd.date BETWEEN pc.valid_from AND pc.valid_to 
+            WHERE 
+                pc.capacity >= vd.demand 
+        )
+        SELECT 
+            event_id, 
+            event, 
+            entrance, 
+            STRING_AGG(DISTINCT hall_id::TEXT, ', ') AS hall_ids,  -- Aggregate distinct hall IDs
+            STRING_AGG(DISTINCT hall, ', ') AS halls,  -- Aggregate distinct hall names
+            date, 
+            demand, 
+            parking_lot_id, 
+            parking_lot, 
+            capacity, 
+            status, 
+            ROUND(AVG(distance)) AS average_distance  -- Calculate and round the average distance
+        FROM 
+            EventHalls
+        GROUP BY 
+            event_id, 
+            event, 
+            entrance, 
+            date, 
+            demand, 
+            parking_lot_id, 
+            parking_lot, 
+            capacity, 
+            status;
+        """
         return get_data(query)
     except Exception as e:
         logger.error("Failed to fetch optimization data", exc_info=True)
