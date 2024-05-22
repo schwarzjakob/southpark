@@ -1,5 +1,14 @@
 import pandas as pd
 import pulp as pl
+import logging
+
+
+# Enabling logging (must come first to enable it globally, also for imported modules and packages)
+logger_format = (
+    "[%(asctime)s %(filename)s->%(funcName)s():%(lineno)d] %(levelname)s: %(message)s"
+)
+logging.basicConfig(format=logger_format, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def optimize_distance(df_events_parking_lot_min_capacity):
@@ -11,10 +20,9 @@ def optimize_distance(df_events_parking_lot_min_capacity):
         "event",
         "date",
         "parking_lot_id",
-        "distance",
+        "average_distance",
         "demand",
         "capacity",
-        "hall",
         "entrance",
         "status",
     }
@@ -23,6 +31,10 @@ def optimize_distance(df_events_parking_lot_min_capacity):
             df_events_parking_lot_min_capacity.columns
         )
         raise ValueError(f"Missing columns in the input DataFrame: {missing_cols}")
+
+    # Log the data to check
+    logger.info("Data fetched for optimization:")
+    logger.info(df_events_parking_lot_min_capacity.head())
 
     # Define the problem
     model = pl.LpProblem("Minimize_Distance", pl.LpMinimize)
@@ -45,7 +57,7 @@ def optimize_distance(df_events_parking_lot_min_capacity):
     model += pl.lpSum(
         assignments[(event_id, date, parking_lot_id)] * distance
         for event_id, date, parking_lot_id, distance in df_events_parking_lot_min_capacity[
-            ["event_id", "date", "parking_lot_id", "distance"]
+            ["event_id", "date", "parking_lot_id", "average_distance"]
         ].itertuples(
             index=False, name=None
         )
@@ -130,7 +142,8 @@ def optimize_distance(df_events_parking_lot_min_capacity):
     df_allocation_results = pd.DataFrame(df_allocation_results)
 
     # Log the intermediate results
-    print("df_allocation_results \n", df_allocation_results.head(5))
+    logger.info("df_allocation_results:")
+    logger.info(df_allocation_results.head())
 
     # Ensure the DataFrame has the necessary columns before sorting
     if not df_allocation_results.empty:
