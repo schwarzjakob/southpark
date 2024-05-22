@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React from 'react'
+import { Link } from 'react-router-dom'
 import {
   Drawer,
   IconButton,
@@ -9,12 +9,12 @@ import {
   ListItemText,
   Typography,
   Box,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import MapIcon from "@mui/icons-material/Map";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import AddIcon from "@mui/icons-material/Add";
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import DashboardIcon from '@mui/icons-material/Dashboard'
+import MapIcon from '@mui/icons-material/Map'
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
+import AddIcon from '@mui/icons-material/Add'
 
 const Navigation = ({ isOpen, toggleNav }) => {
   return (
@@ -22,17 +22,17 @@ const Navigation = ({ isOpen, toggleNav }) => {
       <Box
         sx={{
           width: 340,
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
         }}
       >
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             p: 2,
-            borderBottom: "1px solid #ddd",
+            borderBottom: '1px solid #ddd',
           }}
         >
           <IconButton onClick={toggleNav} edge="start" sx={{ marginRight: 2 }}>
@@ -41,10 +41,10 @@ const Navigation = ({ isOpen, toggleNav }) => {
           <Link
             to="/"
             style={{
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
+              textDecoration: 'none',
+              color: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
             <img
@@ -127,7 +127,7 @@ const Navigation = ({ isOpen, toggleNav }) => {
         </List>
       </Box>
     </Drawer>
-  );
-};
+  )
+}
 
-export default Navigation;
+export default Navigation

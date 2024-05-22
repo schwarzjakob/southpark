@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 import logging
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
@@ -123,7 +123,43 @@ def get_capacity_utilization():
         logger.error("Failed to fetch capacity utilization data", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
+@app.route("/events_timeline/<date>", methods=["GET"])
+def get_events_timeline(date):
+    """
+    Endpoint to retrieve event data for the timeline component.
+    Fetches data from the 'view_schema.view_events_timeline' view in the database.
+ 
+    Parameters:
+        date (str): The date around which to fetch the data. Expected format is 'YYYY-MM-DD'.
+ 
+    Returns:
+        JSON response with the fetched data or an error message if an exception is raised.
+    """
+    try:
+        # Convert the date string to a datetime object
+        date = datetime.strptime(date, '%Y-%m-%d')
+ 
+        # Calculate the start and end dates for the filter
+        start_date = date - timedelta(days=15)
+        end_date = date + timedelta(days=15)
+ 
+        logger.info("Fetching events timeline data from the database.")
+        query = f"""
+        SELECT * FROM view_schema.view_events_timeline
+        WHERE
+            (assembly_start_date <= '{end_date}' AND assembly_end_date >= '{start_date}') OR
+            (runtime_start_date <= '{end_date}' AND runtime_end_date >= '{start_date}') OR
+            (disassembly_start_date <= '{end_date}' AND disassembly_end_date >= '{start_date}')"""
+        df_events_timeline = get_data(query)
+        if df_events_timeline.empty:
+            logger.info("No data available.")
+            return jsonify({"message": "No data found"}), 204
+        logger.info("Events timeline data fetched successfully.")
+        return jsonify(df_events_timeline.to_dict(orient="records")), 200
+    except Exception as e:
+        logger.error("Failed to fetch data from database", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+ 
 # Get events parking lots allocation for front-end table view
 @app.route("/events_parking_lots_allocation", methods=["GET"])
 def get_events_parking_lots_allocation():

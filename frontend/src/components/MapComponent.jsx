@@ -1,203 +1,204 @@
-import "leaflet/dist/leaflet.css";
+import 'leaflet/dist/leaflet.css'
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 import {
   MapContainer,
   TileLayer,
   Polygon,
   Tooltip,
   Popup,
-} from "react-leaflet";
-import dayjs from "dayjs";
-import axios from "axios";
+  useMap,
+} from 'react-leaflet'
+import dayjs from 'dayjs'
+import axios from 'axios'
 
 const halls = [
   {
-    id: "A1",
-    name: "A1",
+    id: 'A1',
+    name: 'A1',
     coords: [
       [48.1352644, 11.6943111],
       [48.1338789, 11.6943299],
       [48.1338897, 11.6953142],
-      [48.1352716, 11.6952928],
+      [48.1352644, 11.6952928],
     ],
   },
   {
-    id: "A2",
-    name: "A2",
+    id: 'A2',
+    name: 'A2',
     coords: [
-      [48.1352782, 11.6957927],
-      [48.1338892, 11.6958115],
-      [48.133899, 11.696798],
-      [48.1352781, 11.6967803],
+      [48.1352644, 11.6957927],
+      [48.1338789, 11.6958115],
+      [48.1338789, 11.696798],
+      [48.1352644, 11.6967803],
     ],
   },
   {
-    id: "A3",
-    name: "A3",
+    id: 'A3',
+    name: 'A3',
     coords: [
-      [48.1352833, 11.6972707],
-      [48.1338978, 11.6972868],
-      [48.1339031, 11.6982665],
-      [48.1352886, 11.6982504],
+      [48.1352644, 11.6972707],
+      [48.1338789, 11.6972868],
+      [48.1338789, 11.6982665],
+      [48.1352644, 11.6982504],
     ],
   },
   {
-    id: "A4",
-    name: "A4",
+    id: 'A4',
+    name: 'A4',
     coords: [
-      [48.1352981, 11.698881],
-      [48.1339126, 11.6988998],
-      [48.1339198, 11.6998822],
-      [48.1353035, 11.6998661],
+      [48.1352644, 11.698881],
+      [48.1338789, 11.6988998],
+      [48.1338789, 11.6998822],
+      [48.1352644, 11.6998661],
     ],
   },
   {
-    id: "A5",
-    name: "A5",
+    id: 'A5',
+    name: 'A5',
     coords: [
-      [48.135309, 11.7003617],
-      [48.1339217, 11.7003778],
-      [48.1339235, 11.7013626],
-      [48.1353126, 11.7013438],
+      [48.1352644, 11.7003617],
+      [48.1338789, 11.7003778],
+      [48.1338789, 11.7013626],
+      [48.1352644, 11.7013438],
     ],
   },
   {
-    id: "A6",
-    name: "A6",
+    id: 'A6',
+    name: 'A6',
     coords: [
-      [48.135315, 11.7018373],
-      [48.1339313, 11.7018587],
-      [48.1339367, 11.7028409],
-      [48.135324, 11.7028194],
+      [48.1352644, 11.7018373],
+      [48.1338789, 11.7018587],
+      [48.1338789, 11.7028409],
+      [48.1352644, 11.7028194],
     ],
   },
   {
-    id: "B1",
-    name: "B1",
+    id: 'B1',
+    name: 'B1',
     coords: [
       [48.1372428, 11.6942775],
-      [48.1358609, 11.694291],
-      [48.1358645, 11.6952868],
+      [48.1358905, 11.694291],
+      [48.1358905, 11.6952868],
       [48.1372499, 11.6952706],
     ],
   },
   {
-    id: "B2",
-    name: "B2",
+    id: 'B2',
+    name: 'B2',
     coords: [
-      [48.1373246, 11.6957605],
-      [48.1358658, 11.6957739],
-      [48.135873, 11.6967617],
-      [48.13733, 11.6967429],
+      [48.1372428, 11.6957605],
+      [48.1358905, 11.6957739],
+      [48.1358905, 11.6967617],
+      [48.1372428, 11.6967429],
     ],
   },
   {
-    id: "B3",
-    name: "B3",
+    id: 'B3',
+    name: 'B3',
     coords: [
-      [48.1373359, 11.6972353],
-      [48.1358824, 11.6972567],
-      [48.135886, 11.6982418],
-      [48.1373413, 11.6982176],
+      [48.1372428, 11.6972353],
+      [48.1358905, 11.6972567],
+      [48.1358905, 11.6982418],
+      [48.1372428, 11.6982176],
     ],
   },
   {
-    id: "B4",
-    name: "B4",
+    id: 'B4',
+    name: 'B4',
     coords: [
-      [48.1373458, 11.6988463],
-      [48.1358905, 11.6988651],
-      [48.1358941, 11.6998502],
-      [48.137344, 11.6998314],
+      [48.1372428, 11.6988463],
+      [48.1358905, 11.6988463],
+      [48.1358905, 11.6998502],
+      [48.1372428, 11.6998314],
     ],
   },
   {
-    id: "B5",
-    name: "B5",
+    id: 'B5',
+    name: 'B5',
     coords: [
-      [48.1373561, 11.7003262],
+      [48.1372428, 11.7003262],
       [48.1358955, 11.7003477],
       [48.1359008, 11.7013301],
-      [48.1373615, 11.701314],
+      [48.1372428, 11.701314],
     ],
   },
   {
-    id: "B6",
-    name: "B6",
+    id: 'B6',
+    name: 'B6',
     coords: [
-      [48.1373666, 11.7018049],
+      [48.1372428, 11.7018049],
       [48.1359042, 11.7018236],
       [48.1359113, 11.7028007],
-      [48.1373702, 11.7027819],
+      [48.1372428, 11.7027819],
     ],
   },
   {
-    id: "C1",
-    name: "C1",
+    id: 'C1',
+    name: 'C1',
     coords: [
       [48.1386835, 11.6942591],
       [48.1374234, 11.6942725],
-      [48.1374288, 11.6952603],
-      [48.1386889, 11.6952415],
+      [48.1374234, 11.6952603],
+      [48.1386835, 11.6952415],
     ],
   },
   {
-    id: "C2",
-    name: "C2",
+    id: 'C2',
+    name: 'C2',
     coords: [
-      [48.1386945, 11.695738],
-      [48.1374039, 11.6957541],
-      [48.1374093, 11.6967472],
-      [48.1387034, 11.6967258],
+      [48.1386835, 11.695738],
+      [48.1374234, 11.6957541],
+      [48.1374234, 11.6967472],
+      [48.1386835, 11.6967258],
     ],
   },
   {
-    id: "C3",
-    name: "C3",
+    id: 'C3',
+    name: 'C3',
     coords: [
-      [48.138707, 11.6972158],
-      [48.1374147, 11.6972319],
-      [48.1374218, 11.698217],
-      [48.1387124, 11.6982009],
+      [48.1386835, 11.6972158],
+      [48.1374234, 11.6972319],
+      [48.1374234, 11.698217],
+      [48.1386835, 11.6982009],
     ],
   },
   {
-    id: "C4",
-    name: "C4",
+    id: 'C4',
+    name: 'C4',
     coords: [
-      [48.1387157, 11.6988308],
-      [48.1374467, 11.6988442],
-      [48.1374502, 11.6998213],
-      [48.1387211, 11.6998078],
+      [48.1386835, 11.6988308],
+      [48.1374234, 11.6988442],
+      [48.1374234, 11.6998213],
+      [48.1386835, 11.6998078],
     ],
   },
   {
-    id: "C5",
-    name: "C5",
+    id: 'C5',
+    name: 'C5',
     coords: [
-      [48.1387257, 11.7002968],
-      [48.1374334, 11.7003102],
-      [48.1374387, 11.7013007],
-      [48.1387311, 11.7012873],
+      [48.1386835, 11.7002968],
+      [48.1374234, 11.7003102],
+      [48.1374234, 11.7013007],
+      [48.1386835, 11.7012873],
     ],
   },
   {
-    id: "C6",
-    name: "C6",
+    id: 'C6',
+    name: 'C6',
     coords: [
-      [48.1387363, 11.7017778],
-      [48.1374422, 11.7017993],
-      [48.1374493, 11.702779],
-      [48.1387399, 11.7027629],
+      [48.1386835, 11.7017778],
+      [48.1374234, 11.7017993],
+      [48.1374234, 11.702779],
+      [48.1386835, 11.7027629],
     ],
   },
-];
+]
 
 const parkingLots = [
   {
-    id: "P1 Nord (Tor 17a - Tor 11c)",
-    name: "P1 Nord (Tor 17a - Tor 11c)",
+    id: 'P1 Nord (Tor 17a - Tor 11c)',
+    name: 'P1 Nord (Tor 17a - Tor 11c)',
     coords: [
       [48.1417206, 11.700205],
       [48.1417708, 11.7006773],
@@ -212,8 +213,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P1 Nord (westl. Tor 17a)",
-    name: "P1 Nord (westl. Tor 17a)",
+    id: 'P1 Nord (westl. Tor 17a)',
+    name: 'P1 Nord (westl. Tor 17a)',
     coords: [
       [48.1412926, 11.6975452],
       [48.1404584, 11.6981824],
@@ -223,8 +224,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P2 Nord (östl. Tor 11c)",
-    name: "P2 Nord (östl. Tor 11c)",
+    id: 'P2 Nord (östl. Tor 11c)',
+    name: 'P2 Nord (östl. Tor 11c)',
     coords: [
       [48.1408516, 11.7073096],
       [48.1385636, 11.7094934],
@@ -239,8 +240,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P3",
-    name: "P3",
+    id: 'P3',
+    name: 'P3',
     coords: [
       [48.1390493, 11.6972283],
       [48.1390558, 11.6980711],
@@ -252,8 +253,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P4",
-    name: "P4",
+    id: 'P4',
+    name: 'P4',
     coords: [
       [48.1396359, 11.6989453],
       [48.1394766, 11.6997899],
@@ -262,8 +263,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P5",
-    name: "P5",
+    id: 'P5',
+    name: 'P5',
     coords: [
       [48.1394505, 11.7001903],
       [48.1390535, 11.7001831],
@@ -272,8 +273,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P7",
-    name: "P7",
+    id: 'P7',
+    name: 'P7',
     coords: [
       [48.1385681, 11.7034823],
       [48.1361815, 11.7035074],
@@ -287,8 +288,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P8",
-    name: "P8",
+    id: 'P8',
+    name: 'P8',
     coords: [
       [48.1380376, 11.704922],
       [48.1380497, 11.7058797],
@@ -300,8 +301,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "P9 - 12",
-    name: "P9 - P12",
+    id: 'P9 - 12',
+    name: 'P9 - P12',
     coords: [
       [48.13781, 11.7071893],
       [48.137823, 11.7109108],
@@ -311,8 +312,8 @@ const parkingLots = [
     ],
   },
   {
-    id: "Parkhaus West",
-    name: "Parkhaus West",
+    id: 'Parkhaus West',
+    name: 'Parkhaus West',
     coords: [
       [48.1389099, 11.6903538],
       [48.1379863, 11.6912121],
@@ -320,74 +321,74 @@ const parkingLots = [
       [48.1396832, 11.6922742],
     ],
   },
-];
+]
 
 // Define an array of colors
 const colors = [
-  "purple",
-  "orange",
-  "cyan",
-  "pink",
-  "teal",
-  "indigo",
-  "lime",
-  "amber",
-  "deepOrange",
-  "deepPurple",
-  "lightBlue",
-  "lightGreen",
-  "yellow",
-];
+  'purple',
+  'orange',
+  'cyan',
+  'pink',
+  'teal',
+  'indigo',
+  'lime',
+  'amber',
+  'deepOrange',
+  'deepPurple',
+  'lightBlue',
+  'lightGreen',
+  'yellow',
+]
 
 const MapComponent = ({ selectedDate }) => {
-  const [events, setEvents] = useState([]);
-  const [eventMapping, setEventMapping] = useState({});
-  const [colorMapping, setColorMapping] = useState({});
+  const [events, setEvents] = useState([])
+  const [eventMapping, setEventMapping] = useState({})
+  const [colorMapping, setColorMapping] = useState({})
 
   useEffect(() => {
     axios
       .get(`http://127.0.0.1:5000/events_map/${selectedDate}`)
       .then((response) => {
         if (response.status === 200) {
-          const eventsData = response.data;
-          setEvents(eventsData);
+          const eventsData = response.data
+          setEvents(eventsData)
 
           // Create a mapping of event names to colors
-          const eventMap = {};
+          const eventMap = {}
           eventsData.forEach((event) => {
             if (!eventMap[event.event_name]) {
-              eventMap[event.event_name] = { halls: [], parkingLots: [] };
+              eventMap[event.event_name] = { halls: [], parkingLots: [] }
             }
             if (event.halls) {
-              event.halls.split(", ").forEach((hall) => {
-                eventMap[event.event_name].halls.push(hall);
-              });
+              event.halls.split(', ').forEach((hall) => {
+                eventMap[event.event_name].halls.push(hall)
+              })
             }
             if (event.parking_lot_name) {
               eventMap[event.event_name].parkingLots.push(
                 event.parking_lot_name
-              );
+              )
             }
-          });
-          setEventMapping(eventMap);
+          })
+          setEventMapping(eventMap)
 
           // Create a mapping of event names to colors
-          const colorMap = {};
+          const colorMap = {}
           Object.keys(eventMap).forEach((eventName, index) => {
-            colorMap[eventName] = colors[index % colors.length];
-          });
-          setColorMapping(colorMap);
+            colorMap[eventName] = colors[index % colors.length]
+          })
+          setColorMapping(colorMap)
         }
       })
       .catch((error) => {
-        console.error("There was an error fetching the events data!", error);
-      });
-  }, [selectedDate]);
+        console.error('There was an error fetching the events data!', error)
+      })
+  }, [selectedDate])
 
   const getPopupContent = (id) => {
     const event = events.find(
       (event) => event.halls.includes(id) || event.parking_lot_name === id
-    );
+    )
 
     if (event) {
       if (event.halls.includes(id)) {
@@ -399,7 +400,7 @@ const MapComponent = ({ selectedDate }) => {
             <p>Entrance: {event.event_entrance}</p>
             <p>Allocated Parking Lots: {event.parking_lot_name}</p>
           </div>
-        );
+        )
       } else {
         // This is a parking lot
         return (
@@ -409,31 +410,52 @@ const MapComponent = ({ selectedDate }) => {
             <p>Entrance: {event.event_entrance}</p>
             <p>Associated Halls: {event.halls}</p>
           </div>
-        );
+        )
       }
     }
-    return <span>No Event!</span>;
-  };
+    return <span>No Event!</span>
+  }
 
   const getPolygonColor = (name) => {
     for (const eventName in eventMapping) {
-      const { halls, parkingLots } = eventMapping[eventName];
+      const { halls, parkingLots } = eventMapping[eventName]
       if (halls.includes(name) || parkingLots.includes(name)) {
-        return `${colorMapping[eventName]}`;
+        return `${colorMapping[eventName]}`
       }
     }
-    return "gray";
-  };
+    return 'gray'
+  }
+
+  const SetZoomLevel = ({ zoom }) => {
+    const map = useMap()
+
+    useEffect(() => {
+      map.options.zoomSnap = 0 // Allow fractional zoom levels
+      map.setZoom(zoom)
+    }, [map, zoom])
+
+    return null
+  }
 
   return (
-    <MapContainer center={[48.1375, 11.702]} zoom={16} scrollWheelZoom={false}>
+    <MapContainer
+      center={[48.1375, 11.702]}
+      zoom={16}
+      scrollWheelZoom={false}
+      zoomControl={false}
+      dragging={false}
+      touchZoom={false}
+      doubleClickZoom={false}
+      keyboard={false}
+    >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <SetZoomLevel zoom={15.5} />
       {/* Rendering halls */}
       {halls.map((hall) => {
-        const color = getPolygonColor(hall.name);
+        const color = getPolygonColor(hall.name)
         return (
           <Polygon
             key={hall.id}
@@ -451,12 +473,11 @@ const MapComponent = ({ selectedDate }) => {
             </Tooltip>
             <Popup>{getPopupContent(hall.name)}</Popup>
           </Polygon>
-        );
+        )
       })}
       {/* Rendering parking lots */}
       {parkingLots.map((lot) => {
-        const color = getPolygonColor(lot.name);
-        console.log(lot.name, color);
+        const color = getPolygonColor(lot.name)
         return (
           <Polygon
             key={lot.id}
@@ -469,9 +490,9 @@ const MapComponent = ({ selectedDate }) => {
             </Tooltip>
             <Popup>{getPopupContent(lot.name)}</Popup>
           </Polygon>
-        );
+        )
       })}
     </MapContainer>
-  );
-};
-export default MapComponent;
+  )
+}
+export default MapComponent

@@ -35,7 +35,7 @@ const ExceedsCapacity = () => {
         <div>
             <h2>Days with capacity utilization exceeding 100%</h2>
             <DataGrid rows={rows} columns={columns} />
-            <Button variant="contained" color="primary" onClick={() => navigate('/')}>
+            <Button className='button-primary' variant="contained" color="primary" onClick={() => navigate('/')}>
                 Back to Dashboard
             </Button>
         </div>

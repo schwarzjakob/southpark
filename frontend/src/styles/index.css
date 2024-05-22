@@ -19,6 +19,12 @@ html {
   font-size: 100%;
 } /* 16px */
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 :root {
   /* Color vars */
   --color-primary: #6a91ce;
@@ -515,15 +521,4 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   max-width: 120vh;
   margin-left: auto;
   margin-right: auto;
-}
-
-/* Map Component */
-/* Sizing of map container (the vh/wh can be changed based on the slider's size */
-.leaflet-container {
-  height: 80vh;
-  width: 100vw;
-  z-index: 10; /* have to set it lower than the z-index of menu&nav (11) */
-}
-.cap {
-  text-transform: capitalize;
 }
