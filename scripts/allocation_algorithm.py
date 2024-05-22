@@ -12,7 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 def optimize_distance(df_events_parking_lot_min_capacity):
-    """Optimize the allocation of events to parking lots to minimize the total minimum distance"""
+    """
+    This function optimizes event-to-parking lot allocation to minimize total average distance.
+    It takes a DataFrame 'df_events_parking_lot_min_capacity', which includes event details and associated parking lots that meet the event's demand.
+    The optimization algorithm assigns each event to a parking lot, aiming to minimize the average distance from the event's halls to the parking lot across all events.
+    """
 
     # Ensure all required columns are present
     required_columns = {
@@ -53,7 +57,7 @@ def optimize_distance(df_events_parking_lot_min_capacity):
         cat="Binary",
     )
 
-    # Objective: Minimize the total minimum distance
+    # Objective: Minimize the total average distance
     model += pl.lpSum(
         assignments[(event_id, date, parking_lot_id)] * distance
         for event_id, date, parking_lot_id, distance in df_events_parking_lot_min_capacity[
