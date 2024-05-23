@@ -127,7 +127,7 @@ def get_capacity_utilization():
 @app.route("/events_timeline/<date>", methods=["GET"])
 def get_events_timeline(date):
     """
-    Endpoint to retrieve event data for the timeline component.
+    Endpoint to retrieve event data for both the timeline and map component.
     Fetches data from the 'view_schema.view_events_timeline' view in the database.
 
     Parameters:

@@ -489,6 +489,7 @@ const MapComponent = ({ selectedDate }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
+      {/* Rendering halls */}
       {halls.map((hall) => {
         const color = getPolygonColor(hall.name);
         const event = filteredEvents.find((event) =>
@@ -526,6 +527,7 @@ const MapComponent = ({ selectedDate }) => {
           </Polygon>
         );
       })}
+      {/* Rendering parking lots */}
       {parkingLots.map((lot) => {
         const color = getPolygonColor(lot.name);
         const event = filteredEvents.find((event) =>
