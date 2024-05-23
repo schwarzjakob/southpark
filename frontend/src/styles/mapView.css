@@ -197,3 +197,7 @@
   height: 100%;
   margin: 0px 0;
 }
+
+.timeline-date:not(.selected):nth-child(2n) {
+  background-color: var(--color-gray-100) !important;
+}
