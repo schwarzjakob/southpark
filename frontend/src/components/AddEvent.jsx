@@ -14,6 +14,10 @@ import {
   Checkbox,
   ListItemText,
 } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 import axios from "axios";
 
 const phaseLabels = {
@@ -490,32 +494,50 @@ function AddEvent() {
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField
-                    label="Start Date"
-                    type="date"
-                    value={eventData.dates[phase].start}
-                    onChange={(e) =>
-                      handleDateChange(phase, "start", e.target.value)
-                    }
-                    required
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    variant="outlined"
-                  />
+                  <FormControl fullWidth required variant="outlined">
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale={"de"}
+                    >
+                      <DatePicker
+                        label="Start Date"
+                        value={dayjs(eventData.dates[phase].start)}
+                        onChange={(newValue) =>
+                          handleDateChange(
+                            phase,
+                            "start",
+                            newValue.toISOString().slice(0, 10)
+                          )
+                        }
+                        slotProps={{
+                          textField: { variant: "outlined", error: false },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField
-                    label="End Date"
-                    type="date"
-                    value={eventData.dates[phase].end}
-                    onChange={(e) =>
-                      handleDateChange(phase, "end", e.target.value)
-                    }
-                    required
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    variant="outlined"
-                  />
+                  <FormControl fullWidth required variant="outlined">
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale={"de"}
+                    >
+                      <DatePicker
+                        label="End Date"
+                        value={dayjs(eventData.dates[phase].end)}
+                        onChange={(newValue) =>
+                          handleDateChange(
+                            phase,
+                            "end",
+                            newValue.toISOString().slice(0, 10)
+                          )
+                        }
+                        slotProps={{
+                          textField: { variant: "outlined", error: false },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
                 </Grid>
               </React.Fragment>
             ))}
