@@ -409,14 +409,16 @@ const MapComponent = ({ selectedDate }) => {
   };
 
   const getPopupContent = (event, id) => {
+    const status = getEventStatus(event, selectedDate);
+    const parkingLots = event[`${status}_parking_lots`] || "None";
     if (event.halls.includes(id)) {
       // This is a hall
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
-          <p>Status: {event.status}</p>
+          <p>Status: {status}</p>
           <p>Entrance: {event.event_entrance}</p>
-          <p>Allocated Parking Lots: {event.parking_lots}</p>
+          <p>Allocated Parking Lots: {parkingLots}</p>
         </div>
       );
     } else {
@@ -424,7 +426,7 @@ const MapComponent = ({ selectedDate }) => {
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
-          <p>Status: {event.status}</p>
+          <p>Status: {status}</p>
           <p>Entrance: {event.event_entrance}</p>
           <p>Associated Halls: {event.halls}</p>
         </div>
@@ -434,8 +436,11 @@ const MapComponent = ({ selectedDate }) => {
 
   const getPolygonColor = (name) => {
     for (const event of events) {
-      const halls = event.halls.split(", ");
-      const parkingLots = event.parking_lots.split(", ");
+      const halls = event.halls ? event.halls.split(", ") : [];
+      const status = getEventStatus(event, selectedDate);
+      const parkingLots = event[`${status}_parking_lots`]
+        ? event[`${status}_parking_lots`].split(", ")
+        : [];
       if (halls.includes(name) || parkingLots.includes(name)) {
         return `${colorMapping[event.event_name]}`;
       }
@@ -475,7 +480,7 @@ const MapComponent = ({ selectedDate }) => {
       {halls.map((hall) => {
         const color = getPolygonColor(hall.name);
         const event = filteredEvents.find((event) =>
-          event.halls.split(", ").includes(hall.name)
+          event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
         if (!event) return null; // Skip halls not associated with the selected date
         event.status = getEventStatus(event, selectedDate);
@@ -502,7 +507,11 @@ const MapComponent = ({ selectedDate }) => {
       {parkingLots.map((lot) => {
         const color = getPolygonColor(lot.name);
         const event = filteredEvents.find((event) =>
-          event.parking_lots.split(", ").includes(lot.name)
+          event[`${getEventStatus(event, selectedDate)}_parking_lots`]
+            ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
+                .split(", ")
+                .includes(lot.name)
+            : false
         );
         if (!event) return null; // Skip parking lots not associated with the selected date
         event.status = getEventStatus(event, selectedDate);
