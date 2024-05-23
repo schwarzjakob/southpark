@@ -388,20 +388,28 @@ function AddEvent() {
 
   const handleNext = () => {
     // Validate required fields before proceeding to the next step
-    if (
-      !eventData.name ||
-      !eventData.halls.length ||
-      !eventData.entrance ||
-      !isValidDate(eventData.dates.assembly.start) ||
-      !isValidDate(eventData.dates.assembly.end) ||
-      !isValidDate(eventData.dates.runtime.start) ||
-      !isValidDate(eventData.dates.runtime.end) ||
-      !isValidDate(eventData.dates.disassembly.start) ||
-      !isValidDate(eventData.dates.disassembly.end)
-    ) {
+    const missingFields = [];
+
+    if (!eventData.name) missingFields.push("Event name");
+    if (!eventData.halls.length) missingFields.push("Halls");
+    if (!eventData.entrance) missingFields.push("Entrance");
+    if (!isValidDate(eventData.dates.assembly.start))
+      missingFields.push("Assembly start date");
+    if (!isValidDate(eventData.dates.assembly.end))
+      missingFields.push("Assembly end date");
+    if (!isValidDate(eventData.dates.runtime.start))
+      missingFields.push("Runtime start date");
+    if (!isValidDate(eventData.dates.runtime.end))
+      missingFields.push("Runtime end date");
+    if (!isValidDate(eventData.dates.disassembly.start))
+      missingFields.push("Disassembly start date");
+    if (!isValidDate(eventData.dates.disassembly.end))
+      missingFields.push("Disassembly end date");
+
+    if (missingFields.length > 0) {
       setFeedback({
         open: true,
-        message: "Please fill all required fields.",
+        message: `Please fill all required fields: ${missingFields.join(", ")}`,
         severity: "warning",
       });
       return;
