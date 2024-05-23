@@ -352,7 +352,6 @@ const MapComponent = ({ selectedDate }) => {
         if (data) {
           setEvents(data);
 
-          // Create a mapping of event names to colors
           const colorMap = {};
           data.forEach((event, index) => {
             if (!colorMap[event.event_name]) {
@@ -412,7 +411,6 @@ const MapComponent = ({ selectedDate }) => {
     const status = getEventStatus(event, selectedDate);
     const parkingLots = event[`${status}_parking_lots`] || "None";
     if (event.halls.includes(id)) {
-      // This is a hall
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
@@ -422,7 +420,6 @@ const MapComponent = ({ selectedDate }) => {
         </div>
       );
     } else {
-      // This is a parking lot
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
@@ -448,7 +445,10 @@ const MapComponent = ({ selectedDate }) => {
     return "gray";
   };
 
-  // Filter events based on the selected date
+  const getPolygonOpacity = (status) => {
+    return status === "runtime" ? 0.9 : 0.3;
+  };
+
   const filteredEvents = events.filter(
     (event) =>
       dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
@@ -476,7 +476,6 @@ const MapComponent = ({ selectedDate }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {/* Rendering halls */}
       {halls.map((hall) => {
         const color = getPolygonColor(hall.name);
         const event = filteredEvents.find((event) =>
@@ -484,6 +483,7 @@ const MapComponent = ({ selectedDate }) => {
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
+        const opacity = event ? getPolygonOpacity(status) : 0.9;
         return (
           <Polygon
             key={hall.id}
@@ -492,7 +492,7 @@ const MapComponent = ({ selectedDate }) => {
             pathOptions={{
               color: fillColor,
               fillColor: fillColor,
-              fillOpacity: 0.9,
+              fillOpacity: opacity,
             }}
           >
             <Tooltip
@@ -503,7 +503,7 @@ const MapComponent = ({ selectedDate }) => {
             >
               <span>{hall.name}</span>
             </Tooltip>
-            <Popup>
+            <Popup autoPan={false}>
               {event ? (
                 getPopupContent(event, hall.name)
               ) : (
@@ -513,7 +513,6 @@ const MapComponent = ({ selectedDate }) => {
           </Polygon>
         );
       })}
-      {/* Rendering parking lots */}
       {parkingLots.map((lot) => {
         const color = getPolygonColor(lot.name);
         const event = filteredEvents.find((event) =>
@@ -525,6 +524,7 @@ const MapComponent = ({ selectedDate }) => {
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
+        const opacity = event ? getPolygonOpacity(status) : 0.9;
         return (
           <Polygon
             key={lot.id}
@@ -533,13 +533,13 @@ const MapComponent = ({ selectedDate }) => {
             pathOptions={{
               color: fillColor,
               fillColor: fillColor,
-              fillOpacity: 0.9,
+              fillOpacity: opacity,
             }}
           >
             <Tooltip direction="center" offset={[0, 0]} permanent>
               <span>{lot.name}</span>
             </Tooltip>
-            <Popup>
+            <Popup autoPan={false}>
               {event ? (
                 getPopupContent(event, lot.name)
               ) : (
