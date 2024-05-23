@@ -482,14 +482,18 @@ const MapComponent = ({ selectedDate }) => {
         const event = filteredEvents.find((event) =>
           event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
-        if (!event) return null; // Skip halls not associated with the selected date
-        event.status = getEventStatus(event, selectedDate);
+        const status = event ? getEventStatus(event, selectedDate) : "unknown";
+        const fillColor = event ? color : "gray";
         return (
           <Polygon
             key={hall.id}
             positions={hall.coords}
             className={`halls hall-${hall.id}`}
-            pathOptions={{ color: color, fillColor: color, fillOpacity: 0.9 }}
+            pathOptions={{
+              color: fillColor,
+              fillColor: fillColor,
+              fillOpacity: 0.9,
+            }}
           >
             <Tooltip
               direction="center"
@@ -499,7 +503,13 @@ const MapComponent = ({ selectedDate }) => {
             >
               <span>{hall.name}</span>
             </Tooltip>
-            <Popup>{getPopupContent(event, hall.name)}</Popup>
+            <Popup>
+              {event ? (
+                getPopupContent(event, hall.name)
+              ) : (
+                <span>No Event!</span>
+              )}
+            </Popup>
           </Polygon>
         );
       })}
@@ -513,19 +523,29 @@ const MapComponent = ({ selectedDate }) => {
                 .includes(lot.name)
             : false
         );
-        if (!event) return null; // Skip parking lots not associated with the selected date
-        event.status = getEventStatus(event, selectedDate);
+        const status = event ? getEventStatus(event, selectedDate) : "unknown";
+        const fillColor = event ? color : "gray";
         return (
           <Polygon
             key={lot.id}
             positions={lot.coords}
             className={`parking-lots parking-${lot.id}`}
-            pathOptions={{ color: color, fillColor: color, fillOpacity: 0.9 }}
+            pathOptions={{
+              color: fillColor,
+              fillColor: fillColor,
+              fillOpacity: 0.9,
+            }}
           >
             <Tooltip direction="center" offset={[0, 0]} permanent>
               <span>{lot.name}</span>
             </Tooltip>
-            <Popup>{getPopupContent(event, lot.name)}</Popup>
+            <Popup>
+              {event ? (
+                getPopupContent(event, lot.name)
+              ) : (
+                <span>No Event!</span>
+              )}
+            </Popup>
           </Polygon>
         );
       })}
