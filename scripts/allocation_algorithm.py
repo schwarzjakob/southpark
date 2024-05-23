@@ -25,7 +25,7 @@ def get_data(query, engine):
 
 
 def fetch_events_parking_lots_min_capacity(engine):
-    """Fetch events parking lot data with minimum capacity for the optimization."""
+    """Fetches data for events and associated parking lots, considering only those parking lots that have a minimum capacity equal to or greater than the demand of each event."""
     try:
         logger.info("Fetching data from the database for optimization.")
         query = """
