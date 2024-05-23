@@ -224,7 +224,6 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     startIndex,
     endIndex,
     opacity,
-    isFirstDay,
     labelText
   ) => {
     const left = startIndex * 45 + "px";
@@ -359,7 +358,6 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           startIndex,
           endIndex,
           phase.opacity,
-          isFirstDay,
           labelText
         );
       });
@@ -449,7 +447,11 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
                   </Typography>
                   <Box
                     className="event-bars"
-                    sx={{ display: "flex", flexDirection: "column" }}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      pointerEvents: "none",
+                    }}
                   >
                     {renderEvents(day)}
                   </Box>
