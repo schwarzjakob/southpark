@@ -13,7 +13,7 @@ const colors = [
   "teal",
   "indigo",
   "lime",
-  "amber",
+  "red",
   "deepOrange",
   "deepPurple",
   "lightBlue",
@@ -27,6 +27,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   const [events, setEvents] = useState([]);
   const [eventRows, setEventRows] = useState([]);
   const [colorMapping, setColorMapping] = useState({});
+  const ROW_HEIGHT = 24; // Height of each row in pixels
+  const OFFSET = 100; // Offset for the top padding
 
   useEffect(() => {
     const calculateNumberOfDays = () => Math.floor(window.innerWidth / 45);
@@ -238,7 +240,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           position: "absolute",
           left: left,
           width: width,
-          top: `${event.row * 24 + 48}px`,
+          top: `${event.row * ROW_HEIGHT + 48}px`,
+          border: `1px solid ${colorMapping[event.event_name]}`,
         }}
       >
         <Box
@@ -375,7 +378,12 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           <ArrowForwardIosIcon />
         </Button>
       </Box>
-      <Box className="timeline-container">
+      <Box
+        className="timeline-container"
+        sx={{
+          height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
+        }}
+      >
         <Box
           className="timeline-slider years"
           display="flex"
@@ -409,7 +417,11 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           <Box position="relative" sx={{ flexGrow: 1 }}>
             <Box
               className="timeline-slider days"
-              sx={{ display: "flex", bgcolor: theme.palette.background.paper }}
+              sx={{
+                display: "flex",
+                bgcolor: theme.palette.background.paper,
+                height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
+              }}
             >
               {days.map((day) => (
                 <Box
