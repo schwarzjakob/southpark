@@ -123,26 +123,27 @@ def get_capacity_utilization():
         logger.error("Failed to fetch capacity utilization data", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+
 @app.route("/events_timeline/<date>", methods=["GET"])
 def get_events_timeline(date):
     """
     Endpoint to retrieve event data for the timeline component.
     Fetches data from the 'view_schema.view_events_timeline' view in the database.
- 
+
     Parameters:
         date (str): The date around which to fetch the data. Expected format is 'YYYY-MM-DD'.
- 
+
     Returns:
         JSON response with the fetched data or an error message if an exception is raised.
     """
     try:
         # Convert the date string to a datetime object
-        date = datetime.strptime(date, '%Y-%m-%d')
- 
+        date = datetime.strptime(date, "%Y-%m-%d")
+
         # Calculate the start and end dates for the filter
         start_date = date - timedelta(days=15)
         end_date = date + timedelta(days=15)
- 
+
         logger.info("Fetching events timeline data from the database.")
         query = f"""
         SELECT * FROM view_schema.view_events_timeline
@@ -159,7 +160,8 @@ def get_events_timeline(date):
     except Exception as e:
         logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
- 
+
+
 # Get events parking lots allocation for front-end table view
 @app.route("/events_parking_lots_allocation", methods=["GET"])
 def get_events_parking_lots_allocation():

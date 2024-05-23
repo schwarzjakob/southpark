@@ -24,8 +24,8 @@ const colors = [
 const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   const theme = useTheme();
   const [days, setDays] = useState([]);
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
   const [events, setEvents] = useState([]);
+  const [eventRows, setEventRows] = useState([]); // New state to manage event rows
   const [colorMapping, setColorMapping] = useState({});
 
   useEffect(() => {
@@ -65,6 +65,40 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           return acc;
         }, {});
         setColorMapping(newColorMapping);
+
+        // Assign rows to events
+        const rows = [];
+        eventsData.forEach((event) => {
+          const eventStart = dayjs(event.assembly_start_date).format(
+            "YYYY-MM-DD"
+          );
+          const eventEnd = dayjs(event.disassembly_end_date).format(
+            "YYYY-MM-DD"
+          );
+          let assigned = false;
+          for (let i = 0; i < rows.length; i++) {
+            if (
+              !rows[i].some(
+                (e) =>
+                  dayjs(eventStart).isBetween(e.start, e.end, "day", "[]") ||
+                  dayjs(eventEnd).isBetween(e.start, e.end, "day", "[]") ||
+                  dayjs(e.start).isBetween(eventStart, eventEnd, "day", "[]") ||
+                  dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]")
+              )
+            ) {
+              rows[i].push({ start: eventStart, end: eventEnd, event });
+              event.row = i;
+              assigned = true;
+              break;
+            }
+          }
+          if (!assigned) {
+            rows.push([{ start: eventStart, end: eventEnd, event }]);
+            event.row = rows.length - 1;
+          }
+        });
+
+        setEventRows(rows);
       } catch (error) {
         console.error("Error fetching events:", error);
         setEvents([]);
@@ -100,12 +134,6 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
-
-  useEffect(() => {
-    const handleResize = () => setViewportWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const handleYearClick = (year) => {
     let newDate = dayjs(selectedDate).year(year);
@@ -192,7 +220,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   const renderEvents = (day) => {
     const uniqueEvents = {};
 
-    // Filter und einzigartig machen
+    // Filter and make unique
     events.forEach((event) => {
       if (
         dayjs(day).isBetween(
@@ -202,16 +230,19 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           "[]"
         )
       ) {
-        uniqueEvents[event.id] = event;
+        uniqueEvents[event.event_id] = event;
       }
     });
 
     const dayEvents = Object.values(uniqueEvents);
 
+    // Sort events by row to maintain consistent display order
+    dayEvents.sort((a, b) => a.row - b.row);
+
     return dayEvents.map((event) => {
       if (!event) return null;
 
-      // Berechnung der Belegungsrate basierend auf dem aktuellen Tag
+      // Calculate opacity based on the current day
       let opacity = 0;
       if (
         dayjs(day).isBetween(
@@ -221,7 +252,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           "[]"
         )
       ) {
-        opacity = 0.5; // Aufbau
+        opacity = 0.5; // Assembly
       } else if (
         dayjs(day).isBetween(
           dayjs(event.runtime_start_date),
@@ -230,7 +261,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           "[]"
         )
       ) {
-        opacity = 1; // Laufzeit
+        opacity = 1; // Runtime
       } else if (
         dayjs(day).isBetween(
           dayjs(event.disassembly_start_date),
@@ -239,10 +270,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           "[]"
         )
       ) {
-        opacity = 0.25; // Abbau
+        opacity = 0.25; // Disassembly
       }
 
-      // Bestimmen, ob das Label für das Event angezeigt werden soll
+      // Determine if the label for the event should be displayed
       const isFirstDayOfEvent =
         dayjs(day).isSame(dayjs(event.assembly_start_date), "day") ||
         dayjs(day).isSame(dayjs(event.runtime_start_date), "day") ||
@@ -250,9 +281,14 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
 
       return (
         <Box
-          key={event.id}
+          key={event.event_id}
           className="event-row"
-          sx={{ height: "22px", marginBottom: "2px" }}
+          sx={{
+            height: "22px",
+            marginBottom: "2px",
+            position: "relative",
+            top: `${event.row * 24}px`, // Adjusting the top position based on the row index
+          }}
         >
           <Box
             className="event-bar"
