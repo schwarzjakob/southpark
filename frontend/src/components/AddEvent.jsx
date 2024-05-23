@@ -386,7 +386,27 @@ function AddEvent() {
     setStep(1);
   };
 
-  const handleNext = () => {
+  const checkHallAvailability = async () => {
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:5000/check_hall_availability",
+        {
+          halls: eventData.halls,
+          dates: eventData.dates,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 409) {
+        return { conflicts: error.response.data.conflicts };
+      } else {
+        throw error;
+      }
+    }
+  };
+
+  const handleNext = async () => {
     // Validate required fields before proceeding to the next step
     const missingFields = [];
 
@@ -409,7 +429,9 @@ function AddEvent() {
     if (missingFields.length > 0) {
       setFeedback({
         open: true,
-        message: `Please fill all required fields: ${missingFields.join(", ")}`,
+        message: `Please fill all required fields: <strong>${missingFields.join(
+          ", "
+        )}</strong>`,
         severity: "warning",
       });
       return;
@@ -428,7 +450,39 @@ function AddEvent() {
       }
     }
 
-    setStep(2);
+    // Check hall availability
+    try {
+      const availability = await checkHallAvailability();
+      if (
+        availability.occupied_halls &&
+        Object.keys(availability.occupied_halls).length > 0
+      ) {
+        const conflictMessages = Object.entries(
+          availability.occupied_halls
+        ).map(([hall, conflicts]) => {
+          return conflicts
+            .map(
+              (conflict) =>
+                `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>`
+            )
+            .join("");
+        });
+        setFeedback({
+          open: true,
+          message: conflictMessages.join("\n"),
+          severity: "error",
+        });
+        return;
+      }
+
+      setStep(2);
+    } catch (error) {
+      setFeedback({
+        open: true,
+        message: "Failed to check hall availability.",
+        severity: "error",
+      });
+    }
   };
 
   const handleBack = () => setStep(1);
@@ -665,7 +719,7 @@ function AddEvent() {
           severity={feedback.severity}
           sx={{ width: "100%" }}
         >
-          {feedback.message}
+          <span dangerouslySetInnerHTML={{ __html: feedback.message }} />
         </Alert>
       </Snackbar>
     </form>

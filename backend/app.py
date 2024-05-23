@@ -215,6 +215,61 @@ def calculate_date_range(start_date, end_date):
     return date_array
 
 
+# Add event form
+@app.route("/check_hall_availability", methods=["POST"])
+def check_hall_availability():
+    """
+    Endpoint to check hall availability for the given event dates.
+    """
+    try:
+        data = request.json
+        print(data)
+        halls = data["halls"]
+        dates = data["dates"]
+
+        all_dates = []
+        for phase in ["assembly", "runtime", "disassembly"]:
+            all_dates += calculate_date_range(
+                dates[phase]["start"], dates[phase]["end"]
+            )
+
+        hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
+        hall_occupation_query = """
+        SELECT ho.event_id, ho.hall_id, ho.date, e.name as event_name
+        FROM hall_occupation ho
+        JOIN event e ON ho.event_id = e.id
+        WHERE ho.hall_id = :hall_id AND ho.date IN :dates
+        """
+
+        occupied_halls = {}
+        with engine.connect() as connection:
+            for hall_name in halls:
+                hall_id = connection.execute(
+                    text(hall_id_query), {"hall_name": hall_name}
+                ).fetchone()[0]
+                result = connection.execute(
+                    text(hall_occupation_query),
+                    {"hall_id": hall_id, "dates": tuple(all_dates)},
+                ).fetchall()
+                if result:
+                    occupied_halls[hall_name] = [
+                        {
+                            "event_id": row[0],  # Access by index
+                            "date": row[2].strftime("%d.%m.%Y"),  # Access by index
+                            "event_name": row[3],  # Access by index
+                        }
+                        for row in result
+                    ]
+
+        if occupied_halls:
+            return jsonify({"occupied_halls": occupied_halls}), 200
+        else:
+            return jsonify({"occupied_halls": {}}), 200
+    except Exception as e:
+        logger.error("Failed to check hall availability", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/add_event", methods=["POST"])
 def add_event():
     """
