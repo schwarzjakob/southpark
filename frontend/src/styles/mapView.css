@@ -133,7 +133,6 @@
 .arrow-button.left,
 .arrow-button.right {
   position: absolute;
-  background-color: none;
   color: var(--color-primary);
   border: none;
   padding: 0 !important;

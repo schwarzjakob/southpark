@@ -7,6 +7,7 @@ import {
   Polygon,
   Tooltip,
   Popup,
+  useMap,
 } from "react-leaflet";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -461,6 +462,17 @@ const MapComponent = ({ selectedDate }) => {
       dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
   );
 
+  const SetZoomLevel = ({ zoom }) => {
+    const map = useMap();
+
+    useEffect(() => {
+      map.options.zoomSnap = 0; // Allow fractional zoom levels
+      map.setZoom(zoom);
+    }, [map, zoom]);
+
+    return null;
+  };
+
   return (
     <MapContainer
       center={[48.1375, 11.702]}
@@ -476,6 +488,7 @@ const MapComponent = ({ selectedDate }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <SetZoomLevel zoom={15.5} />
       {halls.map((hall) => {
         const color = getPolygonColor(hall.name);
         const event = filteredEvents.find((event) =>
