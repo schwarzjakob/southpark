@@ -4,7 +4,7 @@ import {
   Drawer,
   IconButton,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Typography,
@@ -69,12 +69,12 @@ const Navigation = ({ isOpen, toggleNav }) => {
               alignItems: "center",
             }}
           >
-            <ListItem button onClick={toggleNav}>
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <DashboardIcon />
               </ListItemIcon>
               <ListItemText primary="Dashboard" />
-            </ListItem>
+            </ListItemButton>
           </Link>
           <Link
             to="/mapview"
@@ -85,12 +85,12 @@ const Navigation = ({ isOpen, toggleNav }) => {
               alignItems: "center",
             }}
           >
-            <ListItem button onClick={toggleNav}>
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <MapIcon />
               </ListItemIcon>
               <ListItemText primary="Map View" />
-            </ListItem>
+            </ListItemButton>
           </Link>
           <Link
             to="/tableview"
@@ -101,12 +101,12 @@ const Navigation = ({ isOpen, toggleNav }) => {
               alignItems: "center",
             }}
           >
-            <ListItem button onClick={toggleNav}>
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <CalendarTodayIcon />
               </ListItemIcon>
               <ListItemText primary="Table View" />
-            </ListItem>
+            </ListItemButton>
           </Link>
           <Link
             to="/addEvent"
@@ -117,12 +117,12 @@ const Navigation = ({ isOpen, toggleNav }) => {
               alignItems: "center",
             }}
           >
-            <ListItem button onClick={toggleNav}>
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <AddIcon />
               </ListItemIcon>
               <ListItemText primary="Add Event" />
-            </ListItem>
+            </ListItemButton>
           </Link>
         </List>
       </Box>
