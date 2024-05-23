@@ -342,89 +342,81 @@ const colors = [
 
 const MapComponent = ({ selectedDate }) => {
   const [events, setEvents] = useState([]);
-  const [eventMapping, setEventMapping] = useState({});
   const [colorMapping, setColorMapping] = useState({});
 
   useEffect(() => {
-    axios
-      .get(`http://127.0.0.1:5000/events_map/${selectedDate}`)
-      .then((response) => {
-        if (response.status === 200) {
-          const eventsData = response.data;
-          setEvents(eventsData);
-
-          // Create a mapping of event names to colors
-          const eventMap = {};
-          eventsData.forEach((event) => {
-            if (!eventMap[event.event_name]) {
-              eventMap[event.event_name] = { halls: [], parkingLots: [] };
-            }
-            if (event.halls) {
-              event.halls.split(", ").forEach((hall) => {
-                eventMap[event.event_name].halls.push(hall);
-              });
-            }
-            if (event.parking_lot_name) {
-              eventMap[event.event_name].parkingLots.push(
-                event.parking_lot_name
-              );
-            }
-          });
-          setEventMapping(eventMap);
+    const fetchEvents = async () => {
+      try {
+        const { data } = await axios.get(
+          `http://127.0.0.1:5000/events_timeline/${selectedDate}`
+        );
+        if (data) {
+          setEvents(data);
 
           // Create a mapping of event names to colors
           const colorMap = {};
-          Object.keys(eventMap).forEach((eventName, index) => {
-            colorMap[eventName] = colors[index % colors.length];
+          data.forEach((event, index) => {
+            if (!colorMap[event.event_name]) {
+              colorMap[event.event_name] = colors[index % colors.length];
+            }
           });
           setColorMapping(colorMap);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("There was an error fetching the events data!", error);
-      });
+      }
+    };
+
+    fetchEvents();
   }, [selectedDate]);
 
-  const getPopupContent = (id) => {
-    const event = events.find(
-      (event) => event.halls.includes(id) || event.parking_lot_name === id
-    );
-
-    if (event) {
-      if (event.halls.includes(id)) {
-        // This is a hall
-        return (
-          <div className="cap">
-            <h4>{event.event_name}</h4>
-            <p>Status: {event.status}</p>
-            <p>Entrance: {event.event_entrance}</p>
-            <p>Allocated Parking Lots: {event.parking_lot_name}</p>
-          </div>
-        );
-      } else {
-        // This is a parking lot
-        return (
-          <div className="cap">
-            <h4>{event.event_name}</h4>
-            <p>Status: {event.status}</p>
-            <p>Entrance: {event.event_entrance}</p>
-            <p>Associated Halls: {event.halls}</p>
-          </div>
-        );
-      }
+  const getPopupContent = (event, id) => {
+    if (event.halls.includes(id)) {
+      // This is a hall
+      return (
+        <div className="cap">
+          <h4>{event.event_name}</h4>
+          <p>Status: {event.status}</p>
+          <p>Entrance: {event.event_entrance}</p>
+          <p>Allocated Parking Lots: {event.parking_lots}</p>
+        </div>
+      );
+    } else {
+      // This is a parking lot
+      return (
+        <div className="cap">
+          <h4>{event.event_name}</h4>
+          <p>Status: {event.status}</p>
+          <p>Entrance: {event.event_entrance}</p>
+          <p>Associated Halls: {event.halls}</p>
+        </div>
+      );
     }
-    return <span>No Event!</span>;
   };
 
   const getPolygonColor = (name) => {
-    for (const eventName in eventMapping) {
-      const { halls, parkingLots } = eventMapping[eventName];
+    for (const event of events) {
+      const halls = event.halls.split(", ");
+      const parkingLots = event.parking_lots.split(", ");
       if (halls.includes(name) || parkingLots.includes(name)) {
-        return `${colorMapping[eventName]}`;
+        return `${colorMapping[event.event_name]}`;
       }
     }
     return "gray";
   };
+
+  // Filter events based on the selected date
+  const filteredEvents = events.filter(
+    (event) =>
+      dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
+      dayjs(selectedDate).isBetween(
+        event.assembly_start_date,
+        event.disassembly_end_date,
+        null,
+        "[]"
+      ) ||
+      dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
+  );
 
   return (
     <MapContainer
@@ -444,6 +436,10 @@ const MapComponent = ({ selectedDate }) => {
       {/* Rendering halls */}
       {halls.map((hall) => {
         const color = getPolygonColor(hall.name);
+        const event = filteredEvents.find((event) =>
+          event.halls.split(", ").includes(hall.name)
+        );
+        if (!event) return null; // Skip halls not associated with the selected date
         return (
           <Polygon
             key={hall.id}
@@ -459,13 +455,17 @@ const MapComponent = ({ selectedDate }) => {
             >
               <span>{hall.name}</span>
             </Tooltip>
-            <Popup>{getPopupContent(hall.name)}</Popup>
+            <Popup>{getPopupContent(event, hall.name)}</Popup>
           </Polygon>
         );
       })}
       {/* Rendering parking lots */}
       {parkingLots.map((lot) => {
         const color = getPolygonColor(lot.name);
+        const event = filteredEvents.find((event) =>
+          event.parking_lots.split(", ").includes(lot.name)
+        );
+        if (!event) return null; // Skip parking lots not associated with the selected date
         return (
           <Polygon
             key={lot.id}
@@ -476,11 +476,12 @@ const MapComponent = ({ selectedDate }) => {
             <Tooltip direction="center" offset={[0, 0]} permanent>
               <span>{lot.name}</span>
             </Tooltip>
-            <Popup>{getPopupContent(lot.name)}</Popup>
+            <Popup>{getPopupContent(event, lot.name)}</Popup>
           </Polygon>
         );
       })}
     </MapContainer>
   );
 };
+
 export default MapComponent;

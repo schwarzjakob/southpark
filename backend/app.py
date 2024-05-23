@@ -150,7 +150,8 @@ def get_events_timeline(date):
         WHERE
             (assembly_start_date <= '{end_date}' AND assembly_end_date >= '{start_date}') OR
             (runtime_start_date <= '{end_date}' AND runtime_end_date >= '{start_date}') OR
-            (disassembly_start_date <= '{end_date}' AND disassembly_end_date >= '{start_date}')"""
+            (disassembly_start_date <= '{end_date}' AND disassembly_end_date >= '{start_date}')
+        """
         df_events_timeline = get_data(query)
         if df_events_timeline.empty:
             logger.info("No data available.")
@@ -303,65 +304,6 @@ def add_event():
         return jsonify({"message": "Event added successfully"}), 200
     except Exception as e:
         logger.error("Failed to add event", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/events_map/<date>", methods=["GET"])
-def get_events_map(date):
-    """
-    Endpoint to retrieve event data for the map component.
-
-    Parameters:
-        date (str): The date around which to fetch the data. Expected format is 'YYYY-MM-DD'.
-
-    Returns:
-        JSON response with the fetched data or an error message if an exception is raised.
-    """
-    try:
-        # Convert the date string to a datetime object
-        date = datetime.strptime(date, "%Y-%m-%d")
-
-        logger.info("Fetching events timeline data from the database.")
-        query = f"""
-        SELECT
-            e.id AS event_id,
-            e.name AS event_name,
-            e.entrance AS event_entrance,
-            STRING_AGG(DISTINCT h.name, ', ') AS halls,
-            ho.date AS occupation_date,
-            p.name AS parking_lot_name,
-            CASE
-                WHEN ho.date BETWEEN e.assembly_start_date AND e.assembly_end_date THEN 'assembly'
-                WHEN ho.date BETWEEN e.runtime_start_date AND e.runtime_end_date THEN 'runtime'
-                WHEN ho.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date THEN 'disassembly'
-                ELSE 'unknown'
-            END AS status
-        FROM
-            public.hall_occupation ho
-        JOIN
-            public.event e ON e.id = ho.event_id
-        JOIN
-            public.hall h ON h.id = ho.hall_id
-        JOIN
-            public.parking_lot_allocation pa ON pa.event_id = ho.event_id AND pa.date = ho.date
-        JOIN
-            public.parking_lot p ON pa.parking_lot_id = p.id
-        WHERE
-            ho.date = '{date}'
-        GROUP BY
-            e.id, e.name, e.entrance, ho.date, p.name
-        ORDER BY
-            e.id;
-        """
-
-        df_events_timeline = get_data(query)
-        if df_events_timeline.empty:
-            logger.info("No data available.")
-            return jsonify({"message": "No data found"}), 204
-        logger.info("Events timeline data fetched successfully.")
-        return jsonify(df_events_timeline.to_dict(orient="records")), 200
-    except Exception as e:
-        logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 

@@ -1,14 +1,14 @@
-import React, { useState } from 'react'
-import { Box, Typography } from '@mui/material'
-import TimelineSlider from './TimelineSlider.jsx'
-import MapComponent from './MapComponent.jsx'
-import DateInputComponent from './DateInputComponent.jsx'
-import '../styles/mapView.css'
-import dayjs from 'dayjs'
+import React, { useState } from "react";
+import { Box, Typography } from "@mui/material";
+import TimelineSlider from "./TimelineSlider.jsx";
+import MapComponent from "./MapComponent.jsx";
+import DateInputComponent from "./DateInputComponent.jsx";
+import "../styles/mapView.css";
+import dayjs from "dayjs";
 
 const MapView = () => {
-  const today = dayjs().format('YYYY-MM-DD') // <-- Heutiges Datum
-  const [selectedDate, setSelectedDate] = useState(today)
+  const today = dayjs().format("YYYY-MM-DD"); // <-- Heutiges Datum
+  const [selectedDate, setSelectedDate] = useState(today);
   return (
     <Box>
       <Box display="flex" flexDirection="column" gap={2}>
@@ -62,7 +62,7 @@ const MapView = () => {
         </Box>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
-export default MapView
+export default MapView;
