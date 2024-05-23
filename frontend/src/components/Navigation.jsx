@@ -4,7 +4,7 @@ import {
   Drawer,
   IconButton,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Typography,
@@ -60,70 +60,70 @@ const Navigation = ({ isOpen, toggleNav }) => {
           </Link>
         </Box>
         <List>
-          <ListItem button onClick={toggleNav}>
-            <Link
-              to="/"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
+          <Link
+            to="/"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <DashboardIcon />
               </ListItemIcon>
               <ListItemText primary="Dashboard" />
-            </Link>
-          </ListItem>
-          <ListItem button onClick={toggleNav}>
-            <Link
-              to="/mapview"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
+            </ListItemButton>
+          </Link>
+          <Link
+            to="/mapview"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <MapIcon />
               </ListItemIcon>
               <ListItemText primary="Map View" />
-            </Link>
-          </ListItem>
-          <ListItem button onClick={toggleNav}>
-            <Link
-              to="/tableview"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
+            </ListItemButton>
+          </Link>
+          <Link
+            to="/tableview"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <CalendarTodayIcon />
               </ListItemIcon>
               <ListItemText primary="Table View" />
-            </Link>
-          </ListItem>
-          <ListItem button onClick={toggleNav}>
-            <Link
-              to="/addEvent"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
+            </ListItemButton>
+          </Link>
+          <Link
+            to="/addEvent"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
                 <AddIcon />
               </ListItemIcon>
               <ListItemText primary="Add Event" />
-            </Link>
-          </ListItem>
+            </ListItemButton>
+          </Link>
         </List>
       </Box>
     </Drawer>
