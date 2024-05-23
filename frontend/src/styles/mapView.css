@@ -1,0 +1,204 @@
+/* Map Component */
+.leaflet-container {
+  height: 60vh;
+  width: 100vw;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.cap {
+  text-transform: capitalize;
+}
+
+.leaflet-zoom-animated .leaflet-interactive {
+  transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out,
+    fill-opacity 0.2s ease-in-out, stroke-opacity 0.2s ease-in-out;
+}
+
+/* Timeline Component */
+.timeline-wrapper {
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.timeline-container {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+  overflow-y: hidden;
+}
+
+.map__map-component,
+.map__timeline-slider {
+  padding: 0 !important;
+}
+
+.map__timeline-slider {
+  border: none !important;
+}
+
+.timeline-slider__days,
+.map__map-component {
+  border: 1px solid var(--color-gray-150);
+}
+
+.timeline-header-container {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-primary);
+}
+
+.timeline-header {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.timeline-date {
+  text-align: center;
+  padding: 3px 0 !important;
+  margin: 0 !important;
+  width: 45px !important;
+}
+
+.timeline-date p {
+  margin: 0 !important;
+  font-size: 0.8rem;
+}
+
+.timeline-week p {
+  margin: 0 !important;
+  font-size: 0.8rem;
+}
+
+.timeline-date.selected {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  font-weight: 800 !important;
+}
+
+.timeline-week.selected {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  font-weight: 800 !important;
+}
+
+.timeline-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-row {
+  display: flex;
+  align-items: center;
+}
+
+.timeline-row__label {
+  width: 100px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 28px;
+  background-color: var(--color-gray-150);
+  color: var(--textColor);
+  min-width: 4rem;
+  font-size: 0.8rem !important;
+  text-align: center;
+}
+
+.timeline-cell {
+  width: 50px;
+  height: 28px;
+  border-right: 1px solid #ccc;
+}
+
+.timeline-cell.selected {
+  background-color: var(--color-primary);
+}
+
+.arrow-button {
+  z-index: 20;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.timeline-slider.months,
+.timeline-slider.years {
+  margin-bottom: 0.4rem !important;
+}
+
+.arrow-button.left,
+.arrow-button.right {
+  position: absolute;
+  color: var(--color-primary);
+  border: none;
+  padding: 0 !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  top: 64px;
+}
+
+.arrow-button.left:hover,
+.arrow-button.right:hover {
+  background-color: var(--color-backround-light) !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+
+.arrow-button.left {
+  left: -40px;
+}
+
+.arrow-button.right {
+  right: 20px;
+}
+
+.timeline-arrows-container {
+  display: flex;
+  width: 100%;
+  position: absolute;
+  justify-content: space-between;
+}
+
+.selected .timeline-date__DD,
+.selected .timeline-date__ddd,
+.selected .timeline-week__KW {
+  font-weight: bold !important;
+}
+
+.button-primary {
+  border: none;
+  margin: 1rem 0;
+}
+
+.mapView__title {
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.mapView__title h1 {
+  margin: 0 !important;
+}
+
+.timeline-year {
+  padding: 0 0.5rem;
+}
+
+.event-row {
+  height: 20px;
+  width: 100%;
+}
+
+.event-bar {
+  height: 100%;
+  margin: 0px 0;
+}
+
+.timeline-date:not(.selected):nth-child(2n) {
+  background-color: var(--color-gray-100) !important;
+}
