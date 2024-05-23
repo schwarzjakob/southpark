@@ -222,7 +222,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     startIndex,
     endIndex,
     opacity,
-    isFirstDay
+    isFirstDay,
+    labelText
   ) => {
     const left = startIndex * 45 + "px";
     const width = (endIndex - startIndex + 1) * 45 + "px";
@@ -249,19 +250,20 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
             position: "relative",
           }}
         >
-          {isFirstDay && (
+          {labelText && (
             <Typography
               className="event-bar__label"
               sx={{
-                position: "absolute",
+                position: "relative",
                 top: "0px",
                 left: 0,
                 fontSize: "0.75rem",
-                color: "--color-pure-black",
+                color: "white",
                 whiteSpace: "nowrap",
+                zIndex: 1,
               }}
             >
-              {event.event_name}
+              {labelText}
             </Typography>
           )}
         </Box>
@@ -344,13 +346,18 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         if (startIndex === -1 || endIndex === -1) return null; // Phase not in the current view
 
         const isFirstDay = idx === 0;
+        const labelText =
+          dayjs(day).isSame(event.runtime_start_date, "day") && idx === 1
+            ? event.event_name
+            : null;
 
         return renderEventSegments(
           event,
           startIndex,
           endIndex,
           phase.opacity,
-          isFirstDay
+          isFirstDay,
+          labelText
         );
       });
 
