@@ -395,14 +395,9 @@ function AddEvent() {
           dates: eventData.dates,
         }
       );
-
       return response.data;
     } catch (error) {
-      if (error.response && error.response.status === 409) {
-        return { conflicts: error.response.data.conflicts };
-      } else {
-        throw error;
-      }
+      throw error;
     }
   };
 
@@ -429,9 +424,7 @@ function AddEvent() {
     if (missingFields.length > 0) {
       setFeedback({
         open: true,
-        message: `Please fill all required fields: <strong>${missingFields.join(
-          ", "
-        )}</strong>`,
+        message: `Please fill all required fields: ${missingFields.join(", ")}`,
         severity: "warning",
       });
       return;
@@ -453,23 +446,29 @@ function AddEvent() {
     // Check hall availability
     try {
       const availability = await checkHallAvailability();
-      if (
-        availability.occupied_halls &&
-        Object.keys(availability.occupied_halls).length > 0
-      ) {
-        const conflictMessages = Object.entries(
-          availability.occupied_halls
-        ).map(([hall, conflicts]) => {
-          return conflicts
-            .map(
-              (conflict) =>
-                `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>`
-            )
-            .join("");
-        });
+      const { occupied_halls, free_halls } = availability;
+      console.log("Occupied halls:", occupied_halls);
+      console.log("Free halls:", free_halls);
+
+      if (occupied_halls && Object.keys(occupied_halls).length > 0) {
+        const conflictMessages = Object.entries(occupied_halls)
+          .map(([hall, conflicts]) => {
+            return conflicts
+              .map((conflict) => {
+                console.log(conflict.date);
+                const freeHallsOnThatDay =
+                  free_halls[conflict.date.split(".").reverse().join("-")].join(
+                    ", "
+                  );
+                return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
+              })
+              .join("<br>");
+          })
+          .join("<br>");
+
         setFeedback({
           open: true,
-          message: conflictMessages.join("\n"),
+          message: conflictMessages,
           severity: "error",
         });
         return;

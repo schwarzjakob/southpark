@@ -223,7 +223,6 @@ def check_hall_availability():
     """
     try:
         data = request.json
-        print(data)
         halls = data["halls"]
         dates = data["dates"]
 
@@ -233,7 +232,7 @@ def check_hall_availability():
                 dates[phase]["start"], dates[phase]["end"]
             )
 
-        hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
+        hall_id_query = "SELECT id, name FROM hall"
         hall_occupation_query = """
         SELECT ho.event_id, ho.hall_id, ho.date, e.name as event_name
         FROM hall_occupation ho
@@ -242,29 +241,42 @@ def check_hall_availability():
         """
 
         occupied_halls = {}
+        free_halls = {date: [] for date in all_dates}
+
         with engine.connect() as connection:
-            for hall_name in halls:
-                hall_id = connection.execute(
-                    text(hall_id_query), {"hall_name": hall_name}
-                ).fetchone()[0]
+            hall_ids = connection.execute(text(hall_id_query)).fetchall()
+            hall_map = {hall[0]: hall[1] for hall in hall_ids}
+            selected_hall_ids = [
+                hall_id for hall_id, hall_name in hall_ids if hall_name in halls
+            ]
+
+            for hall_id in selected_hall_ids:
                 result = connection.execute(
                     text(hall_occupation_query),
                     {"hall_id": hall_id, "dates": tuple(all_dates)},
                 ).fetchall()
-                if result:
-                    occupied_halls[hall_name] = [
-                        {
-                            "event_id": row[0],  # Access by index
-                            "date": row[2].strftime("%d.%m.%Y"),  # Access by index
-                            "event_name": row[3],  # Access by index
-                        }
-                        for row in result
-                    ]
 
-        if occupied_halls:
-            return jsonify({"occupied_halls": occupied_halls}), 200
-        else:
-            return jsonify({"occupied_halls": {}}), 200
+                hall_name = hall_map[hall_id]
+
+                if result:
+                    occupied_halls[hall_name] = []
+                    for row in result:
+                        occupied_halls[hall_name].append(
+                            {
+                                "event_id": row[0],  # Access by index
+                                "date": row[2].strftime("%d.%m.%Y"),  # Access by index
+                                "event_name": row[3],  # Access by index
+                            }
+                        )
+
+            for hall_id, hall_name in hall_map.items():
+                if hall_id not in selected_hall_ids:
+                    for date in all_dates:
+                        free_halls[date].append(hall_name)
+        return (
+            jsonify({"occupied_halls": occupied_halls, "free_halls": free_halls}),
+            200,
+        )
     except Exception as e:
         logger.error("Failed to check hall availability", exc_info=True)
         return jsonify({"error": str(e)}), 500
