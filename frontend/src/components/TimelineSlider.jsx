@@ -25,7 +25,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   const theme = useTheme();
   const [days, setDays] = useState([]);
   const [events, setEvents] = useState([]);
-  const [eventRows, setEventRows] = useState([]); // New state to manage event rows
+  const [eventRows, setEventRows] = useState([]);
   const [colorMapping, setColorMapping] = useState({});
 
   useEffect(() => {
@@ -217,6 +217,58 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     ));
   };
 
+  const renderEventSegments = (
+    event,
+    startIndex,
+    endIndex,
+    opacity,
+    isFirstDay
+  ) => {
+    const left = startIndex * 45 + "px";
+    const width = (endIndex - startIndex + 1) * 45 + "px";
+
+    return (
+      <Box
+        key={`${event.event_id}-${startIndex}`}
+        className="event-row"
+        sx={{
+          height: "22px",
+          marginBottom: "2px",
+          position: "absolute",
+          left: left,
+          width: width,
+          top: `${event.row * 24 + 48}px`,
+        }}
+      >
+        <Box
+          className="event-bar"
+          sx={{
+            backgroundColor: colorMapping[event.event_name],
+            opacity: opacity,
+            height: "100%",
+            position: "relative",
+          }}
+        >
+          {isFirstDay && (
+            <Typography
+              className="event-bar__label"
+              sx={{
+                position: "absolute",
+                top: "0px",
+                left: 0,
+                fontSize: "0.75rem",
+                color: "--color-pure-black",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {event.event_name}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+    );
+  };
+
   const renderEvents = (day) => {
     const uniqueEvents = {};
 
@@ -236,87 +288,73 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
 
     const dayEvents = Object.values(uniqueEvents);
 
+    // Ensure empty rows are added if necessary
+    const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
+    const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
+      dayEvents.find((event) => event.row === index)
+    );
+
     // Sort events by row to maintain consistent display order
-    dayEvents.sort((a, b) => a.row - b.row);
+    filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
 
-    return dayEvents.map((event) => {
-      if (!event) return null;
-
-      // Calculate opacity based on the current day
-      let opacity = 0;
-      if (
-        dayjs(day).isBetween(
-          dayjs(event.assembly_start_date),
-          dayjs(event.assembly_end_date),
-          "day",
-          "[]"
-        )
-      ) {
-        opacity = 0.5; // Assembly
-      } else if (
-        dayjs(day).isBetween(
-          dayjs(event.runtime_start_date),
-          dayjs(event.runtime_end_date),
-          "day",
-          "[]"
-        )
-      ) {
-        opacity = 1; // Runtime
-      } else if (
-        dayjs(day).isBetween(
-          dayjs(event.disassembly_start_date),
-          dayjs(event.disassembly_end_date),
-          "day",
-          "[]"
-        )
-      ) {
-        opacity = 0.25; // Disassembly
+    return filledRows.map((event, index) => {
+      if (!event) {
+        return (
+          <Box
+            key={`empty-${index}`}
+            className="event-row"
+            sx={{
+              height: "22px",
+              marginBottom: "2px",
+              position: "relative",
+              backgroundColor: "transparent",
+            }}
+          />
+        );
       }
 
-      // Determine if the label for the event should be displayed
-      const isFirstDayOfEvent =
-        dayjs(day).isSame(dayjs(event.assembly_start_date), "day") ||
-        dayjs(day).isSame(dayjs(event.runtime_start_date), "day") ||
-        dayjs(day).isSame(dayjs(event.disassembly_start_date), "day");
+      const phases = [
+        {
+          startDate: event.assembly_start_date,
+          endDate: event.assembly_end_date,
+          opacity: 0.05,
+        },
+        {
+          startDate: event.runtime_start_date,
+          endDate: event.runtime_end_date,
+          opacity: 1,
+        },
+        {
+          startDate: event.disassembly_start_date,
+          endDate: event.disassembly_end_date,
+          opacity: 0.05,
+        },
+      ];
 
-      return (
-        <Box
-          key={event.event_id}
-          className="event-row"
-          sx={{
-            height: "22px",
-            marginBottom: "2px",
-            position: "relative",
-            top: `${event.row * 24}px`, // Adjusting the top position based on the row index
-          }}
-        >
-          <Box
-            className="event-bar"
-            sx={{
-              backgroundColor: colorMapping[event.event_name],
-              opacity: opacity,
-              width: "100%",
-              height: "100%",
-              position: "relative",
-            }}
-          >
-            {isFirstDayOfEvent && (
-              <Typography
-                className="event-bar__label"
-                sx={{
-                  position: "absolute",
-                  top: "0px",
-                  left: 0,
-                  fontSize: "0.75rem",
-                  color: "white",
-                }}
-              >
-                {event.event_name}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      );
+      const phaseSegments = phases.map((phase, idx) => {
+        const phaseStart = dayjs(phase.startDate);
+        const phaseEnd = dayjs(phase.endDate);
+        const startIndex = days.findIndex((d) =>
+          dayjs(d).isSame(phaseStart, "day")
+        );
+        const endIndex = days.findIndex((d) =>
+          dayjs(d).isSame(phaseEnd, "day")
+        );
+
+        if (startIndex === -1 || endIndex === -1) return null; // Phase not in the current view
+
+        const isFirstDay = idx === 0;
+
+        return renderEventSegments(
+          event,
+          startIndex,
+          endIndex,
+          phase.opacity,
+          isFirstDay
+        );
+      });
+
+      return phaseSegments;
     });
   };
 
