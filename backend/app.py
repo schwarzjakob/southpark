@@ -215,6 +215,73 @@ def calculate_date_range(start_date, end_date):
     return date_array
 
 
+# Add event form
+@app.route("/check_hall_availability", methods=["POST"])
+def check_hall_availability():
+    """
+    Endpoint to check hall availability for the given event dates.
+    """
+    try:
+        data = request.json
+        halls = data["halls"]
+        dates = data["dates"]
+
+        all_dates = []
+        for phase in ["assembly", "runtime", "disassembly"]:
+            all_dates += calculate_date_range(
+                dates[phase]["start"], dates[phase]["end"]
+            )
+
+        hall_id_query = "SELECT id, name FROM hall"
+        hall_occupation_query = """
+        SELECT ho.event_id, ho.hall_id, ho.date, e.name as event_name
+        FROM hall_occupation ho
+        JOIN event e ON ho.event_id = e.id
+        WHERE ho.hall_id = :hall_id AND ho.date IN :dates
+        """
+
+        occupied_halls = {}
+        free_halls = {date: [] for date in all_dates}
+
+        with engine.connect() as connection:
+            hall_ids = connection.execute(text(hall_id_query)).fetchall()
+            hall_map = {hall[0]: hall[1] for hall in hall_ids}
+            selected_hall_ids = [
+                hall_id for hall_id, hall_name in hall_ids if hall_name in halls
+            ]
+
+            for hall_id in selected_hall_ids:
+                result = connection.execute(
+                    text(hall_occupation_query),
+                    {"hall_id": hall_id, "dates": tuple(all_dates)},
+                ).fetchall()
+
+                hall_name = hall_map[hall_id]
+
+                if result:
+                    occupied_halls[hall_name] = []
+                    for row in result:
+                        occupied_halls[hall_name].append(
+                            {
+                                "event_id": row[0],  # Access by index
+                                "date": row[2].strftime("%d.%m.%Y"),  # Access by index
+                                "event_name": row[3],  # Access by index
+                            }
+                        )
+
+            for hall_id, hall_name in hall_map.items():
+                if hall_id not in selected_hall_ids:
+                    for date in all_dates:
+                        free_halls[date].append(hall_name)
+        return (
+            jsonify({"occupied_halls": occupied_halls, "free_halls": free_halls}),
+            200,
+        )
+    except Exception as e:
+        logger.error("Failed to check hall availability", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/add_event", methods=["POST"])
 def add_event():
     """

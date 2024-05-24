@@ -14,6 +14,10 @@ import {
   Checkbox,
   ListItemText,
 } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 import axios from "axios";
 
 const phaseLabels = {
@@ -77,14 +81,13 @@ function AddEvent() {
   });
 
   const isValidDate = (date) => {
-    return date && !isNaN(new Date(date).getTime());
+    return date && dayjs(date).isValid();
   };
 
   const isDateRangeValid = (startDate, endDate) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const oneYear = 365 * 24 * 60 * 60 * 1000; // One year in milliseconds
-    return end - start <= oneYear;
+    const start = dayjs(startDate);
+    const end = dayjs(endDate);
+    return end.diff(start, "year") < 1;
   };
 
   const adjustDates = (dates, phase, dateType, value) => {
@@ -94,104 +97,80 @@ function AddEvent() {
       return dates;
     }
 
+    const dateValue = dayjs(value);
+
     // Handle forward date propagation
     if (dateType === "start") {
       if (phase === "assembly") {
         if (
           !isValidDate(assembly.end) ||
-          new Date(value) > new Date(assembly.end)
+          dateValue.isAfter(dayjs(assembly.end))
         ) {
           dates.assembly.end = value;
         }
-        dates.runtime.start = new Date(
-          new Date(dates.assembly.end).setDate(
-            new Date(dates.assembly.end).getDate() + 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.runtime.start = dateValue.add(1, "day").format("YYYY-MM-DD");
         if (
           !isValidDate(runtime.end) ||
-          new Date(dates.runtime.start) > new Date(runtime.end)
+          dayjs(dates.runtime.start).isAfter(dayjs(runtime.end))
         ) {
           dates.runtime.end = dates.runtime.start;
         }
-        dates.disassembly.start = new Date(
-          new Date(dates.runtime.end).setDate(
-            new Date(dates.runtime.end).getDate() + 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.disassembly.start = dayjs(dates.runtime.end)
+          .add(1, "day")
+          .format("YYYY-MM-DD");
         if (
           !isValidDate(disassembly.end) ||
-          new Date(dates.disassembly.start) > new Date(disassembly.end)
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
         ) {
           dates.disassembly.end = dates.disassembly.start;
         }
       }
 
       if (phase === "runtime") {
-        dates.assembly.end = new Date(
-          new Date(value).setDate(new Date(value).getDate() - 1)
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.assembly.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
         if (
           !isValidDate(assembly.start) ||
-          new Date(dates.assembly.end) < new Date(assembly.start)
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
         ) {
           dates.assembly.start = dates.assembly.end;
         }
         if (
           !isValidDate(runtime.end) ||
-          new Date(value) > new Date(runtime.end)
+          dateValue.isAfter(dayjs(runtime.end))
         ) {
           dates.runtime.end = value;
         }
-        dates.disassembly.start = new Date(
-          new Date(dates.runtime.end).setDate(
-            new Date(dates.runtime.end).getDate() + 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.disassembly.start = dayjs(dates.runtime.end)
+          .add(1, "day")
+          .format("YYYY-MM-DD");
         if (
           !isValidDate(disassembly.end) ||
-          new Date(dates.disassembly.start) > new Date(disassembly.end)
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
         ) {
           dates.disassembly.end = dates.disassembly.start;
         }
       }
 
       if (phase === "disassembly") {
-        dates.runtime.end = new Date(
-          new Date(value).setDate(new Date(value).getDate() - 1)
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.runtime.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
         if (
           !isValidDate(runtime.start) ||
-          new Date(dates.runtime.end) < new Date(runtime.start)
+          dayjs(dates.runtime.end).isBefore(dayjs(runtime.start))
         ) {
           dates.runtime.start = dates.runtime.end;
         }
-        dates.assembly.end = new Date(
-          new Date(dates.runtime.start).setDate(
-            new Date(dates.runtime.start).getDate() - 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.assembly.end = dayjs(dates.runtime.start)
+          .subtract(1, "day")
+          .format("YYYY-MM-DD");
         if (
           !isValidDate(assembly.start) ||
-          new Date(dates.assembly.end) < new Date(assembly.start)
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
         ) {
           dates.assembly.start = dates.assembly.end;
         }
         if (
           !isValidDate(disassembly.end) ||
-          new Date(dates.disassembly.start) > new Date(disassembly.end)
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
         ) {
           dates.disassembly.end = dates.disassembly.start;
         }
@@ -203,66 +182,48 @@ function AddEvent() {
       if (phase === "disassembly") {
         if (
           !isValidDate(disassembly.start) ||
-          new Date(value) < new Date(disassembly.start)
+          dateValue.isBefore(dayjs(disassembly.start))
         ) {
           dates.disassembly.start = value;
         }
-        dates.runtime.end = new Date(
-          new Date(dates.disassembly.start).setDate(
-            new Date(dates.disassembly.start).getDate() - 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.runtime.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
         if (
           !isValidDate(runtime.start) ||
-          new Date(dates.runtime.end) < new Date(runtime.start)
+          dayjs(dates.runtime.end).isBefore(dayjs(runtime.start))
         ) {
           dates.runtime.start = dates.runtime.end;
         }
-        dates.assembly.end = new Date(
-          new Date(dates.runtime.start).setDate(
-            new Date(dates.runtime.start).getDate() - 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.assembly.end = dayjs(dates.runtime.start)
+          .subtract(1, "day")
+          .format("YYYY-MM-DD");
         if (
           !isValidDate(assembly.start) ||
-          new Date(dates.assembly.end) < new Date(assembly.start)
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
         ) {
           dates.assembly.start = dates.assembly.end;
         }
       }
 
       if (phase === "runtime") {
-        dates.disassembly.start = new Date(
-          new Date(value).setDate(new Date(value).getDate() + 1)
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.disassembly.start = dateValue.add(1, "day").format("YYYY-MM-DD");
         if (
           !isValidDate(disassembly.end) ||
-          new Date(dates.disassembly.start) > new Date(disassembly.end)
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
         ) {
           dates.disassembly.end = dates.disassembly.start;
         }
         if (
           !isValidDate(runtime.start) ||
-          new Date(value) < new Date(runtime.start)
+          dateValue.isBefore(dayjs(runtime.start))
         ) {
           dates.runtime.start = value;
         }
-        dates.assembly.end = new Date(
-          new Date(dates.runtime.start).setDate(
-            new Date(dates.runtime.start).getDate() - 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.assembly.end = dayjs(dates.runtime.start)
+          .subtract(1, "day")
+          .format("YYYY-MM-DD");
         if (
           !isValidDate(assembly.start) ||
-          new Date(dates.assembly.end) < new Date(assembly.start)
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
         ) {
           dates.assembly.start = dates.assembly.end;
         }
@@ -271,31 +232,23 @@ function AddEvent() {
       if (phase === "assembly") {
         if (
           !isValidDate(assembly.start) ||
-          new Date(value) < new Date(assembly.start)
+          dateValue.isBefore(dayjs(assembly.start))
         ) {
           dates.assembly.start = value;
         }
-        dates.runtime.start = new Date(
-          new Date(value).setDate(new Date(value).getDate() + 1)
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.runtime.start = dateValue.add(1, "day").format("YYYY-MM-DD");
         if (
           !isValidDate(runtime.end) ||
-          new Date(dates.runtime.start) > new Date(runtime.end)
+          dayjs(dates.runtime.start).isAfter(dayjs(runtime.end))
         ) {
           dates.runtime.end = dates.runtime.start;
         }
-        dates.disassembly.start = new Date(
-          new Date(dates.runtime.end).setDate(
-            new Date(dates.runtime.end).getDate() + 1
-          )
-        )
-          .toISOString()
-          .slice(0, 10);
+        dates.disassembly.start = dayjs(dates.runtime.end)
+          .add(1, "day")
+          .format("YYYY-MM-DD");
         if (
           !isValidDate(disassembly.end) ||
-          new Date(dates.disassembly.start) > new Date(disassembly.end)
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
         ) {
           dates.disassembly.end = dates.disassembly.start;
         }
@@ -382,22 +335,41 @@ function AddEvent() {
     setStep(1);
   };
 
-  const handleNext = () => {
+  const checkHallAvailability = async () => {
+    const response = await axios.post(
+      "http://127.0.0.1:5000/check_hall_availability",
+      {
+        halls: eventData.halls,
+        dates: eventData.dates,
+      }
+    );
+    return response.data;
+  };
+
+  const handleNext = async () => {
     // Validate required fields before proceeding to the next step
-    if (
-      !eventData.name ||
-      !eventData.halls.length ||
-      !eventData.entrance ||
-      !isValidDate(eventData.dates.assembly.start) ||
-      !isValidDate(eventData.dates.assembly.end) ||
-      !isValidDate(eventData.dates.runtime.start) ||
-      !isValidDate(eventData.dates.runtime.end) ||
-      !isValidDate(eventData.dates.disassembly.start) ||
-      !isValidDate(eventData.dates.disassembly.end)
-    ) {
+    const missingFields = [];
+
+    if (!eventData.name) missingFields.push("Event name");
+    if (!eventData.halls.length) missingFields.push("Halls");
+    if (!eventData.entrance) missingFields.push("Entrance");
+    if (!isValidDate(eventData.dates.assembly.start))
+      missingFields.push("Assembly start date");
+    if (!isValidDate(eventData.dates.assembly.end))
+      missingFields.push("Assembly end date");
+    if (!isValidDate(eventData.dates.runtime.start))
+      missingFields.push("Runtime start date");
+    if (!isValidDate(eventData.dates.runtime.end))
+      missingFields.push("Runtime end date");
+    if (!isValidDate(eventData.dates.disassembly.start))
+      missingFields.push("Disassembly start date");
+    if (!isValidDate(eventData.dates.disassembly.end))
+      missingFields.push("Disassembly end date");
+
+    if (missingFields.length > 0) {
       setFeedback({
         open: true,
-        message: "Please fill all required fields.",
+        message: `Please fill all required fields: ${missingFields.join(", ")}`,
         severity: "warning",
       });
       return;
@@ -416,7 +388,49 @@ function AddEvent() {
       }
     }
 
-    setStep(2);
+    // Check hall availability
+    try {
+      const availability = await checkHallAvailability();
+      const { occupied_halls, free_halls } = availability;
+      console.log("Occupied halls:", occupied_halls);
+      console.log("Free halls:", free_halls);
+
+      if (occupied_halls && Object.keys(occupied_halls).length > 0) {
+        const conflictMessages = [
+          "<strong>Did you select the wrong hall?</strong><br>",
+        ]
+          .concat(
+            Object.entries(occupied_halls).map(([hall, conflicts]) => {
+              return conflicts
+                .map((conflict) => {
+                  console.log(conflict.date);
+                  const freeHallsOnThatDay =
+                    free_halls[
+                      conflict.date.split(".").reverse().join("-")
+                    ].join(", ");
+                  return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
+                })
+                .join("<br>");
+            })
+          )
+          .join("<br>");
+
+        setFeedback({
+          open: true,
+          message: conflictMessages,
+          severity: "error",
+        });
+        return;
+      }
+
+      setStep(2);
+    } catch (error) {
+      setFeedback({
+        open: true,
+        message: "Failed to check hall availability.",
+        severity: "error",
+      });
+    }
   };
 
   const handleBack = () => setStep(1);
@@ -490,32 +504,58 @@ function AddEvent() {
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField
-                    label="Start Date"
-                    type="date"
-                    value={eventData.dates[phase].start}
-                    onChange={(e) =>
-                      handleDateChange(phase, "start", e.target.value)
-                    }
-                    required
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    variant="outlined"
-                  />
+                  <FormControl fullWidth required variant="outlined">
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale={"de"}
+                    >
+                      <DatePicker
+                        label="Start Date"
+                        value={
+                          eventData.dates[phase].start
+                            ? dayjs(eventData.dates[phase].start)
+                            : null
+                        }
+                        onChange={(newValue) =>
+                          handleDateChange(
+                            phase,
+                            "start",
+                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                          )
+                        }
+                        slotProps={{
+                          textField: { variant: "outlined", error: false },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField
-                    label="End Date"
-                    type="date"
-                    value={eventData.dates[phase].end}
-                    onChange={(e) =>
-                      handleDateChange(phase, "end", e.target.value)
-                    }
-                    required
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    variant="outlined"
-                  />
+                  <FormControl fullWidth required variant="outlined">
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale={"de"}
+                    >
+                      <DatePicker
+                        label="End Date"
+                        value={
+                          eventData.dates[phase].end
+                            ? dayjs(eventData.dates[phase].end)
+                            : null
+                        }
+                        onChange={(newValue) =>
+                          handleDateChange(
+                            phase,
+                            "end",
+                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                          )
+                        }
+                        slotProps={{
+                          textField: { variant: "outlined", error: false },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
                 </Grid>
               </React.Fragment>
             ))}
@@ -635,7 +675,7 @@ function AddEvent() {
           severity={feedback.severity}
           sx={{ width: "100%" }}
         >
-          {feedback.message}
+          <span dangerouslySetInnerHTML={{ __html: feedback.message }} />
         </Alert>
       </Snackbar>
     </form>
