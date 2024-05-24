@@ -348,7 +348,7 @@ const MapComponent = ({ selectedDate }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `http://127.0.0.1:5000/events_timeline/${selectedDate}`
+          `http://127.0.0.1:5000/api/events_timeline/${selectedDate}`
         );
         if (data) {
           setEvents(data);

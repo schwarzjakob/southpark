@@ -56,7 +56,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `http://127.0.0.1:5000/events_timeline/${selectedDate}`
+          `http://127.0.0.1:5000/api/events_timeline/${selectedDate}`
         );
         const eventsData = Array.isArray(data) ? data : [];
         setEvents(eventsData);
