@@ -148,9 +148,7 @@ def get_events_timeline(date):
         query = f"""
         SELECT * FROM view_schema.view_events_timeline
         WHERE
-            (assembly_start_date <= '{end_date}' AND assembly_end_date >= '{start_date}') OR
-            (runtime_start_date <= '{end_date}' AND runtime_end_date >= '{start_date}') OR
-            (disassembly_start_date <= '{end_date}' AND disassembly_end_date >= '{start_date}')
+            disassembly_end_date >= '{start_date}' AND assembly_start_date <= '{end_date}'
         """
         df_events_timeline = get_data(query)
         if df_events_timeline.empty:
