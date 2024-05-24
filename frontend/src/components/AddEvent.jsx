@@ -396,19 +396,23 @@ function AddEvent() {
       console.log("Free halls:", free_halls);
 
       if (occupied_halls && Object.keys(occupied_halls).length > 0) {
-        const conflictMessages = Object.entries(occupied_halls)
-          .map(([hall, conflicts]) => {
-            return conflicts
-              .map((conflict) => {
-                console.log(conflict.date);
-                const freeHallsOnThatDay =
-                  free_halls[conflict.date.split(".").reverse().join("-")].join(
-                    ", "
-                  );
-                return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
-              })
-              .join("<br>");
-          })
+        const conflictMessages = [
+          "<strong>Did you select the wrong hall?</strong><br>",
+        ]
+          .concat(
+            Object.entries(occupied_halls).map(([hall, conflicts]) => {
+              return conflicts
+                .map((conflict) => {
+                  console.log(conflict.date);
+                  const freeHallsOnThatDay =
+                    free_halls[
+                      conflict.date.split(".").reverse().join("-")
+                    ].join(", ");
+                  return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
+                })
+                .join("<br>");
+            })
+          )
           .join("<br>");
 
         setFeedback({
