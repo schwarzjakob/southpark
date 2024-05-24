@@ -176,7 +176,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         <Typography
           key={year}
           className={`timeline-year ${isSelected ? 'selected' : ''}`}
-          variant="body2"
+          variant='body2'
           onClick={() => handleYearClick(year)}
           sx={{
             marginX: 1,
@@ -198,7 +198,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     return months.map((month, index) => (
       <Typography
         key={month}
-        variant="body2"
+        variant='body2'
         onClick={() => handleMonthClick(index)}
         sx={{
           marginX: 0.5,
@@ -233,7 +233,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     return (
       <Box
         key={`${event.event_id}-${startIndex}`}
-        className="event-row"
+        className='event-row'
         sx={{
           height: '22px',
           marginBottom: '2px',
@@ -245,7 +245,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         }}
       >
         <Box
-          className="event-bar"
+          className='event-bar'
           sx={{
             backgroundColor: colorMapping[event.event_name],
             opacity: opacity,
@@ -255,7 +255,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         >
           {labelText && (
             <Typography
-              className="event-bar__label"
+              className='event-bar__label'
               sx={{
                 position: 'relative',
                 top: '0px',
@@ -307,7 +307,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         return (
           <Box
             key={`empty-${index}`}
-            className="event-row"
+            className='event-row'
             sx={{
               height: '22px',
               marginBottom: '2px',
@@ -368,34 +368,34 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   };
 
   return (
-    <Box className="timeline-wrapper">
-      <Box className="timeline-arrows-container">
-        <Button onClick={handleLeftClick} className="arrow-button left">
+    <Box className='timeline-wrapper'>
+      <Box className='timeline-arrows-container'>
+        <Button onClick={handleLeftClick} className='arrow-button left'>
           <ArrowBackIosIcon />
         </Button>
-        <Button onClick={handleRightClick} className="arrow-button right">
+        <Button onClick={handleRightClick} className='arrow-button right'>
           <ArrowForwardIosIcon />
         </Button>
       </Box>
       <Box
-        className="timeline-container"
+        className='timeline-container'
         sx={{
           height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
         }}
       >
         <Box
-          className="timeline-slider years"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
+          className='timeline-slider years'
+          display='flex'
+          justifyContent='center'
+          alignItems='center'
         >
           {renderYears()}
         </Box>
         <Box
-          className="timeline-slider months"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
+          className='timeline-slider months'
+          display='flex'
+          justifyContent='center'
+          alignItems='center'
         >
           {renderMonths([
             'Jan',
@@ -412,10 +412,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
             'Dec',
           ])}
         </Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box position="relative" sx={{ flexGrow: 1 }}>
+        <Box display='flex' justifyContent='space-between' alignItems='center'>
+          <Box position='relative' sx={{ flexGrow: 1 }}>
             <Box
-              className="timeline-slider days"
+              className='timeline-slider days'
               sx={{
                 display: 'flex',
                 bgcolor: theme.palette.background.paper,
@@ -443,14 +443,14 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
                     cursor: 'pointer',
                   }}
                 >
-                  <Typography className="timeline-date__DD">
+                  <Typography className='timeline-date__DD'>
                     {dayjs(day).format('DD')}
                   </Typography>
-                  <Typography className="timeline-date__ddd">
+                  <Typography className='timeline-date__ddd'>
                     {dayjs(day).format('ddd')}
                   </Typography>
                   <Box
-                    className="event-bars"
+                    className='event-bars'
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
