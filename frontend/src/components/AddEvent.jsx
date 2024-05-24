@@ -336,18 +336,14 @@ function AddEvent() {
   };
 
   const checkHallAvailability = async () => {
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:5000/check_hall_availability",
-        {
-          halls: eventData.halls,
-          dates: eventData.dates,
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await axios.post(
+      "http://127.0.0.1:5000/check_hall_availability",
+      {
+        halls: eventData.halls,
+        dates: eventData.dates,
+      }
+    );
+    return response.data;
   };
 
   const handleNext = async () => {
