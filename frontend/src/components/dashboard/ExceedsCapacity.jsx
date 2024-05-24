@@ -14,7 +14,7 @@ const ExceedsCapacity = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:5000/capacity_utilization');
+            const response = await axios.get('http://127.0.0.1:5000/api/capacity_utilization');
             const dataWithId = response.data.exceeds_capacity.map((row, index) => ({
                 ...row,
                 id: index, // Add a unique id to each row
