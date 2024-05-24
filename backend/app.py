@@ -141,8 +141,8 @@ def get_events_timeline(date):
         date = datetime.strptime(date, "%Y-%m-%d")
 
         # Calculate the start and end dates for the filter
-        start_date = date - timedelta(days=30)
-        end_date = date + timedelta(days=30)
+        start_date = date - timedelta(days=45)
+        end_date = date + timedelta(days=45)
 
         logger.info("Fetching events timeline data from the database.")
         query = f"""
