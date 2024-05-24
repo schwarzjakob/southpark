@@ -141,14 +141,14 @@ def get_events_timeline(date):
         date = datetime.strptime(date, "%Y-%m-%d")
 
         # Calculate the start and end dates for the filter
-        start_date = date - timedelta(days=15)
-        end_date = date + timedelta(days=15)
+        start_date = date - timedelta(days=30)
+        end_date = date + timedelta(days=30)
 
         logger.info("Fetching events timeline data from the database.")
         query = f"""
         SELECT * FROM view_schema.view_events_timeline
         WHERE
-            disassembly_end_date >= '{start_date}' AND assembly_start_date <= '{end_date}'
+            (disassembly_end_date >= '{start_date}' AND assembly_start_date <= '{end_date}')
         """
         df_events_timeline = get_data(query)
         if df_events_timeline.empty:

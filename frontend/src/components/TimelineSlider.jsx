@@ -29,7 +29,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   const [colorMapping, setColorMapping] = useState({});
   const ROW_HEIGHT = 24; // Height of each row in pixels
   const OFFSET = 100; // Offset for the top padding
-  const BUFFER = 2; // Number of days to buffer on each side
+  const BUFFER = 10; // Number of days to buffer on each side
 
   useEffect(() => {
     const calculateNumberOfDays = () => Math.floor(window.innerWidth / 45);
@@ -43,7 +43,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     };
 
     const updateDays = () => {
-      setDays(generateDays(selectedDate, calculateNumberOfDays() + BUFFER * 2));
+      setDays(generateDays(selectedDate, calculateNumberOfDays() + BUFFER * 2)); // Add buffer on each side to extend the range
     };
 
     updateDays();
@@ -422,7 +422,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
                 height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
                 // move the days container to the left
                 position: 'absolute',
-                left: -BUFFER * 45,
+                left: -BUFFER * 45 - 30, // -30 to center the selected day
               }}
             >
               {days.map((day) => (
