@@ -8,6 +8,7 @@ import {
   Snackbar,
   Alert,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import { DataGrid, GridToolbarExport } from "@mui/x-data-grid";
 import axios from "axios";
@@ -32,12 +33,14 @@ const InputDemands = () => {
     message: "",
     severity: "info",
   });
+  const [loading, setLoading] = useState(false); // Loading state
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const eventRefs = useRef([]);
   const bottomRef = useRef(null);
 
   const fetchEvents = async () => {
+    setLoading(true); // Set loading to true
     try {
       const response = await axios.get(
         "http://127.0.0.1:5000/events_without_valid_demands"
@@ -74,6 +77,8 @@ const InputDemands = () => {
         message: "Failed to fetch events.",
         severity: "error",
       });
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -110,6 +115,7 @@ const InputDemands = () => {
   };
 
   const handleSubmit = async () => {
+    setLoading(true); // Set loading to true
     let hasDemands = false;
     const demandsToSave = [];
 
@@ -140,6 +146,7 @@ const InputDemands = () => {
         message: "No demands entered for any event.",
         severity: "info",
       });
+      setLoading(false); // Set loading to false
       return;
     }
 
@@ -165,16 +172,20 @@ const InputDemands = () => {
       });
 
       fetchEvents(); // Refetch events after successful save
+      handleScrollToTop();
     } catch (error) {
       setFeedback({
         open: true,
         message: "Failed to save demands.",
         severity: "error",
       });
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
   const handleSaveEventDemands = async (eventId) => {
+    setLoading(true); // Set loading to true
     const event = events.find((event) => event.event_id === eventId);
     const demands = {};
     let hasDemands = false;
@@ -198,6 +209,7 @@ const InputDemands = () => {
         message: `No demands entered for ${event.name}.`,
         severity: "info",
       });
+      setLoading(false); // Set loading to false
       return;
     }
 
@@ -227,6 +239,8 @@ const InputDemands = () => {
         message: `Failed to save ${event.name} demands.`,
         severity: "error",
       });
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -335,21 +349,46 @@ const InputDemands = () => {
                     return null;
                   })}
                 </Grid>
-                <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: "flex",
+                    justifyContent: "center",
+                    position: "relative",
+                  }}
+                >
                   <Button
                     variant="contained"
                     color="primary"
                     fullWidth
                     onClick={() => handleSaveEventDemands(event.event_id)}
+                    disabled={loading} // Disable button when loading
                   >
                     Save {event.name} Demands
                   </Button>
+                  {loading && (
+                    <CircularProgress
+                      size={24}
+                      sx={{
+                        color: "primary.main",
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        marginTop: "-12px",
+                        marginLeft: "-12px",
+                      }}
+                    />
+                  )}
                 </Box>
               </Box>
               {index < events.length - 1 && <Divider sx={{ my: 2 }} />}
             </React.Fragment>
           ))}
         </>
+      ) : loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <CircularProgress />
+        </Box>
       ) : (
         <Typography>No events without demands.</Typography>
       )}
@@ -365,15 +404,29 @@ const InputDemands = () => {
               Reset
             </Button>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={6} sx={{ position: "relative" }}>
             <Button
               variant="contained"
               color="primary"
               fullWidth
               onClick={handleSubmit}
+              disabled={loading} // Disable button when loading
             >
               Save All Demands
             </Button>
+            {loading && (
+              <CircularProgress
+                size={24}
+                sx={{
+                  color: "primary.main",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  marginTop: "-12px",
+                  marginLeft: "-12px",
+                }}
+              />
+            )}
           </Grid>
         </Grid>
       </Box>
