@@ -109,6 +109,10 @@ const InputDemands = () => {
     }
   };
 
+  const handleReset = () => {
+    fetchEvents();
+  };
+
   return (
     <Box sx={{ pt: 3, pb: 3, pl: 10, pr: 10 }}>
       <Typography variant="h3" component="h2" gutterBottom>
@@ -197,7 +201,7 @@ const InputDemands = () => {
               variant="contained"
               color="secondary"
               fullWidth
-              onClick={() => setEvents([])}
+              onClick={handleReset}
             >
               Reset
             </Button>
