@@ -348,7 +348,7 @@ const MapComponent = ({ selectedDate }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `https://southpark.tirtey.com/api/events_timeline/${selectedDate}`
+          `/api/events_timeline/${selectedDate}`
         );
         if (data) {
           setEvents(data);

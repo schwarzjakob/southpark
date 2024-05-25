@@ -290,7 +290,7 @@ function AddEvent() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://southpark.tirtey.com/api/add_event",
+        "/api/add_event",
         eventData
       );
       console.log("Event created successfully:", response.data);
@@ -303,7 +303,7 @@ function AddEvent() {
 
       try {
         const optimizeResponse = await axios.post(
-          "https://southpark.tirtey.com/api/optimize_distance"
+          "/api/optimize_distance"
         );
         console.log(
           "Optimization triggered successfully:",
@@ -339,7 +339,7 @@ function AddEvent() {
 
   const checkHallAvailability = async () => {
     const response = await axios.post(
-      "https://southpark.tirtey.com/api/check_hall_availability",
+      "/api/check_hall_availability",
       {
         halls: eventData.halls,
         dates: eventData.dates,
