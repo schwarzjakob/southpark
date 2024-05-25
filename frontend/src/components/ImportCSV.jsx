@@ -11,6 +11,7 @@ import {
   MenuItem,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { usePapaParse } from "react-papaparse";
 import axios from "axios";
@@ -33,6 +34,7 @@ const ImportCSV = () => {
   const [csvData, setCsvData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [mapping, setMapping] = useState(defaultMapping);
+  const [loading, setLoading] = useState(false); // Loading state
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
@@ -68,6 +70,7 @@ const ImportCSV = () => {
   };
 
   const handleImport = async () => {
+    setLoading(true); // Set loading to true
     try {
       const response = await axios.post("http://127.0.0.1:5000/import_events", {
         csv_data: csvData,
@@ -85,6 +88,8 @@ const ImportCSV = () => {
         message: error.response.data.error,
         severity: "error",
       });
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -125,15 +130,29 @@ const ImportCSV = () => {
               ))}
             </Grid>
           </Box>
-          <Box sx={{ mt: 3 }}>
+          <Box sx={{ mt: 3, position: "relative" }}>
             <Button
               variant="contained"
               color="primary"
               onClick={handleImport}
               fullWidth
+              disabled={loading} // Disable button when loading
             >
               Import Events
             </Button>
+            {loading && (
+              <CircularProgress
+                size={24}
+                sx={{
+                  color: "primary.main",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  marginTop: "-12px",
+                  marginLeft: "-12px",
+                }}
+              />
+            )}
           </Box>
         </>
       )}
