@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -13,8 +13,15 @@ import {
   Alert,
   CircularProgress,
   TextField,
+  Checkbox,
+  ListItemText,
+  Divider,
 } from "@mui/material";
 import { usePapaParse } from "react-papaparse";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 import axios from "axios";
 
 const defaultMapping = {
@@ -29,19 +36,54 @@ const defaultMapping = {
   entrance: "Entrance",
 };
 
+const hallOptions = [
+  "A1",
+  "A2",
+  "A3",
+  "A4",
+  "A5",
+  "A6",
+  "B1",
+  "B2",
+  "B3",
+  "B4",
+  "B5",
+  "B6",
+  "C1",
+  "C2",
+  "C3",
+  "C4",
+  "C5",
+  "C6",
+];
+
+const entranceLabels = {
+  west: "West",
+  north_west: "Northwest",
+  north: "North",
+  north_east: "Northeast",
+  east: "East",
+};
+
+const phaseLabels = {
+  assembly: "Assembly",
+  runtime: "Runtime",
+  disassembly: "Disassembly",
+};
+
 const ImportCSV = () => {
   const navigate = useNavigate();
   const { readString } = usePapaParse();
   const [csvData, setCsvData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [mapping, setMapping] = useState(defaultMapping);
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
     severity: "info",
   });
-  const [events, setEvents] = useState([]); // State to store and display imported events
+  const [events, setEvents] = useState([]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -77,16 +119,28 @@ const ImportCSV = () => {
       Object.keys(mapping).forEach((key) => {
         event[key] = row[mapping[key]];
       });
+      event.dates = {
+        assembly: {
+          start: event.assembly_start_date,
+          end: event.assembly_end_date,
+        },
+        runtime: {
+          start: event.runtime_start_date,
+          end: event.runtime_end_date,
+        },
+        disassembly: {
+          start: event.disassembly_start_date,
+          end: event.disassembly_end_date,
+        },
+      };
       return event;
     });
     setEvents(processedEvents);
-    console.log("Processed Events:", processedEvents); // Log processed events for debugging
   };
 
   const handleImport = async () => {
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
-      console.log("Submitting Events:", events); // Log events being submitted for debugging
       const response = await axios.post("http://127.0.0.1:5000/import_events", {
         csv_data: events,
         mapping,
@@ -96,7 +150,7 @@ const ImportCSV = () => {
         message: response.data.message,
         severity: "success",
       });
-      navigate("/input_demands"); // Redirect to demand input form
+      navigate("/input_demands");
     } catch (error) {
       setFeedback({
         open: true,
@@ -104,13 +158,19 @@ const ImportCSV = () => {
         severity: "error",
       });
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
   const handleEventChange = (index, field, value) => {
     const updatedEvents = [...events];
     updatedEvents[index][field] = value;
+    setEvents(updatedEvents);
+  };
+
+  const handleDateChange = (index, phase, dateType, value) => {
+    const updatedEvents = [...events];
+    updatedEvents[index].dates[phase][dateType] = value;
     setEvents(updatedEvents);
   };
 
@@ -166,29 +226,149 @@ const ImportCSV = () => {
       {events.length > 0 && (
         <>
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h3" gutterBottom>
               Adjust Imported Events
             </Typography>
             {events.map((event, index) => (
               <Box key={index} sx={{ mb: 3 }}>
-                <Typography variant="h6">
-                  Event {index + 1}: {event.name}
+                <Typography variant="h4" component="h3" gutterBottom>
+                  {event.name}
                 </Typography>
                 <Grid container spacing={2}>
-                  {Object.keys(defaultMapping).map((field) => (
-                    <Grid item xs={6} key={field}>
-                      <TextField
-                        label={defaultMapping[field]}
-                        value={event[field] || ""}
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Event Name"
+                      value={event.name || ""}
+                      onChange={(e) =>
+                        handleEventChange(index, "name", e.target.value)
+                      }
+                      required
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth required variant="outlined">
+                      <InputLabel>Halls</InputLabel>
+                      <Select
+                        multiple
+                        value={event.halls ? event.halls.split(",") : []}
                         onChange={(e) =>
-                          handleEventChange(index, field, e.target.value)
+                          handleEventChange(
+                            index,
+                            "halls",
+                            e.target.value.join(",")
+                          )
                         }
-                        fullWidth
-                        variant="outlined"
-                      />
-                    </Grid>
+                        label="Halls"
+                        renderValue={(selected) => selected.join(", ")}
+                      >
+                        {hallOptions.map((hall) => (
+                          <MenuItem key={hall} value={hall}>
+                            <Checkbox
+                              checked={
+                                event.halls &&
+                                event.halls.split(",").indexOf(hall) > -1
+                              }
+                            />
+                            <ListItemText primary={hall} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth required variant="outlined">
+                      <InputLabel>Entrance</InputLabel>
+                      <Select
+                        value={event.entrance || "west"}
+                        onChange={(e) =>
+                          handleEventChange(index, "entrance", e.target.value)
+                        }
+                        label="Entrance"
+                      >
+                        {Object.entries(entranceLabels).map(
+                          ([value, label]) => (
+                            <MenuItem key={value} value={value}>
+                              {label}
+                            </MenuItem>
+                          )
+                        )}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  {Object.keys(phaseLabels).map((phase) => (
+                    <React.Fragment key={phase}>
+                      <Grid item xs={12}>
+                        <Typography variant="h5" component="h3" gutterBottom>
+                          {phaseLabels[phase]}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <FormControl fullWidth required variant="outlined">
+                          <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale={"de"}
+                          >
+                            <DatePicker
+                              label="Start Date"
+                              value={
+                                event.dates[phase].start
+                                  ? dayjs(event.dates[phase].start)
+                                  : null
+                              }
+                              onChange={(newValue) =>
+                                handleDateChange(
+                                  index,
+                                  phase,
+                                  "start",
+                                  newValue ? newValue.format("YYYY-MM-DD") : ""
+                                )
+                              }
+                              slotProps={{
+                                textField: {
+                                  variant: "outlined",
+                                  error: false,
+                                },
+                              }}
+                            />
+                          </LocalizationProvider>
+                        </FormControl>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <FormControl fullWidth required variant="outlined">
+                          <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale={"de"}
+                          >
+                            <DatePicker
+                              label="End Date"
+                              value={
+                                event.dates[phase].end
+                                  ? dayjs(event.dates[phase].end)
+                                  : null
+                              }
+                              onChange={(newValue) =>
+                                handleDateChange(
+                                  index,
+                                  phase,
+                                  "end",
+                                  newValue ? newValue.format("YYYY-MM-DD") : ""
+                                )
+                              }
+                              slotProps={{
+                                textField: {
+                                  variant: "outlined",
+                                  error: false,
+                                },
+                              }}
+                            />
+                          </LocalizationProvider>
+                        </FormControl>
+                      </Grid>
+                    </React.Fragment>
                   ))}
                 </Grid>
+                {index < events.length - 1 && <Divider sx={{ my: 2 }} />}
               </Box>
             ))}
             <Box sx={{ mt: 3, position: "relative" }}>
@@ -197,9 +377,9 @@ const ImportCSV = () => {
                 color="primary"
                 onClick={handleImport}
                 fullWidth
-                disabled={loading} // Disable button when loading
+                disabled={loading}
               >
-                Save Events
+                Import Events
               </Button>
               {loading && (
                 <CircularProgress
