@@ -14,7 +14,7 @@ const Between80And100 = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:5000/api/capacity_utilization');
+            const response = await axios.get('https://southpark.tirtey.com/api/capacity_utilization');
             const dataWithId = response.data.between_80_and_100.map((row, index) => ({
                 ...row,
                 id: index, // Add a unique id to each row
