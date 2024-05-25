@@ -496,6 +496,55 @@ def import_events():
         logger.error("Failed to import events", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+        # Fetch events without demands
+
+
+@app.route("/events_without_valid_demands", methods=["GET"])
+def events_without_valid_demands():
+    try:
+        query = """
+        SELECT e.id as event_id, e.name, e.assembly_start_date, e.assembly_end_date, 
+               e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, 
+               e.disassembly_end_date, vd.id as demand_id, vd.date, vd.demand, vd.status
+        FROM event e
+        LEFT JOIN visitor_demand vd ON e.id = vd.event_id
+        WHERE vd.demand = 0
+        """
+        events = get_data(query).to_dict(orient="records")
+        logger.info("Events without valid demands fetched successfully.")
+        return jsonify({"events": events}), 200
+    except Exception as e:
+        logger.error("Failed to fetch events without valid demands", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/add_demands/<int:event_id>", methods=["POST"])
+def add_demands(event_id):
+    try:
+        demands = request.json["demands"]
+        queries = []
+
+        for demand_id, demand_data in demands.items():
+            query_demand = """
+            UPDATE visitor_demand
+            SET demand = :demand
+            WHERE id = :demand_id
+            """
+            params_demand = {
+                "demand_id": demand_id,
+                "demand": demand_data["demand"],
+            }
+            queries.append((query_demand, params_demand))
+
+        with engine.begin() as connection:
+            for query, params in queries:
+                connection.execute(text(query), params)
+
+        return jsonify({"message": "Demands updated successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to update demands", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
 
 # Optimize parking lot allocation
 @app.route("/optimize_distance", methods=["POST"])

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -15,6 +16,7 @@ import { usePapaParse } from "react-papaparse";
 import axios from "axios";
 
 const ImportCSV = () => {
+  const navigate = useNavigate();
   const { readString } = usePapaParse();
   const [csvData, setCsvData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
@@ -56,6 +58,7 @@ const ImportCSV = () => {
         message: response.data.message,
         severity: "success",
       });
+      navigate("/input_demands"); // Redirect to demand input form
     } catch (error) {
       setFeedback({
         open: true,
