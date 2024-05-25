@@ -32,7 +32,10 @@ const InputDemands = () => {
     message: "",
     severity: "info",
   });
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const eventRefs = useRef([]);
+  const bottomRef = useRef(null);
 
   const fetchEvents = async () => {
     try {
@@ -76,6 +79,18 @@ const InputDemands = () => {
 
   useEffect(() => {
     fetchEvents();
+
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const bodyHeight = document.body.scrollHeight - windowHeight;
+
+      setShowScrollToTop(scrollTop > 600);
+      setShowScrollToBottom(scrollTop < bodyHeight - 600);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleDemandChange = (eventId, date, value) => {
@@ -164,7 +179,6 @@ const InputDemands = () => {
       ) {
         demands[demand_id] = { date, demand };
         hasDemands = true;
-        console.log(demands);
       }
     }
 
@@ -203,6 +217,14 @@ const InputDemands = () => {
   const handleRowClick = (params) => {
     const index = events.findIndex((event) => event.event_id === params.id);
     eventRefs.current[index].scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleScrollToBottom = () => {
+    bottomRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -293,7 +315,7 @@ const InputDemands = () => {
                     return null;
                   })}
                 </Grid>
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
                   <Button
                     variant="contained"
                     color="primary"
@@ -330,11 +352,60 @@ const InputDemands = () => {
               fullWidth
               onClick={handleSubmit}
             >
-              Save Demands
+              Save All Demands
             </Button>
           </Grid>
         </Grid>
       </Box>
+      {showScrollToTop && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            width: "90%",
+            maxWidth: "400px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleScrollToTop}
+          >
+            Scroll to Top
+          </Button>
+        </Box>
+      )}
+      {showScrollToBottom && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            width: "90%",
+            maxWidth: "400px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleScrollToBottom}
+          >
+            Scroll to Bottom
+          </Button>
+        </Box>
+      )}
+      <div ref={bottomRef} />
       <Snackbar
         open={feedback.open}
         autoHideDuration={6000}
