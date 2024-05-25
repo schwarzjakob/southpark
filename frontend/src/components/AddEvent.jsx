@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -56,6 +57,7 @@ const hallOptions = [
 ];
 
 function AddEvent() {
+  const navigate = useNavigate();
   const initialEventData = {
     name: "",
     dates: {
@@ -580,6 +582,16 @@ function AddEvent() {
                 fullWidth
               >
                 Continue with Demands
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => navigate("/import")}
+                fullWidth
+              >
+                Import CSV
               </Button>
             </Grid>
           </Grid>

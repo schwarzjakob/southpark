@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -9,6 +9,7 @@ import Footer from "./components/Footer.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import MapView from "./components/MapView.jsx";
 import AddEvent from "./components/AddEvent.jsx";
+import ImportCSV from "./components/ImportCSV.jsx";
 import EventsAllocationTable from "./components/EventsAllocationTable.jsx";
 import ExceedsCapacity from "./components/dashboard/ExceedsCapacity.jsx";
 import Between80And100 from "./components/dashboard/Between80And100.jsx";
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/mapview" element={<MapView />} />
                 <Route path="/tableview" element={<EventsAllocationTable />} />
                 <Route path="/addEvent" element={<AddEvent />} />
+                <Route path="/import" element={<ImportCSV />} />
                 <Route path="/exceedsCapacity" element={<ExceedsCapacity />} />
                 <Route path="/between80And100" element={<Between80And100 />} />
                 <Route path="/user" element={<Team />} />

@@ -7,6 +7,8 @@ from sqlalchemy import create_engine, text
 import logging
 import pandas as pd
 from datetime import datetime, timedelta
+import csv
+from io import StringIO
 
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
@@ -369,6 +371,129 @@ def add_event():
         return jsonify({"message": "Event added successfully"}), 200
     except Exception as e:
         logger.error("Failed to add event", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# Import events
+@app.route("/import_events", methods=["POST"])
+def import_events():
+    try:
+        data = request.json
+        csv_data = data.get("csv_data")
+        mapping = data.get("mapping")
+
+        print(data)
+        print(csv_data)
+        print(mapping)
+
+        if not csv_data or not mapping:
+            return jsonify({"error": "Invalid input data"}), 400
+
+        # Validate required fields in the mapping
+        required_fields = [
+            "name",
+            "assembly_start_date",
+            "assembly_end_date",
+            "runtime_start_date",
+            "runtime_end_date",
+            "disassembly_start_date",
+            "disassembly_end_date",
+            "entrance",
+        ]
+        for field in required_fields:
+            print(field)
+            if field not in mapping.values():
+                logger.error(f"Missing required field in mapping: {field}")
+                return (
+                    jsonify({"error": f"Missing required field in mapping: {field}"}),
+                    400,
+                )
+
+        events = []
+        for row in csv_data:
+            event = {}
+            try:
+                event["name"] = row[mapping["name"]]
+                event["assembly_start_date"] = row[mapping["assembly_start_date"]]
+                event["assembly_end_date"] = row[mapping["assembly_end_date"]]
+                event["runtime_start_date"] = row[mapping["runtime_start_date"]]
+                event["runtime_end_date"] = row[mapping["runtime_end_date"]]
+                event["disassembly_start_date"] = row[mapping["disassembly_start_date"]]
+                event["disassembly_end_date"] = row[mapping["disassembly_end_date"]]
+                event["entrance"] = row[mapping["entrance"]]
+                events.append(event)
+            except KeyError as e:
+                logger.error(f"Missing field in row: {e}")
+                continue
+
+        # Insert events into the database
+        with engine.begin() as connection:
+            for event in events:
+                query_event = """
+                INSERT INTO event (name, entrance, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date)
+                VALUES (:name, :entrance, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date)
+                RETURNING id
+                """
+                params_event = {
+                    "name": event["name"],
+                    "entrance": event["entrance"],
+                    "assembly_start_date": event["assembly_start_date"],
+                    "assembly_end_date": event["assembly_end_date"],
+                    "runtime_start_date": event["runtime_start_date"],
+                    "runtime_end_date": event["runtime_end_date"],
+                    "disassembly_start_date": event["disassembly_start_date"],
+                    "disassembly_end_date": event["disassembly_end_date"],
+                }
+                result = connection.execute(text(query_event), params_event)
+                event_id = result.fetchone()[0]
+
+                # Insert visitor demands
+                for phase in ["assembly", "runtime", "disassembly"]:
+                    all_dates = calculate_date_range(
+                        event[f"{phase}_start_date"], event[f"{phase}_end_date"]
+                    )
+                    for event_date in all_dates:
+                        query_demand = """
+                        INSERT INTO visitor_demand (event_id, date, demand, status)
+                        VALUES (:event_id, :date, :demand, :status)
+                        """
+                        params_demand = {
+                            "event_id": event_id,
+                            "date": event_date,
+                            "demand": 0,  # Set default demand to 0, can be updated later
+                            "status": phase,
+                        }
+                        connection.execute(text(query_demand), params_demand)
+
+                # Insert hall occupations
+                hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
+                for (
+                    hall_name
+                ) in []:  # Add logic to get hall names if available in the CSV
+                    hall_id = connection.execute(
+                        text(hall_id_query), {"hall_name": hall_name}
+                    ).fetchone()[0]
+                    for phase in ["assembly", "runtime", "disassembly"]:
+                        all_dates = calculate_date_range(
+                            event[f"{phase}_start_date"], event[f"{phase}_end_date"]
+                        )
+                        for event_date in all_dates:
+                            query_hall_occupation = """
+                            INSERT INTO hall_occupation (event_id, hall_id, date)
+                            VALUES (:event_id, :hall_id, :date)
+                            """
+                            params_hall_occupation = {
+                                "event_id": event_id,
+                                "hall_id": hall_id,
+                                "date": event_date,
+                            }
+                            connection.execute(
+                                text(query_hall_occupation), params_hall_occupation
+                            )
+
+        return jsonify({"message": "Events imported successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to import events", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
