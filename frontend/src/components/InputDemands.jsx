@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,7 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
+import { DataGrid, GridToolbarExport } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 
@@ -18,13 +19,20 @@ const phaseLabels = {
   disassembly: "Disassembly",
 };
 
+const columns = [
+  { field: "name", headerName: "Event Name", flex: 1 },
+  { field: "year", headerName: "Year", flex: 1 },
+];
+
 const InputDemands = () => {
   const [events, setEvents] = useState([]);
+  const [tableData, setTableData] = useState([]);
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
     severity: "info",
   });
+  const eventRefs = useRef([]);
 
   const fetchEvents = async () => {
     try {
@@ -49,6 +57,14 @@ const InputDemands = () => {
         return acc;
       }, []);
       setEvents(eventsWithDemands);
+      eventRefs.current = eventsWithDemands.map(() => React.createRef());
+
+      const tableData = eventsWithDemands.map((event) => ({
+        id: event.event_id,
+        name: event.name,
+        year: dayjs(event.runtime_start_date).year(),
+      }));
+      setTableData(tableData);
     } catch (error) {
       setFeedback({
         open: true,
@@ -113,84 +129,104 @@ const InputDemands = () => {
     fetchEvents();
   };
 
+  const handleRowClick = (params) => {
+    const index = events.findIndex((event) => event.event_id === params.id);
+    eventRefs.current[index].scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <Box sx={{ pt: 3, pb: 3, pl: 10, pr: 10 }}>
       <Typography variant="h3" component="h2" gutterBottom>
         Input Visitor Demands
       </Typography>
       {events.length > 0 ? (
-        events.map((event, index) => (
-          <React.Fragment key={event.event_id}>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h4" component="h3" gutterBottom>
-                {event.name}
-              </Typography>
-              <Grid container spacing={2}>
-                {Object.keys(phaseLabels).map((phase) => {
-                  const startDateKey = `${phase}_start_date`;
-                  const endDateKey = `${phase}_end_date`;
-                  const startDate = event[startDateKey];
-                  const endDate = event[endDateKey];
+        <>
+          <Box sx={{ mb: 3 }}>
+            <DataGrid
+              rows={tableData}
+              columns={columns}
+              getRowId={(row) => row.id}
+              components={{
+                Toolbar: GridToolbarExport,
+              }}
+              disableSelectionOnClick
+              autoHeight
+              onRowClick={handleRowClick}
+            />
+          </Box>
+          {events.map((event, index) => (
+            <React.Fragment key={event.event_id}>
+              <Box ref={(el) => (eventRefs.current[index] = el)} sx={{ mb: 3 }}>
+                <Typography variant="h4" component="h3" gutterBottom>
+                  {event.name}
+                </Typography>
+                <Grid container spacing={2}>
+                  {Object.keys(phaseLabels).map((phase) => {
+                    const startDateKey = `${phase}_start_date`;
+                    const endDateKey = `${phase}_end_date`;
+                    const startDate = event[startDateKey];
+                    const endDate = event[endDateKey];
 
-                  if (
-                    startDate &&
-                    endDate &&
-                    dayjs(startDate).isValid() &&
-                    dayjs(endDate).isValid()
-                  ) {
-                    const dates = Object.keys(event.demands).filter(
-                      (date) =>
-                        dayjs(date).isAfter(
-                          dayjs(startDate).subtract(1, "day")
-                        ) && dayjs(date).isBefore(dayjs(endDate))
-                    );
-
-                    if (dates.length > 0) {
-                      return (
-                        <React.Fragment key={phase}>
-                          <Grid item xs={12}>
-                            <Typography
-                              variant="h5"
-                              component="h3"
-                              gutterBottom
-                            >
-                              {phaseLabels[phase]}
-                            </Typography>
-                          </Grid>
-                          {dates.map((date) => (
-                            <Grid
-                              item
-                              xs={12}
-                              key={`${event.event_id}-${date}`}
-                            >
-                              <TextField
-                                label={`${date} Demand`}
-                                type="number"
-                                value={event.demands[date].demand || ""}
-                                onChange={(e) =>
-                                  handleDemandChange(
-                                    event.event_id,
-                                    date,
-                                    e.target.value
-                                  )
-                                }
-                                required
-                                fullWidth
-                                variant="outlined"
-                              />
-                            </Grid>
-                          ))}
-                        </React.Fragment>
+                    if (
+                      startDate &&
+                      endDate &&
+                      dayjs(startDate).isValid() &&
+                      dayjs(endDate).isValid()
+                    ) {
+                      const dates = Object.keys(event.demands).filter(
+                        (date) =>
+                          dayjs(date).isAfter(
+                            dayjs(startDate).subtract(1, "day")
+                          ) && dayjs(date).isBefore(dayjs(endDate))
                       );
+
+                      if (dates.length > 0) {
+                        return (
+                          <React.Fragment key={phase}>
+                            <Grid item xs={12}>
+                              <Typography
+                                variant="h5"
+                                component="h3"
+                                gutterBottom
+                              >
+                                {phaseLabels[phase]}
+                              </Typography>
+                            </Grid>
+                            {dates.map((date) => (
+                              <Grid
+                                item
+                                xs={12}
+                                key={`${event.event_id}-${date}`}
+                              >
+                                <TextField
+                                  label={`${date} Demand`}
+                                  type="number"
+                                  value={event.demands[date].demand || ""}
+                                  onChange={(e) =>
+                                    handleDemandChange(
+                                      event.event_id,
+                                      date,
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  fullWidth
+                                  variant="outlined"
+                                />
+                              </Grid>
+                            ))}
+                          </React.Fragment>
+                        );
+                      }
                     }
-                  }
-                  return null;
-                })}
-              </Grid>
-            </Box>
-            {index < events.length - 1 && <Divider sx={{ my: 2 }} />}
-          </React.Fragment>
-        ))
+                    return null;
+                  })}
+                </Grid>
+              </Box>
+              {index < events.length - 1 && <Divider sx={{ my: 2 }} />}
+            </React.Fragment>
+          ))}
+        </>
       ) : (
         <Typography>No events without demands.</Typography>
       )}
