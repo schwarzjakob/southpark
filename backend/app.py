@@ -197,6 +197,7 @@ def get_events_parking_lots_allocation():
         if df_events_parking_lots_allocation.empty:
             logger.info("No data available.")
             return jsonify({"message": "No data found"}), 204
+        print(df_events_parking_lots_allocation)
         logger.info("Events parking lots allocation data fetched successfully.")
         return jsonify(df_events_parking_lots_allocation.to_dict(orient="records")), 200
     except Exception as e:
@@ -382,45 +383,73 @@ def import_events():
         csv_data = data.get("csv_data")
         mapping = data.get("mapping")
 
-        print(data)
-        print(csv_data)
-        print(mapping)
+        logger.debug(f"Received mapping: {mapping}")
+        logger.debug(f"Received CSV data: {csv_data}")
 
         if not csv_data or not mapping:
             return jsonify({"error": "Invalid input data"}), 400
 
         # Validate required fields in the mapping
         required_fields = [
-            "Event Name",
-            "Assembly Start Date",
-            "Assembly End Date",
-            "Runtime Start Date",
-            "Runtime End Date",
-            "Disassembly Start Date",
-            "Disassembly End Date",
-            "Entrance",
+            "name",
+            "assembly_start_date",
+            "assembly_end_date",
+            "runtime_start_date",
+            "runtime_end_date",
+            "disassembly_start_date",
+            "disassembly_end_date",
+            "entrance",
+            "halls",
         ]
-        for field in required_fields:
-            print(field)
-            if field not in mapping.values():
-                logger.error(f"Missing required field in mapping: {field}")
-                return (
-                    jsonify({"error": f"Missing required field in mapping: {field}"}),
-                    400,
-                )
+
+        # Check if required fields are present in the mapping
+        missing_fields = [field for field in required_fields if field not in mapping]
+        if missing_fields:
+            logger.error(f"Missing required fields in mapping: {missing_fields}")
+            return (
+                jsonify(
+                    {"error": f"Missing required fields in mapping: {missing_fields}"}
+                ),
+                400,
+            )
 
         events = []
         for row in csv_data:
-            event = {}
+            logger.debug(f"Processing row: {row}")
             try:
-                event["name"] = row[mapping["name"]]
-                event["assembly_start_date"] = row[mapping["assembly_start_date"]]
-                event["assembly_end_date"] = row[mapping["assembly_end_date"]]
-                event["runtime_start_date"] = row[mapping["runtime_start_date"]]
-                event["runtime_end_date"] = row[mapping["runtime_end_date"]]
-                event["disassembly_start_date"] = row[mapping["disassembly_start_date"]]
-                event["disassembly_end_date"] = row[mapping["disassembly_end_date"]]
-                event["entrance"] = row[mapping["entrance"]]
+                event = {
+                    "name": row.get(mapping["name"], "").strip(),
+                    "assembly_start_date": row.get(
+                        mapping["assembly_start_date"], ""
+                    ).strip(),
+                    "assembly_end_date": row.get(
+                        mapping["assembly_end_date"], ""
+                    ).strip(),
+                    "runtime_start_date": row.get(
+                        mapping["runtime_start_date"], ""
+                    ).strip(),
+                    "runtime_end_date": row.get(
+                        mapping["runtime_end_date"], ""
+                    ).strip(),
+                    "disassembly_start_date": row.get(
+                        mapping["disassembly_start_date"], ""
+                    ).strip(),
+                    "disassembly_end_date": row.get(
+                        mapping["disassembly_end_date"], ""
+                    ).strip(),
+                    "entrance": row.get(mapping["entrance"], "").strip(),
+                    "halls": [
+                        hall.strip()
+                        for hall in row.get(mapping["halls"], "").split(",")
+                    ],
+                }
+
+                # Check for missing required fields in each row
+                for key, value in event.items():
+                    if not value and key != "halls":
+                        logger.error(f"Missing field in row: '{key}'")
+                        raise KeyError(f"Missing field in row: '{key}'")
+
                 events.append(event)
             except KeyError as e:
                 logger.error(f"Missing field in row: {e}")
@@ -467,9 +496,7 @@ def import_events():
 
                 # Insert hall occupations
                 hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
-                for (
-                    hall_name
-                ) in []:  # Add logic to get hall names if available in the CSV
+                for hall_name in event["halls"]:
                     hall_id = connection.execute(
                         text(hall_id_query), {"hall_name": hall_name}
                     ).fetchone()[0]
@@ -496,9 +523,8 @@ def import_events():
         logger.error("Failed to import events", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-        # Fetch events without demands
 
-
+# Fetch events without demands
 @app.route("/events_without_valid_demands", methods=["GET"])
 def events_without_valid_demands():
     try:

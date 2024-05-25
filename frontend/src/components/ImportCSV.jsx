@@ -17,6 +17,7 @@ import axios from "axios";
 
 const defaultMapping = {
   name: "Event Name",
+  halls: "Halls",
   assembly_start_date: "Assembly Start Date",
   assembly_end_date: "Assembly End Date",
   runtime_start_date: "Runtime Start Date",

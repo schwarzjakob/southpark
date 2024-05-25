@@ -16,6 +16,7 @@ import MapIcon from "@mui/icons-material/Map";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AddIcon from "@mui/icons-material/Add";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 const Navigation = ({ isOpen, toggleNav }) => {
   return (
@@ -123,6 +124,22 @@ const Navigation = ({ isOpen, toggleNav }) => {
                 <AddIcon />
               </ListItemIcon>
               <ListItemText primary="Add Event" />
+            </ListItemButton>
+          </Link>
+          <Link
+            to="/import"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
+              <ListItemIcon>
+                <FileUploadIcon />
+              </ListItemIcon>
+              <ListItemText primary="Upload Events" />
             </ListItemButton>
           </Link>
           <Link
