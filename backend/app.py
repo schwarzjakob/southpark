@@ -381,7 +381,18 @@ def import_events():
     try:
         data = request.json
         csv_data = data.get("csv_data")
-        mapping = data.get("mapping")
+        # mapping = data.get("mapping")
+        mapping = {
+            "name": "name",
+            "halls": "halls",
+            "assembly_start_date": "assembly_start_date",
+            "assembly_end_date": "assembly_end_date",
+            "runtime_start_date": "runtime_start_date",
+            "runtime_end_date": "runtime_end_date",
+            "disassembly_start_date": "disassembly_start_date",
+            "disassembly_end_date": "disassembly_end_date",
+            "entrance": "entrance",
+        }
 
         logger.debug(f"Received mapping: {mapping}")
         logger.debug(f"Received CSV data: {csv_data}")

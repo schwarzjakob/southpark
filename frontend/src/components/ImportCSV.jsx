@@ -12,6 +12,7 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  TextField,
 } from "@mui/material";
 import { usePapaParse } from "react-papaparse";
 import axios from "axios";
@@ -40,6 +41,7 @@ const ImportCSV = () => {
     message: "",
     severity: "info",
   });
+  const [events, setEvents] = useState([]); // State to store and display imported events
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -69,11 +71,24 @@ const ImportCSV = () => {
     setMapping((prevState) => ({ ...prevState, [name]: value }));
   };
 
+  const handleProcessData = () => {
+    const processedEvents = csvData.map((row) => {
+      const event = {};
+      Object.keys(mapping).forEach((key) => {
+        event[key] = row[mapping[key]];
+      });
+      return event;
+    });
+    setEvents(processedEvents);
+    console.log("Processed Events:", processedEvents); // Log processed events for debugging
+  };
+
   const handleImport = async () => {
     setLoading(true); // Set loading to true
     try {
+      console.log("Submitting Events:", events); // Log events being submitted for debugging
       const response = await axios.post("http://127.0.0.1:5000/import_events", {
-        csv_data: csvData,
+        csv_data: events,
         mapping,
       });
       setFeedback({
@@ -85,12 +100,18 @@ const ImportCSV = () => {
     } catch (error) {
       setFeedback({
         open: true,
-        message: error.response.data.error,
+        message: error.response?.data?.error || "Failed to import events.",
         severity: "error",
       });
     } finally {
       setLoading(false); // Set loading to false
     }
+  };
+
+  const handleEventChange = (index, field, value) => {
+    const updatedEvents = [...events];
+    updatedEvents[index][field] = value;
+    setEvents(updatedEvents);
   };
 
   return (
@@ -134,25 +155,66 @@ const ImportCSV = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleImport}
+              onClick={handleProcessData}
               fullWidth
-              disabled={loading} // Disable button when loading
             >
-              Import Events
+              Process Data
             </Button>
-            {loading && (
-              <CircularProgress
-                size={24}
-                sx={{
-                  color: "primary.main",
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  marginTop: "-12px",
-                  marginLeft: "-12px",
-                }}
-              />
-            )}
+          </Box>
+        </>
+      )}
+      {events.length > 0 && (
+        <>
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h5" gutterBottom>
+              Adjust Imported Events
+            </Typography>
+            {events.map((event, index) => (
+              <Box key={index} sx={{ mb: 3 }}>
+                <Typography variant="h6">
+                  Event {index + 1}: {event.name}
+                </Typography>
+                <Grid container spacing={2}>
+                  {Object.keys(defaultMapping).map((field) => (
+                    <Grid item xs={6} key={field}>
+                      <TextField
+                        label={defaultMapping[field]}
+                        value={event[field] || ""}
+                        onChange={(e) =>
+                          handleEventChange(index, field, e.target.value)
+                        }
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            ))}
+            <Box sx={{ mt: 3, position: "relative" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleImport}
+                fullWidth
+                disabled={loading} // Disable button when loading
+              >
+                Save Events
+              </Button>
+              {loading && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "primary.main",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
+            </Box>
           </Box>
         </>
       )}
