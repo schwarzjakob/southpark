@@ -95,24 +95,48 @@ const InputDemands = () => {
   };
 
   const handleSubmit = async () => {
-    try {
-      for (const event of events) {
-        const demands = {};
-        for (const [date, { demand_id, demand }] of Object.entries(
-          event.demands
-        )) {
+    let hasDemands = false;
+    const demandsToSave = [];
+
+    for (const event of events) {
+      const demands = {};
+      for (const [date, { demand_id, demand }] of Object.entries(
+        event.demands
+      )) {
+        if (
+          demand !== undefined &&
+          demand !== null &&
+          demand !== "" &&
+          !isNaN(demand) &&
+          demand > 0
+        ) {
           demands[demand_id] = { date, demand };
+          hasDemands = true;
         }
-        await axios.post(
-          `http://127.0.0.1:5000/add_demands/${event.event_id}`,
-          {
-            demands,
-          }
-        );
+      }
+      if (hasDemands) {
+        demandsToSave.push({ event_id: event.event_id, demands });
+      }
+    }
+
+    if (!hasDemands) {
+      setFeedback({
+        open: true,
+        message: "No demands entered for any event.",
+        severity: "info",
+      });
+      return;
+    }
+
+    try {
+      for (const { event_id, demands } of demandsToSave) {
+        await axios.post(`http://127.0.0.1:5000/add_demands/${event_id}`, {
+          demands,
+        });
       }
       setFeedback({
         open: true,
-        message: "Demands saved successfully.",
+        message: "All demands saved successfully.",
         severity: "success",
       });
       fetchEvents(); // Refetch events after successful save
@@ -120,6 +144,53 @@ const InputDemands = () => {
       setFeedback({
         open: true,
         message: "Failed to save demands.",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleSaveEventDemands = async (eventId) => {
+    const event = events.find((event) => event.event_id === eventId);
+    const demands = {};
+    let hasDemands = false;
+
+    for (const [date, { demand_id, demand }] of Object.entries(event.demands)) {
+      if (
+        demand !== undefined &&
+        demand !== null &&
+        demand !== "" &&
+        !isNaN(demand) &&
+        demand > 0
+      ) {
+        demands[demand_id] = { date, demand };
+        hasDemands = true;
+        console.log(demands);
+      }
+    }
+
+    if (!hasDemands) {
+      setFeedback({
+        open: true,
+        message: `No demands entered for ${event.name}.`,
+        severity: "info",
+      });
+      return;
+    }
+
+    try {
+      await axios.post(`http://127.0.0.1:5000/add_demands/${event.event_id}`, {
+        demands,
+      });
+      setFeedback({
+        open: true,
+        message: `${event.name} demands saved successfully.`,
+        severity: "success",
+      });
+      fetchEvents(); // Refetch events after successful save
+    } catch (error) {
+      setFeedback({
+        open: true,
+        message: `Failed to save ${event.name} demands.`,
         severity: "error",
       });
     }
@@ -222,6 +293,16 @@ const InputDemands = () => {
                     return null;
                   })}
                 </Grid>
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={() => handleSaveEventDemands(event.event_id)}
+                  >
+                    Save {event.name} Demands
+                  </Button>
+                </Box>
               </Box>
               {index < events.length - 1 && <Divider sx={{ my: 2 }} />}
             </React.Fragment>
