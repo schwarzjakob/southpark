@@ -67,7 +67,7 @@ const ImportCSV = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h3" gutterBottom>
         Import Events from CSV
       </Typography>
       <Button variant="contained" component="label">
@@ -77,17 +77,18 @@ const ImportCSV = () => {
       {csvData.length > 0 && (
         <>
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h5" gutterBottom>
               Map CSV Columns to Event Fields
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Event Name</InputLabel>
                   <Select
                     name="name"
                     value={mapping.name || ""}
                     onChange={handleMappingChange}
+                    label="Event Name"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
@@ -98,12 +99,13 @@ const ImportCSV = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Assembly Start Date</InputLabel>
                   <Select
                     name="assembly_start_date"
                     value={mapping.assembly_start_date || ""}
                     onChange={handleMappingChange}
+                    label="Assembly Start Date"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
@@ -114,12 +116,13 @@ const ImportCSV = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Assembly End Date</InputLabel>
                   <Select
                     name="assembly_end_date"
                     value={mapping.assembly_end_date || ""}
                     onChange={handleMappingChange}
+                    label="Assembly End Date"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
@@ -130,12 +133,13 @@ const ImportCSV = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Runtime Start Date</InputLabel>
                   <Select
                     name="runtime_start_date"
                     value={mapping.runtime_start_date || ""}
                     onChange={handleMappingChange}
+                    label="Runtime Start Date"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
@@ -146,12 +150,13 @@ const ImportCSV = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Runtime End Date</InputLabel>
                   <Select
                     name="runtime_end_date"
                     value={mapping.runtime_end_date || ""}
                     onChange={handleMappingChange}
+                    label="Runtime End Date"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
@@ -162,12 +167,13 @@ const ImportCSV = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Disassembly Start Date</InputLabel>
                   <Select
                     name="disassembly_start_date"
                     value={mapping.disassembly_start_date || ""}
                     onChange={handleMappingChange}
+                    label="Disassembly Start Date"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
@@ -178,12 +184,13 @@ const ImportCSV = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Disassembly End Date</InputLabel>
                   <Select
                     name="disassembly_end_date"
                     value={mapping.disassembly_end_date || ""}
                     onChange={handleMappingChange}
+                    label="Disassembly End Date"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
@@ -194,12 +201,13 @@ const ImportCSV = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required variant="outlined">
                   <InputLabel>Entrance</InputLabel>
                   <Select
                     name="entrance"
                     value={mapping.entrance || ""}
                     onChange={handleMappingChange}
+                    label="Entrance"
                   >
                     {csvHeaders.map((header) => (
                       <MenuItem key={header} value={header}>
