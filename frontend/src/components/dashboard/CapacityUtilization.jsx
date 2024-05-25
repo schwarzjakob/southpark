@@ -41,7 +41,7 @@ const CapacityUtilization = () => {
 
   const fetchAvailableYears = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:5000/api/available_years');
+      const response = await axios.get('https://southpark.tirtey.com/api/available_years');
       const years = response.data.years;
       setAvailableYears(years);
       if (years.length > 0 && !years.includes(year)) {
@@ -54,7 +54,7 @@ const CapacityUtilization = () => {
 
   const fetchData = async (year) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/api/capacity_utilization?year=${year}`);
+      const response = await axios.get(`https://southpark.tirtey.com/api/capacity_utilization?year=${year}`);
       setData(response.data.total_capacity_utilization);
     } catch (error) {
       console.error('Error fetching data:', error);

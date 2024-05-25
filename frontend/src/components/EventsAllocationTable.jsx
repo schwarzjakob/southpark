@@ -18,10 +18,10 @@ const EventsAllocationTable = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/events_parking_lots_allocation")
+    fetch("https://southpark.tirtey.com/api/events_parking_lots_allocation")
       .then((response) => response.json())
       .then((data) => {
-        console.log("Backend data:", data); // Log the data to debug
+        console.log("Backend data 2:", data); // Log the data to debug
         setTableData(data);
         setLoading(false);
       })
