@@ -15,7 +15,7 @@ const ExceedsCapacity = () => {
   const fetchData = async () => {
     try {
       const response = await axios.get(
-        "https://southpark.tirtey.com/api/capacity_utilization"
+        "/api/capacity_utilization"
       );
       const dataWithId = response.data.exceeds_capacity.map((row, index) => ({
         ...row,
