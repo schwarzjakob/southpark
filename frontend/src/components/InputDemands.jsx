@@ -149,11 +149,21 @@ const InputDemands = () => {
           demands,
         });
       }
+
+      let optimizationMessage = "";
+      try {
+        await axios.post("http://127.0.0.1:5000/optimize_distance");
+        optimizationMessage = "Optimization completed successfully.";
+      } catch (optimizeError) {
+        optimizationMessage = "Failed to complete optimization.";
+      }
+
       setFeedback({
         open: true,
-        message: "All demands saved successfully.",
+        message: `All demands saved successfully. ${optimizationMessage}`,
         severity: "success",
       });
+
       fetchEvents(); // Refetch events after successful save
     } catch (error) {
       setFeedback({
@@ -195,11 +205,21 @@ const InputDemands = () => {
       await axios.post(`http://127.0.0.1:5000/add_demands/${event.event_id}`, {
         demands,
       });
+
+      let optimizationMessage = "";
+      try {
+        await axios.post("http://127.0.0.1:5000/optimize_distance");
+        optimizationMessage = "Optimization completed successfully.";
+      } catch (optimizeError) {
+        optimizationMessage = "Failed to complete optimization.";
+      }
+
       setFeedback({
         open: true,
-        message: `${event.name} demands saved successfully.`,
+        message: `${event.name} demands saved successfully. ${optimizationMessage}`,
         severity: "success",
       });
+
       fetchEvents(); // Refetch events after successful save
     } catch (error) {
       setFeedback({

@@ -290,17 +290,15 @@ function AddEvent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let saveMessage = "";
+
     try {
       const response = await axios.post(
         "/api/add_event",
         eventData
       );
       console.log("Event created successfully:", response.data);
-      setFeedback({
-        open: true,
-        message: response.data.message,
-        severity: "success",
-      });
+      saveMessage = "Event created successfully.";
       handleResetDates(); // Reset the form after successful submission
 
       try {
@@ -313,14 +311,14 @@ function AddEvent() {
         );
         setFeedback({
           open: true,
-          message: optimizeResponse.data.message,
+          message: `${saveMessage} Optimization completed successfully.`,
           severity: "success",
         });
       } catch (optimizeError) {
         console.error("Error triggering optimization:", optimizeError);
         setFeedback({
           open: true,
-          message: "Error triggering optimization",
+          message: `${saveMessage} Failed to complete optimization.`,
           severity: "error",
         });
       }
@@ -328,7 +326,7 @@ function AddEvent() {
       console.error("Error creating event:", error);
       setFeedback({
         open: true,
-        message: "Error creating event",
+        message: "Failed to save event.",
         severity: "error",
       });
     }
