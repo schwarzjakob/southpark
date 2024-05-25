@@ -391,14 +391,14 @@ def import_events():
 
         # Validate required fields in the mapping
         required_fields = [
-            "name",
-            "assembly_start_date",
-            "assembly_end_date",
-            "runtime_start_date",
-            "runtime_end_date",
-            "disassembly_start_date",
-            "disassembly_end_date",
-            "entrance",
+            "Event Name",
+            "Assembly Start Date",
+            "Assembly End Date",
+            "Runtime Start Date",
+            "Runtime End Date",
+            "Disassembly Start Date",
+            "Disassembly End Date",
+            "Entrance",
         ]
         for field in required_fields:
             print(field)

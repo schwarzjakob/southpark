@@ -15,12 +15,23 @@ import {
 import { usePapaParse } from "react-papaparse";
 import axios from "axios";
 
+const defaultMapping = {
+  name: "Event Name",
+  assembly_start_date: "Assembly Start Date",
+  assembly_end_date: "Assembly End Date",
+  runtime_start_date: "Runtime Start Date",
+  runtime_end_date: "Runtime End Date",
+  disassembly_start_date: "Disassembly Start Date",
+  disassembly_end_date: "Disassembly End Date",
+  entrance: "Entrance",
+};
+
 const ImportCSV = () => {
   const navigate = useNavigate();
   const { readString } = usePapaParse();
   const [csvData, setCsvData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
-  const [mapping, setMapping] = useState({});
+  const [mapping, setMapping] = useState(defaultMapping);
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
@@ -36,6 +47,14 @@ const ImportCSV = () => {
         complete: (results) => {
           setCsvData(results.data);
           setCsvHeaders(Object.keys(results.data[0]));
+          const autoMapping = Object.keys(defaultMapping).reduce((acc, key) => {
+            const header = Object.keys(results.data[0]).find((h) =>
+              h.toLowerCase().includes(defaultMapping[key].toLowerCase())
+            );
+            acc[key] = header || "";
+            return acc;
+          }, {});
+          setMapping(autoMapping);
         },
       });
     };
@@ -73,7 +92,7 @@ const ImportCSV = () => {
       <Typography variant="h3" gutterBottom>
         Import Events from CSV
       </Typography>
-      <Button variant="contained" component="label">
+      <Button variant="contained" component="label" fullWidth>
         Upload CSV
         <input type="file" hidden onChange={handleFileUpload} />
       </Button>
@@ -84,146 +103,34 @@ const ImportCSV = () => {
               Map CSV Columns to Event Fields
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Event Name</InputLabel>
-                  <Select
-                    name="name"
-                    value={mapping.name || ""}
-                    onChange={handleMappingChange}
-                    label="Event Name"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Assembly Start Date</InputLabel>
-                  <Select
-                    name="assembly_start_date"
-                    value={mapping.assembly_start_date || ""}
-                    onChange={handleMappingChange}
-                    label="Assembly Start Date"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Assembly End Date</InputLabel>
-                  <Select
-                    name="assembly_end_date"
-                    value={mapping.assembly_end_date || ""}
-                    onChange={handleMappingChange}
-                    label="Assembly End Date"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Runtime Start Date</InputLabel>
-                  <Select
-                    name="runtime_start_date"
-                    value={mapping.runtime_start_date || ""}
-                    onChange={handleMappingChange}
-                    label="Runtime Start Date"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Runtime End Date</InputLabel>
-                  <Select
-                    name="runtime_end_date"
-                    value={mapping.runtime_end_date || ""}
-                    onChange={handleMappingChange}
-                    label="Runtime End Date"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Disassembly Start Date</InputLabel>
-                  <Select
-                    name="disassembly_start_date"
-                    value={mapping.disassembly_start_date || ""}
-                    onChange={handleMappingChange}
-                    label="Disassembly Start Date"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Disassembly End Date</InputLabel>
-                  <Select
-                    name="disassembly_end_date"
-                    value={mapping.disassembly_end_date || ""}
-                    onChange={handleMappingChange}
-                    label="Disassembly End Date"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth required variant="outlined">
-                  <InputLabel>Entrance</InputLabel>
-                  <Select
-                    name="entrance"
-                    value={mapping.entrance || ""}
-                    onChange={handleMappingChange}
-                    label="Entrance"
-                  >
-                    {csvHeaders.map((header) => (
-                      <MenuItem key={header} value={header}>
-                        {header}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+              {Object.keys(defaultMapping).map((field) => (
+                <Grid item xs={6} key={field}>
+                  <FormControl fullWidth required variant="outlined">
+                    <InputLabel>{defaultMapping[field]}</InputLabel>
+                    <Select
+                      name={field}
+                      value={mapping[field] || ""}
+                      onChange={handleMappingChange}
+                      label={defaultMapping[field]}
+                    >
+                      {csvHeaders.map((header) => (
+                        <MenuItem key={header} value={header}>
+                          {header}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              ))}
             </Grid>
           </Box>
           <Box sx={{ mt: 3 }}>
-            <Button variant="contained" color="primary" onClick={handleImport}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleImport}
+              fullWidth
+            >
               Import Events
             </Button>
           </Box>
