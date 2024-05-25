@@ -7,6 +7,7 @@ import {
   TextField,
   Snackbar,
   Alert,
+  Divider,
 } from "@mui/material";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -109,72 +110,109 @@ const InputDemands = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ pt: 3, pb: 3, pl: 10, pr: 10 }}>
+      <Typography variant="h3" component="h2" gutterBottom>
         Input Visitor Demands
       </Typography>
       {events.length > 0 ? (
-        events.map((event) => (
-          <Box key={event.event_id} sx={{ mb: 3 }}>
-            <Typography variant="h6">{event.name}</Typography>
-            {Object.keys(phaseLabels).map((phase) => {
-              const startDateKey = `${phase}_start_date`;
-              const endDateKey = `${phase}_end_date`;
-              const startDate = event[startDateKey];
-              const endDate = event[endDateKey];
+        events.map((event, index) => (
+          <React.Fragment key={event.event_id}>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h4" component="h3" gutterBottom>
+                {event.name}
+              </Typography>
+              <Grid container spacing={2}>
+                {Object.keys(phaseLabels).map((phase) => {
+                  const startDateKey = `${phase}_start_date`;
+                  const endDateKey = `${phase}_end_date`;
+                  const startDate = event[startDateKey];
+                  const endDate = event[endDateKey];
 
-              if (
-                startDate &&
-                endDate &&
-                dayjs(startDate).isValid() &&
-                dayjs(endDate).isValid()
-              ) {
-                const dates = Object.keys(event.demands).filter(
-                  (date) =>
-                    dayjs(date).isAfter(dayjs(startDate).subtract(1, "day")) &&
-                    dayjs(date).isBefore(dayjs(endDate))
-                );
+                  if (
+                    startDate &&
+                    endDate &&
+                    dayjs(startDate).isValid() &&
+                    dayjs(endDate).isValid()
+                  ) {
+                    const dates = Object.keys(event.demands).filter(
+                      (date) =>
+                        dayjs(date).isAfter(
+                          dayjs(startDate).subtract(1, "day")
+                        ) && dayjs(date).isBefore(dayjs(endDate))
+                    );
 
-                if (dates.length > 0) {
-                  return (
-                    <React.Fragment key={phase}>
-                      <Typography variant="h5">{phaseLabels[phase]}</Typography>
-                      <Grid container spacing={2}>
-                        {dates.map((date) => (
-                          <Grid item xs={12} key={`${event.event_id}-${date}`}>
-                            <TextField
-                              label={`${date} Demand`}
-                              type="number"
-                              value={event.demands[date].demand || ""}
-                              onChange={(e) =>
-                                handleDemandChange(
-                                  event.event_id,
-                                  date,
-                                  e.target.value
-                                )
-                              }
-                              required
-                              fullWidth
-                              variant="outlined"
-                            />
+                    if (dates.length > 0) {
+                      return (
+                        <React.Fragment key={phase}>
+                          <Grid item xs={12}>
+                            <Typography
+                              variant="h5"
+                              component="h3"
+                              gutterBottom
+                            >
+                              {phaseLabels[phase]}
+                            </Typography>
                           </Grid>
-                        ))}
-                      </Grid>
-                    </React.Fragment>
-                  );
-                }
-              }
-              return null;
-            })}
-          </Box>
+                          {dates.map((date) => (
+                            <Grid
+                              item
+                              xs={12}
+                              key={`${event.event_id}-${date}`}
+                            >
+                              <TextField
+                                label={`${date} Demand`}
+                                type="number"
+                                value={event.demands[date].demand || ""}
+                                onChange={(e) =>
+                                  handleDemandChange(
+                                    event.event_id,
+                                    date,
+                                    e.target.value
+                                  )
+                                }
+                                required
+                                fullWidth
+                                variant="outlined"
+                              />
+                            </Grid>
+                          ))}
+                        </React.Fragment>
+                      );
+                    }
+                  }
+                  return null;
+                })}
+              </Grid>
+            </Box>
+            {index < events.length - 1 && <Divider sx={{ my: 2 }} />}
+          </React.Fragment>
         ))
       ) : (
         <Typography>No events without demands.</Typography>
       )}
       <Box sx={{ mt: 3 }}>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Save Demands
-        </Button>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              onClick={() => setEvents([])}
+            >
+              Reset
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleSubmit}
+            >
+              Save Demands
+            </Button>
+          </Grid>
+        </Grid>
       </Box>
       <Snackbar
         open={feedback.open}
