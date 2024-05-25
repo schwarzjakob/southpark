@@ -287,10 +287,7 @@ function AddEvent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "/api/add_event",
-        eventData
-      );
+      const response = await axios.post("/api/add_event", eventData);
       console.log("Event created successfully:", response.data);
       setFeedback({
         open: true,
@@ -300,12 +297,10 @@ function AddEvent() {
       handleResetDates(); // Reset the form after successful submission
 
       try {
-        const optimizeResponse = await axios.post(
-          "/api/optimize_distance"
-        );
+        const optimizeResponse = await axios.post("/api/optimize_distance");
         console.log(
           "Optimization triggered successfully:",
-          optimizeResponse.data
+          optimizeResponse.data,
         );
         setFeedback({
           open: true,
@@ -336,13 +331,10 @@ function AddEvent() {
   };
 
   const checkHallAvailability = async () => {
-    const response = await axios.post(
-      "/api/check_hall_availability",
-      {
-        halls: eventData.halls,
-        dates: eventData.dates,
-      }
-    );
+    const response = await axios.post("/api/check_hall_availability", {
+      halls: eventData.halls,
+      dates: eventData.dates,
+    });
     return response.data;
   };
 
@@ -411,7 +403,7 @@ function AddEvent() {
                   return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
                 })
                 .join("<br>");
-            })
+            }),
           )
           .join("<br>");
 
@@ -520,7 +512,7 @@ function AddEvent() {
                           handleDateChange(
                             phase,
                             "start",
-                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                            newValue ? newValue.format("YYYY-MM-DD") : "",
                           )
                         }
                         slotProps={{
@@ -547,7 +539,7 @@ function AddEvent() {
                           handleDateChange(
                             phase,
                             "end",
-                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                            newValue ? newValue.format("YYYY-MM-DD") : "",
                           )
                         }
                         slotProps={{
@@ -601,7 +593,7 @@ function AddEvent() {
                       (new Date(eventData.dates[phase].end) -
                         new Date(eventData.dates[phase].start)) /
                         (1000 * 3600 * 24) +
-                        1
+                        1,
                     )
                       .fill()
                       .map((_, index) => {
@@ -618,7 +610,7 @@ function AddEvent() {
                                 handleDemandChange(
                                   phase,
                                   dateString,
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               required
@@ -629,7 +621,7 @@ function AddEvent() {
                         );
                       })}
                   </React.Fragment>
-                )
+                ),
             )}
             <Grid item xs={6}>
               <Button
