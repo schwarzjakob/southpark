@@ -664,16 +664,11 @@ function AddEvent() {
               </Button>
             </Grid>
             <Grid item xs={6}></Grid>
-            <Grid item xs={6}>
-              <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                fullWidth
-              >
-                Submit Event
-              </Button>
-            </Grid>
+          </Grid>
+          <Grid item xs={6}>
+            <Button variant="contained" color="primary" type="submit" fullWidth>
+              Submit Event
+            </Button>
           </Grid>
         </Box>
       )}
