@@ -291,10 +291,7 @@ function AddEvent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "/api/add_event",
-        eventData
-      );
+      const response = await axios.post("/api/add_event", eventData);
       console.log("Event created successfully:", response.data);
       setFeedback({
         open: true,
@@ -304,9 +301,7 @@ function AddEvent() {
       handleResetDates(); // Reset the form after successful submission
 
       try {
-        const optimizeResponse = await axios.post(
-          "/api/optimize_distance"
-        );
+        const optimizeResponse = await axios.post("/api/optimize_distance");
         console.log(
           "Optimization triggered successfully:",
           optimizeResponse.data
@@ -340,13 +335,10 @@ function AddEvent() {
   };
 
   const checkHallAvailability = async () => {
-    const response = await axios.post(
-      "/api/check_hall_availability",
-      {
-        halls: eventData.halls,
-        dates: eventData.dates,
-      }
-    );
+    const response = await axios.post("/api/check_hall_availability", {
+      halls: eventData.halls,
+      dates: eventData.dates,
+    });
     return response.data;
   };
 
@@ -628,13 +620,35 @@ function AddEvent() {
                               label={`${dateString} Demand`}
                               type="number"
                               value={eventData.demands[phase][dateString] || ""}
-                              onChange={(e) =>
-                                handleDemandChange(
-                                  phase,
-                                  dateString,
-                                  e.target.value
-                                )
-                              }
+                              onWheel={(e) => e.target.blur()} // Disable mouse wheel scroll
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (
+                                  value === "" ||
+                                  (value >= 0 && !value.includes("-"))
+                                ) {
+                                  handleDemandChange(
+                                    phase,
+                                    dateString,
+                                    e.target.value
+                                  );
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (
+                                  e.key === "-" ||
+                                  e.key === "+" ||
+                                  e.key === "e" ||
+                                  e.key === "." ||
+                                  e.key === ","
+                                ) {
+                                  e.preventDefault();
+                                }
+                              }} // Disable negative, decimal, exponential numbers, and non-numeric characters
+                              inputProps={{
+                                min: 0,
+                                pattern: "[0-9]*",
+                              }}
                               required
                               fullWidth
                               variant="outlined"

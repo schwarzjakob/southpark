@@ -327,13 +327,35 @@ const InputDemands = () => {
                                   label={`${date} Demand`}
                                   type="number"
                                   value={event.demands[date].demand || ""}
-                                  onChange={(e) =>
-                                    handleDemandChange(
-                                      event.event_id,
-                                      date,
-                                      e.target.value
-                                    )
-                                  }
+                                  onWheel={(e) => e.target.blur()} // Disable mouse wheel scroll
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (
+                                      value === "" ||
+                                      (value >= 0 && !value.includes("-"))
+                                    ) {
+                                      handleDemandChange(
+                                        event.event_id,
+                                        date,
+                                        value
+                                      );
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (
+                                      e.key === "-" ||
+                                      e.key === "+" ||
+                                      e.key === "e" ||
+                                      e.key === "." ||
+                                      e.key === ","
+                                    ) {
+                                      e.preventDefault();
+                                    }
+                                  }} // Disable negative, decimal, exponential numbers, and non-numeric characters
+                                  inputProps={{
+                                    min: 0,
+                                    pattern: "[0-9]*",
+                                  }}
                                   required
                                   fullWidth
                                   variant="outlined"
