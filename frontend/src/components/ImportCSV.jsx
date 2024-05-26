@@ -130,6 +130,191 @@ const ImportCSV = () => {
     setMapping((prevState) => ({ ...prevState, [name]: value }));
   };
 
+  const isValidDate = (date) => {
+    return date && dayjs(date).isValid();
+  };
+
+  const adjustDates = (dates, phase, dateType, value) => {
+    const { assembly, runtime, disassembly } = dates;
+
+    if (!isValidDate(value)) {
+      return dates;
+    }
+
+    const dateValue = dayjs(value);
+
+    // Handle forward date propagation
+    if (dateType === "start") {
+      if (phase === "assembly") {
+        if (
+          !isValidDate(assembly.end) ||
+          dateValue.isAfter(dayjs(assembly.end))
+        ) {
+          dates.assembly.end = value;
+        }
+        dates.runtime.start = dateValue.add(1, "day").format("YYYY-MM-DD");
+        if (
+          !isValidDate(runtime.end) ||
+          dayjs(dates.runtime.start).isAfter(dayjs(runtime.end))
+        ) {
+          dates.runtime.end = dates.runtime.start;
+        }
+        dates.disassembly.start = dayjs(dates.runtime.end)
+          .add(1, "day")
+          .format("YYYY-MM-DD");
+        if (
+          !isValidDate(disassembly.end) ||
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
+        ) {
+          dates.disassembly.end = dates.disassembly.start;
+        }
+      }
+
+      if (phase === "runtime") {
+        dates.assembly.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
+        if (
+          !isValidDate(assembly.start) ||
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
+        ) {
+          dates.assembly.start = dates.assembly.end;
+        }
+        if (
+          !isValidDate(runtime.end) ||
+          dateValue.isAfter(dayjs(runtime.end))
+        ) {
+          dates.runtime.end = value;
+        }
+        dates.disassembly.start = dayjs(dates.runtime.end)
+          .add(1, "day")
+          .format("YYYY-MM-DD");
+        if (
+          !isValidDate(disassembly.end) ||
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
+        ) {
+          dates.disassembly.end = dates.disassembly.start;
+        }
+      }
+
+      if (phase === "disassembly") {
+        dates.runtime.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
+        if (
+          !isValidDate(runtime.start) ||
+          dayjs(dates.runtime.end).isBefore(dayjs(runtime.start))
+        ) {
+          dates.runtime.start = dates.runtime.end;
+        }
+        dates.assembly.end = dayjs(dates.runtime.start)
+          .subtract(1, "day")
+          .format("YYYY-MM-DD");
+        if (
+          !isValidDate(assembly.start) ||
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
+        ) {
+          dates.assembly.start = dates.assembly.end;
+        }
+        if (
+          !isValidDate(disassembly.end) ||
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
+        ) {
+          dates.disassembly.end = dates.disassembly.start;
+        }
+      }
+    }
+
+    // Handle backward date propagation
+    if (dateType === "end") {
+      if (phase === "disassembly") {
+        if (
+          !isValidDate(disassembly.start) ||
+          dateValue.isBefore(dayjs(disassembly.start))
+        ) {
+          dates.disassembly.start = value;
+        }
+        dates.runtime.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
+        if (
+          !isValidDate(runtime.start) ||
+          dayjs(dates.runtime.end).isBefore(dayjs(runtime.start))
+        ) {
+          dates.runtime.start = dates.runtime.end;
+        }
+        dates.assembly.end = dayjs(dates.runtime.start)
+          .subtract(1, "day")
+          .format("YYYY-MM-DD");
+        if (
+          !isValidDate(assembly.start) ||
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
+        ) {
+          dates.assembly.start = dates.assembly.end;
+        }
+      }
+
+      if (phase === "runtime") {
+        dates.disassembly.start = dateValue.add(1, "day").format("YYYY-MM-DD");
+        if (
+          !isValidDate(disassembly.end) ||
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
+        ) {
+          dates.disassembly.end = dates.disassembly.start;
+        }
+        if (
+          !isValidDate(runtime.start) ||
+          dateValue.isBefore(dayjs(runtime.start))
+        ) {
+          dates.runtime.start = value;
+        }
+        dates.assembly.end = dayjs(dates.runtime.start)
+          .subtract(1, "day")
+          .format("YYYY-MM-DD");
+        if (
+          !isValidDate(assembly.start) ||
+          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
+        ) {
+          dates.assembly.start = dates.assembly.end;
+        }
+      }
+
+      if (phase === "assembly") {
+        if (
+          !isValidDate(assembly.start) ||
+          dateValue.isBefore(dayjs(assembly.start))
+        ) {
+          dates.assembly.start = value;
+        }
+        dates.runtime.start = dateValue.add(1, "day").format("YYYY-MM-DD");
+        if (
+          !isValidDate(runtime.end) ||
+          dayjs(dates.runtime.start).isAfter(dayjs(runtime.end))
+        ) {
+          dates.runtime.end = dates.runtime.start;
+        }
+        dates.disassembly.start = dayjs(dates.runtime.end)
+          .add(1, "day")
+          .format("YYYY-MM-DD");
+        if (
+          !isValidDate(disassembly.end) ||
+          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
+        ) {
+          dates.disassembly.end = dates.disassembly.start;
+        }
+      }
+    }
+
+    return dates;
+  };
+
+  const handleDateChange = (index, phase, dateType, value) => {
+    const updatedEvents = [...events];
+    const updatedDates = { ...updatedEvents[index].dates };
+    updatedDates[phase][dateType] = value;
+    updatedEvents[index].dates = adjustDates(
+      updatedDates,
+      phase,
+      dateType,
+      value
+    );
+    setEvents(updatedEvents);
+  };
+
   const handleProcessData = () => {
     const processedEvents = csvData.map((row) => {
       const event = {};
@@ -239,12 +424,6 @@ const ImportCSV = () => {
   const handleEventChange = (index, field, value) => {
     const updatedEvents = [...events];
     updatedEvents[index][field] = value;
-    setEvents(updatedEvents);
-  };
-
-  const handleDateChange = (index, phase, dateType, value) => {
-    const updatedEvents = [...events];
-    updatedEvents[index].dates[phase][dateType] = value;
     setEvents(updatedEvents);
   };
 
