@@ -42,9 +42,7 @@ const InputDemands = () => {
   const fetchEvents = async () => {
     setLoading(true); // Set loading to true
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:5000/events_without_valid_demands"
-      );
+      const response = await axios.get("/api/events_without_valid_demands");
       const eventsWithDemands = response.data.events.reduce((acc, event) => {
         const { event_id, demand_id, date, demand, ...rest } = event;
         const formattedDate = dayjs(date).format("YYYY-MM-DD");
@@ -152,14 +150,14 @@ const InputDemands = () => {
 
     try {
       for (const { event_id, demands } of demandsToSave) {
-        await axios.post(`http://127.0.0.1:5000/add_demands/${event_id}`, {
+        await axios.post(`/api/add_demands/${event_id}`, {
           demands,
         });
       }
 
       let optimizationMessage = "";
       try {
-        await axios.post("http://127.0.0.1:5000/optimize_distance");
+        await axios.post("/api/optimize_distance");
         optimizationMessage = "Optimization completed successfully.";
       } catch (optimizeError) {
         optimizationMessage = "Failed to complete optimization.";
@@ -214,13 +212,13 @@ const InputDemands = () => {
     }
 
     try {
-      await axios.post(`http://127.0.0.1:5000/add_demands/${event.event_id}`, {
+      await axios.post(`/api/add_demands/${event.event_id}`, {
         demands,
       });
 
       let optimizationMessage = "";
       try {
-        await axios.post("http://127.0.0.1:5000/optimize_distance");
+        await axios.post("/api/optimize_distance");
         optimizationMessage = "Optimization completed successfully.";
       } catch (optimizeError) {
         optimizationMessage = "Failed to complete optimization.";

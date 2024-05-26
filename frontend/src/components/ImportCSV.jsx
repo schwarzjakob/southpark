@@ -341,13 +341,10 @@ const ImportCSV = () => {
   };
 
   const checkHallAvailability = async (eventData) => {
-    const response = await axios.post(
-      "http://127.0.0.1:5000/check_hall_availability",
-      {
-        halls: eventData.halls,
-        dates: eventData.dates,
-      }
-    );
+    const response = await axios.post("/api/check_hall_availability", {
+      halls: eventData.halls,
+      dates: eventData.dates,
+    });
     return response.data;
   };
 
@@ -400,7 +397,7 @@ const ImportCSV = () => {
 
     // Proceed with importing events if no conflicts
     try {
-      const response = await axios.post("http://127.0.0.1:5000/import_events", {
+      const response = await axios.post("/api/import_events", {
         csv_data: events,
         mapping,
       });
