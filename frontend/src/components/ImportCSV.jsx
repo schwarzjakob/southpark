@@ -353,6 +353,93 @@ const ImportCSV = () => {
   const handleImport = async () => {
     setLoading(true);
 
+    // Validation for empty fields
+    for (const eventData of events) {
+      if (!eventData.name) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the event name for ${
+            eventData.name || "one of the events"
+          }.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!eventData.halls) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the halls for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!eventData.entrance) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the entrance for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!isValidDate(eventData.dates.assembly.start)) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the assembly start date for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!isValidDate(eventData.dates.assembly.end)) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the assembly end date for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!isValidDate(eventData.dates.runtime.start)) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the runtime start date for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!isValidDate(eventData.dates.runtime.end)) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the runtime end date for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!isValidDate(eventData.dates.disassembly.start)) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the disassembly start date for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      if (!isValidDate(eventData.dates.disassembly.end)) {
+        setFeedback({
+          open: true,
+          message: `Please fill in the disassembly end date for ${eventData.name}.`,
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+    }
+
     // Check hall availability for each event
     for (const eventData of events) {
       try {
@@ -717,7 +804,6 @@ const ImportCSV = () => {
           severity={feedback.severity}
           sx={{ width: "100%" }}
         >
-          {feedback.message}
           <span dangerouslySetInnerHTML={{ __html: feedback.message }} />
         </Alert>
       </Snackbar>
