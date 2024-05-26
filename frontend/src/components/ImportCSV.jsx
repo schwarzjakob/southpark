@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -84,6 +84,23 @@ const ImportCSV = () => {
     severity: "info",
   });
   const [events, setEvents] = useState([]);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const bodyHeight = document.body.scrollHeight - windowHeight;
+
+      setShowScrollToTop(scrollTop > 600);
+      setShowScrollToBottom(scrollTop < bodyHeight - 600);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -172,6 +189,14 @@ const ImportCSV = () => {
     const updatedEvents = [...events];
     updatedEvents[index].dates[phase][dateType] = value;
     setEvents(updatedEvents);
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleScrollToBottom = () => {
+    bottomRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -398,6 +423,55 @@ const ImportCSV = () => {
           </Box>
         </>
       )}
+      {showScrollToTop && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            width: "90%",
+            maxWidth: "400px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleScrollToTop}
+          >
+            Scroll to Top
+          </Button>
+        </Box>
+      )}
+      {showScrollToBottom && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            width: "90%",
+            maxWidth: "400px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleScrollToBottom}
+          >
+            Scroll to Bottom
+          </Button>
+        </Box>
+      )}
+      <div ref={bottomRef} />
       <Snackbar
         open={feedback.open}
         autoHideDuration={6000}
