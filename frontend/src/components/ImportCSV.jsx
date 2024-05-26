@@ -155,8 +155,65 @@ const ImportCSV = () => {
     setEvents(processedEvents);
   };
 
+  const checkHallAvailability = async (eventData) => {
+    const response = await axios.post(
+      "http://127.0.0.1:5000/check_hall_availability",
+      {
+        halls: eventData.halls,
+        dates: eventData.dates,
+      }
+    );
+    return response.data;
+  };
+
   const handleImport = async () => {
     setLoading(true);
+
+    // Check hall availability for each event
+    for (const eventData of events) {
+      try {
+        const availability = await checkHallAvailability(eventData);
+        const { occupied_halls, free_halls } = availability;
+
+        if (occupied_halls && Object.keys(occupied_halls).length > 0) {
+          const conflictMessages = [
+            "<strong>Did you select the wrong hall?</strong><br>",
+          ]
+            .concat(
+              Object.entries(occupied_halls).map(([hall, conflicts]) => {
+                return conflicts
+                  .map((conflict) => {
+                    const freeHallsOnThatDay =
+                      free_halls[
+                        conflict.date.split(".").reverse().join("-")
+                      ].join(", ");
+                    return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
+                  })
+                  .join("<br>");
+              })
+            )
+            .join("<br>");
+
+          setFeedback({
+            open: true,
+            message: conflictMessages,
+            severity: "error",
+          });
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        setFeedback({
+          open: true,
+          message: "Failed to check hall availability.",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Proceed with importing events if no conflicts
     try {
       const response = await axios.post("http://127.0.0.1:5000/import_events", {
         csv_data: events,
@@ -483,6 +540,7 @@ const ImportCSV = () => {
           sx={{ width: "100%" }}
         >
           {feedback.message}
+          <span dangerouslySetInnerHTML={{ __html: feedback.message }} />
         </Alert>
       </Snackbar>
     </Box>
