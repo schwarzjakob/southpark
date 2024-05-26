@@ -1,2 +1,4 @@
+# robots.txt blocks all web crawlers from accessing any part of the website. No pages on the site will be crawled or indexed by search engines or other bots.
+
 User-agent: *
 Disallow: /
