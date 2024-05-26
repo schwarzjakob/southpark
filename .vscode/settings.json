@@ -1,0 +1,23 @@
+{
+  "editor.formatOnSave": true,
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.formatting.provider": "black",
+  "javascript.format.enable": true,
+  "eslint.alwaysShowStatus": true,
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "editor.formatOnSave": true
+  },
+  "prettier.semi": true,
+  "prettier.trailingComma": "all",
+  "prettier.singleQuote": false,
+  "prettier.jsxSingleQuote": false,
+  "prettier.tabWidth": 2
+}
