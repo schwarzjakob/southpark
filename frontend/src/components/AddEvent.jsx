@@ -186,7 +186,9 @@ function AddEvent() {
         ) {
           dates.disassembly.start = value;
         }
-        dates.runtime.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
+        dates.runtime.end = dayjs(dates.disassembly.start)
+          .subtract(1, "day")
+          .format("YYYY-MM-DD");
         if (
           !isValidDate(runtime.start) ||
           dayjs(dates.runtime.end).isBefore(dayjs(runtime.start))
