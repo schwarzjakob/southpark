@@ -7,6 +7,8 @@ from sqlalchemy import create_engine, text
 import logging
 import pandas as pd
 from datetime import datetime, timedelta
+import csv
+from io import StringIO
 
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
@@ -195,6 +197,7 @@ def get_events_parking_lots_allocation():
         if df_events_parking_lots_allocation.empty:
             logger.info("No data available.")
             return jsonify({"message": "No data found"}), 204
+        print(df_events_parking_lots_allocation)
         logger.info("Events parking lots allocation data fetched successfully.")
         return jsonify(df_events_parking_lots_allocation.to_dict(orient="records")), 200
     except Exception as e:
@@ -369,6 +372,214 @@ def add_event():
         return jsonify({"message": "Event added successfully"}), 200
     except Exception as e:
         logger.error("Failed to add event", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# Import events
+@app.route("/import_events", methods=["POST"])
+def import_events():
+    try:
+        data = request.json
+        csv_data = data.get("csv_data")
+        # mapping = data.get("mapping")
+        mapping = {
+            "name": "name",
+            "halls": "halls",
+            "assembly_start_date": "assembly_start_date",
+            "assembly_end_date": "assembly_end_date",
+            "runtime_start_date": "runtime_start_date",
+            "runtime_end_date": "runtime_end_date",
+            "disassembly_start_date": "disassembly_start_date",
+            "disassembly_end_date": "disassembly_end_date",
+            "entrance": "entrance",
+        }
+
+        logger.debug(f"Received mapping: {mapping}")
+        logger.debug(f"Received CSV data: {csv_data}")
+
+        if not csv_data or not mapping:
+            return jsonify({"error": "Invalid input data"}), 400
+
+        # Validate required fields in the mapping
+        required_fields = [
+            "name",
+            "assembly_start_date",
+            "assembly_end_date",
+            "runtime_start_date",
+            "runtime_end_date",
+            "disassembly_start_date",
+            "disassembly_end_date",
+            "entrance",
+            "halls",
+        ]
+
+        # Check if required fields are present in the mapping
+        missing_fields = [field for field in required_fields if field not in mapping]
+        if missing_fields:
+            logger.error(f"Missing required fields in mapping: {missing_fields}")
+            return (
+                jsonify(
+                    {"error": f"Missing required fields in mapping: {missing_fields}"}
+                ),
+                400,
+            )
+
+        events = []
+        for row in csv_data:
+            logger.debug(f"Processing row: {row}")
+            try:
+                event = {
+                    "name": row.get(mapping["name"], "").strip(),
+                    "assembly_start_date": row.get(
+                        mapping["assembly_start_date"], ""
+                    ).strip(),
+                    "assembly_end_date": row.get(
+                        mapping["assembly_end_date"], ""
+                    ).strip(),
+                    "runtime_start_date": row.get(
+                        mapping["runtime_start_date"], ""
+                    ).strip(),
+                    "runtime_end_date": row.get(
+                        mapping["runtime_end_date"], ""
+                    ).strip(),
+                    "disassembly_start_date": row.get(
+                        mapping["disassembly_start_date"], ""
+                    ).strip(),
+                    "disassembly_end_date": row.get(
+                        mapping["disassembly_end_date"], ""
+                    ).strip(),
+                    "entrance": row.get(mapping["entrance"], "").strip(),
+                    "halls": [
+                        hall.strip()
+                        for hall in row.get(mapping["halls"], "").split(",")
+                    ],
+                }
+
+                # Check for missing required fields in each row
+                for key, value in event.items():
+                    if not value and key != "halls":
+                        logger.error(f"Missing field in row: '{key}'")
+                        raise KeyError(f"Missing field in row: '{key}'")
+
+                events.append(event)
+            except KeyError as e:
+                logger.error(f"Missing field in row: {e}")
+                continue
+
+        # Insert events into the database
+        with engine.begin() as connection:
+            for event in events:
+                query_event = """
+                INSERT INTO event (name, entrance, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date)
+                VALUES (:name, :entrance, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date)
+                RETURNING id
+                """
+                params_event = {
+                    "name": event["name"],
+                    "entrance": event["entrance"],
+                    "assembly_start_date": event["assembly_start_date"],
+                    "assembly_end_date": event["assembly_end_date"],
+                    "runtime_start_date": event["runtime_start_date"],
+                    "runtime_end_date": event["runtime_end_date"],
+                    "disassembly_start_date": event["disassembly_start_date"],
+                    "disassembly_end_date": event["disassembly_end_date"],
+                }
+                result = connection.execute(text(query_event), params_event)
+                event_id = result.fetchone()[0]
+
+                # Insert visitor demands
+                for phase in ["assembly", "runtime", "disassembly"]:
+                    all_dates = calculate_date_range(
+                        event[f"{phase}_start_date"], event[f"{phase}_end_date"]
+                    )
+                    for event_date in all_dates:
+                        query_demand = """
+                        INSERT INTO visitor_demand (event_id, date, demand, status)
+                        VALUES (:event_id, :date, :demand, :status)
+                        """
+                        params_demand = {
+                            "event_id": event_id,
+                            "date": event_date,
+                            "demand": 0,  # Set default demand to 0, can be updated later
+                            "status": phase,
+                        }
+                        connection.execute(text(query_demand), params_demand)
+
+                # Insert hall occupations
+                hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
+                for hall_name in event["halls"]:
+                    hall_id = connection.execute(
+                        text(hall_id_query), {"hall_name": hall_name}
+                    ).fetchone()[0]
+                    for phase in ["assembly", "runtime", "disassembly"]:
+                        all_dates = calculate_date_range(
+                            event[f"{phase}_start_date"], event[f"{phase}_end_date"]
+                        )
+                        for event_date in all_dates:
+                            query_hall_occupation = """
+                            INSERT INTO hall_occupation (event_id, hall_id, date)
+                            VALUES (:event_id, :hall_id, :date)
+                            """
+                            params_hall_occupation = {
+                                "event_id": event_id,
+                                "hall_id": hall_id,
+                                "date": event_date,
+                            }
+                            connection.execute(
+                                text(query_hall_occupation), params_hall_occupation
+                            )
+
+        return jsonify({"message": "Events imported successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to import events", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# Fetch events without demands
+@app.route("/events_without_valid_demands", methods=["GET"])
+def events_without_valid_demands():
+    try:
+        query = """
+        SELECT e.id as event_id, e.name, e.assembly_start_date, e.assembly_end_date, 
+               e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, 
+               e.disassembly_end_date, vd.id as demand_id, vd.date, vd.demand, vd.status
+        FROM event e
+        LEFT JOIN visitor_demand vd ON e.id = vd.event_id
+        WHERE vd.demand = 0
+        """
+        events = get_data(query).to_dict(orient="records")
+        logger.info("Events without valid demands fetched successfully.")
+        return jsonify({"events": events}), 200
+    except Exception as e:
+        logger.error("Failed to fetch events without valid demands", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/add_demands/<int:event_id>", methods=["POST"])
+def add_demands(event_id):
+    try:
+        demands = request.json["demands"]
+        queries = []
+
+        for demand_id, demand_data in demands.items():
+            query_demand = """
+            UPDATE visitor_demand
+            SET demand = :demand
+            WHERE id = :demand_id
+            """
+            params_demand = {
+                "demand_id": demand_id,
+                "demand": demand_data["demand"],
+            }
+            queries.append((query_demand, params_demand))
+
+        with engine.begin() as connection:
+            for query, params in queries:
+                connection.execute(text(query), params)
+
+        return jsonify({"message": "Demands updated successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to update demands", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 

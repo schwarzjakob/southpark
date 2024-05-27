@@ -522,3 +522,14 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* import event */
+.css-19kzrtu {
+  max-width: 120vh;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 24px !important;
+  padding-bottom: 24px !important;
+  padding-left: 80px !important;
+  padding-right: 80px !important;
+}
