@@ -1,14 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./MapComponent.jsx";
 import DateInputComponent from "./DateInputComponent.jsx";
+import axios from "axios";
 import "../styles/mapView.css";
 import dayjs from "dayjs";
 
 const MapView = () => {
-  const today = dayjs().format("YYYY-MM-DD"); // <-- Heutiges Datum
-  const [selectedDate, setSelectedDate] = useState(today);
+  const location = useLocation();
+  const initialDate =
+    location.state?.selectedDate || dayjs().format("YYYY-MM-DD");
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const { data } = await axios.get(
+          `/api/events_timeline/${selectedDate}`
+        );
+        setEvents(data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, [selectedDate]);
+
   return (
     <Box>
       <Box display="flex" flexDirection="column" gap={2}>
@@ -47,6 +68,7 @@ const MapView = () => {
           <TimelineSlider
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
+            events={events} // Pass events to TimelineSlider
           />
         </Box>
         <Box
@@ -58,7 +80,7 @@ const MapView = () => {
           borderColor="grey.300"
           p={2}
         >
-          <MapComponent selectedDate={selectedDate} />
+          <MapComponent selectedDate={selectedDate} events={events} />
         </Box>
       </Box>
     </Box>

@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 import csv
 from io import StringIO
 
-
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -48,6 +47,168 @@ def get_data(query):
     except Exception as e:
         logger.error(f"Failed to execute query: {query}", exc_info=True)
         raise e
+
+
+# Fetch all events
+@app.route("/events", methods=["GET"])
+def get_events():
+    """
+    Endpoint to retrieve all events with their demands.
+    """
+    try:
+        logger.info("Fetching all events from the database.")
+        query_events = "SELECT * FROM event ORDER BY runtime_start_date"
+        query_demands = "SELECT event_id, date, demand, status FROM visitor_demand"
+        query_halls = """
+        SELECT ho.event_id, h.name as hall_name
+        FROM hall_occupation ho
+        JOIN hall h ON ho.hall_id = h.id
+        """
+
+        events = get_data(query_events).to_dict(orient="records")
+        demands = get_data(query_demands).to_dict(orient="records")
+        halls = get_data(query_halls).to_dict(orient="records")
+
+        event_map = {event["id"]: event for event in events}
+        for demand in demands:
+            event_id = demand["event_id"]
+            date_str = demand["date"].strftime("%Y-%m-%d")
+            if "demands" not in event_map[event_id]:
+                event_map[event_id]["demands"] = {
+                    "assembly": {},
+                    "runtime": {},
+                    "disassembly": {},
+                }
+            event_map[event_id]["demands"][demand["status"]][date_str] = demand[
+                "demand"
+            ]
+
+        for hall in halls:
+            event_id = hall["event_id"]
+            if "halls" not in event_map[event_id]:
+                event_map[event_id]["halls"] = []
+            event_map[event_id]["halls"].append(hall["hall_name"])
+
+        print(event_map.values())
+        return jsonify(list(event_map.values())), 200
+    except Exception as e:
+        logger.error("Failed to fetch events", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+def parse_date(date_str):
+    """
+    Parse date string in different formats.
+    """
+    formats = ["%Y-%m-%d", "%a, %d %b %Y %H:%M:%S %Z"]
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
+            continue
+    raise ValueError(f"Date {date_str} is not in a recognized format.")
+
+
+# Update an event
+@app.route("/events/<int:id>", methods=["PUT"])
+def update_event(id):
+    """
+    Endpoint to update an existing event.
+    """
+    try:
+        data = request.json
+
+        # def parse_date(date_str):
+        #     formats = ["%Y-%m-%d", "%a, %d %b %Y %H:%M:%S %Z"]
+        #     for fmt in formats:
+        #         try:
+        #             return datetime.strptime(date_str, fmt).date()
+        #         except ValueError:
+        #             continue
+        #     raise ValueError(f"Date {date_str} is not in a recognized format.")
+
+        event_query = """
+        UPDATE event
+        SET name = :name,
+            entrance = :entrance,
+            assembly_start_date = :assembly_start_date,
+            assembly_end_date = :assembly_end_date,
+            runtime_start_date = :runtime_start_date,
+            runtime_end_date = :runtime_end_date,
+            disassembly_start_date = :disassembly_start_date,
+            disassembly_end_date = :disassembly_end_date
+        WHERE id = :id
+        """
+        event_params = {
+            "id": id,
+            "name": data["name"],
+            "entrance": data["entrance"],
+            "assembly_start_date": parse_date(data["dates"]["assembly"]["start"]),
+            "assembly_end_date": parse_date(data["dates"]["assembly"]["end"]),
+            "runtime_start_date": parse_date(data["dates"]["runtime"]["start"]),
+            "runtime_end_date": parse_date(data["dates"]["runtime"]["end"]),
+            "disassembly_start_date": parse_date(data["dates"]["disassembly"]["start"]),
+            "disassembly_end_date": parse_date(data["dates"]["disassembly"]["end"]),
+        }
+
+        with engine.begin() as connection:
+            connection.execute(text(event_query), event_params)
+
+            # Delete previous hall occupations for the given event
+            connection.execute(
+                text("DELETE FROM hall_occupation WHERE event_id = :event_id"),
+                {"event_id": id},
+            )
+
+            # Insert new hall occupations
+            for hall in data["halls"]:
+                hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
+                hall_id = connection.execute(
+                    text(hall_id_query), {"hall_name": hall}
+                ).fetchone()[0]
+
+                for phase, phase_dates in data["dates"].items():
+                    start_date = parse_date(phase_dates["start"])
+                    end_date = parse_date(phase_dates["end"])
+                    current_date = start_date
+                    while current_date <= end_date:
+                        connection.execute(
+                            text(
+                                """
+                                INSERT INTO hall_occupation (event_id, hall_id, date)
+                                VALUES (:event_id, :hall_id, :date)
+                            """
+                            ),
+                            {"event_id": id, "hall_id": hall_id, "date": current_date},
+                        )
+                        current_date += timedelta(days=1)
+
+            # Update demands
+            connection.execute(
+                text("DELETE FROM visitor_demand WHERE event_id = :event_id"),
+                {"event_id": id},
+            )
+            for phase, demands in data["demands"].items():
+                for date, demand in demands.items():
+                    connection.execute(
+                        text(
+                            """
+                            INSERT INTO visitor_demand (event_id, date, demand, status)
+                            VALUES (:event_id, :date, :demand, :status)
+                        """
+                        ),
+                        {
+                            "event_id": id,
+                            "date": parse_date(date),
+                            "demand": demand,
+                            "status": phase,
+                        },
+                    )
+
+        return jsonify({"message": "Event updated successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to update event", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 
 # Dashboard section
@@ -216,7 +377,7 @@ def calculate_date_range(start_date, end_date):
     return date_array
 
 
-# Add event form
+# Check hall availability
 @app.route("/check_hall_availability", methods=["POST"])
 def check_hall_availability():
     """
@@ -224,7 +385,8 @@ def check_hall_availability():
     """
     try:
         data = request.json
-        halls = data["halls"]
+        event_id = data.get("event_id", None)
+        selected_halls = data["halls"]
         dates = data["dates"]
 
         all_dates = []
@@ -238,44 +400,67 @@ def check_hall_availability():
         SELECT ho.event_id, ho.hall_id, ho.date, e.name as event_name
         FROM hall_occupation ho
         JOIN event e ON ho.event_id = e.id
-        WHERE ho.hall_id = :hall_id AND ho.date IN :dates
+        WHERE ho.date IN :dates
+        AND (ho.event_id != :event_id OR :event_id IS NULL)
         """
 
         occupied_halls = {}
-        free_halls = {date: [] for date in all_dates}
+        free_halls_by_date = {date: set() for date in all_dates}
 
         with engine.connect() as connection:
             hall_ids = connection.execute(text(hall_id_query)).fetchall()
             hall_map = {hall[0]: hall[1] for hall in hall_ids}
-            selected_hall_ids = [
-                hall_id for hall_id, hall_name in hall_ids if hall_name in halls
-            ]
+            all_halls = set(hall_map.values())
 
-            for hall_id in selected_hall_ids:
-                result = connection.execute(
-                    text(hall_occupation_query),
-                    {"hall_id": hall_id, "dates": tuple(all_dates)},
-                ).fetchall()
+            result = connection.execute(
+                text(hall_occupation_query),
+                {
+                    "dates": tuple(all_dates),
+                    "event_id": event_id,
+                },
+            ).fetchall()
 
-                hall_name = hall_map[hall_id]
-
-                if result:
+            for row in result:
+                hall_name = hall_map[row[1]]
+                date_str = row[2].strftime("%Y-%m-%d")
+                if hall_name not in occupied_halls:
                     occupied_halls[hall_name] = []
-                    for row in result:
-                        occupied_halls[hall_name].append(
-                            {
-                                "event_id": row[0],  # Access by index
-                                "date": row[2].strftime("%d.%m.%Y"),  # Access by index
-                                "event_name": row[3],  # Access by index
-                            }
-                        )
+                occupied_halls[hall_name].append(
+                    {
+                        "event_id": row[0],
+                        "date": row[2].strftime("%d.%m.%Y"),
+                        "event_name": row[3],
+                    }
+                )
+                free_halls_by_date[date_str].discard(hall_name)
 
-            for hall_id, hall_name in hall_map.items():
-                if hall_id not in selected_hall_ids:
-                    for date in all_dates:
-                        free_halls[date].append(hall_name)
+        # Calculate free halls correctly
+        for date in all_dates:
+            free_halls_by_date[date] = sorted(
+                all_halls
+                - set(
+                    hall_map[hall_id]
+                    for hall_id, hall_name in hall_ids
+                    if hall_name in occupied_halls
+                )
+            )
+
+        # Filter occupied_halls to only include selected halls
+        selected_occupied_halls = {
+            hall: occupied_halls[hall]
+            for hall in selected_halls
+            if hall in occupied_halls
+        }
+
+        print(selected_occupied_halls)
+        print(free_halls_by_date)
         return (
-            jsonify({"occupied_halls": occupied_halls, "free_halls": free_halls}),
+            jsonify(
+                {
+                    "occupied_halls": selected_occupied_halls,
+                    "free_halls": free_halls_by_date,
+                }
+            ),
             200,
         )
     except Exception as e:
@@ -283,6 +468,7 @@ def check_hall_availability():
         return jsonify({"error": str(e)}), 500
 
 
+# Add event form
 @app.route("/add_event", methods=["POST"])
 def add_event():
     """
@@ -608,4 +794,3 @@ def optimize_parking():
 if __name__ == "__main__":
     app.config["DEBUG"] = True
     app.run(host="0.0.0.0", port=5000)
-    

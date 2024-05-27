@@ -14,6 +14,7 @@ import {
   Box,
   Checkbox,
   ListItemText,
+  CircularProgress,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -57,7 +58,6 @@ const hallOptions = [
 ];
 
 function AddEvent() {
-  const navigate = useNavigate();
   const initialEventData = {
     name: "",
     dates: {
@@ -74,6 +74,7 @@ function AddEvent() {
     },
   };
 
+  const navigate = useNavigate();
   const [eventData, setEventData] = useState(initialEventData);
   const [step, setStep] = useState(1);
   const [feedback, setFeedback] = useState({
@@ -81,6 +82,7 @@ function AddEvent() {
     message: "",
     severity: "info",
   });
+  const [loading, setLoading] = useState(false); // Loading state
 
   const isValidDate = (date) => {
     return date && dayjs(date).isValid();
@@ -290,6 +292,7 @@ function AddEvent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true
     try {
       const response = await axios.post("/api/add_event", eventData);
       console.log("Event created successfully:", response.data);
@@ -304,7 +307,7 @@ function AddEvent() {
         const optimizeResponse = await axios.post("/api/optimize_distance");
         console.log(
           "Optimization triggered successfully:",
-          optimizeResponse.data
+          optimizeResponse.data,
         );
         setFeedback({
           open: true,
@@ -319,6 +322,14 @@ function AddEvent() {
           severity: "error",
         });
       }
+      // Navigate to the MapView with the runtime start date
+      navigate("/mapview", {
+        state: {
+          selectedDate: dayjs(eventData.dates.runtime.start).format(
+            "YYYY-MM-DD",
+          ),
+        },
+      });
     } catch (error) {
       console.error("Error creating event:", error);
       setFeedback({
@@ -326,6 +337,8 @@ function AddEvent() {
         message: "Error creating event",
         severity: "error",
       });
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -407,7 +420,7 @@ function AddEvent() {
                   return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
                 })
                 .join("<br>");
-            })
+            }),
           )
           .join("<br>");
 
@@ -516,7 +529,7 @@ function AddEvent() {
                           handleDateChange(
                             phase,
                             "start",
-                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                            newValue ? newValue.format("YYYY-MM-DD") : "",
                           )
                         }
                         slotProps={{
@@ -543,7 +556,7 @@ function AddEvent() {
                           handleDateChange(
                             phase,
                             "end",
-                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                            newValue ? newValue.format("YYYY-MM-DD") : "",
                           )
                         }
                         slotProps={{
@@ -607,7 +620,7 @@ function AddEvent() {
                       (new Date(eventData.dates[phase].end) -
                         new Date(eventData.dates[phase].start)) /
                         (1000 * 3600 * 24) +
-                        1
+                        1,
                     )
                       .fill()
                       .map((_, index) => {
@@ -630,7 +643,7 @@ function AddEvent() {
                                   handleDemandChange(
                                     phase,
                                     dateString,
-                                    e.target.value
+                                    e.target.value,
                                   );
                                 }
                               }}
@@ -657,7 +670,7 @@ function AddEvent() {
                         );
                       })}
                   </React.Fragment>
-                )
+                ),
             )}
             <Grid item xs={6}>
               <Button
@@ -681,10 +694,29 @@ function AddEvent() {
             </Grid>
             <Grid item xs={6}></Grid>
           </Grid>
-          <Grid item xs={6}>
-            <Button variant="contained" color="primary" type="submit" fullWidth>
+          <Grid item xs={6} sx={{ position: "relative" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              fullWidth
+              disabled={loading} // Disable button when loading
+            >
               Submit Event
             </Button>
+            {loading && (
+              <CircularProgress
+                size={24}
+                sx={{
+                  color: "primary.main",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  marginTop: "-12px",
+                  marginLeft: "-12px",
+                }}
+              />
+            )}
           </Grid>
         </Box>
       )}
