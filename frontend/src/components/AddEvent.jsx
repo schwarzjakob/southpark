@@ -58,7 +58,6 @@ const hallOptions = [
 ];
 
 function AddEvent() {
-  const navigate = useNavigate();
   const initialEventData = {
     name: "",
     dates: {
@@ -308,7 +307,7 @@ function AddEvent() {
         const optimizeResponse = await axios.post("/api/optimize_distance");
         console.log(
           "Optimization triggered successfully:",
-          optimizeResponse.data
+          optimizeResponse.data,
         );
         setFeedback({
           open: true,
@@ -327,7 +326,7 @@ function AddEvent() {
       navigate("/mapview", {
         state: {
           selectedDate: dayjs(eventData.dates.runtime.start).format(
-            "YYYY-MM-DD"
+            "YYYY-MM-DD",
           ),
         },
       });
@@ -421,7 +420,7 @@ function AddEvent() {
                   return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
                 })
                 .join("<br>");
-            })
+            }),
           )
           .join("<br>");
 
@@ -530,7 +529,7 @@ function AddEvent() {
                           handleDateChange(
                             phase,
                             "start",
-                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                            newValue ? newValue.format("YYYY-MM-DD") : "",
                           )
                         }
                         slotProps={{
@@ -557,7 +556,7 @@ function AddEvent() {
                           handleDateChange(
                             phase,
                             "end",
-                            newValue ? newValue.format("YYYY-MM-DD") : ""
+                            newValue ? newValue.format("YYYY-MM-DD") : "",
                           )
                         }
                         slotProps={{
@@ -621,7 +620,7 @@ function AddEvent() {
                       (new Date(eventData.dates[phase].end) -
                         new Date(eventData.dates[phase].start)) /
                         (1000 * 3600 * 24) +
-                        1
+                        1,
                     )
                       .fill()
                       .map((_, index) => {
@@ -644,7 +643,7 @@ function AddEvent() {
                                   handleDemandChange(
                                     phase,
                                     dateString,
-                                    e.target.value
+                                    e.target.value,
                                   );
                                 }
                               }}
@@ -671,7 +670,7 @@ function AddEvent() {
                         );
                       })}
                   </React.Fragment>
-                )
+                ),
             )}
             <Grid item xs={6}>
               <Button
