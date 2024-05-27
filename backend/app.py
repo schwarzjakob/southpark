@@ -386,7 +386,7 @@ def check_hall_availability():
     try:
         data = request.json
         event_id = data.get("event_id", None)
-        halls = data["halls"]
+        selected_halls = data["halls"]
         dates = data["dates"]
 
         all_dates = []
@@ -400,50 +400,67 @@ def check_hall_availability():
         SELECT ho.event_id, ho.hall_id, ho.date, e.name as event_name
         FROM hall_occupation ho
         JOIN event e ON ho.event_id = e.id
-        WHERE ho.hall_id = :hall_id AND ho.date IN :dates
-        AND ho.event_id != :event_id
+        WHERE ho.date IN :dates
+        AND (ho.event_id != :event_id OR :event_id IS NULL)
         """
 
         occupied_halls = {}
-        free_halls = {date: [] for date in all_dates}
+        free_halls_by_date = {date: set() for date in all_dates}
 
         with engine.connect() as connection:
             hall_ids = connection.execute(text(hall_id_query)).fetchall()
             hall_map = {hall[0]: hall[1] for hall in hall_ids}
-            selected_hall_ids = [
-                hall_id for hall_id, hall_name in hall_ids if hall_name in halls
-            ]
+            all_halls = set(hall_map.values())
 
-            for hall_id in selected_hall_ids:
-                result = connection.execute(
-                    text(hall_occupation_query),
-                    {
-                        "hall_id": hall_id,
-                        "dates": tuple(all_dates),
-                        "event_id": event_id,
-                    },
-                ).fetchall()
+            result = connection.execute(
+                text(hall_occupation_query),
+                {
+                    "dates": tuple(all_dates),
+                    "event_id": event_id,
+                },
+            ).fetchall()
 
-                hall_name = hall_map[hall_id]
-
-                if result:
+            for row in result:
+                hall_name = hall_map[row[1]]
+                date_str = row[2].strftime("%Y-%m-%d")
+                if hall_name not in occupied_halls:
                     occupied_halls[hall_name] = []
-                    for row in result:
-                        occupied_halls[hall_name].append(
-                            {
-                                "event_id": row[0],  # Access by index
-                                "date": row[2].strftime("%d.%m.%Y"),  # Access by index
-                                "event_name": row[3],  # Access by index
-                            }
-                        )
+                occupied_halls[hall_name].append(
+                    {
+                        "event_id": row[0],
+                        "date": row[2].strftime("%d.%m.%Y"),
+                        "event_name": row[3],
+                    }
+                )
+                free_halls_by_date[date_str].discard(hall_name)
 
-            for hall_id, hall_name in hall_map.items():
-                if hall_id not in selected_hall_ids:
-                    for date in all_dates:
-                        free_halls[date].append(hall_name)
+        # Calculate free halls correctly
+        for date in all_dates:
+            free_halls_by_date[date] = sorted(
+                all_halls
+                - set(
+                    hall_map[hall_id]
+                    for hall_id, hall_name in hall_ids
+                    if hall_name in occupied_halls
+                )
+            )
 
+        # Filter occupied_halls to only include selected halls
+        selected_occupied_halls = {
+            hall: occupied_halls[hall]
+            for hall in selected_halls
+            if hall in occupied_halls
+        }
+
+        print(selected_occupied_halls)
+        print(free_halls_by_date)
         return (
-            jsonify({"occupied_halls": occupied_halls, "free_halls": free_halls}),
+            jsonify(
+                {
+                    "occupied_halls": selected_occupied_halls,
+                    "free_halls": free_halls_by_date,
+                }
+            ),
             200,
         )
     except Exception as e:

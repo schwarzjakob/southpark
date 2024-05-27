@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -82,6 +83,7 @@ function EditEvent() {
     },
   };
 
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -410,6 +412,14 @@ function EditEvent() {
           severity: "error",
         });
       }
+      // Navigate to the MapView with the runtime start date
+      navigate("/mapview", {
+        state: {
+          selectedDate: dayjs(eventData.dates.runtime.start).format(
+            "YYYY-MM-DD"
+          ),
+        },
+      });
     } catch (error) {
       console.error("Error updating event:", error);
       setFeedback({

@@ -75,6 +75,7 @@ function AddEvent() {
     },
   };
 
+  const navigate = useNavigate();
   const [eventData, setEventData] = useState(initialEventData);
   const [step, setStep] = useState(1);
   const [feedback, setFeedback] = useState({
@@ -322,6 +323,14 @@ function AddEvent() {
           severity: "error",
         });
       }
+      // Navigate to the MapView with the runtime start date
+      navigate("/mapview", {
+        state: {
+          selectedDate: dayjs(eventData.dates.runtime.start).format(
+            "YYYY-MM-DD"
+          ),
+        },
+      });
     } catch (error) {
       console.error("Error creating event:", error);
       setFeedback({
