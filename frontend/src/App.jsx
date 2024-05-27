@@ -9,6 +9,7 @@ import Footer from "./components/Footer.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import MapView from "./components/MapView.jsx";
 import AddEvent from "./components/AddEvent.jsx";
+import EditEvent from "./components/EditEvent.jsx"; // Import the EditEvent component
 import ImportCSV from "./components/ImportCSV.jsx";
 import InputDemands from "./components/InputDemands.jsx";
 import EventsAllocationTable from "./components/EventsAllocationTable.jsx";
@@ -39,6 +40,7 @@ function App() {
                 <Route path="/mapview" element={<MapView />} />
                 <Route path="/tableview" element={<EventsAllocationTable />} />
                 <Route path="/addEvent" element={<AddEvent />} />
+                <Route path="/editEvent" element={<EditEvent />} />
                 <Route path="/import" element={<ImportCSV />} />
                 <Route path="/input_demands" element={<InputDemands />} />
                 <Route path="/exceedsCapacity" element={<ExceedsCapacity />} />
