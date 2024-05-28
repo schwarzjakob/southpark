@@ -55,9 +55,9 @@ const Navigation = ({ isOpen, toggleNav }) => {
               style={{ marginRight: 16 }}
             />
             <Typography variant="h6">
-              Parking Area
+              Parking Space
               <br />
-              Management
+              Management System
             </Typography>
           </Link>
         </Box>

@@ -35,9 +35,9 @@ function Header({ toggleNav }) {
         <LogoContainer to="/">
           <Logo src="src/assets/logo_white.svg" alt="Messe München" />
           <Typography variant="h6">
-            Parking Area
+            Parking Space
             <br />
-            Management
+            Management System
           </Typography>
         </LogoContainer>
         <Grow />
