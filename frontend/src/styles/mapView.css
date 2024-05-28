@@ -37,6 +37,11 @@
 
 .map__timeline-slider {
   border: none !important;
+  cursor: pointer;
+}
+.timeline-slider p,
+.timeline-date {
+  cursor: pointer;
 }
 
 .timeline-slider__days,
