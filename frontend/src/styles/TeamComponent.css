@@ -26,13 +26,9 @@
 }
 
 .sub-heading-text {
-  padding: 0 0 2rem 0 !important;
+  padding: 0 2rem 2rem 0 !important;
 }
 
 .heading-text {
   padding-bottom: 1rem !important;
-}
-
-.team-members-container {
-  justify-content: center !important;
 }
