@@ -439,7 +439,7 @@ table tfoot td:last-child {
   outline: none !important;
 }
 
-a:not(.button, .chakra-linkbox__overlay):hover {
+a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
   color: var(--color-primary-600);
 }
 
