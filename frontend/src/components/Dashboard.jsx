@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Grid, Paper, Typography, Box } from "@mui/material";
+import {
+  Button,
+  Grid,
+  Paper,
+  Typography,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import axios from "axios";
 import CapacityUtilization from "../components/dashboard/CapacityUtilization";
 
@@ -22,7 +29,16 @@ const Dashboard = () => {
   };
 
   if (!data) {
-    return <div>Loading...</div>;
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress color="secondary" />
+      </Box>
+    );
   }
 
   const circleStyle = {
