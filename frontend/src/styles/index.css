@@ -578,7 +578,7 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   justify-content: center;
 }
 
-svg path {
+.animated-svg path {
   stroke: var(--color-primary-700);
   stroke-width: 1;
   stroke-linecap: round;
