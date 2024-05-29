@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  Grid,
-  Paper,
-  Typography,
-  Box,
-  CircularProgress,
-} from "@mui/material";
+import { Button, Grid, Paper, Typography, Box } from "@mui/material";
 import axios from "axios";
 import CapacityUtilization from "../components/dashboard/CapacityUtilization";
+import LoadingAnimation from "../components/LoadingAnimation"; // Adjust the path as necessary
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -36,7 +30,7 @@ const Dashboard = () => {
         alignItems="center"
         height="100vh"
       >
-        <CircularProgress color="secondary" />
+        <LoadingAnimation />
       </Box>
     );
   }
