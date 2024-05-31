@@ -53,7 +53,7 @@ const teamMembers = [
     img: kenny,
     position: "",
     linkedIn: "https://www.linkedin.com/in/timontirtey/",
-    email: "mailto:t.sirtey@campus.lmu.de",
+    email: "mailto:t.tirtey@campus.lmu.de",
   },
 ];
 
