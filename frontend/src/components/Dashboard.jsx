@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Grid, Paper, Typography, Box } from "@mui/material";
 import axios from "axios";
 import CapacityUtilization from "../components/dashboard/CapacityUtilization";
+import LoadingAnimation from "../components/LoadingAnimation"; // Adjust the path as necessary
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -22,7 +23,16 @@ const Dashboard = () => {
   };
 
   if (!data) {
-    return <div>Loading...</div>;
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <LoadingAnimation />
+      </Box>
+    );
   }
 
   const circleStyle = {

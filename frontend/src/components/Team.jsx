@@ -92,7 +92,7 @@ const renderTeam = () => {
                   <Typography variant="h6" className="name center">
                     {member.name}
                   </Typography>
-                  <div className="center">
+                  <div class="center">
                     <IconButton
                       component={Link}
                       href={member.linkedIn}

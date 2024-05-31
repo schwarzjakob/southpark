@@ -542,3 +542,76 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   height: 100%;
   width: 100%;
 }
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.project-heading {
+  font-size: 36px;
+  font-weight: 700;
+  margin-top: 32px;
+}
+
+.project-description {
+  font-size: 16px;
+  line-height: 24px;
+  color: rgb(122, 122, 122);
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* Loading animaion  */
+.loader {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animated-svg path {
+  stroke: var(--color-primary-700);
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: var(--color-primary-500);
+  animation: draw 3s infinite alternate;
+}
+
+@keyframes draw {
+  0% {
+    stroke-dasharray: 0, 1000;
+    stroke: var(--color-primary-200);
+  }
+  25% {
+    stroke: var(--color-primary-400);
+  }
+  50% {
+    stroke-dasharray: 500, 1000;
+    stroke: var(--color-primary-500);
+  }
+  75% {
+    stroke: var(--color-primary-600);
+  }
+  100% {
+    stroke-dasharray: 1000, 0;
+    stroke: var(--color-primary-700);
+  }
+}
+
+.loading-text {
+  color: #fff;
+  font-size: 18px;
+  position: absolute;
+  top: 250px;
+  text-align: center;
+  width: 100%;
+}
