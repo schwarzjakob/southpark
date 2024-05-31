@@ -22,9 +22,10 @@ const Grow = styled("div")({
 
 function Header({ toggleNav }) {
   return (
-    <AppBar position="static">
+    <AppBar position="static" className="header-container">
       <Toolbar>
         <IconButton
+          className="menu-button"
           edge="start"
           color="inherit"
           onClick={toggleNav}
@@ -34,10 +35,10 @@ function Header({ toggleNav }) {
         </IconButton>
         <LogoContainer to="/">
           <Logo src="src/assets/logo_white.svg" alt="Messe München" />
-          <Typography variant="h6">
-            Parking Area
+          <Typography variant="h6" className="page-title" >
+            Parking Space
             <br />
-            Management
+            Management System
           </Typography>
         </LogoContainer>
         <Grow />

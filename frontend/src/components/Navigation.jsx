@@ -21,15 +21,9 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 const Navigation = ({ isOpen, toggleNav }) => {
   return (
     <Drawer anchor="left" open={isOpen} onClose={toggleNav}>
-      <Box
-        sx={{
-          width: 340,
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-        }}
-      >
+      <Box className="nav-bar">
         <Box
+          className="nav-bar__header"
           sx={{
             display: "flex",
             alignItems: "center",
@@ -54,10 +48,10 @@ const Navigation = ({ isOpen, toggleNav }) => {
               alt="Messe München"
               style={{ marginRight: 16 }}
             />
-            <Typography variant="h6">
-              Parking Area
+            <Typography variant="h6" className="nav__page-title">
+              Parking Space
               <br />
-              Management
+              Management System
             </Typography>
           </Link>
         </Box>

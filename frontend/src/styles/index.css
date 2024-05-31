@@ -168,7 +168,7 @@ h5 {
   font-family: var(--type-headline-font-family);
   font-weight: 400;
   line-height: 1.3;
-  text-transform: capitalize;
+  text-transform: none !important;
 }
 
 h1 {
@@ -439,7 +439,7 @@ table tfoot td:last-child {
   outline: none !important;
 }
 
-a:not(.button, .chakra-linkbox__overlay):hover {
+a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
   color: var(--color-primary-600);
 }
 
@@ -474,41 +474,42 @@ a:not(.button, .chakra-linkbox__overlay):hover {
   border-right: 1px solid var(--color-gray-100);
 }
 
-/* MUI navigation slide */
-.css-1j7dv1j {
-  width: 350px !important;
-}
 /* MUI navigation, header title */
-.css-13sgaq-MuiTypography-root,
-.css-183ssja {
+.page-title {
+  font-size: 1rem !important;
+  color: var(--white) !important;
+}
+
+h6.page-title a:hover {
+  color: var(--white) !important;
+}
+
+/* MUI header title */
+.nav__page-title {
   font-size: 1rem !important;
   color: var(--color-gray-800) !important;
 }
 
-/* MUI header title */
-.css-13sgaq-MuiTypography-root,
-.css-183ssja {
-  font-size: 1rem !important;
-  color: var(--white) !important;
-}
 /* MUI burger menu icon  */
-.css-1d6w9lk-MuiButtonBase-root-MuiIconButton-root {
+.menu-button {
   margin-right: 16px !important;
 }
 
 /* MUI header  */
-.css-hyum1k-MuiToolbar-root {
+.header-container div {
   padding: 10px 24px !important;
 }
 
-/* MUI nav bar header  */
-.css-st88xl {
-  padding: 10px 24px !important;
+.nav-bar {
+  width: 24rem !important;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 /* MUI nav bar header  */
-.css-aw0axs-MuiDrawer-paper {
-  border: none !important;
+.nav-bar__header {
+  padding: 10px 24px !important;
 }
 
 /* MUI table header fix  */
@@ -516,20 +517,28 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   background-color: var(--color-primary-500);
 }
 
-/* MUI nav bar header  */
-.css-156pbz3 {
-  max-width: 120vh;
-  margin-left: auto;
-  margin-right: auto;
+.social-icons {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
 }
 
-/* import event */
-.css-19kzrtu {
-  max-width: 120vh;
-  margin-left: auto;
-  margin-right: auto;
-  padding-top: 24px !important;
-  padding-bottom: 24px !important;
-  padding-left: 80px !important;
-  padding-right: 80px !important;
+.project-heading {
+  font-size: 36px;
+  font-weight: 700;
+  margin-top: 32px;
+}
+
+.project-description {
+  font-size: 16px;
+  line-height: 24px;
+  color: rgb(122, 122, 122);
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 }
