@@ -120,6 +120,54 @@ const Navigation = ({ isOpen, toggleNav }) => {
               <ListItemText primary="Add Event" />
             </ListItemButton>
           </Link>
+          <Link
+            to="/editEvent"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
+              <ListItemIcon>
+                <EditIcon />
+              </ListItemIcon>
+              <ListItemText primary="Edit Event" />
+            </ListItemButton>
+          </Link>
+          <Link
+            to="/import"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
+              <ListItemIcon>
+                <FileUploadIcon />
+              </ListItemIcon>
+              <ListItemText primary="Upload Events" />
+            </ListItemButton>
+          </Link>
+          <Link
+            to="/input_demands"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
+              <ListItemIcon>
+                <DirectionsCarIcon />
+              </ListItemIcon>
+              <ListItemText primary="Add Missing Demands" />
+            </ListItemButton>
+          </Link>
         </List>
       </Box>
     </Drawer>
