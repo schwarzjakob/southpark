@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Grid, Paper, Typography, Box } from "@mui/material";
+import { Grid, Paper, Typography, Box } from "@mui/material";
 import axios from "axios";
 import CapacityUtilization from "../components/dashboard/CapacityUtilization";
-import LoadingAnimation from "../components/LoadingAnimation"; // Adjust the path as necessary
+import LoadingAnimation from "../components/LoadingAnimation"; 
 
 const Dashboard = () => {
   const navigate = useNavigate();

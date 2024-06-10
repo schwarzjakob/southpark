@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Link, Typography } from "@mui/material";
 
 const currentYear = new Date().getFullYear();
@@ -15,7 +14,6 @@ const Footer = () => {
       }}
     >
       <Box className="certificates-footer" sx={{ marginBottom: 2 }}>
-        {/* Zertifikats-Icons oder Links können hier eingefügt werden */}
       </Box>
       <Box className="social-footer" sx={{ marginBottom: 2 }}>
         <Box

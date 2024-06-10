@@ -94,8 +94,8 @@ function EditEvent() {
     message: "",
     severity: "info",
   });
-  const [loading, setLoading] = useState(false); // Loading state
-  const eventDetailsRef = useRef(null); // Reference for the event details section
+  const [loading, setLoading] = useState(false);
+  const eventDetailsRef = useRef(null); 
 
   useEffect(() => {
     fetchEvents();
@@ -369,7 +369,7 @@ function EditEvent() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
       const updatedEvent = {
         ...selectedEvent,
@@ -412,7 +412,6 @@ function EditEvent() {
           severity: "error",
         });
       }
-      // Navigate to the MapView with the runtime start date
       navigate("/mapview", {
         state: {
           selectedDate: dayjs(eventData.dates.runtime.start).format(
@@ -428,7 +427,7 @@ function EditEvent() {
         severity: "error",
       });
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
@@ -789,7 +788,7 @@ function EditEvent() {
                     color="primary"
                     type="submit"
                     fullWidth
-                    disabled={loading} // Disable button when loading
+                    disabled={loading}
                   >
                     Submit Event
                   </Button>

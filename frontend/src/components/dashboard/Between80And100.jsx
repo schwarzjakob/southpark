@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { Button } from "@mui/material";
@@ -17,7 +17,7 @@ const Between80And100 = () => {
       const response = await axios.get("/api/capacity_utilization");
       const dataWithId = response.data.between_80_and_100.map((row, index) => ({
         ...row,
-        id: index, // Add a unique id to each row
+        id: index, 
       }));
       setRows(dataWithId);
     } catch (error) {
