@@ -221,7 +221,7 @@ def get_available_years():
         logger.info("Fetching available years from the database.")
         query_years = """
         SELECT DISTINCT EXTRACT(YEAR FROM date) AS year
-        FROM view_schema.demand_vs_capacity
+        FROM view_schema.view_demand_vs_capacity
         ORDER BY year;
         """
         result = get_data(query_years)
@@ -247,7 +247,7 @@ def get_capacity_utilization():
         # Fetch dates where demand exceeds capacity
         query_exceeds_capacity = """
         SELECT date, total_demand, total_capacity
-        FROM view_schema.demand_vs_capacity
+        FROM view_schema.view_demand_vs_capacity
         WHERE total_demand > total_capacity
         ORDER BY date;
         """
@@ -256,7 +256,7 @@ def get_capacity_utilization():
         # Fetch dates where demand is between 80% and 100% of capacity
         query_between_80_and_100 = """
         SELECT date, total_demand, total_capacity
-        FROM view_schema.demand_vs_capacity
+        FROM view_schema.view_demand_vs_capacity
         WHERE total_demand BETWEEN total_capacity * 0.8 AND total_capacity
         ORDER BY date;
         """
@@ -266,7 +266,7 @@ def get_capacity_utilization():
         # Fetch total demands and capacities for each day
         query_total_capacity_utilization = f"""
         SELECT date, total_demand, COALESCE(total_capacity, 1) AS total_capacity
-        FROM view_schema.demand_vs_capacity
+        FROM view_schema.view_demand_vs_capacity
         WHERE EXTRACT(YEAR FROM date) = {year}
         ORDER BY date;
         """
