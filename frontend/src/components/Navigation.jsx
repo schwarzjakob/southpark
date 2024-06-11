@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import {
   Drawer,
@@ -172,6 +173,11 @@ const Navigation = ({ isOpen, toggleNav }) => {
       </Box>
     </Drawer>
   );
+};
+
+Navigation.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  toggleNav: PropTypes.func.isRequired,
 };
 
 export default Navigation;

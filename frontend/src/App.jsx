@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -9,22 +9,42 @@ import Footer from "./components/Footer.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import MapView from "./components/MapView.jsx";
 import AddEvent from "./components/AddEvent.jsx";
-import EditEvent from "./components/EditEvent.jsx"; // Import the EditEvent component
+import EditEvent from "./components/EditEvent.jsx";
 import ImportCSV from "./components/ImportCSV.jsx";
 import InputDemands from "./components/InputDemands.jsx";
 import EventsAllocationTable from "./components/EventsAllocationTable.jsx";
 import ExceedsCapacity from "./components/dashboard/ExceedsCapacity.jsx";
 import Between80And100 from "./components/dashboard/Between80And100.jsx";
 import Team from "./components/Team.jsx";
-
-import theme from "./styles/muiCustomTheme"; // Import custom mui theme
+import MobileWarning from "./components/MobileWarning.jsx";
+import theme from "./styles/muiCustomTheme";
 
 function App() {
   const [isNavOpen, setNavOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const toggleNav = () => {
     setNavOpen(!isNavOpen);
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // Adjust the threshold as needed
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Initial check
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  if (isMobile) {
+    return <MobileWarning />;
+  }
 
   return (
     <ThemeProvider theme={theme}>
