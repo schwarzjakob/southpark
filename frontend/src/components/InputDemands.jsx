@@ -33,14 +33,14 @@ const InputDemands = () => {
     message: "",
     severity: "info",
   });
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const eventRefs = useRef([]);
   const bottomRef = useRef(null);
 
   const fetchEvents = async () => {
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
       const response = await axios.get("/api/events_without_valid_demands");
       const eventsWithDemands = response.data.events.reduce((acc, event) => {
@@ -76,7 +76,7 @@ const InputDemands = () => {
         severity: "error",
       });
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
@@ -113,7 +113,7 @@ const InputDemands = () => {
   };
 
   const handleSubmit = async () => {
-    setLoading(true); // Set loading to true
+    setLoading(true);
     let hasDemands = false;
     const demandsToSave = [];
 
@@ -144,7 +144,7 @@ const InputDemands = () => {
         message: "No demands entered for any event.",
         severity: "info",
       });
-      setLoading(false); // Set loading to false
+      setLoading(false);
       return;
     }
 
@@ -169,7 +169,7 @@ const InputDemands = () => {
         severity: "success",
       });
 
-      fetchEvents(); // Refetch events after successful save
+      fetchEvents(); 
       handleScrollToTop();
     } catch (error) {
       setFeedback({
@@ -178,12 +178,12 @@ const InputDemands = () => {
         severity: "error",
       });
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false); 
     }
   };
 
   const handleSaveEventDemands = async (eventId) => {
-    setLoading(true); // Set loading to true
+    setLoading(true);
     const event = events.find((event) => event.event_id === eventId);
     const demands = {};
     let hasDemands = false;
@@ -207,7 +207,7 @@ const InputDemands = () => {
         message: `No demands entered for ${event.name}.`,
         severity: "info",
       });
-      setLoading(false); // Set loading to false
+      setLoading(false);
       return;
     }
 
@@ -230,7 +230,7 @@ const InputDemands = () => {
         severity: "success",
       });
 
-      fetchEvents(); // Refetch events after successful save
+      fetchEvents();
     } catch (error) {
       setFeedback({
         open: true,
@@ -238,7 +238,7 @@ const InputDemands = () => {
         severity: "error",
       });
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
@@ -327,7 +327,7 @@ const InputDemands = () => {
                                   label={`${date} Demand`}
                                   type="number"
                                   value={event.demands[date].demand || ""}
-                                  onWheel={(e) => e.target.blur()} // Disable mouse wheel scroll
+                                  onWheel={(e) => e.target.blur()}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     if (
@@ -351,7 +351,7 @@ const InputDemands = () => {
                                     ) {
                                       e.preventDefault();
                                     }
-                                  }} // Disable negative, decimal, exponential numbers, and non-numeric characters
+                                  }}
                                   inputProps={{
                                     min: 0,
                                     pattern: "[0-9]*",
@@ -382,7 +382,7 @@ const InputDemands = () => {
                     color="primary"
                     fullWidth
                     onClick={() => handleSaveEventDemands(event.event_id)}
-                    disabled={loading} // Disable button when loading
+                    disabled={loading}
                   >
                     Save {event.name} Demands
                   </Button>
@@ -430,7 +430,7 @@ const InputDemands = () => {
               color="primary"
               fullWidth
               onClick={handleSubmit}
-              disabled={loading} // Disable button when loading
+              disabled={loading} 
             >
               Save All Demands
             </Button>

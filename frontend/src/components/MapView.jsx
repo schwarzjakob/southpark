@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
@@ -19,7 +19,7 @@ const MapView = () => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/events_timeline/${selectedDate}`
+          `/api/events_timeline/${selectedDate}`,
         );
         setEvents(data);
       } catch (error) {
@@ -68,7 +68,7 @@ const MapView = () => {
           <TimelineSlider
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
-            events={events} // Pass events to TimelineSlider
+            events={events}
           />
         </Box>
         <Box

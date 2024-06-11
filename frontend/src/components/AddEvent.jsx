@@ -82,7 +82,7 @@ function AddEvent() {
     message: "",
     severity: "info",
   });
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
 
   const isValidDate = (date) => {
     return date && dayjs(date).isValid();
@@ -292,7 +292,7 @@ function AddEvent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
       const response = await axios.post("/api/add_event", eventData);
       console.log("Event created successfully:", response.data);
@@ -301,7 +301,7 @@ function AddEvent() {
         message: response.data.message,
         severity: "success",
       });
-      handleResetDates(); // Reset the form after successful submission
+      handleResetDates();
 
       try {
         const optimizeResponse = await axios.post("/api/optimize_distance");
@@ -338,7 +338,7 @@ function AddEvent() {
         severity: "error",
       });
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
@@ -355,8 +355,8 @@ function AddEvent() {
     return response.data;
   };
 
+  // Validate required fields before proceeding to the next step
   const handleNext = async () => {
-    // Validate required fields before proceeding to the next step
     const missingFields = [];
 
     if (!eventData.name) missingFields.push("Event name");
@@ -633,7 +633,7 @@ function AddEvent() {
                               label={`${dateString} Demand`}
                               type="number"
                               value={eventData.demands[phase][dateString] || ""}
-                              onWheel={(e) => e.target.blur()} // Disable mouse wheel scroll
+                              onWheel={(e) => e.target.blur()}
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (
@@ -657,7 +657,7 @@ function AddEvent() {
                                 ) {
                                   e.preventDefault();
                                 }
-                              }} // Disable negative, decimal, exponential numbers, and non-numeric characters
+                              }}
                               inputProps={{
                                 min: 0,
                                 pattern: "[0-9]*",
@@ -700,7 +700,7 @@ function AddEvent() {
               color="primary"
               type="submit"
               fullWidth
-              disabled={loading} // Disable button when loading
+              disabled={loading}
             >
               Submit Event
             </Button>

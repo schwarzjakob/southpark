@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { DataGrid, GridToolbarExport } from "@mui/x-data-grid";
 import { Box, Typography } from "@mui/material";
 
@@ -6,11 +6,11 @@ const columns = [
   { field: "event", headerName: "Event", flex: 1 },
   { field: "date", headerName: "Date", flex: 1 },
   { field: "status", headerName: "Phase", flex: 1 },
-  { field: "halls", headerName: "Halls", flex: 1 }, // Adjusted to reflect aggregated halls
+  { field: "halls", headerName: "Halls", flex: 1 },
   { field: "demand", headerName: "Demand", flex: 1 },
   { field: "parking_lot", headerName: "Parking Lot", flex: 1 },
   { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
-  { field: "average_distance", headerName: "Average Distance", flex: 1 }, // Adjusted to reflect average distance
+  { field: "average_distance", headerName: "Average Distance", flex: 1 },
 ];
 
 const EventsAllocationTable = () => {
@@ -21,7 +21,7 @@ const EventsAllocationTable = () => {
     fetch("/api/events_parking_lots_allocation")
       .then((response) => response.json())
       .then((data) => {
-        console.log("Backend data 2:", data); // Log the data to debug
+        console.log("Backend data 2:", data);
         setTableData(data);
         setLoading(false);
       })
@@ -40,7 +40,7 @@ const EventsAllocationTable = () => {
         <DataGrid
           rows={tableData}
           columns={columns}
-          getRowId={(row) => row.id} // Ensure row ID is correct
+          getRowId={(row) => row.id} 
           components={{
             Toolbar: GridToolbarExport,
           }}

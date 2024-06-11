@@ -1,6 +1,6 @@
 import "leaflet/dist/leaflet.css";
-
-import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -322,8 +322,6 @@ const parkingLots = [
     ],
   },
 ];
-
-// Define an array of colors
 const colors = [
   "purple",
   "orange",
@@ -341,6 +339,11 @@ const colors = [
 ];
 
 const MapComponent = ({ selectedDate }) => {
+
+  MapComponent.propTypes = {
+    selectedDate: PropTypes.string.isRequired,
+    zoom: PropTypes.number.isRequired,
+  };
   const [events, setEvents] = useState([]);
   const [colorMapping, setColorMapping] = useState({});
 
@@ -348,7 +351,7 @@ const MapComponent = ({ selectedDate }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/events_timeline/${selectedDate}`
+          `/api/events_timeline/${selectedDate}`,
         );
         if (data) {
           setEvents(data);
@@ -378,7 +381,7 @@ const MapComponent = ({ selectedDate }) => {
         event.assembly_start_date,
         event.assembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "assembly";
@@ -389,7 +392,7 @@ const MapComponent = ({ selectedDate }) => {
         event.runtime_start_date,
         event.runtime_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "runtime";
@@ -400,7 +403,7 @@ const MapComponent = ({ selectedDate }) => {
         event.disassembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "disassembly";
@@ -457,16 +460,16 @@ const MapComponent = ({ selectedDate }) => {
         event.assembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]"
+        "[]",
       ) ||
-      dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
+      dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
   );
 
   const SetZoomLevel = ({ zoom }) => {
     const map = useMap();
 
     useEffect(() => {
-      map.options.zoomSnap = 0; // Allow fractional zoom levels
+      map.options.zoomSnap = 0;
       map.setZoom(zoom);
     }, [map, zoom]);
 
@@ -493,7 +496,7 @@ const MapComponent = ({ selectedDate }) => {
       {halls.map((hall) => {
         const color = getPolygonColor(hall.name);
         const event = filteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false
+          event.halls ? event.halls.split(", ").includes(hall.name) : false,
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
@@ -535,7 +538,7 @@ const MapComponent = ({ selectedDate }) => {
             ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
                 .split(", ")
                 .includes(lot.name)
-            : false
+            : false,
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
@@ -566,6 +569,10 @@ const MapComponent = ({ selectedDate }) => {
       })}
     </MapContainer>
   );
+};
+
+MapComponent.propTypes = {
+  selectedDate: PropTypes.string.isRequired,
 };
 
 export default MapComponent;

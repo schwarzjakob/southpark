@@ -1,15 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
 import moment from "moment";
-import {
-  MenuItem,
-  FormControl,
-  Select,
-  InputLabel,
-  Button,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { MenuItem, FormControl, Select, InputLabel } from "@mui/material";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -33,11 +26,10 @@ const CapacityUtilization = () => {
   const [data, setData] = useState([]);
   const [year, setYear] = useState("");
   const [availableYears, setAvailableYears] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAvailableYears();
-  }, []);
+  });
 
   useEffect(() => {
     if (year) {
@@ -51,7 +43,7 @@ const CapacityUtilization = () => {
       const years = response.data.years;
       setAvailableYears(years);
       if (years.length > 0 && !years.includes(year)) {
-        setYear(years[0]); // Set the first available year as default if the current year is not available
+        setYear(years[0]);
       }
     } catch (error) {
       console.error("Error fetching available years:", error);

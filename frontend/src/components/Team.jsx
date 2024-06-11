@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Container,
   Grid,
@@ -92,7 +91,7 @@ const renderTeam = () => {
                   <Typography variant="h6" className="name center">
                     {member.name}
                   </Typography>
-                  <div class="center">
+                  <div className="center">
                     <IconButton
                       component={Link}
                       href={member.linkedIn}

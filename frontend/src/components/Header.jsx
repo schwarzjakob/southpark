@@ -1,20 +1,20 @@
-import React from "react";
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { AppBar, Toolbar, IconButton, Typography, Box } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { styled } from "@mui/system";
 
-const LogoContainer = styled(Link)(({ theme }) => ({
+const LogoContainer = styled(Link)({
   display: "flex",
   alignItems: "center",
   textDecoration: "none",
   color: "inherit",
-}));
+});
 
-const Logo = styled("img")(({ theme }) => ({
-  marginRight: theme.spacing(2),
-}));
+const Logo = styled("img")({
+  marginRight: 2,
+});
 
 const Grow = styled("div")({
   flexGrow: 1,
@@ -35,7 +35,7 @@ function Header({ toggleNav }) {
         </IconButton>
         <LogoContainer to="/">
           <Logo src="src/assets/logo_white.svg" alt="Messe München" />
-          <Typography variant="h6" className="page-title" >
+          <Typography variant="h6" className="page-title">
             Parking Space
             <br />
             Management System
@@ -49,5 +49,9 @@ function Header({ toggleNav }) {
     </AppBar>
   );
 }
+
+Header.propTypes = {
+  toggleNav: PropTypes.func.isRequired,
+};
 
 export default Header;
