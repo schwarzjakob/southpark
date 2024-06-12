@@ -127,15 +127,21 @@ SELECT
     e.name AS event_name,
     en.name AS event_entrance,
     STRING_AGG(DISTINCT h.name, ', ') AS halls,
+    STRING_AGG(DISTINCT CASE WHEN pa.date BETWEEN e.early_assembly_start_date AND e.early_assembly_end_date THEN p.name ELSE NULL END, ', ') FILTER (WHERE pa.date BETWEEN e.early_assembly_start_date AND e.early_assembly_end_date) AS early_assembly_parking_lots,
     STRING_AGG(DISTINCT CASE WHEN pa.date BETWEEN e.assembly_start_date AND e.assembly_end_date THEN p.name ELSE NULL END, ', ') FILTER (WHERE pa.date BETWEEN e.assembly_start_date AND e.assembly_end_date) AS assembly_parking_lots,
     STRING_AGG(DISTINCT CASE WHEN pa.date BETWEEN e.runtime_start_date AND e.runtime_end_date THEN p.name ELSE NULL END, ', ') FILTER (WHERE pa.date BETWEEN e.runtime_start_date AND e.runtime_end_date) AS runtime_parking_lots,
     STRING_AGG(DISTINCT CASE WHEN pa.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date THEN p.name ELSE NULL END, ', ') FILTER (WHERE pa.date BETWEEN e.disassembly_start_date AND e.disassembly_end_date) AS disassembly_parking_lots,
+    STRING_AGG(DISTINCT CASE WHEN pa.date BETWEEN e.late_disassembly_start_date AND e.late_disassembly_end_date THEN p.name ELSE NULL END, ', ') FILTER (WHERE pa.date BETWEEN e.late_disassembly_start_date AND e.late_disassembly_end_date) AS late_disassembly_parking_lots,
+    MIN(e.early_assembly_start_date) AS early_assembly_start_date,
+    MAX(e.early_assembly_end_date) AS early_assembly_end_date,
     MIN(e.assembly_start_date) AS assembly_start_date,
     MAX(e.assembly_end_date) AS assembly_end_date,
     MIN(e.runtime_start_date) AS runtime_start_date,
     MAX(e.runtime_end_date) AS runtime_end_date,
     MIN(e.disassembly_start_date) AS disassembly_start_date,
-    MAX(e.disassembly_end_date) AS disassembly_end_date
+    MAX(e.disassembly_end_date) AS disassembly_end_date,
+    MIN(e.late_disassembly_start_date) AS late_disassembly_start_date,
+    MAX(e.late_disassembly_end_date) AS late_disassembly_end_date
 FROM
     public.event e
 JOIN
@@ -153,4 +159,4 @@ LEFT JOIN
 GROUP BY
     e.id, e.name, en.name
 ORDER BY
-    MIN(e.assembly_start_date), MIN(e.runtime_start_date), MIN(e.disassembly_start_date);
+    MIN(e.early_assembly_start_date), MIN(e.assembly_start_date), MIN(e.runtime_start_date), MIN(e.disassembly_start_date), MIN(e.late_disassembly_start_date);
