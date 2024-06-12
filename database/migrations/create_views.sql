@@ -143,13 +143,13 @@ JOIN
 JOIN
     public.hall h ON ho.hall_id = h.id
 LEFT JOIN
-    public.parking_lot_allocation pa ON pa.event_id = e.id
-LEFT JOIN
-    public.parking_lot p ON pa.parking_lot_id = p.id
-LEFT JOIN
-    public.entrance_occupation eo ON e.id = eo.event_id AND pa.date = eo.date
+    public.entrance_occupation eo ON e.id = eo.event_id
 LEFT JOIN
     public.entrance en ON eo.entrance_id = en.id
+LEFT JOIN
+    public.parking_lot_allocation pa ON pa.event_id = e.id AND eo.date = pa.date
+LEFT JOIN
+    public.parking_lot p ON pa.parking_lot_id = p.id
 GROUP BY
     e.id, e.name, en.name
 ORDER BY
