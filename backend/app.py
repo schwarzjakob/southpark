@@ -343,13 +343,14 @@ def get_events_parking_lots_allocation():
             date,
             demand,
             status,
-            STRING_AGG(DISTINCT hall, ', ') AS halls,
+            STRING_AGG(DISTINCT halls, ', ') AS halls,
             parking_lot,
             allocated_capacity,
-            ROUND(AVG(distance)) AS average_distance
+            distance
         FROM view_schema.view_events_parking_lots_allocation
-        GROUP BY event_id, event, date, demand, status, parking_lot, allocated_capacity
+        GROUP BY event_id, event, date, demand, status, parking_lot, allocated_capacity, distance
         ORDER BY event_id, date;
+
         """
         df_events_parking_lots_allocation = get_data(query)
         df_events_parking_lots_allocation["id"] = (

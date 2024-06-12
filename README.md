@@ -127,12 +127,12 @@ ProjectRoot/
 │
 ├──database/               # Database
 │   ├── migrations/
-│   │   ├── yymmdd__create_tables.sql
-│   │   ├── yymmdd__create_views.sql
+│   │   ├── create_tables.sql
+│   │   ├── create_views.sql
 │   ├── seed/
-│   │   ├── yymmdd_seed_data.sql
+│   │   ├── seed_data.sql
 │   ├── diagrams/
-│   │   └── yymmdd_database_schema.png
+│   │   └── database_schema.png
 │
 ├── frontend/              # React frontend
 │   ├── src/
