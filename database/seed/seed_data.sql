@@ -264,7 +264,7 @@ INSERT INTO public.entrance (id, name, coordinates) VALUES
     48.1353375, 11.6926191,
     48.1353375, 11.6923508
 ]),
-(2, 'Northwest', ARRAY[
+(2, 'North West', ARRAY[
     48.1385618, 11.6931191,
     48.1387927, 11.6937041,
     48.1386104, 11.6938642,
@@ -276,7 +276,7 @@ INSERT INTO public.entrance (id, name, coordinates) VALUES
     48.1388842, 11.6987604,
     48.1396186, 11.6987604
 ]),
-(4, 'Northeast', ARRAY[
+(4, 'North East', ARRAY[
     48.1390193, 11.7018368,
     48.1387562, 11.7018368,
     48.1387562, 11.7027629,
