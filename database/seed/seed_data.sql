@@ -110,39 +110,73 @@ INSERT INTO public.hall (id, name, coordinates) VALUES
 ]);
 
 -- Seed for parking lots
-INSERT INTO public.parking_lot (id, name, service_toilets, service_shelter, surface_material, pricing, external, coordinates) VALUES 
-(1, 'P1 Nord (Tor 17a - Tor 11c)', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
-    48.1417206, 11.700205,
-    48.1417708, 11.7006773,
-    48.1417922, 11.7062698,
-    48.1384277, 11.709568,
-    48.1384032, 11.7090745,
-    48.1384095, 11.7085468,
-    48.1384921, 11.7070991,
-    48.1388762, 11.7050723,
-    48.1394444, 11.702988,
-    48.1400732, 11.7002774
+INSERT INTO public.parking_lot (id, name, service_toilets, service_shelter, surface_material, pricing, external, coordinates) VALUES
+(1, 'PN3', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+    48.1416717, 11.6976525,
+    48.1416717, 11.6986207,
+    48.1401933, 11.6986207,
+    48.140305, 11.6982766,
+    48.1412912, 11.6975564
 ]),
-(2, 'P1 Nord (westl. Tor 17a)', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
-    48.1412926, 11.6975452,
-    48.1404584, 11.6981824,
-    48.1401018, 11.7001409,
-    48.1416906, 11.7000933,
-    48.141649, 11.6976807
+(2, 'PN4', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+    48.1416717, 11.6987077,
+    48.1416717, 11.7001655,
+    48.1398966, 11.7001655,
+    48.1401687, 11.6987077,
+    48.1416717, 11.6987077
 ]),
-(3, 'P2 Nord (östl. Tor 11c)', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
-    48.1408516, 11.7073096,
-    48.1385636, 11.7094934,
-    48.1384627, 11.7096188,
-    48.1384099, 11.7096855,
-    48.1385188, 11.7109966,
-    48.1397178, 11.7097633,
-    48.1405108, 11.7088749,
-    48.1405028, 11.7087385,
-    48.140855, 11.7082945,
-    48.1408516, 11.7073096
+(3, 'PN5', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+    48.1398503, 11.7002558,
+    48.1417189, 11.7002558,
+    48.1417908, 11.7006613,
+    48.1417908, 11.7014286,
+    48.1396094, 11.7014286
 ]),
-(4, 'P3', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+(4, 'PN6', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+    48.1417927, 11.7015224,
+    48.1395914, 11.7015224,
+    48.1392511, 11.7029725,
+    48.1417927, 11.7029725
+]),
+(5, 'PN7', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+    48.1417927, 11.7030639,
+    48.1392442, 11.7030639,
+    48.138681, 11.7051081,
+    48.1417856, 11.7051081
+]),
+(6, 'PN8', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+    48.1417927, 11.705206,
+    48.1386471, 11.705206,
+    48.1385085, 11.7058964,
+    48.1417927, 11.7058964
+]),
+(7, 'PN9', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+    48.1417927, 11.7059918,
+    48.1384872, 11.7059918,
+    48.1383312, 11.7069292,
+    48.1412558, 11.7069292,
+    48.1417927, 11.7062788
+]),
+(8, 'PN10', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+    48.1411866, 11.7070216,
+    48.1383249, 11.7070216,
+    48.1382488, 11.7077726,
+    48.1382099, 11.7085195,
+    48.1395039, 11.7085195
+]),
+(9, 'PN11', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+    48.1394421, 11.7085921,
+    48.1382099, 11.7085921,
+    48.1382058, 11.7096716
+]),
+(10, 'PN12', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+    48.14051, 11.7077089,
+    48.1382142, 11.7097721,
+    48.1382657, 11.7104665,
+    48.1383662, 11.7111512,
+    48.14051, 11.708891
+]),
+(11, 'PM3', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
     48.1390493, 11.6972283,
     48.1390558, 11.6980711,
     48.1398488, 11.6980645,
@@ -151,19 +185,19 @@ INSERT INTO public.parking_lot (id, name, service_toilets, service_shelter, surf
     48.1399353, 11.6971961,
     48.1390493, 11.6972283
 ]),
-(5, 'P4', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+(12, 'PM4', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
     48.1396359, 11.6989453,
     48.1394766, 11.6997899,
     48.1390596, 11.6997872,
     48.1390578, 11.6989479
 ]),
-(6, 'P5', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+(13, 'PM5', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
     48.1394505, 11.7001903,
     48.1390535, 11.7001831,
     48.1390458, 11.7014863,
     48.1391777, 11.7014832
 ]),
-(7, 'P7', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+(14, 'PM7', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
     48.1385681, 11.7034823,
     48.1361815, 11.7035074,
     48.1361882, 11.7043663,
@@ -174,7 +208,7 @@ INSERT INTO public.parking_lot (id, name, service_toilets, service_shelter, surf
     48.1382531, 11.7041741,
     48.1384786, 11.7037719
 ]),
-(8, 'P8', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
+(15, 'PM8', FALSE, FALSE, 'asphalt', 'medium', FALSE, ARRAY[
     48.1380376, 11.704922,
     48.1380497, 11.7058797,
     48.1378568, 11.7058856,
@@ -183,18 +217,29 @@ INSERT INTO public.parking_lot (id, name, service_toilets, service_shelter, surf
     48.1358932, 11.7050025,
     48.1380412, 11.704922
 ]),
-(9, 'P9 - P12', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
-    48.13781, 11.7071893,
-    48.137823, 11.7109108,
-    48.1336863, 11.7109776,
-    48.1336643, 11.706073,
-    48.1358736, 11.7060593
+(16, 'PS9', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+    48.1357594, 11.7060516,
+    48.1335252, 11.7060516,
+    48.1335252, 11.7072136,
+    48.1378066, 11.7072136
 ]),
-(10, 'Parkhaus West', TRUE, TRUE, 'asphalt', 'high', FALSE, ARRAY[
-    48.1389099, 11.6903538,
-    48.1379863, 11.6912121,
-    48.1387381, 11.6931111,
-    48.1396832, 11.6922742
+(17, 'PS10', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+    48.1378146, 11.7073208,
+    48.1335252, 11.7073208,
+    48.1335252, 11.7085271,
+    48.1378146, 11.7085271
+]),
+(18, 'PS11', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+    48.1378146, 11.7086541,
+    48.1335252, 11.7086541,
+    48.1335252, 11.7097554,
+    48.1378146, 11.7097554
+]),
+(19, 'PS12', FALSE, FALSE, 'field', 'medium', FALSE, ARRAY[
+    48.1378146, 11.7098696,
+    48.1335252, 11.7098696,
+    48.1335252, 11.7109126,
+    48.1378146, 11.7109126
 ]);
 
 -- Seed for entrances
