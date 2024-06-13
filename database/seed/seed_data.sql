@@ -240,6 +240,12 @@ INSERT INTO public.parking_lot (id, name, service_toilets, service_shelter, surf
     48.1335252, 11.7098696,
     48.1335252, 11.7109126,
     48.1378146, 11.7109126
+]),
+(20, 'PWest', TRUE, TRUE, 'field', 'high', FALSE, ARRAY[
+    48.1389099, 11.6903538,
+    48.1379863, 11.6912121,
+    48.1387381, 11.6931111,
+    48.1396832, 11.6922742
 ]);
 
 -- Seed for entrances
