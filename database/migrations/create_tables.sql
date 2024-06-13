@@ -71,8 +71,12 @@ CREATE TABLE public.parking_lot_allocation (
     event_id INTEGER NOT NULL REFERENCES public.event(id),
     parking_lot_id INTEGER NOT NULL REFERENCES public.parking_lot(id),
     date DATE NOT NULL,
-    allocated_capacity INTEGER NOT NULL
+    allocated_cars INTEGER NOT NULL,
+    allocated_trucks INTEGER NOT NULL,
+    allocated_buses INTEGER NOT NULL,
+    allocated_capacity INTEGER GENERATED ALWAYS AS (allocated_cars + 4 * allocated_trucks + 3 * allocated_buses) STORED
 );
+
 
 CREATE TABLE public.entrance (
     id SERIAL PRIMARY KEY,
