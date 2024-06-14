@@ -120,26 +120,33 @@ Here is the recommended directory structure for this project, accommodating mult
 ```plaintext
 ProjectRoot/
 │
-├── frontend/              # React frontend
-│   ├── public/
-│   ├── src/
-│   └── package.json
-│
 ├── backend/               # Flask backend
+│   ├── .env
 │   ├── app.py
 │   ├── requirements.txt
-│   ├── models/
-│   └── services/
 │
-├── notebooks/             # Jupyter notebooks for data exploration and initial algorithm development
-│   └── exploration.ipynb
+├──database/               # Database
+│   ├── migrations/
+│   │   ├── create_tables.sql
+│   │   ├── create_views.sql
+│   ├── seed/
+│   │   ├── seed_data.sql
+│   ├── diagrams/
+│   │   └── database_schema.png
 │
-├── data/                  # Data directory for storing CSV files and other data forms
-│   ├── raw/               # Unprocessed data
-│   └── processed/         # Data transformed from Jupyter notebooks
+├── frontend/              # React frontend
+│   ├── src/
+│   ├── .eslintrc.cjs
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── robots.txt
+│   └── vite.config.js
 │
 ├── scripts/               # Standalone scripts for more structured or production-ready processes
 │   └── allocation_algorithm.py
+│
+├── venv/                  # Virtual Environment
 │
 ├── .gitignore             # Specifies intentionally untracked files to ignore
 └── README.md              # Project overview and setup instructions
