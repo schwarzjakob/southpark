@@ -1,6 +1,3 @@
--- Enable the PostGIS extension
-CREATE EXTENSION IF NOT EXISTS postgis;
-
 -- Tables
 CREATE TABLE public.hall (
     id SERIAL PRIMARY KEY,
@@ -77,7 +74,6 @@ CREATE TABLE public.parking_lot_allocation (
     allocated_capacity INTEGER GENERATED ALWAYS AS (allocated_cars + 4 * allocated_trucks + 3 * allocated_buses) STORED
 );
 
-
 CREATE TABLE public.entrance (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -96,52 +92,9 @@ CREATE TABLE public.entrance_parking_lot_distance (
     id SERIAL PRIMARY KEY,
     entrance_id INTEGER NOT NULL REFERENCES public.entrance(id),
     parking_lot_id INTEGER NOT NULL REFERENCES public.parking_lot(id),
-    distance DOUBLE PRECISION,
+    distance INTEGER,
     CONSTRAINT unique_entrance_parking_lot_pair UNIQUE (entrance_id, parking_lot_id)
 );
-
--- Functions
-CREATE OR REPLACE FUNCTION calculate_centroid(coords FLOAT8[]) RETURNS GEOMETRY AS $$
-DECLARE
-    points GEOMETRY[];
-    point GEOMETRY;
-    geom GEOMETRY;
-BEGIN
-    -- Create points from the coordinates array
-    FOR i IN 1 .. array_length(coords, 1)/2 LOOP
-        point := ST_MakePoint(coords[2*i-1], coords[2*i]);
-        points := array_append(points, point);
-    END LOOP;
-
-    -- Check if the first and last points are the same, if not, close the polygon
-    IF NOT ST_Equals(points[1], points[array_length(points, 1)]) THEN
-        points := array_append(points, points[1]);
-    END IF;
-
-    -- Create the polygon and calculate the centroid
-    geom := ST_MakePolygon(ST_MakeLine(points));
-    RETURN ST_Centroid(geom);
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
-
-
-CREATE OR REPLACE FUNCTION update_entrance_parking_lot_distance() RETURNS TRIGGER AS $$
-BEGIN
-    -- Recalculate the distances whenever an entrance or parking lot is inserted or updated
-    INSERT INTO public.entrance_parking_lot_distance (entrance_id, parking_lot_id, distance)
-    SELECT e.id, p.id, ST_Distance(
-        calculate_centroid(e.coordinates),
-        calculate_centroid(p.coordinates)
-    )
-    FROM public.entrance e, public.parking_lot p
-    WHERE e.id = NEW.id OR p.id = NEW.id
-    ON CONFLICT (entrance_id, parking_lot_id) DO UPDATE
-    SET distance = EXCLUDED.distance;
-
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
 
 -- Triggers
 CREATE OR REPLACE FUNCTION check_date_within_event_period() RETURNS TRIGGER AS $$
@@ -182,7 +135,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 CREATE TRIGGER trg_check_date_within_event_period
 BEFORE INSERT OR UPDATE ON public.visitor_demand
 FOR EACH ROW EXECUTE FUNCTION check_date_within_event_period();
@@ -190,14 +142,6 @@ FOR EACH ROW EXECUTE FUNCTION check_date_within_event_period();
 CREATE TRIGGER trg_check_allocation_within_capacity
 BEFORE INSERT OR UPDATE ON public.parking_lot_allocation
 FOR EACH ROW EXECUTE FUNCTION check_allocation_within_capacity();
-
-CREATE TRIGGER trg_update_entrance_parking_lot_distance
-AFTER INSERT OR UPDATE ON public.entrance
-FOR EACH ROW EXECUTE FUNCTION update_entrance_parking_lot_distance();
-
-CREATE TRIGGER trg_update_entrance_parking_lot_distance_parking
-AFTER INSERT OR UPDATE ON public.parking_lot
-FOR EACH ROW EXECUTE FUNCTION update_entrance_parking_lot_distance();
 
 -- Indexes for performance improvements
 CREATE INDEX idx_event_id ON public.hall_occupation(event_id);

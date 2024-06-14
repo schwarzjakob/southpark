@@ -10,7 +10,7 @@ const columns = [
   { field: "demand", headerName: "Demand", flex: 1 },
   { field: "parking_lot", headerName: "Parking Lot", flex: 1 },
   { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
-  { field: "distance", headerName: "Distance", flex: 1 },
+  { field: "distance", headerName: "Distance (m)", flex: 1 },
 ];
 
 const EventsAllocationTable = () => {
