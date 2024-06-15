@@ -8,8 +8,17 @@ from io import StringIO
 import pandas as pd
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
+from flask_caching import Cache
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
+
+# Initialize the Flask app
+app = Flask(__name__)
+CORS(app)
+
+# Configure caching
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache.init_app(app)
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -248,51 +257,59 @@ def get_events_timeline(date):
     except Exception as e:
         logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
-    
-# Ensure this route definition is unique
+
 @app.route("/capacity_utilization", methods=["GET"])
 def get_capacity_utilization():
+    """
+    Endpoint to retrieve capacity utilization data.
+    Fetches data where visitor demand exceeds or is close to the parking lot capacity.
+
+    Returns:
+        JSON response with the fetched data or an error message if an exception is raised.
+    """
     try:
         logger.info("Fetching capacity utilization data from the database.")
 
         year = request.args.get("year", default=datetime.now().year, type=int)
-        start_date = request.args.get("start_date", default=f"{year}-01-01", type=str)
-        end_date = request.args.get("end_date", default=f"{year}-12-31", type=str)
+        month = request.args.get("month", default=datetime.now().month, type=int)
 
-        # Fetch dates where demand exceeds capacity
-        query_exceeds_capacity = f"""
-        SELECT date, total_demand, total_capacity
-        FROM view_schema.view_demand_vs_capacity
-        WHERE total_demand > total_capacity
-          AND date BETWEEN '{start_date}' AND '{end_date}'
-        ORDER BY date;
-        """
-        exceeds_capacity = get_data(query_exceeds_capacity)
-
-        # Fetch dates where demand is between 80% and 100% of capacity
-        query_between_80_and_100 = f"""
-        SELECT date, total_demand, total_capacity
-        FROM view_schema.view_demand_vs_capacity
-        WHERE total_demand BETWEEN total_capacity * 0.8 AND total_capacity
-          AND date BETWEEN '{start_date}' AND '{end_date}'
-        ORDER BY date;
-        """
-        between_80_and_100 = get_data(query_between_80_and_100)
-
-        # Fetch total demands and capacities for each day
         query_total_capacity_utilization = f"""
         SELECT date, total_demand, COALESCE(total_capacity, 1) AS total_capacity
         FROM view_schema.view_demand_vs_capacity
-        WHERE date BETWEEN '{start_date}' AND '{end_date}'
         ORDER BY date;
         """
         total_capacity_utilization = get_data(query_total_capacity_utilization)
 
-        data = {
-            "exceeds_capacity": exceeds_capacity.to_dict(orient="records"),
-            "between_80_and_100": between_80_and_100.to_dict(orient="records"),
-            "total_capacity_utilization": total_capacity_utilization.to_dict(orient="records"),
-        }
+        # Fetch events for each day and their capacities and names
+        query_events_per_day = f"""
+        SELECT vd.date, vd.event_id, vd.demand AS capacity, e.name AS event_name
+        FROM public.visitor_demand vd
+        JOIN public.event e ON vd.event_id = e.id
+        ORDER BY vd.date, vd.event_id;
+        """
+        events_per_day = get_data(query_events_per_day)
+        events_dict = {}
+        for _, row in events_per_day.iterrows():
+            date = row['date'].strftime("%Y-%m-%d")
+            if date not in events_dict:
+                events_dict[date] = {}
+            if row['event_id'] not in events_dict[date]:
+                events_dict[date][row['event_id']] = {
+                    "event_id": row["event_id"],
+                    "event_name": row["event_name"],
+                    "capacity": 0
+                }
+            events_dict[date][row['event_id']]["capacity"] += row["capacity"]
+
+        data = []
+        for _, row in total_capacity_utilization.iterrows():
+            date_str = row['date'].strftime("%Y-%m-%d")
+            data.append({
+                "date": date_str,
+                "total_demand": row["total_demand"],
+                "total_capacity": row["total_capacity"],
+                "events": list(events_dict.get(date_str, {}).values())
+            })
 
         logger.info("Capacity utilization data fetched successfully.")
         return jsonify(data), 200
