@@ -30,6 +30,16 @@ const TABLE_LABEL = "Days with Utilization Rate";
 const LABEL_OVER100 = "above 100%";
 const LABEL_80TO100 = "between 80% and 100%";
 
+const over100Styles = {
+  border: "3px solid #ff4343",
+  background: "#ff434375",
+};
+
+const between80and100Styles = {
+  border: "3px solid #ffd753",
+  background: "#ffd75375",
+};
+
 const LABEL_OVER100_INFO =
   "Total number of days when the demand for parking spaces exceeded the total available capacity. Recommendation: Take action! Additional parking spaces are urgently needed to meet the demand.";
 const LABEL_80TO100_INFO =
@@ -47,7 +57,7 @@ const MonthlyDemandTable = ({
   const fetchData = useCallback(async () => {
     try {
       const response = await axios.get(
-        `/api/capacity_utilization_critical_days/${selectedYear}`,
+        `/api/capacity_utilization_critical_days/${selectedYear}`
       );
       setData(response.data);
       console.log("Data fetched successfully:", response.data);
@@ -78,7 +88,7 @@ const MonthlyDemandTable = ({
   }
 
   const months = Array.from({ length: 12 }, (_, i) =>
-    dayjs().month(i).format("MMM"),
+    dayjs().month(i).format("MMM")
   );
 
   const getMonthlyCounts = (month, type) => {
@@ -193,55 +203,41 @@ const MonthlyDemandTable = ({
                   </Box>
                 </Box>
               </TableCell>
-              {months.map((_, index) => (
-                <Tooltip
-                  key={index}
-                  title={getAffectedDays(
-                    `${selectedYear}-${(index + 1)
-                      .toString()
-                      .padStart(2, "0")}`,
-                    "above_100",
-                  )}
-                  arrow
-                >
-                  <TableCell
+              {months.map((_, index) => {
+                const monthString = `${selectedYear}-${(index + 1)
+                  .toString()
+                  .padStart(2, "0")}`;
+                const above100Count = getMonthlyCounts(
+                  monthString,
+                  "above_100"
+                );
+                const above100Style = above100Count > 0 ? over100Styles : {};
+
+                return (
+                  <Tooltip
                     key={index}
-                    align="center"
-                    className={`demandTable__itemCell ${
-                      getMonthlyCounts(
-                        `${selectedYear}-${(index + 1)
-                          .toString()
-                          .padStart(2, "0")}`,
-                        "above_100",
-                      ) > 0
-                        ? "demandTable__itemCell-over100"
-                        : ""
-                    } `}
+                    title={getAffectedDays(monthString, "above_100")}
+                    arrow
                   >
-                    <Typography
-                      className="demandTable__subitemText"
-                      style={{
-                        color:
-                          getMonthlyCounts(
-                            `${selectedYear}-${(index + 1)
-                              .toString()
-                              .padStart(2, "0")}`,
-                            "above_100",
-                          ) > 0
-                            ? "red"
-                            : "",
-                      }}
+                    <TableCell
+                      className="demandTable__subitem"
+                      key={index}
+                      align="center"
+                      style={above100Style}
+                      onClick={() => handleMonthClick(index)}
                     >
-                      {getMonthlyCounts(
-                        `${selectedYear}-${(index + 1)
-                          .toString()
-                          .padStart(2, "0")}`,
-                        "above_100",
-                      ) || ""}
-                    </Typography>
-                  </TableCell>
-                </Tooltip>
-              ))}
+                      <Typography
+                        className="demandTable__subitemText"
+                        style={{
+                          color: above100Count > 0 ? "red" : "",
+                        }}
+                      >
+                        {above100Count || ""}
+                      </Typography>
+                    </TableCell>
+                  </Tooltip>
+                );
+              })}
             </TableRow>
             <TableRow>
               <TableCell className="demandTable__itemLabel">
@@ -268,55 +264,42 @@ const MonthlyDemandTable = ({
                   </Box>
                 </Box>
               </TableCell>
-              {months.map((_, index) => (
-                <Tooltip
-                  key={index}
-                  title={getAffectedDays(
-                    `${selectedYear}-${(index + 1)
-                      .toString()
-                      .padStart(2, "0")}`,
-                    "between_80_and_100",
-                  )}
-                  arrow
-                >
-                  <TableCell
+              {months.map((_, index) => {
+                const monthString = `${selectedYear}-${(index + 1)
+                  .toString()
+                  .padStart(2, "0")}`;
+                const between80and100Count = getMonthlyCounts(
+                  monthString,
+                  "between_80_and_100"
+                );
+                const between80and100Style =
+                  between80and100Count > 0 ? between80and100Styles : {};
+
+                return (
+                  <Tooltip
                     key={index}
-                    align="center"
-                    className={`demandTable__itemCell ${
-                      getMonthlyCounts(
-                        `${selectedYear}-${(index + 1)
-                          .toString()
-                          .padStart(2, "0")}`,
-                        "above_100",
-                      ) > 0
-                        ? "demandTable__itemCell-between80and100"
-                        : ""
-                    } `}
+                    title={getAffectedDays(monthString, "between_80_and_100")}
+                    arrow
                   >
-                    <Typography
-                      className="demandTable__subitemText"
-                      style={{
-                        color:
-                          getMonthlyCounts(
-                            `${selectedYear}-${(index + 1)
-                              .toString()
-                              .padStart(2, "0")}`,
-                            "between_80_and_100",
-                          ) > 0
-                            ? "orange"
-                            : "",
-                      }}
+                    <TableCell
+                      className="demandTable__subitem"
+                      key={index}
+                      align="center"
+                      style={between80and100Style}
+                      onClick={() => handleMonthClick(index)}
                     >
-                      {getMonthlyCounts(
-                        `${selectedYear}-${(index + 1)
-                          .toString()
-                          .padStart(2, "0")}`,
-                        "between_80_and_100",
-                      ) || ""}
-                    </Typography>
-                  </TableCell>
-                </Tooltip>
-              ))}
+                      <Typography
+                        className="demandTable__subitemText"
+                        style={{
+                          color: between80and100Count > 0 ? "orange" : "",
+                        }}
+                      >
+                        {between80and100Count || ""}
+                      </Typography>
+                    </TableCell>
+                  </Tooltip>
+                );
+              })}
             </TableRow>
           </TableBody>
         </Table>

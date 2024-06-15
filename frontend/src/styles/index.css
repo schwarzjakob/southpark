@@ -1263,15 +1263,6 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   padding-bottom: 8px !important;
 }
 
-.demandTable__itemCell-over100 {
-  border: 3px solid #ff4343 !important;
-  background-color: #ff434375;
-}
-
-.demandTable__itemCell-between80and100 {
-  border: 3px solid #ffd753 !important;
-  background-color: #ffd75375;
-}
 .demandTable__itemCell p {
   color: var(--textColor) !important;
 }
@@ -1328,6 +1319,9 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   flex-direction: column;
 }
 
+.demandTable__subitem {
+  cursor: pointer;
+}
 .infoHover__Icon:hover {
   color: var(--color-primary-500) !important;
 }
