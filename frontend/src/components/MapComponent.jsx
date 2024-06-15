@@ -28,6 +28,32 @@ const colors = [
   "yellow",
 ];
 
+const downwardsOverlays = [
+  "C1",
+  "C2",
+  "C3",
+  "C4",
+  "C5",
+  "C6",
+  "North East",
+  "North West",
+  "North",
+  "PWest",
+  "PM3",
+  "PM4",
+  "PM5",
+  "PN3",
+  "PN4",
+  "PN5",
+  "PN6",
+  "PN7",
+  "PN8",
+  "PN9",
+  "PN10",
+  "PN11",
+  "PN12",
+];
+
 const MapComponent = ({ selectedDate, zoom }) => {
   MapComponent.propTypes = {
     selectedDate: PropTypes.string.isRequired,
@@ -61,6 +87,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const { data } = await axios.get(
           `/api/events_timeline/${selectedDate}`,
         );
+        console.log("Event API:", data);
         if (data) {
           setEvents(data);
           const colorMap = {};
@@ -127,15 +154,25 @@ const MapComponent = ({ selectedDate, zoom }) => {
     return "unknown";
   };
 
-  const getPopupContent = (event, id) => {
+  const getPopupContent = (event, id, type) => {
     const status = getEventStatus(event, selectedDate);
     const parkingLots = event[`${status}_parking_lots`] || "None";
-    if (event.halls.includes(id)) {
+    const entrances = event.event_entrance || "None";
+    if (type == "hall" && event.halls && event.halls.includes(id)) {
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
           <p>Status: {status}</p>
-          <p>Entrance: {event.event_entrance}</p>
+          <p>Entrance: {entrances}</p>
+          <p>Allocated Parking Lots: {parkingLots}</p>
+        </div>
+      );
+    } else if (type == "entrance" && event.event_entrance) {
+      return (
+        <div className="cap">
+          <h4>{event.event_name}</h4>
+          <p>Status: {status}</p>
+          <p>Allocated Halls: {event.halls}</p>
           <p>Allocated Parking Lots: {parkingLots}</p>
         </div>
       );
@@ -144,7 +181,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         <div className="cap">
           <h4>{event.event_name}</h4>
           <p>Status: {status}</p>
-          <p>Entrance: {event.event_entrance}</p>
+          <p>Entrance: {entrances}</p>
           <p>Associated Halls: {event.halls}</p>
         </div>
       );
@@ -158,7 +195,11 @@ const MapComponent = ({ selectedDate, zoom }) => {
       const parkingLots = event[`${status}_parking_lots`]
         ? event[`${status}_parking_lots`].split(", ")
         : [];
-      if (halls.includes(name) || parkingLots.includes(name)) {
+      if (
+        halls.includes(name) ||
+        parkingLots.includes(name) ||
+        event.event_entrance == name
+      ) {
         return `${colorMapping[event.event_name]}`;
       }
     }
@@ -240,7 +281,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
             </Tooltip>
             <Popup autoPan={false}>
               {event ? (
-                getPopupContent(event, hall.name)
+                getPopupContent(event, hall.name, "hall")
               ) : (
                 <span>No Event!</span>
               )}
@@ -248,16 +289,21 @@ const MapComponent = ({ selectedDate, zoom }) => {
           </Polygon>
         );
       })}
-      {/* Rendering parking lots */}
+      {/* Rendering entrances */}
       {entrances.map((entrance) => {
         const transformedCoords = transformCoordinates(entrance.coordinates);
         const color = getPolygonColor(entrance.name);
         const event = filteredEvents.find((event) =>
-          event.entrance ? event.entrance === entrance.name : false,
+          event.event_entrance
+            ? event.event_entrance.includes(entrance.name)
+            : false,
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
+        const popupOffset = downwardsOverlays.includes(entrance.name)
+          ? [0, 50]
+          : [0, 0];
 
         return (
           <Polygon
@@ -278,9 +324,9 @@ const MapComponent = ({ selectedDate, zoom }) => {
             >
               <span>{entrance.name}</span>
             </Tooltip>
-            <Popup autoPan={false}>
+            <Popup autoPan={false} offset={popupOffset}>
               {event ? (
-                getPopupContent(event, entrance.name)
+                getPopupContent(event, entrance.name, "entrance")
               ) : (
                 <span>No Event!</span>
               )}
@@ -302,6 +348,9 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
+        const popupOffset = downwardsOverlays.includes(parkingLot.name)
+          ? [0, 80]
+          : [0, 0];
 
         return (
           <Polygon
@@ -322,9 +371,9 @@ const MapComponent = ({ selectedDate, zoom }) => {
             >
               <span>{parkingLot.name}</span>
             </Tooltip>
-            <Popup autoPan={false}>
+            <Popup autoPan={false} offset={popupOffset}>
               {event ? (
-                getPopupContent(event, parkingLot.name)
+                getPopupContent(event, parkingLot.name, "parking lot")
               ) : (
                 <span>No Event!</span>
               )}

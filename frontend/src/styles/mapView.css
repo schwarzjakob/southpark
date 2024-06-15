@@ -28,6 +28,18 @@
   font-size: 8px;
 }
 
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  padding: 0.5rem 0.5rem; /* Adjust as needed */
+  font-size: 11px;
+}
+
+.leaflet-popup-content {
+  margin: 1rem 0.5rem;
+  max-width: 250px; /* Adjust as needed */
+  line-height: 1;
+}
+
 /* Timeline Component */
 .timeline-wrapper {
   overflow-x: hidden;
