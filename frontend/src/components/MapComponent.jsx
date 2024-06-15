@@ -1,6 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -283,7 +283,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
               {event ? (
                 getPopupContent(event, hall.name, "hall")
               ) : (
-                <span>No Event!</span>
+                <span>{hall.name}: No Event!</span>
               )}
             </Popup>
           </Polygon>
@@ -328,7 +328,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
               {event ? (
                 getPopupContent(event, entrance.name, "entrance")
               ) : (
-                <span>No Event!</span>
+                <span>{entrance.name}: No Event!</span>
               )}
             </Popup>
           </Polygon>
@@ -375,7 +375,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
               {event ? (
                 getPopupContent(event, parkingLot.name, "parking lot")
               ) : (
-                <span>No Event!</span>
+                <span>{parkingLot.name}: No Event!</span>
               )}
             </Popup>
           </Polygon>
