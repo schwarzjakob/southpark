@@ -274,7 +274,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
               direction="center"
               offset={[0, 0]}
               permanent
-              className="entrances-tags"
+              className="tags-entrances"
             >
               <span>{entrance.name}</span>
             </Tooltip>
@@ -318,7 +318,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
               direction="center"
               offset={[0, 0]}
               permanent
-              className="tags"
+              className="tags-parking-lots"
             >
               <span>{parkingLot.name}</span>
             </Tooltip>
