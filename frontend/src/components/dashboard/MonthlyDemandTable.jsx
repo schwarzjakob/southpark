@@ -1,4 +1,3 @@
-//src/components/dashboard/MonthlyDemandTable.jsx
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -30,8 +29,8 @@ const LABEL_80TO100_TITLE = "MONITOR";
 const TABLE_LABEL = "Days with Utilization Rate";
 const LABEL_OVER100 = "above 100%";
 const LABEL_80TO100 = "between 80% and 100%";
-const COLOR_OVER100 = "#ffacb7";
-const COLOR_80TO100 = "#F39C121A";
+const COLOR_OVER100 = "#ff434375";
+const COLOR_80TO100 = "#f39c12bd";
 const LABEL_OVER100_INFO =
   "Total number of days when the demand for parking spaces exceeded the total available capacity. Recommendation: Take action! Additional parking spaces are urgently needed to meet the demand.";
 const LABEL_80TO100_INFO =
@@ -68,6 +67,7 @@ const MonthlyDemandTable = ({
       .year(selectedYear)
       .month(month)
       .startOf("month");
+
     const endOfMonth = dayjs().year(selectedYear).month(month).endOf("month");
     setDateRange([startOfMonth, endOfMonth]);
   };
@@ -173,7 +173,7 @@ const MonthlyDemandTable = ({
                   style={{ cursor: "pointer" }}
                 >
                   <Typography
-                    variant="p"
+                    variant="body1"
                     style={{ fontWeight: "bold" }}
                     className="demandTable__monthLabel"
                   >
@@ -196,7 +196,10 @@ const MonthlyDemandTable = ({
                     >
                       {LABEL_OVER100_TITLE}
                     </Typography>
-                    <Typography variant="p" className="demandTable__itemText">
+                    <Typography
+                      variant="body1"
+                      className="demandTable__itemText"
+                    >
                       {TABLE_LABEL} {LABEL_OVER100}
                       <InfoHoverComponent infoText={LABEL_OVER100_INFO} />
                     </Typography>
@@ -259,7 +262,10 @@ const MonthlyDemandTable = ({
                     >
                       {LABEL_80TO100_TITLE}
                     </Typography>
-                    <Typography variant="p" className="demandTable__itemText">
+                    <Typography
+                      variant="body1"
+                      className="demandTable__itemText"
+                    >
                       {TABLE_LABEL} {LABEL_80TO100}{" "}
                       <InfoHoverComponent
                         direction="right"
@@ -288,7 +294,9 @@ const MonthlyDemandTable = ({
                       backgroundColor:
                         getMonthlyCounts(
                           index,
-                          (day) => day.total_demand > day.total_capacity,
+                          (day) =>
+                            day.total_demand >= 0.8 * day.total_capacity &&
+                            day.total_demand <= day.total_capacity,
                         ) > 0
                           ? COLOR_80TO100
                           : "",

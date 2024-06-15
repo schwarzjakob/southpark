@@ -1,4 +1,3 @@
-// src/components/dashboard/Dashboard.jsx
 import { useEffect, useState } from "react";
 import { Paper, Grid, Typography, Box } from "@mui/material";
 import axios from "axios";
@@ -28,12 +27,7 @@ const Dashboard = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("/api/capacity_utilization", {
-        params: {
-          start_date: dateRange[0].format("YYYY-MM-DD"),
-          end_date: dateRange[1].format("YYYY-MM-DD"),
-        },
-      });
+      const response = await axios.get("/api/capacity_utilization");
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -46,7 +40,6 @@ const Dashboard = () => {
     const newStartDate = dayjs(dateRange[0]).year(newYear);
     const newEndDate = dayjs(dateRange[1]).year(newYear);
 
-    // Sonderbehandlung für Schaltjahre
     if (
       newStartDate.month() === 1 &&
       newStartDate.date() === 29 &&

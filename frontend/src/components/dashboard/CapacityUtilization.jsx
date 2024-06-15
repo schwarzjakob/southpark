@@ -82,7 +82,7 @@ const CapacityUtilization = ({
       const fetchedData = response.data;
 
       // Log the fetched data to understand its structure
-      console.log("Fetched data:", fetchedData);
+      //console.log("Fetched data:", fetchedData);
 
       if (!Array.isArray(fetchedData)) {
         throw new Error("Fetched data is not an array");
