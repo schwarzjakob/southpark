@@ -470,18 +470,17 @@ def add_event():
         name = data["name"]
         dates = data["dates"]
         halls = data["halls"]
-        entrance = data["entrance"]
+        entrances = data["entrances"]
         demands = data["demands"]
 
         # Insert into the event table
         query_event = """
-        INSERT INTO event (name, entrance, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date)
-        VALUES (:name, :entrance, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date)
+        INSERT INTO event (name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date)
+        VALUES (:name, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date)
         RETURNING id
         """
         params_event = {
             "name": name,
-            "entrance": entrance,
             "assembly_start_date": dates["assembly"]["start"],
             "assembly_end_date": dates["assembly"]["end"],
             "runtime_start_date": dates["runtime"]["start"],
@@ -503,13 +502,16 @@ def add_event():
                 for event_date in all_dates:
                     demand = demands[phase].get(event_date, 0)
                     query_demand = """
-                    INSERT INTO visitor_demand (event_id, date, demand, status)
-                    VALUES (:event_id, :date, :demand, :status)
+                    INSERT INTO visitor_demand (event_id, date, demand, car_demand, truck_demand, bus_demand, status)
+                    VALUES (:event_id, :date, :demand, :car_demand, :truck_demand, :bus_demand, :status)
                     """
                     params_demand = {
                         "event_id": event_id,
                         "date": event_date,
                         "demand": demand,
+                        "car_demand": demands[phase].get("car", 0),
+                        "truck_demand": demands[phase].get("truck", 0),
+                        "bus_demand": demands[phase].get("bus", 0),
                         "status": phase,
                     }
                     queries.append((query_demand, params_demand))
@@ -544,6 +546,38 @@ def add_event():
                         )
 
             for query, params in hall_occupation_queries:
+                connection.execute(text(query), params)
+
+            # Insert into the entrance_occupation table for each selected entrance
+            entrance_id_query = "SELECT id FROM entrance WHERE name = :entrance_name"
+            entrance_occupation_queries = []
+            for entrance_name in entrances:
+                entrance_id_result = connection.execute(
+                    text(entrance_id_query), {"entrance_name": entrance_name}
+                ).fetchone()
+
+                if entrance_id_result:
+                    entrance_id = entrance_id_result[0]
+
+                    for phase in ["assembly", "runtime", "disassembly"]:
+                        all_dates = calculate_date_range(
+                            dates[phase]["start"], dates[phase]["end"]
+                        )
+                        for event_date in all_dates:
+                            query_entrance_occupation = """
+                            INSERT INTO entrance_occupation (event_id, entrance_id, date)
+                            VALUES (:event_id, :entrance_id, :date)
+                            """
+                            params_entrance_occupation = {
+                                "event_id": event_id,
+                                "entrance_id": entrance_id,
+                                "date": event_date,
+                            }
+                            entrance_occupation_queries.append(
+                                (query_entrance_occupation, params_entrance_occupation)
+                            )
+
+            for query, params in entrance_occupation_queries:
                 connection.execute(text(query), params)
 
         return jsonify({"message": "Event added successfully"}), 200

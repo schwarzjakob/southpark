@@ -67,13 +67,17 @@ const RED_BORDER_THRESHOLD = 100;
 const TRANSPARENCY = "4D";
 
 const applyTransparency = (color) => {
+  if (!color || typeof color !== "string") {
+    // Handle the case when color is null or not a string
+    console.warn("Invalid color value provided:", color);
+    return "#000000" + TRANSPARENCY; // Default to black with transparency
+  }
   if (color.startsWith("#")) {
     return color + TRANSPARENCY;
   } else {
     return "#" + color + TRANSPARENCY;
   }
 };
-
 const CapacityUtilization = ({
   selectedYear,
   setSelectedYear,

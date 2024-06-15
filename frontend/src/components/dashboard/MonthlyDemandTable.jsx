@@ -29,8 +29,7 @@ const LABEL_80TO100_TITLE = "MONITOR";
 const TABLE_LABEL = "Days with Utilization Rate";
 const LABEL_OVER100 = "above 100%";
 const LABEL_80TO100 = "between 80% and 100%";
-const COLOR_OVER100 = "#ff434375";
-const COLOR_80TO100 = "#f39c12bd";
+
 const LABEL_OVER100_INFO =
   "Total number of days when the demand for parking spaces exceeded the total available capacity. Recommendation: Take action! Additional parking spaces are urgently needed to meet the demand.";
 const LABEL_80TO100_INFO =
@@ -208,18 +207,16 @@ const MonthlyDemandTable = ({
                   <TableCell
                     key={index}
                     align="center"
-                    className="demandTable__itemCell"
-                    style={{
-                      backgroundColor:
-                        getMonthlyCounts(
-                          `${selectedYear}-${(index + 1)
-                            .toString()
-                            .padStart(2, "0")}`,
-                          "above_100",
-                        ) > 0
-                          ? COLOR_OVER100
-                          : "",
-                    }}
+                    className={`demandTable__itemCell ${
+                      getMonthlyCounts(
+                        `${selectedYear}-${(index + 1)
+                          .toString()
+                          .padStart(2, "0")}`,
+                        "above_100",
+                      ) > 0
+                        ? "demandTable__itemCell-over100"
+                        : ""
+                    } `}
                   >
                     <Typography
                       className="demandTable__subitemText"
@@ -285,18 +282,16 @@ const MonthlyDemandTable = ({
                   <TableCell
                     key={index}
                     align="center"
-                    className="demandTable__itemCell"
-                    style={{
-                      backgroundColor:
-                        getMonthlyCounts(
-                          `${selectedYear}-${(index + 1)
-                            .toString()
-                            .padStart(2, "0")}`,
-                          "between_80_and_100",
-                        ) > 0
-                          ? COLOR_80TO100
-                          : "",
-                    }}
+                    className={`demandTable__itemCell ${
+                      getMonthlyCounts(
+                        `${selectedYear}-${(index + 1)
+                          .toString()
+                          .padStart(2, "0")}`,
+                        "above_100",
+                      ) > 0
+                        ? "demandTable__itemCell-between80and100"
+                        : ""
+                    } `}
                   >
                     <Typography
                       className="demandTable__subitemText"
