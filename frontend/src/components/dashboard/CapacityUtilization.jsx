@@ -1,4 +1,3 @@
-//src/components/dashboard/CapacityUtilization.jsx
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
@@ -21,8 +20,6 @@ import DateRangePicker from "./DateRangePickerDashboard";
 import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
 import PropTypes from "prop-types";
 
-import { freeSpaceColor, colorPairs } from "../ColorConfig";
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -35,21 +32,47 @@ ChartJS.register(
   ChartDataLabels,
 );
 
+// Titles and labels for display
 const TITLE = "Capacity Utilization per Day";
 const FREE_CAPACITY_LABEL = "Free Capacity";
 const TOTAL_CAPACITY_UTILIZATION_LABEL = "Total Capacity Utilization";
-const TOTAL_CAPACITY_UTILIZATION_COLOR = "#6a91ce";
+const NO_DATA_MESSAGE = "No data available for the selected time period.";
+
+// Animation settings for charts or visuals
 const ANIMATION_DURATION = 1000;
 const ANIMATION_EASING = "easeInOutQuad";
-const STACKED = true;
-const TOOLTIP_CALLBACK_LOTS_INFO = "Parking Lots: ";
-const FONT_SIZE = 10;
+
+// Chart display properties
 const DISPLAY = true;
+const STACKED = true;
+const LEGEND_POSITION = "top";
+
+// Font settings for charts
+const FONT_SIZE = 10;
 const FONT_SIZE_TITLE = 20;
-const LEGEND_POSITION = "right";
-const NO_DATA_MESSAGE = "No data available for the selected time period.";
+
+// Tooltip information formatting
+const TOOLTIP_CALLBACK_LOTS_INFO = "Parking Lots: ";
+
+// Color settings for various chart components
+const TOTAL_CAPACITY_UTILIZATION_COLOR = "#6a91ce";
+const FREE_CAPACITY_COLOR = "#4d4d4d";
+
+// Threshold values for changing color states or alerts
 const ORANGE_BORDER_THRESHOLD = 80;
 const RED_BORDER_THRESHOLD = 100;
+
+// Transparency settings for chart elements
+// Hex codes for transparency 10%: "1A", 20%: "33", 30%: "4D", 40%: "66", 50%: "80", 60%: "99", 70%: "B3", 80%: "CC", 90%: "E6", 100%: "FF"
+const TRANSPARENCY = "4D";
+
+const applyTransparency = (color) => {
+  if (color.startsWith("#")) {
+    return color + TRANSPARENCY;
+  } else {
+    return "#" + color + TRANSPARENCY;
+  }
+};
 
 const CapacityUtilization = ({
   selectedYear,
@@ -80,13 +103,6 @@ const CapacityUtilization = ({
         )}&end_date=${range[1].format("YYYY-MM-DD")}`,
       );
       const fetchedData = response.data;
-
-      // Log the fetched data to understand its structure
-      //console.log("Fetched data:", fetchedData);
-
-      if (!Array.isArray(fetchedData)) {
-        throw new Error("Fetched data is not an array");
-      }
 
       const labels = [];
       let currentDate = range[0].clone();
@@ -154,15 +170,14 @@ const CapacityUtilization = ({
         if (!eventsMap.has(event.event_id)) {
           eventsMap.set(event.event_id, {
             label: event.event_name,
-            backgroundColor:
-              colorPairs[eventsMap.size % colorPairs.length].background,
+            backgroundColor: applyTransparency(event.event_color),
             borderColor: Array(filteredData.length).fill("transparent"),
             borderWidth: Array(filteredData.length).fill(0),
             data: Array(filteredData.length).fill(0),
             datalabels: {
               anchor: "center",
               align: "center",
-              color: colorPairs[eventsMap.size % colorPairs.length].text,
+              color: "#000000", // Adjust text color for better contrast
               font: {
                 size: FONT_SIZE,
               },
@@ -181,8 +196,8 @@ const CapacityUtilization = ({
 
     datasets.push({
       label: FREE_CAPACITY_LABEL,
-      backgroundColor: freeSpaceColor,
-      borderColor: freeSpaceColor,
+      backgroundColor: applyTransparency(FREE_CAPACITY_COLOR),
+      borderColor: applyTransparency(FREE_CAPACITY_COLOR),
       borderWidth: 2,
       data: filteredData.map((d) =>
         d.total_capacity - d.total_demand > 0
@@ -200,14 +215,14 @@ const CapacityUtilization = ({
   } else {
     datasets.push({
       label: TOTAL_CAPACITY_UTILIZATION_LABEL,
-      backgroundColor: TOTAL_CAPACITY_UTILIZATION_COLOR,
-      borderColor: TOTAL_CAPACITY_UTILIZATION_COLOR,
+      backgroundColor: applyTransparency(TOTAL_CAPACITY_UTILIZATION_COLOR),
+      borderColor: applyTransparency(TOTAL_CAPACITY_UTILIZATION_COLOR),
       borderWidth: 1,
       data: filteredData.map((d) => d.total_demand),
       datalabels: {
         anchor: "center",
         align: "center",
-        color: "#000000",
+        color: "#000000", // Adjust text color for better contrast
         font: {
           size: FONT_SIZE,
         },
@@ -216,8 +231,8 @@ const CapacityUtilization = ({
 
     datasets.push({
       label: FREE_CAPACITY_LABEL,
-      backgroundColor: freeSpaceColor,
-      borderColor: freeSpaceColor,
+      backgroundColor: applyTransparency(FREE_CAPACITY_COLOR),
+      borderColor: applyTransparency(FREE_CAPACITY_COLOR),
       borderWidth: 2,
       borderDash: [5, 5],
       data: filteredData.map((d) =>
@@ -228,7 +243,7 @@ const CapacityUtilization = ({
       datalabels: {
         anchor: "end",
         align: "start",
-        color: "#000000",
+        color: "#000000", // Adjust text color for better contrast
         font: {
           size: FONT_SIZE,
         },
@@ -272,7 +287,7 @@ const CapacityUtilization = ({
     borderColor: "orange",
     borderWidth: 1,
     type: "line",
-    steppedLine: "after",
+    stepped: "after",
     fill: false,
     pointRadius: 0,
     datalabels: {
@@ -286,7 +301,7 @@ const CapacityUtilization = ({
     borderColor: "red",
     borderWidth: 1,
     type: "line",
-    steppedLine: "before",
+    stepped: "before",
     fill: false,
     pointRadius: 0,
     datalabels: {

@@ -113,7 +113,6 @@ def parse_date(date_str):
             continue
     raise ValueError(f"Date {date_str} is not in a recognized format.")
 
-
 # Update an event
 @app.route("/events/<int:id>", methods=["PUT"])
 def update_event(id):
@@ -215,8 +214,6 @@ def update_event(id):
         logger.error("Failed to update event", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
-
 @app.route("/events_timeline/<date>", methods=["GET"])
 def get_events_timeline(date):
     """
@@ -266,18 +263,19 @@ def get_capacity_utilization():
         logger.info("Fetching capacity utilization data from the database.")
 
         year = request.args.get("year", default=datetime.now().year, type=int)
-        month = request.args.get("month", default=datetime.now().month, type=int)
+        start_date = request.args.get("start_date", default=f"{year}-01-01", type=str)
+        end_date = request.args.get("end_date", default=f"{year}-12-31", type=str)
 
         query_total_capacity_utilization = f"""
         SELECT date, total_demand, COALESCE(total_capacity, 1) AS total_capacity
         FROM view_schema.view_demand_vs_capacity
+        WHERE date BETWEEN '{start_date}' AND '{end_date}'
         ORDER BY date;
         """
         total_capacity_utilization = get_data(query_total_capacity_utilization)
 
-        # Fetch events for each day and their capacities and names
         query_events_per_day = f"""
-        SELECT vd.date, vd.event_id, vd.demand AS capacity, e.name AS event_name
+        SELECT vd.date, vd.event_id, vd.demand AS capacity, e.name AS event_name, e.color AS event_color
         FROM public.visitor_demand vd
         JOIN public.event e ON vd.event_id = e.id
         ORDER BY vd.date, vd.event_id;
@@ -292,7 +290,8 @@ def get_capacity_utilization():
                 events_dict[date][row['event_id']] = {
                     "event_id": row["event_id"],
                     "event_name": row["event_name"],
-                    "capacity": 0
+                    "capacity": 0,
+                    "event_color": row["event_color"]
                 }
             events_dict[date][row['event_id']]["capacity"] += row["capacity"]
 
@@ -321,7 +320,6 @@ def calculate_date_range(start_date, end_date):
         date_array.append(current_date.strftime("%Y-%m-%d"))
         current_date += pd.DateOffset(days=1)
     return date_array
-
 
 # Check hall availability
 @app.route("/check_hall_availability", methods=["POST"])
@@ -735,7 +733,6 @@ def optimize_parking():
     except Exception as e:
         logger.error("Error during optimization process", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == "__main__":
     app.config["DEBUG"] = True

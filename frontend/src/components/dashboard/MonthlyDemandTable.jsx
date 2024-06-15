@@ -36,7 +36,7 @@ const LABEL_OVER100_INFO =
 const LABEL_80TO100_INFO =
   "Total number of days when the demand for parking spaces was high but did not exceed the total available capacity. Recommendation: Monitor. The occupation is not critical yet, but it should be validated and kept under observation.";
 const INFO_TEXT =
-  "Hover to show details or click to move to time range in chart";
+  "Hover to show details or click on month to move to time range in bar chart below";
 
 const MonthlyDemandTable = ({
   selectedYear,
