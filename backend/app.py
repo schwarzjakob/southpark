@@ -250,6 +250,7 @@ def get_events_timeline(date):
         logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+# get capacity utilization
 @app.route("/capacity_utilization", methods=["GET"])
 def get_capacity_utilization():
     """
@@ -320,6 +321,49 @@ def calculate_date_range(start_date, end_date):
         date_array.append(current_date.strftime("%Y-%m-%d"))
         current_date += pd.DateOffset(days=1)
     return date_array
+
+# Get capacity utilization for critical days
+@app.route("/capacity_utilization_critical_days/<int:year>", methods=["GET"])
+def capacity_utilization_critical_days(year):
+    """
+    Endpoint to retrieve capacity utilization data for a given year.
+    Outputs an array of months containing arrays with days where capacity is between 80-100%
+    and arrays with days where capacity utilization is above 100%.
+    """
+    try:
+        start_date = f"{year}-01-01"
+        end_date = f"{year}-12-31"
+
+        query = f"""
+        SELECT date, total_demand, total_capacity
+        FROM view_schema.view_demand_vs_capacity
+        WHERE date BETWEEN '{start_date}' AND '{end_date}'
+        ORDER BY date;
+        """
+        data = pd.read_sql_query(query, engine)
+
+        months_data = {}
+        for _, row in data.iterrows():
+            date = row['date']
+            month = date.strftime("%Y-%m")
+            day = date.strftime("%d")
+
+            if month not in months_data:
+                months_data[month] = {
+                    "between_80_and_100": [],
+                    "above_100": []
+                }
+
+            demand = row["total_demand"]
+            capacity = row["total_capacity"]
+            if 0.8 * capacity <= demand <= capacity:
+                months_data[month]["between_80_and_100"].append(day)
+            elif demand > capacity:
+                months_data[month]["above_100"].append(day)
+
+        return jsonify(months_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Check hall availability
 @app.route("/check_hall_availability", methods=["POST"])

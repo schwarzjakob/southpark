@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -45,18 +45,21 @@ const MonthlyDemandTable = ({
 }) => {
   const [data, setData] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [selectedYear]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get("/api/capacity_utilization");
+      const response = await axios.get(
+        `/api/capacity_utilization_critical_days/${selectedYear}`,
+      );
       setData(response.data);
+      console.log("Data fetched successfully:", response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [selectedYear]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleYearChange = (increment) => {
     setSelectedYear(selectedYear + increment);
@@ -80,29 +83,16 @@ const MonthlyDemandTable = ({
     dayjs().month(i).format("MMM"),
   );
 
-  const getMonthlyCounts = (month, condition) => {
-    const days = data.filter(
-      (day) =>
-        dayjs(day.date).year() === selectedYear &&
-        dayjs(day.date).month() === month,
-    );
-    return days.filter(condition).length;
+  const getMonthlyCounts = (month, type) => {
+    return data[month] ? data[month][type].length : 0;
   };
 
-  const getAffectedDays = (month, condition) => {
-    const days = data.filter(
-      (day) =>
-        dayjs(day.date).year() === selectedYear &&
-        dayjs(day.date).month() === month &&
-        condition(day),
-    );
+  const getAffectedDays = (month, type) => {
+    const days = data[month] ? data[month][type] : [];
     if (days.length === 0) {
       return "No affected days";
     }
-    return (
-      "Critical days: " +
-      days.map((day) => dayjs(day.date).format("DD.MM.YYYY")).join(", ")
-    );
+    return "Critical days: " + days.map((day) => day).join(", ");
   };
 
   return (
@@ -210,8 +200,10 @@ const MonthlyDemandTable = ({
                 <Tooltip
                   key={index}
                   title={getAffectedDays(
-                    index,
-                    (day) => day.total_demand > day.total_capacity,
+                    `${selectedYear}-${(index + 1)
+                      .toString()
+                      .padStart(2, "0")}`,
+                    "above_100",
                   )}
                   arrow
                 >
@@ -222,8 +214,10 @@ const MonthlyDemandTable = ({
                     style={{
                       backgroundColor:
                         getMonthlyCounts(
-                          index,
-                          (day) => day.total_demand > day.total_capacity,
+                          `${selectedYear}-${(index + 1)
+                            .toString()
+                            .padStart(2, "0")}`,
+                          "above_100",
                         ) > 0
                           ? COLOR_OVER100
                           : "",
@@ -234,16 +228,20 @@ const MonthlyDemandTable = ({
                       style={{
                         color:
                           getMonthlyCounts(
-                            index,
-                            (day) => day.total_demand > day.total_capacity,
+                            `${selectedYear}-${(index + 1)
+                              .toString()
+                              .padStart(2, "0")}`,
+                            "above_100",
                           ) > 0
                             ? "red"
                             : "",
                       }}
                     >
                       {getMonthlyCounts(
-                        index,
-                        (day) => day.total_demand > day.total_capacity,
+                        `${selectedYear}-${(index + 1)
+                          .toString()
+                          .padStart(2, "0")}`,
+                        "above_100",
                       ) || ""}
                     </Typography>
                   </TableCell>
@@ -279,10 +277,10 @@ const MonthlyDemandTable = ({
                 <Tooltip
                   key={index}
                   title={getAffectedDays(
-                    index,
-                    (day) =>
-                      day.total_demand >= 0.8 * day.total_capacity &&
-                      day.total_demand <= day.total_capacity,
+                    `${selectedYear}-${(index + 1)
+                      .toString()
+                      .padStart(2, "0")}`,
+                    "between_80_and_100",
                   )}
                   arrow
                 >
@@ -293,10 +291,10 @@ const MonthlyDemandTable = ({
                     style={{
                       backgroundColor:
                         getMonthlyCounts(
-                          index,
-                          (day) =>
-                            day.total_demand >= 0.8 * day.total_capacity &&
-                            day.total_demand <= day.total_capacity,
+                          `${selectedYear}-${(index + 1)
+                            .toString()
+                            .padStart(2, "0")}`,
+                          "between_80_and_100",
                         ) > 0
                           ? COLOR_80TO100
                           : "",
@@ -307,20 +305,20 @@ const MonthlyDemandTable = ({
                       style={{
                         color:
                           getMonthlyCounts(
-                            index,
-                            (day) =>
-                              day.total_demand >= 0.8 * day.total_capacity &&
-                              day.total_demand <= day.total_capacity,
+                            `${selectedYear}-${(index + 1)
+                              .toString()
+                              .padStart(2, "0")}`,
+                            "between_80_and_100",
                           ) > 0
                             ? "orange"
                             : "",
                       }}
                     >
                       {getMonthlyCounts(
-                        index,
-                        (day) =>
-                          day.total_demand >= 0.8 * day.total_capacity &&
-                          day.total_demand <= day.total_capacity,
+                        `${selectedYear}-${(index + 1)
+                          .toString()
+                          .padStart(2, "0")}`,
+                        "between_80_and_100",
                       ) || ""}
                     </Typography>
                   </TableCell>
