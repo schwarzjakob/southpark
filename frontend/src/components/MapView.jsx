@@ -50,10 +50,11 @@ const MapView = () => {
             borderColor="grey.300"
             p={1}
           >
-            <DateInputComponent
+            {/* Currently give error for MUI date pickers so I comment it out */}
+            {/* <DateInputComponent
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
-            />
+            /> */}
           </Box>
         </Box>
         <Box
@@ -80,7 +81,11 @@ const MapView = () => {
           borderColor="grey.300"
           p={2}
         >
-          <MapComponent selectedDate={selectedDate} events={events} />
+          <MapComponent
+            selectedDate={selectedDate}
+            zoom={15.5}
+            events={events}
+          />
         </Box>
       </Box>
     </Box>

@@ -12,316 +12,6 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 
-const halls = [
-  {
-    id: "A1",
-    name: "A1",
-    coords: [
-      [48.1352644, 11.6943111],
-      [48.1338789, 11.6943299],
-      [48.1338897, 11.6953142],
-      [48.1352644, 11.6952928],
-    ],
-  },
-  {
-    id: "A2",
-    name: "A2",
-    coords: [
-      [48.1352644, 11.6957927],
-      [48.1338789, 11.6958115],
-      [48.1338789, 11.696798],
-      [48.1352644, 11.6967803],
-    ],
-  },
-  {
-    id: "A3",
-    name: "A3",
-    coords: [
-      [48.1352644, 11.6972707],
-      [48.1338789, 11.6972868],
-      [48.1338789, 11.6982665],
-      [48.1352644, 11.6982504],
-    ],
-  },
-  {
-    id: "A4",
-    name: "A4",
-    coords: [
-      [48.1352644, 11.698881],
-      [48.1338789, 11.6988998],
-      [48.1338789, 11.6998822],
-      [48.1352644, 11.6998661],
-    ],
-  },
-  {
-    id: "A5",
-    name: "A5",
-    coords: [
-      [48.1352644, 11.7003617],
-      [48.1338789, 11.7003778],
-      [48.1338789, 11.7013626],
-      [48.1352644, 11.7013438],
-    ],
-  },
-  {
-    id: "A6",
-    name: "A6",
-    coords: [
-      [48.1352644, 11.7018373],
-      [48.1338789, 11.7018587],
-      [48.1338789, 11.7028409],
-      [48.1352644, 11.7028194],
-    ],
-  },
-  {
-    id: "B1",
-    name: "B1",
-    coords: [
-      [48.1372428, 11.6942775],
-      [48.1358905, 11.694291],
-      [48.1358905, 11.6952868],
-      [48.1372499, 11.6952706],
-    ],
-  },
-  {
-    id: "B2",
-    name: "B2",
-    coords: [
-      [48.1372428, 11.6957605],
-      [48.1358905, 11.6957739],
-      [48.1358905, 11.6967617],
-      [48.1372428, 11.6967429],
-    ],
-  },
-  {
-    id: "B3",
-    name: "B3",
-    coords: [
-      [48.1372428, 11.6972353],
-      [48.1358905, 11.6972567],
-      [48.1358905, 11.6982418],
-      [48.1372428, 11.6982176],
-    ],
-  },
-  {
-    id: "B4",
-    name: "B4",
-    coords: [
-      [48.1372428, 11.6988463],
-      [48.1358905, 11.6988463],
-      [48.1358905, 11.6998502],
-      [48.1372428, 11.6998314],
-    ],
-  },
-  {
-    id: "B5",
-    name: "B5",
-    coords: [
-      [48.1372428, 11.7003262],
-      [48.1358955, 11.7003477],
-      [48.1359008, 11.7013301],
-      [48.1372428, 11.701314],
-    ],
-  },
-  {
-    id: "B6",
-    name: "B6",
-    coords: [
-      [48.1372428, 11.7018049],
-      [48.1359042, 11.7018236],
-      [48.1359113, 11.7028007],
-      [48.1372428, 11.7027819],
-    ],
-  },
-  {
-    id: "C1",
-    name: "C1",
-    coords: [
-      [48.1386835, 11.6942591],
-      [48.1374234, 11.6942725],
-      [48.1374234, 11.6952603],
-      [48.1386835, 11.6952415],
-    ],
-  },
-  {
-    id: "C2",
-    name: "C2",
-    coords: [
-      [48.1386835, 11.695738],
-      [48.1374234, 11.6957541],
-      [48.1374234, 11.6967472],
-      [48.1386835, 11.6967258],
-    ],
-  },
-  {
-    id: "C3",
-    name: "C3",
-    coords: [
-      [48.1386835, 11.6972158],
-      [48.1374234, 11.6972319],
-      [48.1374234, 11.698217],
-      [48.1386835, 11.6982009],
-    ],
-  },
-  {
-    id: "C4",
-    name: "C4",
-    coords: [
-      [48.1386835, 11.6988308],
-      [48.1374234, 11.6988442],
-      [48.1374234, 11.6998213],
-      [48.1386835, 11.6998078],
-    ],
-  },
-  {
-    id: "C5",
-    name: "C5",
-    coords: [
-      [48.1386835, 11.7002968],
-      [48.1374234, 11.7003102],
-      [48.1374234, 11.7013007],
-      [48.1386835, 11.7012873],
-    ],
-  },
-  {
-    id: "C6",
-    name: "C6",
-    coords: [
-      [48.1386835, 11.7017778],
-      [48.1374234, 11.7017993],
-      [48.1374234, 11.702779],
-      [48.1386835, 11.7027629],
-    ],
-  },
-];
-
-const parkingLots = [
-  {
-    id: "P1 Nord (Tor 17a - Tor 11c)",
-    name: "P1 Nord (Tor 17a - Tor 11c)",
-    coords: [
-      [48.1417206, 11.700205],
-      [48.1417708, 11.7006773],
-      [48.1417922, 11.7062698],
-      [48.1384277, 11.709568],
-      [48.1384032, 11.7090745],
-      [48.1384095, 11.7085468],
-      [48.1384921, 11.7070991],
-      [48.1388762, 11.7050723],
-      [48.1394444, 11.702988],
-      [48.1400732, 11.7002774],
-    ],
-  },
-  {
-    id: "P1 Nord (westl. Tor 17a)",
-    name: "P1 Nord (westl. Tor 17a)",
-    coords: [
-      [48.1412926, 11.6975452],
-      [48.1404584, 11.6981824],
-      [48.1401018, 11.7001409],
-      [48.1416906, 11.7000933],
-      [48.141649, 11.6976807],
-    ],
-  },
-  {
-    id: "P2 Nord (östl. Tor 11c)",
-    name: "P2 Nord (östl. Tor 11c)",
-    coords: [
-      [48.1408516, 11.7073096],
-      [48.1385636, 11.7094934],
-      [48.1384627, 11.7096188],
-      [48.1384099, 11.7096855],
-      [48.1385188, 11.7109966],
-      [48.1397178, 11.7097633],
-      [48.1405108, 11.7088749],
-      [48.1405028, 11.7087385],
-      [48.140855, 11.7082945],
-      [48.1408516, 11.7073096],
-    ],
-  },
-  {
-    id: "P3",
-    name: "P3",
-    coords: [
-      [48.1390493, 11.6972283],
-      [48.1390558, 11.6980711],
-      [48.1398488, 11.6980645],
-      [48.1399943, 11.6973839],
-      [48.1399854, 11.6972524],
-      [48.1399353, 11.6971961],
-      [48.1390493, 11.6972283],
-    ],
-  },
-  {
-    id: "P4",
-    name: "P4",
-    coords: [
-      [48.1396359, 11.6989453],
-      [48.1394766, 11.6997899],
-      [48.1390596, 11.6997872],
-      [48.1390578, 11.6989479],
-    ],
-  },
-  {
-    id: "P5",
-    name: "P5",
-    coords: [
-      [48.1394505, 11.7001903],
-      [48.1390535, 11.7001831],
-      [48.1390458, 11.7014863],
-      [48.1391777, 11.7014832],
-    ],
-  },
-  {
-    id: "P7",
-    name: "P7",
-    coords: [
-      [48.1385681, 11.7034823],
-      [48.1361815, 11.7035074],
-      [48.1361882, 11.7043663],
-      [48.1359054, 11.7043925],
-      [48.1359051, 11.7047203],
-      [48.1376266, 11.7046675],
-      [48.1379881, 11.7044422],
-      [48.1382531, 11.7041741],
-      [48.1384786, 11.7037719],
-    ],
-  },
-  {
-    id: "P8",
-    name: "P8",
-    coords: [
-      [48.1380376, 11.704922],
-      [48.1380497, 11.7058797],
-      [48.1378568, 11.7058856],
-      [48.1378643, 11.7067451],
-      [48.1358968, 11.7055821],
-      [48.1358932, 11.7050025],
-      [48.1380412, 11.704922],
-    ],
-  },
-  {
-    id: "P9 - 12",
-    name: "P9 - P12",
-    coords: [
-      [48.13781, 11.7071893],
-      [48.137823, 11.7109108],
-      [48.1336863, 11.7109776],
-      [48.1336643, 11.706073],
-      [48.1358736, 11.7060593],
-    ],
-  },
-  {
-    id: "Parkhaus West",
-    name: "Parkhaus West",
-    coords: [
-      [48.1389099, 11.6903538],
-      [48.1379863, 11.6912121],
-      [48.1387381, 11.6931111],
-      [48.1396832, 11.6922742],
-    ],
-  },
-];
 const colors = [
   "purple",
   "orange",
@@ -338,16 +28,34 @@ const colors = [
   "yellow",
 ];
 
-const MapComponent = ({ selectedDate }) => {
-
+const MapComponent = ({ selectedDate, zoom }) => {
   MapComponent.propTypes = {
     selectedDate: PropTypes.string.isRequired,
     zoom: PropTypes.number.isRequired,
   };
+
+  const [halls, setHalls] = useState([]);
+  const [parkingLots, setParkingLots] = useState([]);
+  const [entrances, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
   const [colorMapping, setColorMapping] = useState({});
 
   useEffect(() => {
+    const fetchCoordinates = async () => {
+      try {
+        const { data } = await axios.get("/api/coordinates");
+        if (data) {
+          setEntrances(data.entrances);
+          setHalls(data.halls);
+          setParkingLots(data.parking_lots);
+        }
+      } catch (error) {
+        console.error(
+          "There was an error fetching the coordinates data!",
+          error,
+        );
+      }
+    };
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
@@ -355,7 +63,6 @@ const MapComponent = ({ selectedDate }) => {
         );
         if (data) {
           setEvents(data);
-
           const colorMap = {};
           data.forEach((event, index) => {
             if (!colorMap[event.event_name]) {
@@ -369,8 +76,17 @@ const MapComponent = ({ selectedDate }) => {
       }
     };
 
+    fetchCoordinates();
     fetchEvents();
   }, [selectedDate]);
+
+  const transformCoordinates = (originalCoords) => {
+    const transformedCoords = [];
+    for (let i = 0; i < originalCoords.length; i += 2) {
+      transformedCoords.push([originalCoords[i], originalCoords[i + 1]]);
+    }
+    return transformedCoords;
+  };
 
   const getEventStatus = (event, date) => {
     const eventDate = dayjs(date);
@@ -494,6 +210,7 @@ const MapComponent = ({ selectedDate }) => {
       <SetZoomLevel zoom={15.5} />
       {/* Rendering halls */}
       {halls.map((hall) => {
+        const transformedCoords = transformCoordinates(hall.coordinates);
         const color = getPolygonColor(hall.name);
         const event = filteredEvents.find((event) =>
           event.halls ? event.halls.split(", ").includes(hall.name) : false,
@@ -501,11 +218,12 @@ const MapComponent = ({ selectedDate }) => {
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
+
         return (
           <Polygon
-            key={hall.id}
-            positions={hall.coords}
-            className={`halls hall-${hall.id}`}
+            key={hall.name}
+            positions={transformedCoords}
+            className={`halls hall-${hall.name}`}
             pathOptions={{
               color: fillColor,
               fillColor: fillColor,
@@ -516,7 +234,7 @@ const MapComponent = ({ selectedDate }) => {
               direction="center"
               offset={[0, 0]}
               permanent
-              className="tags"
+              className="tags-halls"
             >
               <span>{hall.name}</span>
             </Tooltip>
@@ -531,35 +249,82 @@ const MapComponent = ({ selectedDate }) => {
         );
       })}
       {/* Rendering parking lots */}
-      {parkingLots.map((lot) => {
-        const color = getPolygonColor(lot.name);
+      {entrances.map((entrance) => {
+        const transformedCoords = transformCoordinates(entrance.coordinates);
+        const color = getPolygonColor(entrance.name);
         const event = filteredEvents.find((event) =>
-          event[`${getEventStatus(event, selectedDate)}_parking_lots`]
-            ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
-                .split(", ")
-                .includes(lot.name)
-            : false,
+          event.entrance ? event.entrance === entrance.name : false,
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? color : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
+
         return (
           <Polygon
-            key={lot.id}
-            positions={lot.coords}
-            className={`parking-lots parking-${lot.id}`}
+            key={entrance.name}
+            positions={transformedCoords}
+            className={`entrances entrance-${entrance.name}`}
             pathOptions={{
               color: fillColor,
               fillColor: fillColor,
               fillOpacity: opacity,
             }}
           >
-            <Tooltip direction="center" offset={[0, 0]} permanent>
-              <span>{lot.name}</span>
+            <Tooltip
+              direction="center"
+              offset={[0, 0]}
+              permanent
+              className="entrances-tags"
+            >
+              <span>{entrance.name}</span>
             </Tooltip>
             <Popup autoPan={false}>
               {event ? (
-                getPopupContent(event, lot.name)
+                getPopupContent(event, entrance.name)
+              ) : (
+                <span>No Event!</span>
+              )}
+            </Popup>
+          </Polygon>
+        );
+      })}
+      {/* Rendering parking lots */}
+      {parkingLots.map((parkingLot) => {
+        const transformedCoords = transformCoordinates(parkingLot.coordinates);
+        const color = getPolygonColor(parkingLot.name);
+        const event = filteredEvents.find((event) =>
+          event[`${getEventStatus(event, selectedDate)}_parking_lots`]
+            ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
+                .split(", ")
+                .includes(parkingLot.name)
+            : false,
+        );
+        const status = event ? getEventStatus(event, selectedDate) : "unknown";
+        const fillColor = event ? color : "gray";
+        const opacity = event ? getPolygonOpacity(status) : 0.9;
+
+        return (
+          <Polygon
+            key={parkingLot.name}
+            positions={transformedCoords}
+            className={`parking-lots parking-lot-${parkingLot.name}`}
+            pathOptions={{
+              color: fillColor,
+              fillColor: fillColor,
+              fillOpacity: opacity,
+            }}
+          >
+            <Tooltip
+              direction="center"
+              offset={[0, 0]}
+              permanent
+              className="tags"
+            >
+              <span>{parkingLot.name}</span>
+            </Tooltip>
+            <Popup autoPan={false}>
+              {event ? (
+                getPopupContent(event, parkingLot.name)
               ) : (
                 <span>No Event!</span>
               )}

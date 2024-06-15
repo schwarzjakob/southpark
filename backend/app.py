@@ -302,7 +302,7 @@ def get_coordinates():
 
         # Query to fetch halls data
         query_halls = """
-        SELECT id, name, coordinates 
+        SELECT id, name, coordinates
         FROM public.hall
         """
         df_halls = get_data(query_halls)
@@ -315,7 +315,7 @@ def get_coordinates():
 
         # Query to fetch parking lots data
         query_parking_lots = """
-        SELECT id, name, coordinates 
+        SELECT id, name, coordinates
         FROM public.parking_lot
         """
         df_parking_lots = get_data(query_parking_lots)
@@ -328,7 +328,7 @@ def get_coordinates():
 
         # Query to fetch entrances data
         query_entrances = """
-        SELECT id, name, coordinates 
+        SELECT id, name, coordinates
         FROM public.entrance
         """
         df_entrances = get_data(query_entrances)
