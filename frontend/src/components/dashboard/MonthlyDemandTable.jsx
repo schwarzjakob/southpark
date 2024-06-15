@@ -1,3 +1,4 @@
+//src/components/dashboard/MonthlyDemandTable.jsx
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -29,11 +30,14 @@ const LABEL_80TO100_TITLE = "MONITOR";
 const TABLE_LABEL = "Days with Utilization Rate";
 const LABEL_OVER100 = "above 100%";
 const LABEL_80TO100 = "between 80% and 100%";
+const COLOR_OVER100 = "#ffacb7";
+const COLOR_80TO100 = "#F39C121A";
 const LABEL_OVER100_INFO =
   "Total number of days when the demand for parking spaces exceeded the total available capacity. Recommendation: Take action! Additional parking spaces are urgently needed to meet the demand.";
 const LABEL_80TO100_INFO =
   "Total number of days when the demand for parking spaces was high but did not exceed the total available capacity. Recommendation: Monitor. The occupation is not critical yet, but it should be validated and kept under observation.";
-const INFO_TEXT = "Hover to show or click to move to time range in chart";
+const INFO_TEXT =
+  "Hover to show details or click to move to time range in chart";
 
 const MonthlyDemandTable = ({
   selectedYear,
@@ -49,7 +53,7 @@ const MonthlyDemandTable = ({
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/capacity_utilization");
-      setData(Array.isArray(response.data) ? response.data : []);
+      setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -218,7 +222,7 @@ const MonthlyDemandTable = ({
                           index,
                           (day) => day.total_demand > day.total_capacity,
                         ) > 0
-                          ? "#ffacb7"
+                          ? COLOR_OVER100
                           : "",
                     }}
                   >
@@ -286,7 +290,7 @@ const MonthlyDemandTable = ({
                           index,
                           (day) => day.total_demand > day.total_capacity,
                         ) > 0
-                          ? "#F39C121A"
+                          ? COLOR_80TO100
                           : "",
                     }}
                   >

@@ -1,3 +1,4 @@
+// src/components/dashboard/Dashboard.jsx
 import { useEffect, useState } from "react";
 import { Paper, Grid, Typography, Box } from "@mui/material";
 import axios from "axios";
@@ -41,10 +42,28 @@ const Dashboard = () => {
 
   const handleYearChange = (newYear) => {
     setSelectedYear(newYear);
-    setDateRange([
-      dayjs().year(newYear).startOf("year"),
-      dayjs().year(newYear).endOf("year"),
-    ]);
+
+    const newStartDate = dayjs(dateRange[0]).year(newYear);
+    const newEndDate = dayjs(dateRange[1]).year(newYear);
+
+    // Sonderbehandlung für Schaltjahre
+    if (
+      newStartDate.month() === 1 &&
+      newStartDate.date() === 29 &&
+      !newStartDate.isLeapYear()
+    ) {
+      newStartDate.date(28);
+    }
+
+    if (
+      newEndDate.month() === 1 &&
+      newEndDate.date() === 29 &&
+      !newEndDate.isLeapYear()
+    ) {
+      newEndDate.date(28);
+    }
+
+    setDateRange([newStartDate, newEndDate]);
   };
 
   if (!data) {

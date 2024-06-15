@@ -1,3 +1,4 @@
+//src/components/dashboard/CapacityUtilization.jsx
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
@@ -80,7 +81,8 @@ const CapacityUtilization = ({
       );
       const fetchedData = response.data;
 
-      console.log("Fetched data:", fetchedData); // Log the fetched data to understand its structure
+      // Log the fetched data to understand its structure
+      console.log("Fetched data:", fetchedData);
 
       if (!Array.isArray(fetchedData)) {
         throw new Error("Fetched data is not an array");

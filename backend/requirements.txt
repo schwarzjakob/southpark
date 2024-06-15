@@ -5,8 +5,6 @@ pandas==2.2.2
 python-dotenv==1.0.1
 psycopg2-binary==2.9.9
 SQLAlchemy==2.0.30
-Flask-Caching==1.11.0
-cachelib==0.9.0
 
 # allocation_algorithm
 PuLP==2.8.0

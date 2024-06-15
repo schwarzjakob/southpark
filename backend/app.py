@@ -8,17 +8,12 @@ from io import StringIO
 import pandas as pd
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
-from flask_caching import Cache
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
 
 # Initialize the Flask app
 app = Flask(__name__)
 CORS(app)
-
-# Configure caching
-cache = Cache(config={'CACHE_TYPE': 'simple'})
-cache.init_app(app)
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
