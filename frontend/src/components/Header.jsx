@@ -1,3 +1,4 @@
+// src/components/Header.jsx
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
@@ -34,7 +35,11 @@ function Header({ toggleNav }) {
           <MenuIcon />
         </IconButton>
         <LogoContainer to="/">
-          <Logo src="src/assets/logo_white.svg" alt="Messe München" />
+          <Logo
+            src="src/assets/logo_white.svg"
+            alt="Messe München"
+            className="logo"
+          />
           <Typography variant="h6" className="page-title">
             Parking Space
             <br />

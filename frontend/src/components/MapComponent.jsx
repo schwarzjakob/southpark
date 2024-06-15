@@ -1,3 +1,4 @@
+// src/components/MapComponent.jsx
 import "leaflet/dist/leaflet.css";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
@@ -339,7 +340,6 @@ const colors = [
 ];
 
 const MapComponent = ({ selectedDate }) => {
-
   MapComponent.propTypes = {
     selectedDate: PropTypes.string.isRequired,
     zoom: PropTypes.number.isRequired,

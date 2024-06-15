@@ -1,3 +1,5 @@
+// src/components/TimelineSlider.jsx
+
 import { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
 import { Box, Button, Typography, useTheme } from "@mui/material";
@@ -6,7 +8,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import axios from "axios";
 import PropTypes from "prop-types";
 
-const colors = [
+const COLORS = [
   "purple",
   "orange",
   "cyan",
@@ -22,19 +24,35 @@ const colors = [
   "yellow",
 ];
 
+const ROW_HEIGHT = 24;
+const OFFSET = 100;
+const BUFFER = 10;
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
 const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   TimelineSlider.propTypes = {
     selectedDate: PropTypes.string.isRequired,
     setSelectedDate: PropTypes.func.isRequired,
   };
+
   const theme = useTheme();
   const [days, setDays] = useState([]);
   const [events, setEvents] = useState([]);
   const [eventRows, setEventRows] = useState([]);
   const [colorMapping, setColorMapping] = useState({});
-  const ROW_HEIGHT = 24;
-  const OFFSET = 100;
-  const BUFFER = 10;
 
   useEffect(() => {
     const calculateNumberOfDays = () => Math.floor(window.innerWidth / 45);
@@ -68,7 +86,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
 
         const newColorMapping = eventsData.reduce((acc, event, index) => {
           if (!acc[event.event_name]) {
-            acc[event.event_name] = colors[index % colors.length];
+            acc[event.event_name] = COLORS[index % COLORS.length];
           }
           return acc;
         }, {});
@@ -400,20 +418,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           justifyContent="center"
           alignItems="center"
         >
-          {renderMonths([
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ])}
+          {renderMonths(MONTHS)}
         </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box position="relative" sx={{ flexGrow: 1 }}>

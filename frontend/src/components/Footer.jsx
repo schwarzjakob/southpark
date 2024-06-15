@@ -1,3 +1,4 @@
+// src/components/Footer.jsx
 import { Box, Link, Typography } from "@mui/material";
 
 const currentYear = new Date().getFullYear();
@@ -13,8 +14,7 @@ const Footer = () => {
         borderTop: "1px solid #ddd",
       }}
     >
-      <Box className="certificates-footer" sx={{ marginBottom: 2 }}>
-      </Box>
+      <Box className="certificates-footer" sx={{ marginBottom: 2 }}></Box>
       <Box className="social-footer" sx={{ marginBottom: 2 }}>
         <Box
           component="ul"

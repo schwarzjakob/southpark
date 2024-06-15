@@ -1,3 +1,5 @@
+// src/components/EditEvent.jsx
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -95,7 +97,7 @@ function EditEvent() {
     severity: "info",
   });
   const [loading, setLoading] = useState(false);
-  const eventDetailsRef = useRef(null); 
+  const eventDetailsRef = useRef(null);
 
   useEffect(() => {
     fetchEvents();

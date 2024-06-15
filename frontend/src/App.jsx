@@ -1,20 +1,18 @@
+// src/App.jsx
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
 
 import Header from "./components/Header.jsx";
 import Navigation from "./components/Navigation.jsx";
 import Footer from "./components/Footer.jsx";
-import Dashboard from "./components/Dashboard.jsx";
+import Dashboard from "./components/dashboard/Dashboard.jsx";
 import MapView from "./components/MapView.jsx";
 import AddEvent from "./components/AddEvent.jsx";
 import EditEvent from "./components/EditEvent.jsx";
 import ImportCSV from "./components/ImportCSV.jsx";
 import InputDemands from "./components/InputDemands.jsx";
 import EventsAllocationTable from "./components/EventsAllocationTable.jsx";
-import ExceedsCapacity from "./components/dashboard/ExceedsCapacity.jsx";
-import Between80And100 from "./components/dashboard/Between80And100.jsx";
 import Team from "./components/Team.jsx";
 import MobileWarning from "./components/MobileWarning.jsx";
 import theme from "./styles/muiCustomTheme";
@@ -47,7 +45,6 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
       <BrowserRouter>
         <div className="App">
           <Navigation isOpen={isNavOpen} toggleNav={toggleNav} />
@@ -62,8 +59,6 @@ function App() {
                 <Route path="/editEvent" element={<EditEvent />} />
                 <Route path="/import" element={<ImportCSV />} />
                 <Route path="/input_demands" element={<InputDemands />} />
-                <Route path="/exceedsCapacity" element={<ExceedsCapacity />} />
-                <Route path="/between80And100" element={<Between80And100 />} />
                 <Route path="/user" element={<Team />} />
               </Routes>
             </div>

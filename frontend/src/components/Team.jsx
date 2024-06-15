@@ -1,3 +1,4 @@
+// src/components/Team.jsx
 import {
   Container,
   Grid,
@@ -16,7 +17,7 @@ import eric from "../assets/team/eric.jpeg";
 import tuong from "../assets/team/tuong.jpeg";
 import kenny from "../assets/team/kenny.jpeg";
 
-const content = [
+const CONTENT = [
   {
     headline: "Meet our team",
     description:
@@ -24,7 +25,7 @@ const content = [
   },
 ];
 
-const teamMembers = [
+const TEAM_MEMBERS = [
   {
     name: "Nichole Chen",
     img: tuong,
@@ -46,7 +47,6 @@ const teamMembers = [
     linkedIn: "https://www.linkedin.com/in/sven-tiefenthaler-a7617221b/",
     email: "mailto:s.tiefenthaler@campus.lmu.de",
   },
-
   {
     name: "Timon Tirtey",
     img: kenny,
@@ -62,11 +62,11 @@ const renderTeam = () => {
       <Grid container className="inner-container">
         <Grid item xs={12} md={4} className="headings-container">
           <Typography variant="h2" className="heading-text">
-            {content[0].headline}
+            {CONTENT[0].headline}
           </Typography>
 
           <Typography variant="body1" className="sub-heading-text">
-            {content[0].description}
+            {CONTENT[0].description}
           </Typography>
         </Grid>
         <Grid
@@ -77,7 +77,7 @@ const renderTeam = () => {
           spacing={2}
           className="team-members-container"
         >
-          {teamMembers.map((member, index) => (
+          {TEAM_MEMBERS.map((member, index) => (
             <Grid item xs={12} sm={6} key={index} className="card-container">
               <Card className="card">
                 <CardMedia

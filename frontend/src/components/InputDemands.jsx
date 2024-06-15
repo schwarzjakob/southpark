@@ -1,3 +1,4 @@
+// src/components/InputDemands.jsx
 import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
@@ -107,8 +108,8 @@ const InputDemands = () => {
                 [date]: { ...event.demands[date], demand: value },
               },
             }
-          : event
-      )
+          : event,
+      ),
     );
   };
 
@@ -120,7 +121,7 @@ const InputDemands = () => {
     for (const event of events) {
       const demands = {};
       for (const [date, { demand_id, demand }] of Object.entries(
-        event.demands
+        event.demands,
       )) {
         if (
           demand !== undefined &&
@@ -169,7 +170,7 @@ const InputDemands = () => {
         severity: "success",
       });
 
-      fetchEvents(); 
+      fetchEvents();
       handleScrollToTop();
     } catch (error) {
       setFeedback({
@@ -178,7 +179,7 @@ const InputDemands = () => {
         severity: "error",
       });
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -301,8 +302,8 @@ const InputDemands = () => {
                       const dates = Object.keys(event.demands).filter(
                         (date) =>
                           dayjs(date).isAfter(
-                            dayjs(startDate).subtract(1, "day")
-                          ) && dayjs(date).isBefore(dayjs(endDate))
+                            dayjs(startDate).subtract(1, "day"),
+                          ) && dayjs(date).isBefore(dayjs(endDate)),
                       );
 
                       if (dates.length > 0) {
@@ -337,7 +338,7 @@ const InputDemands = () => {
                                       handleDemandChange(
                                         event.event_id,
                                         date,
-                                        value
+                                        value,
                                       );
                                     }
                                   }}
@@ -430,7 +431,7 @@ const InputDemands = () => {
               color="primary"
               fullWidth
               onClick={handleSubmit}
-              disabled={loading} 
+              disabled={loading}
             >
               Save All Demands
             </Button>
