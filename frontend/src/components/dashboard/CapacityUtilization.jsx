@@ -262,7 +262,7 @@ const CapacityUtilization = ({
 
   // Adding 100% and 80% capacity lines
   const capacity80Data = filteredData.map((d) => d.total_capacity * 0.8);
-  const capacity100Data = filteredData.map((d) => d.total_capacity);
+  const capacity100Data = filteredData.map((d) => d.total_capacity * 0.2);
 
   datasets.push({
     label: "80% Capacity",
