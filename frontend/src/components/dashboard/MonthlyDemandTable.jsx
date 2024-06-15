@@ -10,8 +10,8 @@ import {
   TableHead,
   TableRow,
   Tooltip,
+  IconButton,
 } from "@mui/material";
-import IconButton from "@mui/material/IconButton";
 import PropTypes from "prop-types";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -19,9 +19,9 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import WarningIcon from "@mui/icons-material/Warning";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import BackupTableOutlinedIcon from "@mui/icons-material/BackupTableOutlined";
 import InfoHoverComponent from "../InfoHoverComponent.jsx";
 import InfoTextComponent from "../InfoTextComponent.jsx";
-import BackupTableOutlinedIcon from "@mui/icons-material/BackupTableOutlined";
 
 const TITLE = "Capacity Utilization Heatmap";
 const LABEL_OVER100_TITLE = "TAKE ACTION";
@@ -70,7 +70,6 @@ const MonthlyDemandTable = ({
       .year(selectedYear)
       .month(month)
       .startOf("month");
-
     const endOfMonth = dayjs().year(selectedYear).month(month).endOf("month");
     setDateRange([startOfMonth, endOfMonth]);
   };
@@ -84,15 +83,18 @@ const MonthlyDemandTable = ({
   );
 
   const getMonthlyCounts = (month, type) => {
-    return data[month] ? data[month][type].length : 0;
+    return data[month] ? data[month][type].count : 0;
   };
 
   const getAffectedDays = (month, type) => {
-    const days = data[month] ? data[month][type] : [];
+    const days = data[month] ? data[month][type].dates : [];
     if (days.length === 0) {
       return "No affected days";
     }
-    return "Critical days: " + days.map((day) => day).join(", ");
+    return (
+      "Critical days: " +
+      days.map((day) => dayjs(day).format("DD.MM.YYYY")).join(", ")
+    );
   };
 
   return (
@@ -117,9 +119,7 @@ const MonthlyDemandTable = ({
                     className="ArrowBackIosIcon"
                     onClick={() => handleYearChange(-1)}
                     size="small"
-                    style={{
-                      transition: "transform 0.3s",
-                    }}
+                    style={{ transition: "transform 0.3s" }}
                     onMouseOver={(e) =>
                       (e.currentTarget.style.transform = "scale(1.2)")
                     }
@@ -140,9 +140,7 @@ const MonthlyDemandTable = ({
                     className="ArrowForwardIosIcon"
                     onClick={() => handleYearChange(1)}
                     size="small"
-                    style={{
-                      transition: "transform 0.3s",
-                    }}
+                    style={{ transition: "transform 0.3s" }}
                     onMouseOver={(e) =>
                       (e.currentTarget.style.transform = "scale(1.2)")
                     }

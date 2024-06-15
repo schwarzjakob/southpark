@@ -327,8 +327,8 @@ def calculate_date_range(start_date, end_date):
 def capacity_utilization_critical_days(year):
     """
     Endpoint to retrieve capacity utilization data for a given year.
-    Outputs an array of months containing arrays with days where capacity is between 80-100%
-    and arrays with days where capacity utilization is above 100%.
+    Outputs the count and dates of days where capacity utilization is between 80-100%
+    and above 100% for each month.
     """
     try:
         start_date = f"{year}-01-01"
@@ -342,26 +342,29 @@ def capacity_utilization_critical_days(year):
         """
         data = pd.read_sql_query(query, engine)
 
-        months_data = {}
+        monthly_data = {}
+
         for _, row in data.iterrows():
-            date = row['date']
+            date = pd.to_datetime(row['date'])
             month = date.strftime("%Y-%m")
             day = date.strftime("%d")
 
-            if month not in months_data:
-                months_data[month] = {
-                    "between_80_and_100": [],
-                    "above_100": []
+            if month not in monthly_data:
+                monthly_data[month] = {
+                    "above_100": {"count": 0, "dates": []},
+                    "between_80_and_100": {"count": 0, "dates": []}
                 }
 
             demand = row["total_demand"]
             capacity = row["total_capacity"]
             if 0.8 * capacity <= demand <= capacity:
-                months_data[month]["between_80_and_100"].append(day)
+                monthly_data[month]["between_80_and_100"]["count"] += 1
+                monthly_data[month]["between_80_and_100"]["dates"].append(date.strftime("%Y-%m-%d"))
             elif demand > capacity:
-                months_data[month]["above_100"].append(day)
+                monthly_data[month]["above_100"]["count"] += 1
+                monthly_data[month]["above_100"]["dates"].append(date.strftime("%Y-%m-%d"))
 
-        return jsonify(months_data), 200
+        return jsonify(monthly_data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
