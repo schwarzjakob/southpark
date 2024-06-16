@@ -218,6 +218,15 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     ));
   };
 
+  const getContrastColor = (hexColor) => {
+    const hex = hexColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? "black" : "white";
+  };
+
   const renderEventSegments = (
     event,
     startIndex,
@@ -227,6 +236,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
+    const textColor = getContrastColor(event.event_color);
 
     return (
       <Box
@@ -259,7 +269,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
                 top: "0px",
                 left: 0,
                 fontSize: "0.75rem",
-                color: "white",
+                color: textColor,
                 whiteSpace: "nowrap",
                 zIndex: 1,
               }}
