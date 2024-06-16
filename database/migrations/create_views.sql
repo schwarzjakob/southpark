@@ -141,7 +141,8 @@ SELECT
     MIN(e.disassembly_start_date) AS disassembly_start_date,
     MAX(e.disassembly_end_date) AS disassembly_end_date,
     MIN(e.late_disassembly_start_date) AS late_disassembly_start_date,
-    MAX(e.late_disassembly_end_date) AS late_disassembly_end_date
+    MAX(e.late_disassembly_end_date) AS late_disassembly_end_date,
+    e.color AS event_color
 FROM
     public.event e
 JOIN
@@ -157,6 +158,6 @@ LEFT JOIN
 LEFT JOIN
     public.parking_lot p ON pa.parking_lot_id = p.id
 GROUP BY
-    e.id, e.name, en.name
+    e.id, e.name, en.name, e.color
 ORDER BY
     MIN(e.early_assembly_start_date), MIN(e.assembly_start_date), MIN(e.runtime_start_date), MIN(e.disassembly_start_date), MIN(e.late_disassembly_start_date);
