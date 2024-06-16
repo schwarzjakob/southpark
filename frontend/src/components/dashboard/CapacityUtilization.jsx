@@ -117,25 +117,29 @@ const CapacityUtilization = ({
         dataMap.set(dayjs(d.date).format("YYYY-MM-DD"), d);
       });
 
+      const totalCapacityData = await fetchTotalCapacity(range);
+      const capacityMap = new Map();
+      totalCapacityData.forEach((d) => {
+        capacityMap.set(dayjs(d.day).format("YYYY-MM-DD"), d.total_capacity);
+      });
+
       const completeData = labels.map((label) => {
         const originalDate = dayjs(label, "DD.MM.YYYY").format("YYYY-MM-DD");
         if (dataMap.has(originalDate)) {
           const data = dataMap.get(originalDate);
           data.date = label;
+          data.total_capacity = capacityMap.get(originalDate) || 0;
           return data;
         }
         return {
           date: label,
-          total_capacity: 0,
+          total_capacity: capacityMap.get(originalDate) || 0,
           total_demand: 0,
           events: [],
         };
       });
 
       setData(completeData);
-
-      // Call total_capacity API to fetch total capacitys per day
-      await fetchTotalCapacity(range);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -148,9 +152,12 @@ const CapacityUtilization = ({
           "YYYY-MM-DD"
         )}&end_date=${range[1].format("YYYY-MM-DD")}`
       );
-      console.log("Total capacity data:", response.data);
+      //DEBUG
+      //console.log("Total capacity data:", response.data);
+      return response.data;
     } catch (error) {
       console.error("Error fetching total capacity data:", error);
+      return [];
     }
   };
 
@@ -209,7 +216,7 @@ const CapacityUtilization = ({
         const index = filteredData.findIndex((e) => e.date === d.date);
         dataset.data[index] = event.capacity;
         dataset.borderColor[index] = borderColor;
-        dataset.borderWidth[index] = borderColor === "transparent" ? 0 : 3;
+        dataset.borderWidth[index] = borderColor === "transparent" ? 0 : 2;
       });
     });
 
@@ -308,11 +315,24 @@ const CapacityUtilization = ({
     borderColor: "orange",
     borderWidth: 1,
     type: "line",
-    stepped: "after",
+    stepped: "before",
+    borderDash: [5, 5],
     fill: false,
     pointRadius: 0,
     datalabels: {
-      display: false,
+      display: function (context) {
+        return context.dataIndex === 0;
+      },
+      formatter: () => "80%",
+      align: "start",
+      anchor: "end",
+      color: "orange",
+      font: {
+        weight: "bold",
+        size: FONT_SIZE,
+      },
+      offset: -25,
+      backgroundColor: "white",
     },
   });
 
@@ -323,13 +343,25 @@ const CapacityUtilization = ({
     borderWidth: 1,
     type: "line",
     stepped: "before",
+    borderDash: [5, 5],
     fill: false,
     pointRadius: 0,
     datalabels: {
-      display: false,
+      display: function (context) {
+        return context.dataIndex === 0;
+      },
+      formatter: () => "100% ",
+      align: "start",
+      anchor: "end",
+      color: "red",
+      font: {
+        weight: "bold",
+        size: FONT_SIZE,
+      },
+      offset: -25,
+      backgroundColor: "white",
     },
   });
-
   const chartData = {
     labels: labels,
     datasets: datasets,

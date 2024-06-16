@@ -61,7 +61,8 @@ const MonthlyDemandTable = ({
         `/api/capacity_utilization_critical_days/${selectedYear}`
       );
       setData(response.data);
-      console.log("Data fetched successfully:", response.data);
+      //DEBUG
+      //console.log("Data fetched successfully:", response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
