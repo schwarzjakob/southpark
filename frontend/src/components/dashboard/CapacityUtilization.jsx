@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -29,7 +29,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ChartDataLabels,
+  ChartDataLabels
 );
 
 // Titles and labels for display
@@ -78,6 +78,7 @@ const applyTransparency = (color) => {
     return "#" + color + TRANSPARENCY;
   }
 };
+
 const CapacityUtilization = ({
   selectedYear,
   setSelectedYear,
@@ -95,16 +96,12 @@ const CapacityUtilization = ({
   const [showEvents, setShowEvents] = useState(true);
   const [showEmptyDays, setShowEmptyDays] = useState(true);
 
-  useEffect(() => {
-    fetchData(dateRange);
-  }, [dateRange, selectedYear]);
-
-  const fetchData = async (range) => {
+  const fetchData = useCallback(async (range) => {
     try {
       const response = await axios.get(
         `/api/capacity_utilization?start_date=${range[0].format(
-          "YYYY-MM-DD",
-        )}&end_date=${range[1].format("YYYY-MM-DD")}`,
+          "YYYY-MM-DD"
+        )}&end_date=${range[1].format("YYYY-MM-DD")}`
       );
       const fetchedData = response.data;
 
@@ -136,10 +133,30 @@ const CapacityUtilization = ({
       });
 
       setData(completeData);
+
+      // Call total_capacity API to fetch total capacitys per day
+      await fetchTotalCapacity(range);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
+  }, []);
+
+  const fetchTotalCapacity = async (range) => {
+    try {
+      const response = await axios.get(
+        `/api/total_capacity?start_date=${range[0].format(
+          "YYYY-MM-DD"
+        )}&end_date=${range[1].format("YYYY-MM-DD")}`
+      );
+      console.log("Total capacity data:", response.data);
+    } catch (error) {
+      console.error("Error fetching total capacity data:", error);
+    }
   };
+
+  useEffect(() => {
+    fetchData(dateRange);
+  }, [dateRange, selectedYear, fetchData]);
 
   const handleDateRangeChange = (dates) => {
     const selectedYear = dates[1].year();
@@ -206,7 +223,7 @@ const CapacityUtilization = ({
       data: filteredData.map((d) =>
         d.total_capacity - d.total_demand > 0
           ? d.total_capacity - d.total_demand
-          : 0,
+          : 0
       ),
       datalabels: {
         anchor: "end",
@@ -242,7 +259,7 @@ const CapacityUtilization = ({
       data: filteredData.map((d) =>
         d.total_capacity - d.total_demand > 0
           ? d.total_capacity - d.total_demand
-          : 0,
+          : 0
       ),
       datalabels: {
         anchor: "end",
@@ -354,7 +371,7 @@ const CapacityUtilization = ({
             const absoluteValue = context.raw;
             const label = context.dataset.label;
             const event = filteredData[index]?.events?.find(
-              (e) => e.event_name === label,
+              (e) => e.event_name === label
             );
             const lotsInfo =
               event?.parking_lots
@@ -463,7 +480,7 @@ const CapacityUtilization = ({
       </Box>
 
       {filteredData.every(
-        (d) => d.total_capacity === 0 && d.total_demand === 0,
+        (d) => d.total_capacity === 0 && d.total_demand === 0
       ) ? (
         <div className="no-data">{NO_DATA_MESSAGE}</div>
       ) : (

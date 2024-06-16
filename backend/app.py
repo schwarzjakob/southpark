@@ -367,7 +367,56 @@ def capacity_utilization_critical_days(year):
         return jsonify(monthly_data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
+# Fetch total capacity
+@app.route("/total_capacity", methods=["GET"])
+def total_capacity():
+    """
+    Endpoint to calculate the available capacities for each day within a specified time range.
+    """
+    try:
+        # Get the start_date and end_date from the query parameters
+        start_date_str = request.args.get("start_date")
+        end_date_str = request.args.get("end_date")
+        
+        # Parse the dates
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        
+        logger.info(f"Calculating total capacity from {start_date} to {end_date}.")
+        
+        # SQL query to fetch the required fields
+        query = """
+        SELECT id, parking_lot_id, capacity, valid_from, valid_to
+        FROM public.parking_lot_capacity
+        """
+        
+        # Execute the query and fetch data
+        result = get_data(query)
+        
+        # Convert result to a list of dictionaries
+        capacity_data = result.to_dict(orient="records")
+        
+        # Calculate capacities for each day within the range
+        total_capacities = []
+        current_date = start_date
+        while current_date <= end_date:
+            total_capacity = sum(
+                entry["capacity"] for entry in capacity_data
+                if entry["valid_from"] <= current_date <= entry["valid_to"]
+            )
+            total_capacities.append({
+                "day": current_date.strftime("%Y-%m-%d"),
+                "total_capacity": total_capacity
+            })
+            current_date += timedelta(days=1)
+        
+        logger.info("Total capacities calculated successfully.")
+        return jsonify(total_capacities), 200
+    except Exception as e:
+        logger.error("Failed to calculate total capacities", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+    
 # Check hall availability
 @app.route("/check_hall_availability", methods=["POST"])
 def check_hall_availability():

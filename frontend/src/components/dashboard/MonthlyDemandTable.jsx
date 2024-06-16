@@ -20,6 +20,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import BackupTableOutlinedIcon from "@mui/icons-material/BackupTableOutlined";
+import CheckIcon from "@mui/icons-material/Check";
 import InfoHoverComponent from "../InfoHoverComponent.jsx";
 import InfoTextComponent from "../InfoTextComponent.jsx";
 
@@ -226,14 +227,20 @@ const MonthlyDemandTable = ({
                       style={above100Style}
                       onClick={() => handleMonthClick(index)}
                     >
-                      <Typography
-                        className="demandTable__subitemText"
-                        style={{
-                          color: above100Count > 0 ? "red" : "",
-                        }}
-                      >
-                        {above100Count || ""}
-                      </Typography>
+                      {above100Count > 0 ? (
+                        <Typography
+                          className="demandTable__subitemText"
+                          style={{
+                            color: "red",
+                          }}
+                        >
+                          {above100Count}
+                        </Typography>
+                      ) : (
+                        <Box>
+                          <CheckIcon className="demandTable__checkIcon" />
+                        </Box>
+                      )}
                     </TableCell>
                   </Tooltip>
                 );
@@ -288,14 +295,20 @@ const MonthlyDemandTable = ({
                       style={between80and100Style}
                       onClick={() => handleMonthClick(index)}
                     >
-                      <Typography
-                        className="demandTable__subitemText"
-                        style={{
-                          color: between80and100Count > 0 ? "orange" : "",
-                        }}
-                      >
-                        {between80and100Count || ""}
-                      </Typography>
+                      {between80and100Count > 0 ? (
+                        <Typography
+                          className="demandTable__subitemText"
+                          style={{
+                            color: "orange",
+                          }}
+                        >
+                          {between80and100Count}
+                        </Typography>
+                      ) : (
+                        <Box>
+                          <CheckIcon className="demandTable__checkIcon" />
+                        </Box>
+                      )}
                     </TableCell>
                   </Tooltip>
                 );

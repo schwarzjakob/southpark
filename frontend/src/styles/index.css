@@ -1344,3 +1344,7 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
 .infoText__Icon {
   align-self: flex-start;
 }
+
+.demandTable__checkIcon {
+  color: var(--color-gray-300);
+}
