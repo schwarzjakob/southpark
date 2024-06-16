@@ -19,6 +19,7 @@
     "@mui/x-date-pickers": "^7.6.2",
     "antd": "^5.18.1",
     "axios": "^1.7.2",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "dayjs": "^1.11.11",
     "leaflet": "^1.9.4",
     "moment": "^2.30.1",
