@@ -1276,3 +1276,7 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
 .infoText__Icon {
   align-self: flex-start;
 }
+
+:where(.css-dev-only-do-not-override-zg0ahe).ant-switch {
+  background-color: var(--color-primary); /* White handle color */
+}
