@@ -17,6 +17,7 @@
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@mui/x-data-grid": "^7.6.2",
     "@mui/x-date-pickers": "^7.6.2",
+    "antd": "^5.18.1",
     "axios": "^1.7.2",
     "dayjs": "^1.11.11",
     "leaflet": "^1.9.4",
