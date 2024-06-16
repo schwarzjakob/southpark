@@ -1237,55 +1237,15 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   width: 100%;
 }
 
-/* MUI deandTable  */
-.demandTable__itemLabel-container {
-  display: flex !important;
-  min-width: 15rem;
+/* Info Box */
+.infoHover__Container {
+  cursor: default !important;
 }
 
-.demandTable__itemLabel svg {
-  margin-top: auto;
-  margin-bottom: auto;
+.infoHover__Icon:hover {
+  color: var(--color-primary-500) !important;
 }
 
-.demandTable__monthLabel {
-  color: var(--color-pure-white) !important;
-}
-
-.demandTable__headerCell-nav {
-  display: flex !important;
-  flex-direction: row;
-  color: var(--color-pure-white) !important;
-  justify-content: start;
-}
-.demandTable__headerCell {
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
-}
-
-.demandTable__itemCell p {
-  color: var(--textColor) !important;
-}
-
-.demandTable__headerCell-month {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-}
-
-.ArrowBackIosIcon {
-  margin-right: 50px !important;
-}
-
-.ArrowBackIosIcon,
-.ArrowForwardIosIcon {
-  color: var(--color-pure-white) !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 5px !important;
-}
-
-/* MUI infoHover styling */
 .iconHeadline__container {
   display: flex;
   gap: 0.5rem;
@@ -1296,34 +1256,6 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
 
 .iconHeadline__container svg {
   color: var(--color-gray-700) !important;
-}
-
-.iconHeadline__container h1,
-.iconHeadline__container h2,
-.iconHeadline__container h3,
-.iconHeadline__container h4,
-.iconHeadline__container h5,
-.iconHeadline__container h6 {
-  margin-bottom: 0 !important;
-  color: var(--color-gray-700) !important;
-}
-
-.infoHover__Container {
-  cursor: default !important;
-}
-
-.demandTable__itemFont {
-  padding-left: 1rem;
-
-  display: flex;
-  flex-direction: column;
-}
-
-.demandTable__subitem {
-  cursor: pointer;
-}
-.infoHover__Icon:hover {
-  color: var(--color-primary-500) !important;
 }
 
 .infoText__Container {
@@ -1343,8 +1275,4 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
 
 .infoText__Icon {
   align-self: flex-start;
-}
-
-.demandTable__checkIcon {
-  color: var(--color-gray-300);
 }
