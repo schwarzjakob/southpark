@@ -58,6 +58,9 @@ const TOOLTIP_CALLBACK_LOTS_INFO = "Parking Lots: ";
 const TOTAL_CAPACITY_UTILIZATION_COLOR = "#6a91ce";
 const FREE_CAPACITY_COLOR = "#4d4d4d";
 
+// Default color for events if no color is provided
+const DEFAULT_EVENT_COLOR = "#000000";
+
 // Threshold values for changing color states or alerts
 const ORANGE_BORDER_THRESHOLD = 80;
 const RED_BORDER_THRESHOLD = 100;
@@ -70,7 +73,7 @@ const applyTransparency = (color) => {
   if (!color || typeof color !== "string") {
     // Handle the case when color is null or not a string
     console.warn("Invalid color value provided:", color);
-    return "#000000" + TRANSPARENCY; // Default to black with transparency
+    return DEFAULT_EVENT_COLOR + TRANSPARENCY;
   }
   if (color.startsWith("#")) {
     return color + TRANSPARENCY;
@@ -94,7 +97,7 @@ const CapacityUtilization = ({
 
   const [data, setData] = useState([]);
   const [showEvents, setShowEvents] = useState(true);
-  const [showEmptyDays, setShowEmptyDays] = useState(true);
+  const [showEmptyDays, setShowEmptyDays] = useState(false);
 
   const fetchData = useCallback(async (range) => {
     try {
@@ -152,8 +155,6 @@ const CapacityUtilization = ({
           "YYYY-MM-DD"
         )}&end_date=${range[1].format("YYYY-MM-DD")}`
       );
-      //DEBUG
-      //console.log("Total capacity data:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching total capacity data:", error);
@@ -172,8 +173,8 @@ const CapacityUtilization = ({
   };
 
   const filteredData = showEmptyDays
-    ? data
-    : data.filter((d) => d.total_capacity !== 0 || d.total_demand !== 0);
+    ? data.filter((d) => d.events.length > 0)
+    : data;
 
   const labels = filteredData.map((d) => d.date);
   const datasets = [];
@@ -244,8 +245,18 @@ const CapacityUtilization = ({
     datasets.push({
       label: TOTAL_CAPACITY_UTILIZATION_LABEL,
       backgroundColor: applyTransparency(TOTAL_CAPACITY_UTILIZATION_COLOR),
-      borderColor: applyTransparency(TOTAL_CAPACITY_UTILIZATION_COLOR),
-      borderWidth: 1,
+      borderColor: filteredData.map((d) => {
+        const utilization = (d.total_demand / d.total_capacity) * 100;
+        return utilization > RED_BORDER_THRESHOLD
+          ? "red"
+          : utilization > ORANGE_BORDER_THRESHOLD
+          ? "orange"
+          : "transparent";
+      }),
+      borderWidth: filteredData.map((d) => {
+        const utilization = (d.total_demand / d.total_capacity) * 100;
+        return utilization > ORANGE_BORDER_THRESHOLD ? 2 : 0;
+      }),
       data: filteredData.map((d) => d.total_demand),
       datalabels: {
         anchor: "center",
@@ -505,7 +516,7 @@ const CapacityUtilization = ({
                 className="switch"
               />
             }
-            label="Show days without events"
+            label="Hide days without events"
             className="switch-label"
           />
         </Box>
