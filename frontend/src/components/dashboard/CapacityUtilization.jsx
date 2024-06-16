@@ -469,6 +469,7 @@ const CapacityUtilization = ({
             );
           },
         },
+        onClick: null, // Disable click events on legend items
       },
     },
     title: {
