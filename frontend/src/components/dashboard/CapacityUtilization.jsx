@@ -206,7 +206,7 @@ const CapacityUtilization = ({
             datalabels: {
               anchor: "center",
               align: "center",
-              color: "#000000", // Adjust text color for better contrast
+              color: "#000000",
               font: {
                 size: FONT_SIZE,
               },
@@ -261,7 +261,7 @@ const CapacityUtilization = ({
       datalabels: {
         anchor: "center",
         align: "center",
-        color: "#000000", // Adjust text color for better contrast
+        color: "#000000",
         font: {
           size: FONT_SIZE,
         },
@@ -282,7 +282,7 @@ const CapacityUtilization = ({
       datalabels: {
         anchor: "end",
         align: "start",
-        color: "#000000", // Adjust text color for better contrast
+        color: "#000000",
         font: {
           size: FONT_SIZE,
         },
