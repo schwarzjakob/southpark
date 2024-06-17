@@ -43,13 +43,7 @@
   background-color: var(--color-primary-400);
 }
 
-.demandTable__itemCell p,
-.iconHeadline__container h1,
-.iconHeadline__container h2,
-.iconHeadline__container h3,
-.iconHeadline__container h4,
-.iconHeadline__container h5,
-.iconHeadline__container h6 {
+.demandTable__itemCell p {
   color: var(--textColor) !important;
   color: var(--color-gray-700) !important;
 }
