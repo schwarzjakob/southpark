@@ -113,7 +113,6 @@ def parse_date(date_str):
             continue
     raise ValueError(f"Date {date_str} is not in a recognized format.")
 
-
 # Update an event
 @app.route("/events/<int:id>", methods=["PUT"])
 def update_event(id):
@@ -235,7 +234,6 @@ def get_available_years():
         logger.error("Failed to fetch available years", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
 # Get coordinates of entrances, parking lots, and halls
 @app.route("/coordinates", methods=["GET"])
 def get_coordinates():
@@ -337,7 +335,6 @@ def get_events_timeline(date):
         logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
 # get capacity utilization
 @app.route("/capacity_utilization", methods=["GET"])
 def get_capacity_utilization():
@@ -372,79 +369,33 @@ def get_capacity_utilization():
         events_per_day = get_data(query_events_per_day)
         events_dict = {}
         for _, row in events_per_day.iterrows():
-            date = row["date"].strftime("%Y-%m-%d")
+            date = row['date'].strftime("%Y-%m-%d")
             if date not in events_dict:
                 events_dict[date] = {}
-            if row["event_id"] not in events_dict[date]:
-                events_dict[date][row["event_id"]] = {
+            if row['event_id'] not in events_dict[date]:
+                events_dict[date][row['event_id']] = {
                     "event_id": row["event_id"],
                     "event_name": row["event_name"],
                     "capacity": 0,
-                    "event_color": row["event_color"],
+                    "event_color": row["event_color"]
                 }
-            events_dict[date][row["event_id"]]["capacity"] += row["capacity"]
+            events_dict[date][row['event_id']]["capacity"] += row["capacity"]
 
         data = []
         for _, row in total_capacity_utilization.iterrows():
-            date_str = row["date"].strftime("%Y-%m-%d")
-            data.append(
-                {
-                    "date": date_str,
-                    "total_demand": row["total_demand"],
-                    "total_capacity": row["total_capacity"],
-                    "events": list(events_dict.get(date_str, {}).values()),
-                }
-            )
+            date_str = row['date'].strftime("%Y-%m-%d")
+            data.append({
+                "date": date_str,
+                "total_demand": row["total_demand"],
+                "total_capacity": row["total_capacity"],
+                "events": list(events_dict.get(date_str, {}).values())
+            })
 
         logger.info("Capacity utilization data fetched successfully.")
         return jsonify(data), 200
     except Exception as e:
         logger.error("Failed to fetch capacity utilization data", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
-
-# Get events parking lots allocation for front-end table view
-@app.route("/events_parking_lots_allocation", methods=["GET"])
-def get_events_parking_lots_allocation():
-    """
-    Endpoint to retrieve parking lot allocations for events.
-    Fetches data from the 'view_schema.view_events_parking_lots_allocation' view in the database.
-
-    Returns:
-        JSON response with the fetched data or an error message if an exception is raised.
-    """
-    try:
-        logger.info("Fetching events parking lots allocation data from the database.")
-        query = """
-        SELECT
-            event_id,
-            event,
-            date,
-            demand,
-            status,
-            STRING_AGG(DISTINCT halls, ', ') AS halls,
-            parking_lot,
-            allocated_capacity,
-            distance
-        FROM view_schema.view_events_parking_lots_allocation
-        GROUP BY event_id, event, date, demand, status, parking_lot, allocated_capacity, distance
-        ORDER BY event_id, date;
-
-        """
-        df_events_parking_lots_allocation = get_data(query)
-        df_events_parking_lots_allocation["id"] = (
-            df_events_parking_lots_allocation.index
-        )  # Add unique ID
-        if df_events_parking_lots_allocation.empty:
-            logger.info("No data available.")
-            return jsonify({"message": "No data found"}), 204
-        print(df_events_parking_lots_allocation)
-        logger.info("Events parking lots allocation data fetched successfully.")
-        return jsonify(df_events_parking_lots_allocation.to_dict(orient="records")), 200
-    except Exception as e:
-        logger.error("Failed to fetch data from database", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
 
 def calculate_date_range(start_date, end_date):
     """Calculate the date range between the start and end dates of an events phase."""
@@ -455,7 +406,6 @@ def calculate_date_range(start_date, end_date):
         date_array.append(current_date.strftime("%Y-%m-%d"))
         current_date += pd.DateOffset(days=1)
     return date_array
-
 
 # Get capacity utilization for critical days
 @app.route("/capacity_utilization_critical_days/<int:year>", methods=["GET"])
@@ -480,34 +430,29 @@ def capacity_utilization_critical_days(year):
         monthly_data = {}
 
         for _, row in data.iterrows():
-            date = pd.to_datetime(row["date"])
+            date = pd.to_datetime(row['date'])
             month = date.strftime("%Y-%m")
             day = date.strftime("%d")
 
             if month not in monthly_data:
                 monthly_data[month] = {
                     "above_100": {"count": 0, "dates": []},
-                    "between_80_and_100": {"count": 0, "dates": []},
+                    "between_80_and_100": {"count": 0, "dates": []}
                 }
 
             demand = row["total_demand"]
             capacity = row["total_capacity"]
             if 0.8 * capacity <= demand <= capacity:
                 monthly_data[month]["between_80_and_100"]["count"] += 1
-                monthly_data[month]["between_80_and_100"]["dates"].append(
-                    date.strftime("%Y-%m-%d")
-                )
+                monthly_data[month]["between_80_and_100"]["dates"].append(date.strftime("%Y-%m-%d"))
             elif demand > capacity:
                 monthly_data[month]["above_100"]["count"] += 1
-                monthly_data[month]["above_100"]["dates"].append(
-                    date.strftime("%Y-%m-%d")
-                )
+                monthly_data[month]["above_100"]["dates"].append(date.strftime("%Y-%m-%d"))
 
         return jsonify(monthly_data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
+    
 # Fetch total capacity
 @app.route("/total_capacity", methods=["GET"])
 def total_capacity():
@@ -518,49 +463,45 @@ def total_capacity():
         # Get the start_date and end_date from the query parameters
         start_date_str = request.args.get("start_date")
         end_date_str = request.args.get("end_date")
-
+        
         # Parse the dates
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
         end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-
+        
         logger.info(f"Calculating total capacity from {start_date} to {end_date}.")
-
+        
         # SQL query to fetch the required fields
         query = """
         SELECT id, parking_lot_id, capacity, valid_from, valid_to
         FROM public.parking_lot_capacity
         """
-
+        
         # Execute the query and fetch data
         result = get_data(query)
-
+        
         # Convert result to a list of dictionaries
         capacity_data = result.to_dict(orient="records")
-
+        
         # Calculate capacities for each day within the range
         total_capacities = []
         current_date = start_date
         while current_date <= end_date:
             total_capacity = sum(
-                entry["capacity"]
-                for entry in capacity_data
+                entry["capacity"] for entry in capacity_data
                 if entry["valid_from"] <= current_date <= entry["valid_to"]
             )
-            total_capacities.append(
-                {
-                    "day": current_date.strftime("%Y-%m-%d"),
-                    "total_capacity": total_capacity,
-                }
-            )
+            total_capacities.append({
+                "day": current_date.strftime("%Y-%m-%d"),
+                "total_capacity": total_capacity
+            })
             current_date += timedelta(days=1)
-
+        
         logger.info("Total capacities calculated successfully.")
         return jsonify(total_capacities), 200
     except Exception as e:
         logger.error("Failed to calculate total capacities", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
-
+    
 # Check hall availability
 @app.route("/check_hall_availability", methods=["POST"])
 def check_hall_availability():
@@ -1007,7 +948,6 @@ def optimize_parking():
     except Exception as e:
         logger.error("Error during optimization process", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == "__main__":
     app.config["DEBUG"] = True
