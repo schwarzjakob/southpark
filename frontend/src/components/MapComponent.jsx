@@ -12,22 +12,6 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 
-const colors = [
-  "purple",
-  "orange",
-  "cyan",
-  "pink",
-  "teal",
-  "indigo",
-  "lime",
-  "red",
-  "deepOrange",
-  "deepPurple",
-  "lightBlue",
-  "lightGreen",
-  "yellow",
-];
-
 const downwardsOverlays = [
   "C1",
   "C2",
@@ -64,7 +48,6 @@ const MapComponent = ({ selectedDate, zoom }) => {
   const [parkingLots, setParkingLots] = useState([]);
   const [entrances, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
-  const [colorMapping, setColorMapping] = useState({});
 
   useEffect(() => {
     const fetchCoordinates = async () => {
@@ -87,16 +70,9 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const { data } = await axios.get(
           `/api/events_timeline/${selectedDate}`,
         );
-        console.log("Event API:", data);
+        // DEBUG // console.log("Event API:", data);
         if (data) {
           setEvents(data);
-          const colorMap = {};
-          data.forEach((event, index) => {
-            if (!colorMap[event.event_name]) {
-              colorMap[event.event_name] = colors[index % colors.length];
-            }
-          });
-          setColorMapping(colorMap);
         }
       } catch (error) {
         console.error("There was an error fetching the events data!", error);
@@ -200,7 +176,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         parkingLots.includes(name) ||
         event.event_entrance == name
       ) {
-        return `${colorMapping[event.event_name]}`;
+        return `#${event.event_color}`;
       }
     }
     return "gray";
