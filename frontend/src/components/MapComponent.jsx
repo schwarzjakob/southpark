@@ -61,14 +61,14 @@ const MapComponent = ({ selectedDate, zoom }) => {
       } catch (error) {
         console.error(
           "There was an error fetching the coordinates data!",
-          error,
+          error
         );
       }
     };
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/events_timeline/${selectedDate}`,
+          `/api/events_timeline/${selectedDate}`
         );
         // DEBUG // console.log("Event API:", data);
         if (data) {
@@ -100,7 +100,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.assembly_start_date,
         event.assembly_end_date,
         null,
-        "[]",
+        "[]"
       )
     ) {
       return "assembly";
@@ -111,7 +111,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.runtime_start_date,
         event.runtime_end_date,
         null,
-        "[]",
+        "[]"
       )
     ) {
       return "runtime";
@@ -122,7 +122,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.disassembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]",
+        "[]"
       )
     ) {
       return "disassembly";
@@ -134,7 +134,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
     const status = getEventStatus(event, selectedDate);
     const parkingLots = event[`${status}_parking_lots`] || "None";
     const entrances = event.event_entrance || "None";
-    if (type == "hall" && event.halls && event.halls.includes(id)) {
+    if (type === "hall" && event.halls && event.halls.includes(id)) {
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
@@ -143,7 +143,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Allocated Parking Lots: {parkingLots}</p>
         </div>
       );
-    } else if (type == "entrance" && event.event_entrance) {
+    } else if (type === "entrance" && event.event_entrance) {
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
@@ -164,24 +164,6 @@ const MapComponent = ({ selectedDate, zoom }) => {
     }
   };
 
-  const getPolygonColor = (name) => {
-    for (const event of events) {
-      const halls = event.halls ? event.halls.split(", ") : [];
-      const status = getEventStatus(event, selectedDate);
-      const parkingLots = event[`${status}_parking_lots`]
-        ? event[`${status}_parking_lots`].split(", ")
-        : [];
-      if (
-        halls.includes(name) ||
-        parkingLots.includes(name) ||
-        event.event_entrance == name
-      ) {
-        return `#${event.event_color}`;
-      }
-    }
-    return "gray";
-  };
-
   const getPolygonOpacity = (status) => {
     return status === "runtime" ? 0.9 : 0.3;
   };
@@ -193,9 +175,9 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.assembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]",
+        "[]"
       ) ||
-      dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
+      dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
   );
 
   const SetZoomLevel = ({ zoom }) => {
@@ -228,12 +210,11 @@ const MapComponent = ({ selectedDate, zoom }) => {
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
-        const color = getPolygonColor(hall.name);
         const event = filteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false,
+          event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? color : "gray";
+        const fillColor = event ? `#${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
 
         return (
@@ -268,14 +249,13 @@ const MapComponent = ({ selectedDate, zoom }) => {
       {/* Rendering entrances */}
       {entrances.map((entrance) => {
         const transformedCoords = transformCoordinates(entrance.coordinates);
-        const color = getPolygonColor(entrance.name);
         const event = filteredEvents.find((event) =>
           event.event_entrance
             ? event.event_entrance.includes(entrance.name)
-            : false,
+            : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? color : "gray";
+        const fillColor = event ? `#${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
         const popupOffset = downwardsOverlays.includes(entrance.name)
           ? [0, 50]
@@ -313,16 +293,15 @@ const MapComponent = ({ selectedDate, zoom }) => {
       {/* Rendering parking lots */}
       {parkingLots.map((parkingLot) => {
         const transformedCoords = transformCoordinates(parkingLot.coordinates);
-        const color = getPolygonColor(parkingLot.name);
         const event = filteredEvents.find((event) =>
           event[`${getEventStatus(event, selectedDate)}_parking_lots`]
             ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
                 .split(", ")
                 .includes(parkingLot.name)
-            : false,
+            : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? color : "gray";
+        const fillColor = event ? `#${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
         const popupOffset = downwardsOverlays.includes(parkingLot.name)
           ? [0, 80]
