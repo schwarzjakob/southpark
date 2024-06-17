@@ -1,6 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import PropTypes from "prop-types";
-import { forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -236,7 +236,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
   return (
     <MapContainer
       center={[48.1375, 11.702]}
-      zoom={16}
+      zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={false}
       dragging={false}
@@ -248,7 +248,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <SetZoomLevel zoom={15.5} />
+      <SetZoomLevel zoom={zoom} />
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
