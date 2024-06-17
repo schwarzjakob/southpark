@@ -1,3 +1,5 @@
+// src/components/TimelineSlider.jsx
+
 import { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
 import { Box, Button, Typography, useTheme } from "@mui/material";
@@ -29,6 +31,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     selectedDate: PropTypes.string.isRequired,
     setSelectedDate: PropTypes.func.isRequired,
   };
+
 
   const theme = useTheme();
   const [days, setDays] = useState([]);

@@ -1,3 +1,4 @@
+// src/components/EventsAllocationTable.jsx
 import { useEffect, useState } from "react";
 import { DataGrid, GridToolbarExport } from "@mui/x-data-grid";
 import { Box, Typography } from "@mui/material";
@@ -10,7 +11,7 @@ const columns = [
   { field: "demand", headerName: "Demand", flex: 1 },
   { field: "parking_lot", headerName: "Parking Lot", flex: 1 },
   { field: "allocated_capacity", headerName: "Allocated Capacity", flex: 1 },
-  { field: "distance", headerName: "Distance (m)", flex: 1 },
+  { field: "average_distance", headerName: "Average Distance", flex: 1 },
 ];
 
 const EventsAllocationTable = () => {
@@ -21,7 +22,8 @@ const EventsAllocationTable = () => {
     fetch("/api/events_parking_lots_allocation")
       .then((response) => response.json())
       .then((data) => {
-        console.log("Backend data 2:", data);
+        // DEBUG
+        // console.log("Backend data 2:", data);
         setTableData(data);
         setLoading(false);
       })

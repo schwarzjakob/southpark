@@ -1,0 +1,68 @@
+.ant-picker {
+  padding: 0.8rem;
+}
+
+:where(.css-dev-only-do-not-override-3rel02).ant-switch.ant-switch-checked {
+  background-color: var(--color-primary-500) !important;
+}
+
+.switch-label {
+  gap: 10px;
+}
+
+.ant-picker-outlined:hover {
+  border-color: var(--color-primary-500) !important;
+}
+
+.ant-picker-active-bar {
+  background: var(--color-primary-500) !important;
+}
+
+.ant-picker-content thead tr th {
+  color: var(--color-pure-white) !important;
+  padding: 6px !important;
+}
+
+.ant-picker-cell-inner {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+.ant-picker-cell-range-start .ant-picker-cell-inner,
+.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background: var(--color-primary-500) !important;
+}
+
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-in-range:not(
+    .ant-picker-cell-disabled
+  ):before,
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-range-start:not(
+    .ant-picker-cell-disabled
+  ):before,
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-range-end:not(
+    .ant-picker-cell-disabled
+  ):before {
+  background: var(--color-primary-100) !important;
+}
+
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-today
+  .ant-picker-cell-inner::before {
+  border: 1px solid var(--color-primary-500) !important;
+}
+
+.ant-picker-range-separator svg {
+  padding-top: 2px !important;
+  color: var(--color-gray-200);
+}
+
+.switch-container label span {
+  font-size: var(--smallText) !important;
+}
+
+.ant-picker-range-separator {
+  padding-left: 0 !important;
+}

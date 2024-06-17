@@ -1,3 +1,4 @@
+// src/components/MapComponent.jsx
 import "leaflet/dist/leaflet.css";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
@@ -206,7 +207,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <SetZoomLevel zoom={zoom} />
+      <SetZoomLevel zoom={15.5} />
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);

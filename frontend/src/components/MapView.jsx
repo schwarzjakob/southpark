@@ -1,11 +1,15 @@
+// src/components/MapView.jsx
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./MapComponent.jsx";
+import MapIcon from "@mui/icons-material/MapRounded";
 import axios from "axios";
 import "../styles/mapView.css";
 import dayjs from "dayjs";
+
+const TITLE = "Map View";
 
 const MapView = () => {
   const location = useLocation();
@@ -18,7 +22,7 @@ const MapView = () => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/events_timeline/${selectedDate}`,
+          `/api/events_timeline/${selectedDate}`
         );
         setEvents(data);
       } catch (error) {
@@ -39,9 +43,16 @@ const MapView = () => {
           alignContent="center"
           gap={2}
         >
-          <Typography variant="h3" component="h2" gutterBottom>
-            Map View
-          </Typography>
+          <Box className="iconHeadline__container">
+            <MapIcon className="demandTable__icon" />{" "}
+            <Typography
+              variant="h4"
+              gutterBottom
+              className="demandTable__title"
+            >
+              {TITLE}
+            </Typography>
+          </Box>
           <Box
             display="flex"
             alignItems="center"
@@ -76,8 +87,8 @@ const MapView = () => {
         >
           <MapComponent
             selectedDate={selectedDate}
-            zoom={15.5}
             events={events}
+            zoom={15.5}
           />
         </Box>
       </Box>

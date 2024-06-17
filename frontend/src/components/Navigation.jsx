@@ -1,3 +1,4 @@
+// src/components/Navigation.jsx
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import {
@@ -11,13 +12,13 @@ import {
   Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import MapIcon from "@mui/icons-material/Map";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import MapIcon from "@mui/icons-material/MapRounded";
+import TableChartRoundedIcon from "@mui/icons-material/TableChartRounded";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit"; 
+import EditIcon from "@mui/icons-material/Edit";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 
 const Navigation = ({ isOpen, toggleNav }) => {
   return (
@@ -68,7 +69,7 @@ const Navigation = ({ isOpen, toggleNav }) => {
           >
             <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
-                <DashboardIcon />
+                <DashboardRoundedIcon />
               </ListItemIcon>
               <ListItemText primary="Dashboard" />
             </ListItemButton>
@@ -100,7 +101,7 @@ const Navigation = ({ isOpen, toggleNav }) => {
           >
             <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
-                <CalendarTodayIcon />
+                <TableChartRoundedIcon />
               </ListItemIcon>
               <ListItemText primary="Table View" />
             </ListItemButton>

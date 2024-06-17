@@ -66,7 +66,7 @@ function AddEvent() {
       disassembly: { start: "", end: "" },
     },
     halls: [],
-    entrance: "west",
+    entrances: [],
     demands: {
       assembly: {},
       runtime: {},
@@ -361,7 +361,7 @@ function AddEvent() {
 
     if (!eventData.name) missingFields.push("Event name");
     if (!eventData.halls.length) missingFields.push("Halls");
-    if (!eventData.entrance) missingFields.push("Entrance");
+    if (!eventData.entrances.length) missingFields.push("Entrances");
     if (!isValidDate(eventData.dates.assembly.start))
       missingFields.push("Assembly start date");
     if (!isValidDate(eventData.dates.assembly.end))
@@ -489,17 +489,22 @@ function AddEvent() {
             </Grid>
             <Grid item xs={6}>
               <FormControl fullWidth required variant="outlined">
-                <InputLabel>Entrance</InputLabel>
+                <InputLabel>Entrances</InputLabel>
                 <Select
-                  value={eventData.entrance}
+                  multiple
+                  value={eventData.entrances}
                   onChange={(e) =>
-                    setEventData({ ...eventData, entrance: e.target.value })
+                    setEventData({ ...eventData, entrances: e.target.value })
                   }
-                  label="Entrance"
+                  label="Entrances"
+                  renderValue={(selected) => selected.join(", ")}
                 >
                   {Object.entries(entranceLabels).map(([value, label]) => (
                     <MenuItem key={value} value={value}>
-                      {label}
+                      <Checkbox
+                        checked={eventData.entrances.indexOf(value) > -1}
+                      />
+                      <ListItemText primary={label} />
                     </MenuItem>
                   ))}
                 </Select>
