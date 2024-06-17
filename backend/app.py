@@ -1,14 +1,15 @@
-import sys
+import csv
+import logging
 import os
+import sys
+from datetime import datetime, timedelta
+from io import StringIO
+
+import pandas as pd
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
-import logging
-import pandas as pd
-from datetime import datetime, timedelta
-import csv
-from io import StringIO
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -284,6 +285,71 @@ def get_capacity_utilization():
         return jsonify(data), 200
     except Exception as e:
         logger.error("Failed to fetch capacity utilization data", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# Get coordinates of entrances, parking lots, and halls
+@app.route("/coordinates", methods=["GET"])
+def get_coordinates():
+    """
+    Endpoint to retrieve coordinates of entrances, parking lots, and halls.
+
+    Returns:
+        JSON response with the fetched data or an error message if an exception is raised.
+    """
+    try:
+        logger.info("Fetching coordinates data from the database.")
+
+        # Query to fetch halls data
+        query_halls = """
+        SELECT id, name, coordinates
+        FROM public.hall
+        """
+        df_halls = get_data(query_halls)
+        if df_halls.empty:
+            logger.info("No data available for halls.")
+            halls_data = []
+        else:
+            logger.info("Halls data fetched successfully.")
+            halls_data = df_halls.to_dict(orient="records")
+
+        # Query to fetch parking lots data
+        query_parking_lots = """
+        SELECT id, name, coordinates
+        FROM public.parking_lot
+        """
+        df_parking_lots = get_data(query_parking_lots)
+        if df_parking_lots.empty:
+            logger.info("No data available for parking lots.")
+            parking_lots_data = []
+        else:
+            logger.info("Parking lots data fetched successfully.")
+            parking_lots_data = df_parking_lots.to_dict(orient="records")
+
+        # Query to fetch entrances data
+        query_entrances = """
+        SELECT id, name, coordinates
+        FROM public.entrance
+        """
+        df_entrances = get_data(query_entrances)
+        if df_entrances.empty:
+            logger.info("No data available for entrances.")
+            entrances_data = []
+        else:
+            logger.info("Entrances data fetched successfully.")
+            entrances_data = df_entrances.to_dict(orient="records")
+
+        # Combine all data into a single dictionary
+        data = {
+            "halls": halls_data,
+            "parking_lots": parking_lots_data,
+            "entrances": entrances_data,
+        }
+
+        logger.info("Coordinates data fetched successfully.")
+        return jsonify(data), 200
+    except Exception as e:
+        logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 

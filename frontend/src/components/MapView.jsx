@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./MapComponent.jsx";
-import DateInputComponent from "./DateInputComponent.jsx";
 import axios from "axios";
 import "../styles/mapView.css";
 import dayjs from "dayjs";
@@ -49,12 +48,7 @@ const MapView = () => {
             justifyContent="left"
             borderColor="grey.300"
             p={1}
-          >
-            <DateInputComponent
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-            />
-          </Box>
+          ></Box>
         </Box>
         <Box
           className="map__timeline-slider"
@@ -80,7 +74,11 @@ const MapView = () => {
           borderColor="grey.300"
           p={2}
         >
-          <MapComponent selectedDate={selectedDate} events={events} />
+          <MapComponent
+            selectedDate={selectedDate}
+            zoom={15.5}
+            events={events}
+          />
         </Box>
       </Box>
     </Box>
