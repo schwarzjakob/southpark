@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./MapComponent.jsx";
-import DateInputComponent from "./DateInputComponent.jsx";
 import axios from "axios";
 import "../styles/mapView.css";
 import dayjs from "dayjs";
@@ -49,13 +48,7 @@ const MapView = () => {
             justifyContent="left"
             borderColor="grey.300"
             p={1}
-          >
-            {/* Currently give error for MUI date pickers so I comment it out */}
-            {/* <DateInputComponent
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-            /> */}
-          </Box>
+          ></Box>
         </Box>
         <Box
           className="map__timeline-slider"
