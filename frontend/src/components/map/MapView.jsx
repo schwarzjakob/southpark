@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
-import MapComponent from "./MapComponent.jsx";
+import MapComponent from "./Map.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
 import axios from "axios";
-import "../styles/mapView.css";
+import "./styles/mapView.css";
 import dayjs from "dayjs";
 
 const TITLE = "Map View";

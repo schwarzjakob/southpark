@@ -1,7 +1,7 @@
 // src/components/MobileWarning.jsx
 import { Typography, Box, IconButton } from "@mui/material";
 import ScreenshotMonitorIcon from "@mui/icons-material/ScreenshotMonitor";
-import logo from "../assets/logo.svg";
+import logo from "../../assets/logo.svg";
 
 const LOGO_WIDTH = "150px";
 const ICON_FONT_SIZE = 60;

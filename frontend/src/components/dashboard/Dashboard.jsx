@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Paper, Grid, Typography, Box } from "@mui/material";
 import axios from "axios";
 import CapacityUtilization from "./CapacityUtilization";
-import LoadingAnimation from "../LoadingAnimation";
-import MonthlyDemandTable from "./MonthlyDemandTable";
-import InfoTextComponent from "../InfoTextComponent.jsx";
+import LoadingAnimation from "../common/LoadingAnimation.jsx";
+import MonthlyDemandTable from "./criticalDaysTable.jsx";
+import InfoTextComponent from "../common/InfoText.jsx";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import dayjs from "dayjs";
 

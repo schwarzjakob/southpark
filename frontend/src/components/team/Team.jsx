@@ -11,11 +11,11 @@ import {
 } from "@mui/material";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import EmailIcon from "@mui/icons-material/Email";
-import "../styles/TeamComponent.css";
-import tolkien from "../assets/team/tolkien.jpeg";
-import eric from "../assets/team/eric.jpeg";
-import tuong from "../assets/team/tuong.jpeg";
-import kenny from "../assets/team/kenny.jpeg";
+import "./styles/TeamComponent.css";
+import tolkien from "../../assets/team/tolkien.jpeg";
+import eric from "../../assets/team/eric.jpeg";
+import tuong from "../../assets/team/tuong.jpeg";
+import kenny from "../../assets/team/kenny.jpeg";
 
 const CONTENT = [
   {

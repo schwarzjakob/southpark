@@ -16,7 +16,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import DateRangePicker from "./DateRangePickerDashboard";
+import DateRangePicker from "../controls/DateRangePicker";
 import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
 import PropTypes from "prop-types";
 
@@ -491,6 +491,15 @@ const CapacityUtilization = ({
         <DateRangePicker
           dateRange={dateRange}
           setDateRange={handleDateRangeChange}
+          enabledPresets={[
+            "currentWeek",
+            "nextWeek",
+            "currentMonth",
+            "nextMonth",
+            "thisYear",
+            "nextYear",
+            "months",
+          ]}
         />
         <Box
           display="flex"

@@ -21,9 +21,9 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import BackupTableOutlinedIcon from "@mui/icons-material/BackupTableOutlined";
 import CheckIcon from "@mui/icons-material/Check";
-import InfoHoverComponent from "../InfoHoverComponent.jsx";
-import InfoTextComponent from "../InfoTextComponent.jsx";
-import "../../styles/demandTable.css";
+import InfoHoverComponent from "../common/InfoHover.jsx";
+import InfoTextComponent from "../common/InfoText.jsx";
+import "./styles/criticalDaysTable.css";
 
 const TITLE = "Capacity Utilization Heatmap";
 const LABEL_OVER100_TITLE = "TAKE ACTION";
