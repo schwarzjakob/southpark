@@ -141,11 +141,7 @@ const MonthlyDemandTable = ({
                   >
                     <ArrowBackIosIcon fontSize="small" />
                   </IconButton>
-                  <Typography
-                    variant="h5"
-                    style={{ fontWeight: "bold" }}
-                    className="demandTable__monthLabel"
-                  >
+                  <Typography variant="h6" className="demandTable__monthLabel">
                     {selectedYear}
                   </Typography>
                   <IconButton
@@ -174,7 +170,6 @@ const MonthlyDemandTable = ({
                 >
                   <Typography
                     variant="body1"
-                    style={{ fontWeight: "bold" }}
                     className="demandTable__monthLabel"
                   >
                     {month}
@@ -190,7 +185,7 @@ const MonthlyDemandTable = ({
                   <WarningIcon className="demandTable__warningIcon" />
                   <Box className="demandTable__itemFont">
                     <Typography
-                      variant="h5"
+                      variant="h6"
                       style={{ fontWeight: "bold" }}
                       className="demandTable__itemHeader"
                     >
@@ -254,7 +249,7 @@ const MonthlyDemandTable = ({
                   <VisibilityIcon className="demandTable__visibilityIcon" />
                   <Box className="demandTable__itemFont">
                     <Typography
-                      variant="h5"
+                      variant="h6"
                       style={{ fontWeight: "bold" }}
                       className="demandTable__itemHeader"
                     >

@@ -3,19 +3,20 @@ import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 
-import Header from "./components/Header.jsx";
-import Navigation from "./components/Navigation.jsx";
-import Footer from "./components/Footer.jsx";
+import Header from "./components/common/Header.jsx";
+import Navigation from "./components/common/Navigation.jsx";
+import Footer from "./components/common/Footer.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
-import MapView from "./components/MapView.jsx";
+import MapView from "./components/map/MapView.jsx";
 import AddEvent from "./components/events/AddEvent.jsx";
-import EditEvent from "./components/EditEvent.jsx";
-import ImportCSV from "./components/ImportCSV.jsx";
-import InputDemands from "./components/InputDemands.jsx";
-import EventsAllocationTable from "./components/EventsAllocationTable.jsx";
-import Team from "./components/Team.jsx";
-import MobileWarning from "./components/MobileWarning.jsx";
+import EditEvent from "./components/events/EditEvent.jsx";
+import ImportCSV from "./components/import/ImportCSV.jsx";
+import InputDemands from "./components/events/InputDemands.jsx";
+import EventsAllocationTable from "./components/events/EventsAllocationTable.jsx";
+import Team from "./components/team/Team.jsx";
+import MobileWarning from "./components/common/MobileWarning.jsx";
 import theme from "./styles/muiCustomTheme";
+import "./styles/antTheme.css";
 
 function App() {
   const [isNavOpen, setNavOpen] = useState(false);

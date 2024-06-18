@@ -11,7 +11,6 @@
 .demandTable__subitem p:hover {
   margin-top: auto;
   margin-bottom: auto;
-  transform: scale(1.01);
   transition: transform 0.3s;
 }
 
@@ -20,6 +19,14 @@
 .ArrowBackIosIcon,
 .ArrowForwardIosIcon {
   color: var(--color-pure-white) !important;
+}
+
+.demandTable__subitem p {
+  font-size: 1rem;
+}
+
+.demandTable__monthLabel {
+  font-size: 0.9rem;
 }
 
 .demandTable__headerCell-nav {
@@ -38,9 +45,27 @@
   transition: background-color 0.3s, color 0.3s;
 }
 
-.demandTable__headerCell-month:hover,
-.demandTable__subitem:hover {
+.demandTable__headerCell-month:hover {
   background-color: var(--color-primary-400);
+}
+
+.demandTable__headerCell-month:hover {
+  background-color: var(--color-primary-400);
+}
+
+.demandTable__headerCell-month:hover .demandTable__monthLabel {
+  transform: scale(1.1);
+}
+
+.demandTable__monthLabel,
+.demandTable__subitem svg,
+.demandTable__subitem p {
+  transition: transform 0.3s ease;
+}
+
+.demandTable__subitem:hover svg,
+.demandTable__subitem:hover .demandTable__subitem p {
+  transform: scale(1.2);
 }
 
 .demandTable__itemCell p {

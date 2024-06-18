@@ -181,11 +181,11 @@
 }
 
 .arrow-button.left {
-  left: -40px;
+  left: -20px;
 }
 
 .arrow-button.right {
-  right: 20px;
+  right: 55px;
 }
 
 .timeline-arrows-container {
@@ -231,4 +231,23 @@
 
 .timeline-date:not(.selected):nth-child(2n) {
   background-color: var(--color-gray-100) !important;
+}
+
+.status-assembly {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.status-disassembly {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.timeline-date.selected {
+  transform: scale(1.05);
+}
+
+.tags-parking-lots {
+  background-color: var(--color-primary);
+  color: white;
 }

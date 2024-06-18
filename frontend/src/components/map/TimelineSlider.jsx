@@ -1,8 +1,6 @@
-// src/components/TimelineSlider.jsx
-
 import { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
-import { Box, Button, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import axios from "axios";
@@ -31,7 +29,6 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     selectedDate: PropTypes.string.isRequired,
     setSelectedDate: PropTypes.func.isRequired,
   };
-
 
   const theme = useTheme();
   const [days, setDays] = useState([]);
@@ -235,7 +232,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     startIndex,
     endIndex,
     opacity,
-    labelText
+    labelText,
+    additionalClass = ""
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
@@ -244,7 +242,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     return (
       <Box
         key={`${event.event_id}-${startIndex}`}
-        className="event-row"
+        className={`event-row ${additionalClass}`}
         sx={{
           height: "22px",
           marginBottom: "2px",
@@ -256,7 +254,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         }}
       >
         <Box
-          className="event-bar"
+          className={`event-bar ${additionalClass}`}
           sx={{
             backgroundColor: event.event_color,
             opacity: opacity,
@@ -312,7 +310,6 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
 
     // Sort events by row to maintain consistent display order
     filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
-
     return filledRows.map((event, index) => {
       if (!event) {
         return (
@@ -334,16 +331,19 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           startDate: event.assembly_start_date,
           endDate: event.assembly_end_date,
           opacity: 0.05,
+          className: "status-assembly",
         },
         {
           startDate: event.runtime_start_date,
           endDate: event.runtime_end_date,
           opacity: 1,
+          className: "",
         },
         {
           startDate: event.disassembly_start_date,
           endDate: event.disassembly_end_date,
           opacity: 0.05,
+          className: "status-disassembly",
         },
       ];
 
@@ -367,7 +367,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           startIndex,
           endIndex,
           phase.opacity,
-          labelText
+          labelText,
+          phase.className
         );
       });
 
@@ -378,12 +379,12 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   return (
     <Box className="timeline-wrapper">
       <Box className="timeline-arrows-container">
-        <Button onClick={handleLeftClick} className="arrow-button left">
+        <IconButton onClick={handleLeftClick} className="arrow-button left">
           <ArrowBackIosIcon />
-        </Button>
-        <Button onClick={handleRightClick} className="arrow-button right">
+        </IconButton>
+        <IconButton onClick={handleRightClick} className="arrow-button right">
           <ArrowForwardIosIcon />
-        </Button>
+        </IconButton>
       </Box>
       <Box
         className="timeline-container"
@@ -417,6 +418,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
                 height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
                 position: "absolute",
                 left: -BUFFER * 45 - 30,
+                transition: "left 0.3s ease-in-out",
               }}
             >
               {days.map((day) => (
