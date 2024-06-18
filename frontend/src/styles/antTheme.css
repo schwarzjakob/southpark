@@ -2,8 +2,7 @@
   padding: 0.8rem;
 }
 
-:where(.css-dev-only-do-not-override-3rel02).ant-switch.ant-switch-checked {
-  background-color: var(--color-primary-500) !important;
+:where(.css-dev-only-do-not-override-zg0ahe).ant-switch.ant-switch-checked {
 }
 
 .switch-label {

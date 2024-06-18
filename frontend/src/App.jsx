@@ -8,7 +8,7 @@ import Navigation from "./components/Navigation.jsx";
 import Footer from "./components/Footer.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
 import MapView from "./components/MapView.jsx";
-import AddEvent from "./components/AddEvent.jsx";
+import AddEvent from "./components/events/AddEvent.jsx";
 import EditEvent from "./components/EditEvent.jsx";
 import ImportCSV from "./components/ImportCSV.jsx";
 import InputDemands from "./components/InputDemands.jsx";
