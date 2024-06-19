@@ -7,6 +7,7 @@ import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import WcRoundedIcon from "@mui/icons-material/WcRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
+import ParkingSpaceCapacitysTable from "./ParkingSpaceCapacityTable";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Parking Space Details";
@@ -64,7 +65,7 @@ const ParkingSpace = () => {
               <Box className="parking-lot-box">{parkingSpace.name}</Box>
             </Box>
             <Box>
-              <Typography variant="body1">
+              <Typography variant="body1" c>
                 {parkingSpace.external ? "External" : "Internal"}
               </Typography>
             </Box>
@@ -73,7 +74,7 @@ const ParkingSpace = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate(`/edit_parking_space/${id}`)}
+              onClick={() => navigate(`/parking_space/edit/${id}`)}
             >
               Edit
             </Button>
@@ -98,6 +99,7 @@ const ParkingSpace = () => {
           </Typography>
         </Box>
       </Paper>
+      <ParkingSpaceCapacitysTable parkingLotId={id} />
     </Box>
   );
 };

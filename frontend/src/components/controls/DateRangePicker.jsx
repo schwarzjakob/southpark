@@ -1,17 +1,29 @@
 // src/components/DateRangePicker.jsx
+import { useEffect } from "react";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import { Box } from "@mui/material";
 import PropTypes from "prop-types";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import clsx from "clsx";
 
 const { RangePicker } = DatePicker;
 
-const DateRangePicker = ({ dateRange, setDateRange, enabledPresets = [] }) => {
+const DateRangePicker = ({
+  dateRange,
+  setDateRange,
+  enabledPresets = [],
+  start,
+  end,
+  width100 = false,
+}) => {
   DateRangePicker.propTypes = {
     dateRange: PropTypes.array.isRequired,
     setDateRange: PropTypes.func.isRequired,
     enabledPresets: PropTypes.arrayOf(PropTypes.string),
+    start: PropTypes.string,
+    end: PropTypes.string,
+    width100: PropTypes.bool,
   };
 
   const currentMonth = dayjs().month();
@@ -97,18 +109,27 @@ const DateRangePicker = ({ dateRange, setDateRange, enabledPresets = [] }) => {
       : []
   );
 
+  // Update the dateRange state if start and end are provided
+  useEffect(() => {
+    if (start && end) {
+      setDateRange([dayjs(start), dayjs(end)]);
+    }
+  }, [start, end, setDateRange]);
+
   return (
     <Box
       display="flex"
       justifyContent="space-between"
       alignItems="center"
-      className="date-picker-container"
+      className={clsx("date-picker-container", {
+        "date-picker-container-form": width100,
+      })}
     >
       <RangePicker
         presets={presets}
         value={dateRange}
         onChange={(dates) => setDateRange(dates)}
-        className="date-picker"
+        className={clsx("date-picker", { "ant-picker-form": width100 })}
         format="DD.MM.YYYY"
         locale={{
           lang: {

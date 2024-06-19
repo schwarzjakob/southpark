@@ -41,3 +41,6 @@
   margin-right: 10px;
 }
 
+.input-container__label-utilization {
+  left: 35px !important;
+}

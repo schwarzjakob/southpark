@@ -292,7 +292,14 @@ and we don't want to put the style on the icon */
   border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
 }
+
+.form-headline-button__container {
+  display: flex;
+  justify-content: space-between;
+}
+
 .form {
   width: 90vw;
   max-width: var(--fixed-width);
@@ -347,6 +354,14 @@ and we don't want to put the style on the icon */
   letter-spacing: var(--letterSpacing);
   text-transform: capitalize;
   font-weight: bold;
+}
+
+.ant-picker-form,
+.date-picker-container-form {
+  width: 100%;
+}
+.ant-picker-form ant-picker-input {
+  width: fit-content;
 }
 /* loading */
 
@@ -1403,6 +1418,3 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   font-size: var(--smallText) !important;
 }
 
-.ant-picker-range-separator {
-  padding-left: 0 !important;
-}

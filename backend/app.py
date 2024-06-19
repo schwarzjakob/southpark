@@ -1185,72 +1185,17 @@ def get_parking_space_capacities(parking_lot_id):
         return jsonify({"error": str(e)}), 500
 
 # Add parking space capacity
-@app.route("/add_parking_space_capacities", methods=["POST"])
-def add_parking_space_capacities():
+@app.route("/edit_parking_space_capacity/<int:capacity_id>", methods=["PUT"])
+def edit_parking_space_capacity(capacity_id):
     """
-    Endpoint to add a new parking space capacity.
+    Endpoint to edit a capacity entry by its ID.
     """
+    data = request.get_json()
     try:
-        data = request.json
-        parking_lot_id = data.get("parking_lot_id")
-        capacity = data.get("capacity")
-        utilization_type = data.get("utilization_type")
-        truck_limit = data.get("truck_limit")
-        bus_limit = data.get("bus_limit")
-        valid_from = data.get("valid_from")
-        valid_to = data.get("valid_to")
-
-        if not (parking_lot_id and capacity and utilization_type and truck_limit and bus_limit and valid_from and valid_to):
-            return jsonify({"error": "All fields are required"}), 400
-
-        query = """
-        INSERT INTO public.parking_lot_capacity (parking_lot_id, capacity, utilization_type, truck_limit, bus_limit, valid_from, valid_to)
-        VALUES (:parking_lot_id, :capacity, :utilization_type, :truck_limit, :bus_limit, :valid_from, :valid_to)
-        RETURNING id
-        """
-        params = {
-            "parking_lot_id": parking_lot_id,
-            "capacity": capacity,
-            "utilization_type": utilization_type,
-            "truck_limit": truck_limit,
-            "bus_limit": bus_limit,
-            "valid_from": valid_from,
-            "valid_to": valid_to
-        }
-
-        with engine.begin() as connection:
-            result = connection.execute(text(query), params)
-            capacity_id = result.fetchone()[0]
-
-        return jsonify({"message": "Parking space capacity added successfully", "id": capacity_id}), 201
-    except Exception as e:
-        logger.error("Failed to add parking space capacity", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-# Edit parking space capacity
-@app.route("/edit_parking_space_capacities", methods=["PUT"])
-def edit_parking_space_capacities():
-    """
-    Endpoint to edit an existing parking space capacity.
-    """
-    try:
-        data = request.json
-        capacity_id = data.get("id")
-        parking_lot_id = data.get("parking_lot_id")
-        capacity = data.get("capacity")
-        utilization_type = data.get("utilization_type")
-        truck_limit = data.get("truck_limit")
-        bus_limit = data.get("bus_limit")
-        valid_from = data.get("valid_from")
-        valid_to = data.get("valid_to")
-
-        if not (capacity_id and parking_lot_id and capacity and utilization_type and truck_limit and bus_limit and valid_from and valid_to):
-            return jsonify({"error": "All fields are required"}), 400
-
+        logger.info(f"Editing capacity with ID: {capacity_id}")
         query = """
         UPDATE public.parking_lot_capacity
-        SET parking_lot_id = :parking_lot_id,
-            capacity = :capacity,
+        SET capacity = :capacity,
             utilization_type = :utilization_type,
             truck_limit = :truck_limit,
             bus_limit = :bus_limit,
@@ -1259,23 +1204,49 @@ def edit_parking_space_capacities():
         WHERE id = :capacity_id
         """
         params = {
-            "capacity_id": capacity_id,
-            "parking_lot_id": parking_lot_id,
-            "capacity": capacity,
-            "utilization_type": utilization_type,
-            "truck_limit": truck_limit,
-            "bus_limit": bus_limit,
-            "valid_from": valid_from,
-            "valid_to": valid_to
+            "capacity": data["capacity"],
+            "utilization_type": data["utilization_type"],
+            "truck_limit": data["truck_limit"],
+            "bus_limit": data["bus_limit"],
+            "valid_from": data["valid_from"],
+            "valid_to": data["valid_to"],
+            "capacity_id": capacity_id
         }
 
-        with engine.begin() as connection:
+        with engine.connect() as connection:
             connection.execute(text(query), params)
+            connection.commit()
 
-        return jsonify({"message": "Parking space capacity updated successfully"}), 200
+        logger.info("Capacity edited successfully.")
+        return jsonify({"message": "Capacity updated successfully"}), 200
     except Exception as e:
-        logger.error("Failed to update parking space capacity", exc_info=True)
+        logger.error("Failed to edit capacity", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+# Delete parking space capacity
+@app.route("/delete_parking_space_capacity/<int:capacity_id>", methods=["DELETE"])
+def delete_parking_space_capacity(capacity_id):
+    """
+    Endpoint to delete a capacity entry by its ID.
+    """
+    try:
+        logger.info(f"Deleting capacity with ID: {capacity_id}")
+        query = """
+        DELETE FROM public.parking_lot_capacity
+        WHERE id = :capacity_id
+        """
+        params = {"capacity_id": capacity_id}
+
+        with engine.connect() as connection:
+            connection.execute(text(query), params)
+            connection.commit()
+
+        logger.info("Capacity deleted successfully.")
+        return jsonify({"message": "Capacity deleted successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to delete capacity", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+    
 
 if __name__ == "__main__":
     app.config["DEBUG"] = True

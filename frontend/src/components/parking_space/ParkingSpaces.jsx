@@ -91,24 +91,25 @@ const ParkingSpaces = () => {
 
   return (
     <Box className="form-width">
-      <Box className="iconHeadline__container">
-        <GarageIcon className="demandTable__icon" />
-        <Typography variant="h4" gutterBottom className="demandTable__title">
-          {TITLE}
-        </Typography>
-      </Box>
-      <Box>
-        <Link to="/add_parking_space" style={{ textDecoration: "none" }}>
+      <Box className="form-headline-button__container">
+        <Box className="iconHeadline__container">
+          <GarageIcon className="demandTable__icon" />
+          <Typography variant="h4" gutterBottom className="demandTable__title">
+            {TITLE}
+          </Typography>
+        </Box>
+        <Link to="/parking_space/add" style={{ textDecoration: "none" }}>
           <Button
             variant="contained"
             color="secondary"
             style={{ marginBottom: "1rem", float: "right" }}
           >
-            {" "}
             <AddIcon className="addIcon" />
             Add Parking Space
           </Button>
         </Link>
+      </Box>
+      <Box>
         <TableContainer className="parkingSpaces-container" component={Paper}>
           <Table className="parkingSpaces-table">
             <TableHead className="parkingSpaces-table__header">
