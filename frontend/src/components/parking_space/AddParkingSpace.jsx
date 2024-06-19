@@ -20,6 +20,9 @@ import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import AddBoxIcon from "@mui/icons-material/AddBox";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Add Parking Lot";
@@ -46,18 +49,27 @@ const AddParkingSpace = () => {
   };
 
   const handleSelectChange = (name) => (event) => {
-    setParkingSpace({
-      ...parkingSpace,
-      [name]: event.target.value,
-    });
+    const value = event.target.value;
+    if (name === "external") {
+      setParkingSpace({
+        ...parkingSpace,
+        [name]: value === "External",
+      });
+    } else {
+      setParkingSpace({
+        ...parkingSpace,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post("/api/add_parking_space", parkingSpace);
-      console.log("Parking space added:", response.data);
-      navigate(`/parking_space?id=${response.data.id}`);
+      const parkingLotId = response.data.id;
+      console.log("Parking space added:", parkingLotId);
+      navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setError("Parking space with this name already exists.");
@@ -168,8 +180,22 @@ const AddParkingSpace = () => {
               />
             </Box>
           </FormControl>
-          <Box textAlign="right">
-            <Button type="submit" variant="contained" color="primary">
+          <Box display="flex" justifyContent="space-between" mt={2}>
+            <Button
+              className="back-button"
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate(`/parking_spaces/`)}
+            >
+              Back
+            </Button>{" "}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              startIcon={<SaveRoundedIcon />}
+            >
               Save
             </Button>
           </Box>

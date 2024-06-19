@@ -21,7 +21,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import axios from "axios";
-import InputMatrix from "./InputDemandMatrix";
 
 const phaseLabels = {
   assembly: "Assembly",
@@ -739,7 +738,6 @@ function AddEvent() {
           <span dangerouslySetInnerHTML={{ __html: feedback.message }} />
         </Alert>
       </Snackbar>
-      <InputMatrix y={5} />{" "}
     </form>
   );
 }

@@ -20,6 +20,9 @@ import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Edit Parking Lot";
@@ -73,9 +76,10 @@ const EditParkingSpace = () => {
   };
 
   const handleSelectChange = (name) => (event) => {
+    const value = event.target.value;
     setParkingSpace({
       ...parkingSpace,
-      [name]: event.target.value,
+      [name]: value,
     });
   };
 
@@ -133,11 +137,11 @@ const EditParkingSpace = () => {
               <FormControl fullWidth>
                 <InputLabel>Type</InputLabel>
                 <Select
-                  value={parkingSpace.external ? "External" : "Internal"}
+                  value={parkingSpace.external.toString()}
                   onChange={handleSelectChange("external")}
                 >
-                  <MenuItem value="Internal">Internal</MenuItem>
-                  <MenuItem value="External">External</MenuItem>
+                  <MenuItem value="false">Internal</MenuItem>
+                  <MenuItem value="true">External</MenuItem>
                 </Select>
               </FormControl>
             </Box>
@@ -196,8 +200,22 @@ const EditParkingSpace = () => {
               />
             </Box>
           </FormControl>
-          <Box textAlign="right">
-            <Button type="submit" variant="contained" color="primary">
+          <Box display="flex" justifyContent="space-between" mt={2}>
+            <Button
+              className="back-button"
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              startIcon={<SaveRoundedIcon />}
+            >
               Save
             </Button>
           </Box>

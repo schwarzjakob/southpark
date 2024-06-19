@@ -77,6 +77,14 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     return 0;
   });
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}.${day}.${year}`;
+  };
+
   return (
     <Box className="capacitiesTable-container">
       <Box className="form-headline-button__container">
@@ -87,7 +95,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
           </Typography>
         </Box>
         <Link
-          to={`/add_capacity?parkinglot=${parkingLotId}`}
+          to={`/capacity/add?parkinglotId=${parkingLotId}`}
           style={{ textDecoration: "none" }}
         >
           <Button
@@ -218,25 +226,33 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
             </TableHead>
             <TableBody>
               {sortedCapacities.map((capacity) => (
-                <TableRow key={capacity.id}>
+                <TableRow
+                  key={capacity.id}
+                  hover
+                  onClick={() =>
+                    navigate(
+                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
+                    )
+                  }
+                  style={{ cursor: "pointer" }}
+                >
                   <TableCell>{capacity.id}</TableCell>
+                  <TableCell>{formatDate(capacity.valid_from)}</TableCell>
+                  <TableCell>{formatDate(capacity.valid_to)}</TableCell>
                   <TableCell>
-                    {new Date(capacity.valid_from).toLocaleDateString()}
+                    {capacity.utilization_type.toUpperCase()}
                   </TableCell>
-                  <TableCell>
-                    {new Date(capacity.valid_to).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{capacity.utilization_type}</TableCell>
                   <TableCell>{capacity.capacity}</TableCell>
                   <TableCell>{capacity.bus_limit}</TableCell>
                   <TableCell>{capacity.truck_limit}</TableCell>
                   <TableCell>
                     <IconButton
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation();
                         navigate(
                           `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
-                        )
-                      }
+                        );
+                      }}
                       edge="start"
                       size="small"
                     >

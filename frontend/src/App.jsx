@@ -19,7 +19,8 @@ import ParkingSpace from "./components/parking_space/ParkingSpace.jsx";
 import Team from "./components/team/Team.jsx";
 import AddParkingSpace from "./components/parking_space/AddParkingSpace.jsx";
 import EditParkingSpace from "./components/parking_space/EditParkingSpace.jsx";
-import EditParkingSpaceCapacity from "./components/parking_space/EditCapacity.jsx";
+import EditCapacity from "./components/parking_space/EditCapacity.jsx";
+import AddCapacity from "./components/parking_space/AddCapacity.jsx";
 
 function App() {
   const [isNavOpen, setNavOpen] = useState(false);
@@ -76,10 +77,8 @@ function App() {
                   element={<EditParkingSpace />}
                 />
                 {/* Capacity Routes*/}
-                <Route
-                  path="/capacity/edit"
-                  element={<EditParkingSpaceCapacity />}
-                />
+                <Route path="/capacity/edit" element={<EditCapacity />} />
+                <Route path="/capacity/add" element={<AddCapacity />} />
               </Routes>
             </div>
             <Footer />

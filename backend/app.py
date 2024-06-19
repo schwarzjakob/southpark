@@ -1011,6 +1011,43 @@ def get_parking_spaces():
     except Exception as e:
         logger.error("Failed to fetch parking spaces", exc_info=True)
         return jsonify({"error": str(e)}), 500
+    
+# Fetch parking space by ID
+@app.route("/get_parking_space/<int:id>", methods=["GET"])
+def get_parking_space(id):
+    """
+    Endpoint to get a parking space by ID.
+    """
+    try:
+        with engine.begin() as connection:
+            query = """
+            SELECT id, name, service_toilets, surface_material, service_shelter, pricing, external, coordinates
+            FROM public.parking_lot
+            WHERE id = :id
+            """
+            result = connection.execute(text(query), {"id": id})
+            parking_space = result.fetchone()
+            
+            if parking_space is None:
+                logger.info(f"Parking space with ID {id} not found.")
+                return jsonify({"error": "Parking space not found."}), 404
+            
+            # Convert SQLAlchemy result to a dictionary
+            parking_space_dict = {
+                "id": parking_space[0],
+                "name": parking_space[1],
+                "service_toilets": parking_space[2],
+                "surface_material": parking_space[3],
+                "service_shelter": parking_space[4],
+                "pricing": parking_space[5],
+                "external": parking_space[6],
+                "coordinates": parking_space[7]
+            }
+
+            return jsonify(parking_space_dict), 200
+    except Exception as e:
+        logger.error(f"Failed to fetch parking space with ID {id}: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 
 # Add parking space
@@ -1064,43 +1101,6 @@ def add_parking_space():
             return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
         logger.error("Failed to add parking space", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-    
-# Fetch parking space by ID
-@app.route("/get_parking_space/<int:id>", methods=["GET"])
-def get_parking_space(id):
-    """
-    Endpoint to get a parking space by ID.
-    """
-    try:
-        with engine.begin() as connection:
-            query = """
-            SELECT id, name, service_toilets, surface_material, service_shelter, pricing, external, coordinates
-            FROM public.parking_lot
-            WHERE id = :id
-            """
-            result = connection.execute(text(query), {"id": id})
-            parking_space = result.fetchone()
-            
-            if parking_space is None:
-                logger.info(f"Parking space with ID {id} not found.")
-                return jsonify({"error": "Parking space not found."}), 404
-            
-            # Convert SQLAlchemy result to a dictionary
-            parking_space_dict = {
-                "id": parking_space[0],
-                "name": parking_space[1],
-                "service_toilets": parking_space[2],
-                "surface_material": parking_space[3],
-                "service_shelter": parking_space[4],
-                "pricing": parking_space[5],
-                "external": parking_space[6],
-                "coordinates": parking_space[7]
-            }
-
-            return jsonify(parking_space_dict), 200
-    except Exception as e:
-        logger.error(f"Failed to fetch parking space with ID {id}: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 # Edit parking space
@@ -1184,7 +1184,64 @@ def get_parking_space_capacities(parking_lot_id):
         logger.error("Failed to fetch capacities", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+
 # Add parking space capacity
+@app.route("/add_parking_space_capacity/<int:parking_lot_id>", methods=["POST"])
+def add_parking_space_capacity(parking_lot_id):
+    """
+    Endpoint to add a new capacity entry for a parking lot.
+    """
+    try:
+        data = request.json
+        capacity = data.get("capacity")
+        utilization_type = data.get("utilization_type")
+        truck_limit = data.get("truck_limit")
+        bus_limit = data.get("bus_limit")
+        valid_from = data.get("valid_from")
+        valid_to = data.get("valid_to")
+
+        with engine.begin() as connection:
+            # Fetch the maximum existing ID
+            max_id_result = connection.execute(text("SELECT MAX(id) FROM public.parking_lot_capacity"))
+            max_id = max_id_result.scalar() or 0
+            new_id = max_id + 1
+
+            query = """
+            INSERT INTO public.parking_lot_capacity (
+                id, parking_lot_id, capacity, utilization_type, truck_limit, bus_limit, valid_from, valid_to
+            ) VALUES (
+                :id, :parking_lot_id, :capacity, :utilization_type, :truck_limit, :bus_limit, :valid_from, :valid_to
+            )
+            RETURNING id
+            """
+            params = {
+                "id": new_id,
+                "parking_lot_id": parking_lot_id,
+                "capacity": capacity,
+                "utilization_type": utilization_type,
+                "truck_limit": truck_limit,
+                "bus_limit": bus_limit,
+                "valid_from": valid_from,
+                "valid_to": valid_to
+            }
+
+            result = connection.execute(text(query), params)
+            capacity_id = result.fetchone()[0]
+
+        return jsonify({"message": "New capacity added successfully", "id": capacity_id}), 201
+    except IntegrityError as e:
+        if 'unique constraint' in str(e.orig):
+            logger.error("Failed to add new capacity: duplicate entry", exc_info=True)
+            return jsonify({"error": "A capacity entry with this ID already exists."}), 400
+        else:
+            logger.error("Failed to add new capacity: integrity error", exc_info=True)
+            return jsonify({"error": "Integrity error occurred."}), 400
+    except Exception as e:
+        logger.error("Failed to add new capacity", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# Edit parking space capacity
 @app.route("/edit_parking_space_capacity/<int:capacity_id>", methods=["PUT"])
 def edit_parking_space_capacity(capacity_id):
     """

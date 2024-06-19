@@ -27,8 +27,9 @@ import {
   DeleteForeverRounded as DeleteForeverRoundedIcon,
   SaveRounded as SaveRoundedIcon,
 } from "@mui/icons-material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBackRounded";
 import dayjs from "dayjs";
-import DateRangePicker from "../controls/DateRangePicker"; // Ensure this path is correct
+import DateRangePicker from "../controls/DateRangePicker";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Edit Capacity";
@@ -304,6 +305,15 @@ const EditParkingSpaceCapacity = () => {
             </Box>
           </FormControl>
           <Box display="flex" justifyContent="space-between" mt={2}>
+            <Button
+              className="back-button"
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate(`/parking_space/${parkingLotId}`)}
+            >
+              Back
+            </Button>
             <Button
               variant="contained"
               color="secondary"

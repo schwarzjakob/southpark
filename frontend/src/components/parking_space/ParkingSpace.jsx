@@ -8,6 +8,9 @@ import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import WcRoundedIcon from "@mui/icons-material/WcRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
 import ParkingSpaceCapacitysTable from "./ParkingSpaceCapacityTable";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Parking Space Details";
@@ -65,7 +68,7 @@ const ParkingSpace = () => {
               <Box className="parking-lot-box">{parkingSpace.name}</Box>
             </Box>
             <Box>
-              <Typography variant="body1" c>
+              <Typography variant="body1" fontStyle="italic">
                 {parkingSpace.external ? "External" : "Internal"}
               </Typography>
             </Box>
@@ -73,10 +76,13 @@ const ParkingSpace = () => {
           <Box>
             <Button
               variant="contained"
-              color="primary"
+              color="secondary"
               onClick={() => navigate(`/parking_space/edit/${id}`)}
             >
-              Edit
+              <Box display="flex" alignItems="center">
+                <EditRoundedIcon className="icon__edit-parking-space" />
+              </Box>
+              Edit Parking Space
             </Button>
           </Box>
         </Box>
@@ -100,6 +106,17 @@ const ParkingSpace = () => {
         </Box>
       </Paper>
       <ParkingSpaceCapacitysTable parkingLotId={id} />
+      <Box display="flex" justifyContent="space-between" mt={2}>
+        <Button
+          className="back-button"
+          variant="outlined"
+          color="primary"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(`/parking_spaces/`)}
+        >
+          Back
+        </Button>
+      </Box>
     </Box>
   );
 };

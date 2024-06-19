@@ -44,3 +44,7 @@
 .input-container__label-utilization {
   left: 35px !important;
 }
+
+.icon__edit-parking-space {
+  padding-right: 5px;
+}
