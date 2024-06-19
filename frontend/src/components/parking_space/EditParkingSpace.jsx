@@ -1,20 +1,19 @@
-import { useState } from "react";
+// src/components/parking_space/EditParkingSpace.jsx
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Input, Switch, Select, Form } from "antd";
 import { Box, Typography, Paper, Button } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
 import WcRoundedIcon from "@mui/icons-material/WcRounded";
 import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
-import "./styles/parkingSpaces.css"; // Create and import a CSS file for custom styles
 
 const { Option } = Select;
 
-const TITLE = "Add Parking Lot";
-
-const AddParkingSpace = () => {
+const EditParkingSpace = () => {
   const [parkingSpace, setParkingSpace] = useState({
     name: "",
     service_toilets: false,
@@ -23,6 +22,28 @@ const AddParkingSpace = () => {
     pricing: "low",
     external: false,
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const query = new URLSearchParams(location.search);
+  const id = query.get("id");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/parking_spaces/${id}`
+        );
+        setParkingSpace(response.data);
+      } catch (error) {
+        console.error("Error fetching parking space data", error);
+      }
+    };
+
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -42,29 +63,30 @@ const AddParkingSpace = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:5000/parking_spaces",
+      const response = await axios.put(
+        `http://localhost:5000/parking_spaces/${id}`,
         parkingSpace
       );
-      console.log("Parking space added:", response.data);
+      console.log("Parking space updated:", response.data);
+      navigate("/parking_spaces");
     } catch (error) {
-      console.error("Error adding parking space:", error);
+      console.error("Error updating parking space:", error);
     }
   };
 
   return (
-    <Box className="addParkingSpace-form">
-      <Paper className="addParkingSpace-container">
+    <Box className="editParkingSpace-form">
+      <Paper className="editParkingSpace-container">
         <Box className="iconHeadline__container">
           <GarageIcon className="demandTable__icon" />
           <Typography variant="h4" gutterBottom className="demandTable__title">
-            {TITLE}
+            Edit Parking Lot
           </Typography>
         </Box>
         <Form layout="vertical" onSubmitCapture={handleSubmit}>
           <Form.Item label="Name">
-            <Box className="addParkingSpace-item">
-              <GarageIcon className="addParkingSpace-icon" />
+            <Box className="editParkingSpace-item">
+              <GarageIcon className="editParkingSpace-icon" />
               <Input
                 name="name"
                 value={parkingSpace.name}
@@ -73,8 +95,8 @@ const AddParkingSpace = () => {
             </Box>
           </Form.Item>
           <Form.Item label="Type">
-            <Box className="addParkingSpace-item">
-              <PlaceRoundedIcon className="addParkingSpace-icon" />
+            <Box className="editParkingSpace-item">
+              <PlaceRoundedIcon className="editParkingSpace-icon" />
               <Select
                 value={parkingSpace.external ? "External" : "Internal"}
                 onChange={(value) =>
@@ -87,8 +109,8 @@ const AddParkingSpace = () => {
             </Box>
           </Form.Item>
           <Form.Item label="Surface">
-            <Box className="addParkingSpace-item">
-              <AddRoadRoundedIcon className="addParkingSpace-icon" />
+            <Box className="editParkingSpace-item">
+              <AddRoadRoundedIcon className="editParkingSpace-icon" />
               <Select
                 value={parkingSpace.surface_material}
                 onChange={(value) =>
@@ -102,8 +124,8 @@ const AddParkingSpace = () => {
             </Box>
           </Form.Item>
           <Form.Item label="Pricing">
-            <Box className="addParkingSpace-item">
-              <AttachMoneyRoundedIcon className="addParkingSpace-icon" />
+            <Box className="editParkingSpace-item">
+              <AttachMoneyRoundedIcon className="editParkingSpace-icon" />
               <Select
                 value={parkingSpace.pricing}
                 onChange={(value) => handleSelectChange("pricing", value)}
@@ -115,8 +137,8 @@ const AddParkingSpace = () => {
             </Box>
           </Form.Item>
           <Form.Item label="Toilets" valuePropName="checked">
-            <Box className="addParkingSpace-item">
-              <WcRoundedIcon className="addParkingSpace-icon" />
+            <Box className="editParkingSpace-item">
+              <WcRoundedIcon className="editParkingSpace-icon" />
               <Switch
                 name="service_toilets"
                 checked={parkingSpace.service_toilets}
@@ -127,8 +149,8 @@ const AddParkingSpace = () => {
             </Box>
           </Form.Item>
           <Form.Item label="Shelter" valuePropName="checked">
-            <Box className="addParkingSpace-item">
-              <RoofingRoundedIcon className="addParkingSpace-icon" />
+            <Box className="editParkingSpace-item">
+              <RoofingRoundedIcon className="editParkingSpace-icon" />
               <Switch
                 name="service_shelter"
                 checked={parkingSpace.service_shelter}
@@ -154,4 +176,4 @@ const AddParkingSpace = () => {
   );
 };
 
-export default AddParkingSpace;
+export default EditParkingSpace;

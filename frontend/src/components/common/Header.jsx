@@ -23,7 +23,7 @@ const Grow = styled("div")({
 
 function Header({ toggleNav }) {
   return (
-    <AppBar position="static" className="header-container">
+    <AppBar position="sticky" className="header-container">
       <Toolbar>
         <IconButton
           className="menu-button"

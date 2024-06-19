@@ -195,7 +195,7 @@ h5 {
 }
 
 .grid-main {
-  min-height: 80vh;
+  min-height: 30vh;
   margin: 2rem;
 }
 
@@ -810,11 +810,7 @@ h4 {
 h5 {
   font-size: 1.25rem;
 }
-
-.grid-main {
-  min-height: 80vh;
-  margin: 2rem;
-}
+s
 
 small,
 .text-small {

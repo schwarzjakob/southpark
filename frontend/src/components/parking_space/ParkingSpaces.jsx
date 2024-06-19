@@ -37,7 +37,7 @@ const ParkingSpaces = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("/api/parking_spaces");
+        const response = await axios.get("/api/get_parking_spaces");
         setParkingSpaces(response.data);
       } catch (error) {
         console.error("Error fetching parking spaces data", error);
@@ -107,8 +107,8 @@ const ParkingSpaces = () => {
           </Button>
         </Link>
         <TableContainer className="parkingSpaces-container" component={Paper}>
-          <Table>
-            <TableHead>
+          <Table className="parkingSpaces-table">
+            <TableHead className="parkingSpaces-table__header">
               <TableRow>
                 <TableCell>
                   <TableSortLabel
@@ -118,6 +118,21 @@ const ParkingSpaces = () => {
                   >
                     Parking Lot
                   </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <Box className="header-icon-container">
+                    <PlaceRoundedIcon
+                      fontSize="small"
+                      className="header-icon"
+                    />
+                    <TableSortLabel
+                      active={orderBy === "type"}
+                      direction={orderBy === "type" ? order : "asc"}
+                      onClick={() => handleRequestSort("type")}
+                    >
+                      Type
+                    </TableSortLabel>
+                  </Box>
                 </TableCell>
                 <TableCell>
                   <Box className="header-icon-container">
@@ -177,21 +192,8 @@ const ParkingSpaces = () => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Box className="header-icon-container">
-                    <PlaceRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "type"}
-                      direction={orderBy === "type" ? order : "asc"}
-                      onClick={() => handleRequestSort("type")}
-                    >
-                      Type
-                    </TableSortLabel>
-                  </Box>
+                  <p></p>
                 </TableCell>
-                <TableCell></TableCell> {/* Empty cell for the button */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -219,7 +221,7 @@ const ParkingSpaces = () => {
                   </TableCell>
                   <TableCell>
                     <IconButton
-                      onClick={() => navigate(`/parking_space?${space.id}`)}
+                      onClick={() => navigate(`/parking_space?id=${space.id}`)}
                       edge="start"
                       size="small"
                     >

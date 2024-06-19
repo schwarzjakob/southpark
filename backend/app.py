@@ -993,8 +993,8 @@ def optimize_parking():
         logger.error("Error during optimization process", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
-@app.route("/parking_spaces", methods=["GET"])
+# Fetch parking spaces
+@app.route("/get_parking_spaces", methods=["GET"])
 def get_parking_spaces():
     """
     Endpoint to retrieve all parking spaces.
@@ -1012,7 +1012,7 @@ def get_parking_spaces():
         logger.error("Failed to fetch parking spaces", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
+# Add parking space
 @app.route("/add_parking_space", methods=["POST"])
 def add_parking_space():
     """
@@ -1050,6 +1050,131 @@ def add_parking_space():
         logger.error("Failed to add parking space", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+if __name__ == '__main__':
+    app.run(debug=True)
+    
+# Fetch parking space capacities
+@app.route("/get_parking_space_capacities", methods=["GET"])
+def get_parking_space_capacities():
+    """
+    Endpoint to retrieve all capacity entries for a given parking lot ID.
+    """
+    try:
+        parking_lot_id = request.args.get("parking_lot_id", type=int)
+        if not parking_lot_id:
+            return jsonify({"error": "Parking lot ID is required"}), 400
+
+        logger.info(f"Fetching capacities for parking lot ID: {parking_lot_id}")
+        query = """
+        SELECT id, parking_lot_id, capacity, utilization_type, truck_limit, bus_limit, valid_from, valid_to
+        FROM public.parking_lot_capacity
+        WHERE parking_lot_id = :parking_lot_id
+        """
+        params = {"parking_lot_id": parking_lot_id}
+        capacities = get_data(text(query).params(**params)).to_dict(orient="records")
+
+        if not capacities:
+            logger.info(f"No capacities found for parking lot ID: {parking_lot_id}")
+            return jsonify({"message": "No capacities found"}), 204
+
+        logger.info("Capacities fetched successfully.")
+        return jsonify(capacities), 200
+    except Exception as e:
+        logger.error("Failed to fetch capacities", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+# Add parking space capacity
+@app.route("/add_parking_space_capacities", methods=["POST"])
+def add_parking_space_capacities():
+    """
+    Endpoint to add a new parking space capacity.
+    """
+    try:
+        data = request.json
+        parking_lot_id = data.get("parking_lot_id")
+        capacity = data.get("capacity")
+        utilization_type = data.get("utilization_type")
+        truck_limit = data.get("truck_limit")
+        bus_limit = data.get("bus_limit")
+        valid_from = data.get("valid_from")
+        valid_to = data.get("valid_to")
+
+        if not (parking_lot_id and capacity and utilization_type and truck_limit and bus_limit and valid_from and valid_to):
+            return jsonify({"error": "All fields are required"}), 400
+
+        query = """
+        INSERT INTO public.parking_lot_capacity (parking_lot_id, capacity, utilization_type, truck_limit, bus_limit, valid_from, valid_to)
+        VALUES (:parking_lot_id, :capacity, :utilization_type, :truck_limit, :bus_limit, :valid_from, :valid_to)
+        RETURNING id
+        """
+        params = {
+            "parking_lot_id": parking_lot_id,
+            "capacity": capacity,
+            "utilization_type": utilization_type,
+            "truck_limit": truck_limit,
+            "bus_limit": bus_limit,
+            "valid_from": valid_from,
+            "valid_to": valid_to
+        }
+
+        with engine.begin() as connection:
+            result = connection.execute(text(query), params)
+            capacity_id = result.fetchone()[0]
+
+        return jsonify({"message": "Parking space capacity added successfully", "id": capacity_id}), 201
+    except Exception as e:
+        logger.error("Failed to add parking space capacity", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+# Edit parking space capacity
+@app.route("/edit_parking_space_capacities", methods=["PUT"])
+def edit_parking_space_capacities():
+    """
+    Endpoint to edit an existing parking space capacity.
+    """
+    try:
+        data = request.json
+        capacity_id = data.get("id")
+        parking_lot_id = data.get("parking_lot_id")
+        capacity = data.get("capacity")
+        utilization_type = data.get("utilization_type")
+        truck_limit = data.get("truck_limit")
+        bus_limit = data.get("bus_limit")
+        valid_from = data.get("valid_from")
+        valid_to = data.get("valid_to")
+
+        if not (capacity_id and parking_lot_id and capacity and utilization_type and truck_limit and bus_limit and valid_from and valid_to):
+            return jsonify({"error": "All fields are required"}), 400
+
+        query = """
+        UPDATE public.parking_lot_capacity
+        SET parking_lot_id = :parking_lot_id,
+            capacity = :capacity,
+            utilization_type = :utilization_type,
+            truck_limit = :truck_limit,
+            bus_limit = :bus_limit,
+            valid_from = :valid_from,
+            valid_to = :valid_to
+        WHERE id = :capacity_id
+        """
+        params = {
+            "capacity_id": capacity_id,
+            "parking_lot_id": parking_lot_id,
+            "capacity": capacity,
+            "utilization_type": utilization_type,
+            "truck_limit": truck_limit,
+            "bus_limit": bus_limit,
+            "valid_from": valid_from,
+            "valid_to": valid_to
+        }
+
+        with engine.begin() as connection:
+            connection.execute(text(query), params)
+
+        return jsonify({"message": "Parking space capacity updated successfully"}), 200
+    except Exception as e:
+        logger.error("Failed to update parking space capacity", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.config["DEBUG"] = True

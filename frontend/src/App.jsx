@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
@@ -12,10 +11,11 @@ import AddEvent from "./components/events/AddEvent.jsx";
 import EditEvent from "./components/events/EditEvent.jsx";
 import ImportCSV from "./components/import/ImportCSV.jsx";
 import InputDemands from "./components/events/InputDemands.jsx";
-import EventsAllocationTable from "./components/events/EventsAllocationTable.jsx";
+import EventsAllocationTable from "./components/data_explorer/EventsAllocationTable.jsx";
 import ParkingSpaces from "./components/parking_space/ParkingSpaces.jsx";
 import Team from "./components/team/Team.jsx";
 import AddParkingSpace from "./components/parking_space/AddParkingSpace.jsx";
+import EditParkingSpace from "./components/parking_space/EditParkingSpace.jsx";
 import MobileWarning from "./components/common/MobileWarning.jsx";
 import theme from "./styles/muiCustomTheme";
 import "./styles/antTheme.css";
@@ -68,6 +68,7 @@ function App() {
                   path="/parking_space/add"
                   element={<AddParkingSpace />}
                 />
+                <Route path="/parking_space" element={<EditParkingSpace />} />{" "}
               </Routes>
             </div>
             <Footer />
