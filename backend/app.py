@@ -993,6 +993,64 @@ def optimize_parking():
         logger.error("Error during optimization process", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+
+@app.route("/parking_spaces", methods=["GET"])
+def get_parking_spaces():
+    """
+    Endpoint to retrieve all parking spaces.
+    """
+    try:
+        logger.info("Fetching all parking spaces from the database.")
+        query = """
+        SELECT id, name, service_toilets, surface_material, service_shelter, pricing, external
+        FROM public.parking_lot
+        """
+        parking_spaces = get_data(query).to_dict(orient="records")
+        logger.info("Parking spaces fetched successfully.")
+        return jsonify(parking_spaces), 200
+    except Exception as e:
+        logger.error("Failed to fetch parking spaces", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/add_parking_space", methods=["POST"])
+def add_parking_space():
+    """
+    Endpoint to add a new parking space.
+    """
+    try:
+        data = request.json
+        name = data.get("name")
+        service_toilets = data.get("service_toilets", False)
+        surface_material = data.get("surface_material")
+        service_shelter = data.get("service_shelter", False)
+        pricing = data.get("pricing")
+        external = data.get("external", False)
+
+        query = """
+        INSERT INTO public.parking_lot (name, service_toilets, surface_material, service_shelter, pricing, external)
+        VALUES (:name, :service_toilets, :surface_material, :service_shelter, :pricing, :external)
+        RETURNING id
+        """
+        params = {
+            "name": name,
+            "service_toilets": service_toilets,
+            "surface_material": surface_material,
+            "service_shelter": service_shelter,
+            "pricing": pricing,
+            "external": external,
+        }
+
+        with engine.begin() as connection:
+            result = connection.execute(text(query), params)
+            parking_lot_id = result.fetchone()[0]
+
+        return jsonify({"message": "Parking space added successfully", "id": parking_lot_id}), 201
+    except Exception as e:
+        logger.error("Failed to add parking space", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     app.config["DEBUG"] = True
     app.run(host="0.0.0.0", port=5000)

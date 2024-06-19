@@ -13,7 +13,9 @@ import EditEvent from "./components/events/EditEvent.jsx";
 import ImportCSV from "./components/import/ImportCSV.jsx";
 import InputDemands from "./components/events/InputDemands.jsx";
 import EventsAllocationTable from "./components/events/EventsAllocationTable.jsx";
+import ParkingSpaces from "./components/parking_space/ParkingSpaces.jsx";
 import Team from "./components/team/Team.jsx";
+import AddParkingSpace from "./components/parking_space/AddParkingSpace.jsx";
 import MobileWarning from "./components/common/MobileWarning.jsx";
 import theme from "./styles/muiCustomTheme";
 import "./styles/antTheme.css";
@@ -61,6 +63,11 @@ function App() {
                 <Route path="/import" element={<ImportCSV />} />
                 <Route path="/input_demands" element={<InputDemands />} />
                 <Route path="/user" element={<Team />} />
+                <Route path="/parking_spaces" element={<ParkingSpaces />} />
+                <Route
+                  path="/parking_space/add"
+                  element={<AddParkingSpace />}
+                />
               </Routes>
             </div>
             <Footer />

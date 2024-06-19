@@ -248,6 +248,6 @@
 }
 
 .tags-parking-lots {
-  background-color: var(--color-primary);
+  background-color: var(--color-parking-space);
   color: white;
 }

@@ -142,7 +142,7 @@ const theme = createTheme({
         },
         containedSecondary: {
           "&:hover": {
-            backgroundColor: "#666666", // grey color for hover effect
+            backgroundColor: "#666666",
           },
         },
       },
@@ -164,6 +164,22 @@ const theme = createTheme({
         },
       },
     },
+
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          color: "#ffffff",
+          fontWeight: 700,
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        sizeMedium: {
+          padding: "10px 10px", // Adjust padding as needed for smaller size
+        },
+      },
+    },
     MuiDataGrid: {
       styleOverrides: {
         columnHeaders: {
@@ -171,6 +187,12 @@ const theme = createTheme({
           color: "#ffffff",
           fontFamily: "Arial, Helvetica, sans-serif",
           fontWeight: 700,
+        },
+        columnHeaderTitle: {
+          fontWeight: 700,
+        },
+        icon: {
+          color: "#ffffff",
         },
         main: {
           fontFamily: "Arial, Helvetica, sans-serif !important",

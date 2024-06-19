@@ -1,0 +1,19 @@
+/* Parking Spaces */
+
+.parking-lot-box {
+  background-color: var(--color-parking-space);
+  color: white;
+  border-radius: 5px;
+  padding: 4px 8px;
+  margin: 2px;
+  display: inline-block;
+}
+
+.header-icon-container {
+  display: flex;
+  align-items: center;
+}
+.header-icon {
+  color: white;
+  margin-right: 5px;
+}

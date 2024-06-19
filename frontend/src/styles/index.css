@@ -81,6 +81,8 @@ body {
   --color-gray-700: #4d4d4d;
   --color-gray-800: #333333;
   --color-gray-900: #1a1a1a;
+  --color-parking-space: #4e75bc;
+
   /* Font vars */
   --type-headline-font-family: Arial, Helvetica, sans-serif;
   --type-headline-spacing: 0.3px;
@@ -1290,4 +1292,15 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   color: var(--textColor) !important;
   color: var(--color-gray-700) !important;
   margin: 0 !important;
+}
+
+.form-width {
+  max-width: 80% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.MuiTableCell-head span,
+.MuiTableSortLabel-icon {
+  color: var(--color-pure-white) !important;
 }

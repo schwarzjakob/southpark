@@ -19,6 +19,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import GarageIcon from "@mui/icons-material/GarageRounded";
 
 const Navigation = ({ isOpen, toggleNav }) => {
   return (
@@ -168,6 +169,22 @@ const Navigation = ({ isOpen, toggleNav }) => {
                 <DirectionsCarIcon />
               </ListItemIcon>
               <ListItemText primary="Add Missing Demands" />
+            </ListItemButton>
+          </Link>
+          <Link
+            to="/parking_spaces"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <ListItemButton onClick={toggleNav}>
+              <ListItemIcon>
+                <GarageIcon />
+              </ListItemIcon>
+              <ListItemText primary="Parking Spaces" />
             </ListItemButton>
           </Link>
         </List>
