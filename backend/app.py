@@ -10,10 +10,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
-
-# Initialize the Flask app
-app = Flask(__name__)
-CORS(app)
+from sqlalchemy.exc import IntegrityError
 
 # Append the directory above 'backend' to the path to access the 'scripts' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -26,6 +23,9 @@ load_dotenv()
 
 # Retrieve the DATABASE_URL from environment variables
 database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    raise ValueError("No DATABASE_URL found in environment variables")
+
 engine = create_engine(database_url)
 
 # Enabling logging (must come first to enable it globally, also for imported modules and packages)
@@ -1012,6 +1012,7 @@ def get_parking_spaces():
         logger.error("Failed to fetch parking spaces", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+
 # Add parking space
 @app.route("/add_parking_space", methods=["POST"])
 def add_parking_space():
@@ -1026,44 +1027,144 @@ def add_parking_space():
         service_shelter = data.get("service_shelter", False)
         pricing = data.get("pricing")
         external = data.get("external", False)
-
-        query = """
-        INSERT INTO public.parking_lot (name, service_toilets, surface_material, service_shelter, pricing, external)
-        VALUES (:name, :service_toilets, :surface_material, :service_shelter, :pricing, :external)
-        RETURNING id
-        """
-        params = {
-            "name": name,
-            "service_toilets": service_toilets,
-            "surface_material": surface_material,
-            "service_shelter": service_shelter,
-            "pricing": pricing,
-            "external": external,
-        }
+        coordinates = [0, 0]  # Always set coordinates to [0, 0]
 
         with engine.begin() as connection:
+            # Fetch the maximum existing ID
+            max_id_result = connection.execute(text("SELECT MAX(id) FROM public.parking_lot"))
+            max_id = max_id_result.scalar() or 0
+            new_id = max_id + 1
+
+            query = """
+            INSERT INTO public.parking_lot (id, name, service_toilets, surface_material, service_shelter, pricing, external, coordinates)
+            VALUES (:id, :name, :service_toilets, :surface_material, :service_shelter, :pricing, :external, :coordinates)
+            RETURNING id
+            """
+            params = {
+                "id": new_id,
+                "name": name,
+                "service_toilets": service_toilets,
+                "surface_material": surface_material,
+                "service_shelter": service_shelter,
+                "pricing": pricing,
+                "external": external,
+                "coordinates": coordinates,
+            }
+
             result = connection.execute(text(query), params)
             parking_lot_id = result.fetchone()[0]
 
         return jsonify({"message": "Parking space added successfully", "id": parking_lot_id}), 201
+    except IntegrityError as e:
+        if 'unique constraint' in str(e.orig):
+            logger.error("Failed to add parking space: duplicate name", exc_info=True)
+            return jsonify({"error": "Parking space with this name already exists."}), 400
+        else:
+            logger.error("Failed to add parking space: integrity error", exc_info=True)
+            return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
         logger.error("Failed to add parking space", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)
     
-# Fetch parking space capacities
-@app.route("/get_parking_space_capacities", methods=["GET"])
-def get_parking_space_capacities():
+# Fetch parking space by ID
+@app.route("/get_parking_space/<int:id>", methods=["GET"])
+def get_parking_space(id):
+    """
+    Endpoint to get a parking space by ID.
+    """
+    try:
+        with engine.begin() as connection:
+            query = """
+            SELECT id, name, service_toilets, surface_material, service_shelter, pricing, external, coordinates
+            FROM public.parking_lot
+            WHERE id = :id
+            """
+            result = connection.execute(text(query), {"id": id})
+            parking_space = result.fetchone()
+            
+            if parking_space is None:
+                logger.info(f"Parking space with ID {id} not found.")
+                return jsonify({"error": "Parking space not found."}), 404
+            
+            # Convert SQLAlchemy result to a dictionary
+            parking_space_dict = {
+                "id": parking_space[0],
+                "name": parking_space[1],
+                "service_toilets": parking_space[2],
+                "surface_material": parking_space[3],
+                "service_shelter": parking_space[4],
+                "pricing": parking_space[5],
+                "external": parking_space[6],
+                "coordinates": parking_space[7]
+            }
+
+            return jsonify(parking_space_dict), 200
+    except Exception as e:
+        logger.error(f"Failed to fetch parking space with ID {id}: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+# Edit parking space
+@app.route("/edit_parking_space/<int:id>", methods=["PUT"])
+def edit_parking_space(id):
+    """
+    Endpoint to edit an existing parking space.
+    """
+    try:
+        data = request.json
+        name = data.get("name")
+        service_toilets = data.get("service_toilets", False)
+        surface_material = data.get("surface_material")
+        service_shelter = data.get("service_shelter", False)
+        pricing = data.get("pricing")
+        external = data.get("external", False)
+        coordinates = data.get("coordinates")
+
+        with engine.begin() as connection:
+            query = """
+            UPDATE public.parking_lot
+            SET name = :name,
+                service_toilets = :service_toilets,
+                surface_material = :surface_material,
+                service_shelter = :service_shelter,
+                pricing = :pricing,
+                external = :external,
+                coordinates = :coordinates
+            WHERE id = :id
+            RETURNING id
+            """
+            params = {
+                "id": id,
+                "name": name,
+                "service_toilets": service_toilets,
+                "surface_material": surface_material,
+                "service_shelter": service_shelter,
+                "pricing": pricing,
+                "external": external,
+                "coordinates": coordinates,
+            }
+
+            result = connection.execute(text(query), params)
+            parking_lot_id = result.fetchone()[0]
+
+        return jsonify({"message": "Parking space updated successfully", "id": parking_lot_id}), 200
+    except IntegrityError as e:
+        if 'unique constraint' in str(e.orig):
+            logger.error("Failed to update parking space: duplicate name", exc_info=True)
+            return jsonify({"error": "Parking space with this name already exists."}), 400
+        else:
+            logger.error("Failed to update parking space: integrity error", exc_info=True)
+            return jsonify({"error": "Integrity error occurred."}), 400
+    except Exception as e:
+        logger.error(f"Failed to update parking space with ID {id}: {e}", exc_info=True)
+        return jsonify({"error": f"Failed to update parking space with ID {id}: {str(e)}"}), 500
+
+# Fetch parking space capacities by parking lot ID
+@app.route("/get_parking_space_capacities/<int:parking_lot_id>", methods=["GET"])
+def get_parking_space_capacities(parking_lot_id):
     """
     Endpoint to retrieve all capacity entries for a given parking lot ID.
     """
     try:
-        parking_lot_id = request.args.get("parking_lot_id", type=int)
-        if not parking_lot_id:
-            return jsonify({"error": "Parking lot ID is required"}), 400
-
         logger.info(f"Fetching capacities for parking lot ID: {parking_lot_id}")
         query = """
         SELECT id, parking_lot_id, capacity, utilization_type, truck_limit, bus_limit, valid_from, valid_to

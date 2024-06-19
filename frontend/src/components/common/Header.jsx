@@ -5,6 +5,7 @@ import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { styled } from "@mui/system";
+import logo from "../../assets/logo_white.svg";
 
 const LogoContainer = styled(Link)({
   display: "flex",
@@ -35,11 +36,7 @@ function Header({ toggleNav }) {
           <MenuIcon />
         </IconButton>
         <LogoContainer to="/">
-          <Logo
-            src="src/assets/logo_white.svg"
-            alt="Messe München"
-            className="logo"
-          />
+          <Logo src={logo} alt="Messe München" className="logo" />
           <Typography variant="h6" className="page-title">
             Parking Space
             <br />

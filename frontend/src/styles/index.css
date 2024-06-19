@@ -280,6 +280,19 @@ and we don't want to put the style on the icon */
   background: var(--color-signal-success-lightt);
 }
 /* form */
+
+.form-width {
+  max-width: 80% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.form-container {
+  padding: 20px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 .form {
   width: 90vw;
   max-width: var(--fixed-width);
@@ -288,8 +301,8 @@ and we don't want to put the style on the icon */
   box-shadow: var(--shadow-2);
   padding: 2rem 2.5rem;
   margin: 3rem auto;
-  /* can also center the div using other methods */
 }
+
 .form-label {
   display: block;
   font-size: var(--smallText);
@@ -316,6 +329,16 @@ and we don't want to put the style on the icon */
 ::placeholder {
   font-family: inherit;
   color: var(--color-gray-400);
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+}
+
+.input-container__icon {
+  margin-right: 10px;
+  color: var(--color-parking-space);
 }
 
 .form-alert {
@@ -810,9 +833,7 @@ h4 {
 h5 {
   font-size: 1.25rem;
 }
-s
-
-small,
+s small,
 .text-small {
   font-size: var(--smallText);
 }
@@ -1275,8 +1296,14 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   align-self: flex-start;
 }
 
-:where(.css-dev-only-do-not-override-zg0ahe).ant-switch {
-  background-color: var(--color-primary); /* White handle color */
+:where(.css-dev-only-do-not-override-zg0ahe).ant-switch.ant-switch-checked {
+  background-color: var(--color-primary);
+}
+
+:where(
+    .css-dev-only-do-not-override-zg0ahe
+  ).ant-switch.ant-switch-checked:hover {
+  background-color: var(--color-primary) !important;
 }
 
 .iconHeadline__container h1,
@@ -1290,13 +1317,92 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   margin: 0 !important;
 }
 
-.form-width {
-  max-width: 80% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
 .MuiTableCell-head span,
 .MuiTableSortLabel-icon {
   color: var(--color-pure-white) !important;
+}
+
+.MuiInputLabel-animated {
+  background: var(--color-pure-white) !important;
+  padding: 0 5px !important;
+}
+
+.addIcon {
+  margin-right: 10px;
+}
+
+/* Ant Design */
+.ant-picker {
+  padding: 0.8rem;
+}
+
+:where(.css-dev-only-do-not-override-1fumvat).ant-switch.ant-switch-checked {
+  background-color: var(--color-primary-500);
+}
+
+:where(
+    .css-dev-only-do-not-override-1fumvat
+  ).ant-switch.ant-switch-checked:hover {
+  background-color: var(--color-primary-500) !important;
+}
+
+.switch-label {
+  gap: 10px;
+}
+
+.ant-picker-outlined:hover {
+  border-color: var(--color-primary-500) !important;
+}
+
+.ant-picker-active-bar {
+  background: var(--color-primary-500) !important;
+}
+
+.ant-picker-content thead tr th {
+  color: var(--color-pure-white) !important;
+  padding: 6px !important;
+}
+
+.ant-picker-cell-inner {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+.ant-picker-cell-range-start .ant-picker-cell-inner,
+.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background: var(--color-primary-500) !important;
+}
+
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-in-range:not(
+    .ant-picker-cell-disabled
+  ):before,
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-range-start:not(
+    .ant-picker-cell-disabled
+  ):before,
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-range-end:not(
+    .ant-picker-cell-disabled
+  ):before {
+  background: var(--color-primary-100) !important;
+}
+
+:where(.css-dev-only-do-not-override-3rel02).ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-today
+  .ant-picker-cell-inner::before {
+  border: 1px solid var(--color-primary-500) !important;
+}
+
+.ant-picker-range-separator svg {
+  padding-top: 2px !important;
+  color: var(--color-gray-200);
+}
+
+.switch-container label span {
+  font-size: var(--smallText) !important;
+}
+
+.ant-picker-range-separator {
+  padding-left: 0 !important;
 }

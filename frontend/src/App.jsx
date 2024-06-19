@@ -13,12 +13,12 @@ import ImportCSV from "./components/import/ImportCSV.jsx";
 import InputDemands from "./components/events/InputDemands.jsx";
 import EventsAllocationTable from "./components/data_explorer/EventsAllocationTable.jsx";
 import ParkingSpaces from "./components/parking_space/ParkingSpaces.jsx";
+import ParkingSpace from "./components/parking_space/ParkingSpace.jsx";
 import Team from "./components/team/Team.jsx";
 import AddParkingSpace from "./components/parking_space/AddParkingSpace.jsx";
 import EditParkingSpace from "./components/parking_space/EditParkingSpace.jsx";
 import MobileWarning from "./components/common/MobileWarning.jsx";
 import theme from "./styles/muiCustomTheme";
-import "./styles/antTheme.css";
 
 function App() {
   const [isNavOpen, setNavOpen] = useState(false);
@@ -65,10 +65,14 @@ function App() {
                 <Route path="/user" element={<Team />} />
                 <Route path="/parking_spaces" element={<ParkingSpaces />} />
                 <Route
-                  path="/parking_space/add"
+                  path="/add_parking_space"
                   element={<AddParkingSpace />}
                 />
-                <Route path="/parking_space" element={<EditParkingSpace />} />{" "}
+                <Route
+                  path="/edit_parking_space/:id"
+                  element={<EditParkingSpace />}
+                />
+                <Route path="/parking_space/:id" element={<ParkingSpace />} />
               </Routes>
             </div>
             <Footer />

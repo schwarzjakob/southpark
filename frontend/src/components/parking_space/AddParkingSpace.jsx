@@ -1,16 +1,26 @@
 import { useState } from "react";
 import axios from "axios";
-import { Input, Switch, Select, Form } from "antd";
-import { Box, Typography, Paper, Button } from "@mui/material";
+import { Switch } from "antd";
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
 import WcRoundedIcon from "@mui/icons-material/WcRounded";
 import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
-import "./styles/parkingSpaces.css"; // Create and import a CSS file for custom styles
-
-const { Option } = Select;
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import "./styles/parkingSpaces.css";
 
 const TITLE = "Add Parking Lot";
 
@@ -24,6 +34,9 @@ const AddParkingSpace = () => {
     external: false,
   });
 
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setParkingSpace({
@@ -32,123 +45,135 @@ const AddParkingSpace = () => {
     });
   };
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name) => (event) => {
     setParkingSpace({
       ...parkingSpace,
-      [name]: value,
+      [name]: event.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:5000/parking_spaces",
-        parkingSpace
-      );
+      const response = await axios.post("/api/add_parking_space", parkingSpace);
       console.log("Parking space added:", response.data);
+      navigate(`/parking_space?id=${response.data.id}`);
     } catch (error) {
-      console.error("Error adding parking space:", error);
+      if (error.response && error.response.status === 400) {
+        setError("Parking space with this name already exists.");
+      } else {
+        console.error("Error adding parking space:", error);
+      }
     }
   };
 
   return (
-    <Box className="addParkingSpace-form">
-      <Paper className="addParkingSpace-container">
+    <Box className="form-width">
+      <Paper className="form-container">
         <Box className="iconHeadline__container">
-          <GarageIcon className="demandTable__icon" />
+          <AddBoxIcon />
           <Typography variant="h4" gutterBottom className="demandTable__title">
             {TITLE}
           </Typography>
         </Box>
-        <Form layout="vertical" onSubmitCapture={handleSubmit}>
-          <Form.Item label="Name">
-            <Box className="addParkingSpace-item">
-              <GarageIcon className="addParkingSpace-icon" />
-              <Input
+        <form onSubmit={handleSubmit}>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <GarageIcon className="input-container__icon" />
+              <TextField
+                label="Name"
                 name="name"
                 value={parkingSpace.name}
                 onChange={handleChange}
+                fullWidth
+                error={!!error}
+                helperText={error}
               />
             </Box>
-          </Form.Item>
-          <Form.Item label="Type">
-            <Box className="addParkingSpace-item">
-              <PlaceRoundedIcon className="addParkingSpace-icon" />
-              <Select
-                value={parkingSpace.external ? "External" : "Internal"}
-                onChange={(value) =>
-                  handleSelectChange("external", value === "External")
-                }
-              >
-                <Option value="Internal">Internal</Option>
-                <Option value="External">External</Option>
-              </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <PlaceRoundedIcon className="input-container__icon" />
+              <FormControl fullWidth>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={parkingSpace.external ? "External" : "Internal"}
+                  onChange={handleSelectChange("external")}
+                >
+                  <MenuItem value="Internal">Internal</MenuItem>
+                  <MenuItem value="External">External</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
-          </Form.Item>
-          <Form.Item label="Surface">
-            <Box className="addParkingSpace-item">
-              <AddRoadRoundedIcon className="addParkingSpace-icon" />
-              <Select
-                value={parkingSpace.surface_material}
-                onChange={(value) =>
-                  handleSelectChange("surface_material", value)
-                }
-              >
-                <Option value="Asphalt">Asphalt</Option>
-                <Option value="Gravel">Gravel</Option>
-                <Option value="Dirt">Dirt</Option>
-              </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <AddRoadRoundedIcon className="input-container__icon" />
+              <FormControl fullWidth>
+                <InputLabel>Surface</InputLabel>
+                <Select
+                  value={parkingSpace.surface_material}
+                  onChange={handleSelectChange("surface_material")}
+                >
+                  <MenuItem value="Asphalt">Asphalt</MenuItem>
+                  <MenuItem value="Gravel">Gravel</MenuItem>
+                  <MenuItem value="Dirt">Dirt</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
-          </Form.Item>
-          <Form.Item label="Pricing">
-            <Box className="addParkingSpace-item">
-              <AttachMoneyRoundedIcon className="addParkingSpace-icon" />
-              <Select
-                value={parkingSpace.pricing}
-                onChange={(value) => handleSelectChange("pricing", value)}
-              >
-                <Option value="low">Low</Option>
-                <Option value="medium">Medium</Option>
-                <Option value="high">High</Option>
-              </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <AttachMoneyRoundedIcon className="input-container__icon" />
+              <FormControl fullWidth>
+                <InputLabel>Pricing</InputLabel>
+                <Select
+                  value={parkingSpace.pricing}
+                  onChange={handleSelectChange("pricing")}
+                >
+                  <MenuItem value="low">Low</MenuItem>
+                  <MenuItem value="medium">Medium</MenuItem>
+                  <MenuItem value="high">High</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
-          </Form.Item>
-          <Form.Item label="Toilets" valuePropName="checked">
-            <Box className="addParkingSpace-item">
-              <WcRoundedIcon className="addParkingSpace-icon" />
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <WcRoundedIcon className="input-container__icon" />
+              <Typography style={{ marginRight: "10px" }}>Toilets</Typography>
               <Switch
                 name="service_toilets"
                 checked={parkingSpace.service_toilets}
                 onChange={(checked) =>
-                  handleSelectChange("service_toilets", checked)
+                  handleSelectChange("service_toilets")({
+                    target: { value: checked },
+                  })
                 }
               />
             </Box>
-          </Form.Item>
-          <Form.Item label="Shelter" valuePropName="checked">
-            <Box className="addParkingSpace-item">
-              <RoofingRoundedIcon className="addParkingSpace-icon" />
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <RoofingRoundedIcon className="input-container__icon" />
+              <Typography style={{ marginRight: "10px" }}>Shelter</Typography>
               <Switch
                 name="service_shelter"
                 checked={parkingSpace.service_shelter}
                 onChange={(checked) =>
-                  handleSelectChange("service_shelter", checked)
+                  handleSelectChange("service_shelter")({
+                    target: { value: checked },
+                  })
                 }
               />
             </Box>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              style={{ float: "right" }}
-            >
+          </FormControl>
+          <Box textAlign="right">
+            <Button type="submit" variant="contained" color="primary">
               Save
             </Button>
-          </Form.Item>
-        </Form>
+          </Box>
+        </form>
       </Paper>
     </Box>
   );

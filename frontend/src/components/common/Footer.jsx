@@ -1,5 +1,11 @@
 // src/components/Footer.jsx
 import { Box, Link, Typography } from "@mui/material";
+import FacebookIcon from "../../assets/icons/facebook.svg";
+import LinkedInIcon from "../../assets/icons/linkedin.svg";
+import InstagramIcon from "../../assets/icons/instagram.svg";
+import XingIcon from "../../assets/icons/xing.svg";
+import YouTubeIcon from "../../assets/icons/youtube.svg";
+import XIcon from "../../assets/icons/x.svg";
 
 const currentYear = new Date().getFullYear();
 
@@ -32,7 +38,7 @@ const Footer = () => {
               target="_blank"
               title="Facebook"
             >
-              <img src="src/assets/icons/facebook.svg" alt="Facebook" />
+              <img src={FacebookIcon} alt="Facebook" />
             </Link>
           </Box>
           <Box component="li" sx={{ margin: "0 10px" }}>
@@ -41,7 +47,7 @@ const Footer = () => {
               target="_blank"
               title="LinkedIn"
             >
-              <img src="src/assets/icons/linkedin.svg" alt="LinkedIn" />
+              <img src={LinkedInIcon} alt="LinkedIn" />
             </Link>
           </Box>
           <Box component="li" sx={{ margin: "0 10px" }}>
@@ -50,7 +56,7 @@ const Footer = () => {
               target="_blank"
               title="Instagram"
             >
-              <img src="src/assets/icons/instagram.svg" alt="Instagram" />
+              <img src={InstagramIcon} alt="Instagram" />
             </Link>
           </Box>
           <Box component="li" sx={{ margin: "0 10px" }}>
@@ -59,7 +65,7 @@ const Footer = () => {
               target="_blank"
               title="Xing"
             >
-              <img src="src/assets/icons/xing.svg" alt="Xing" />
+              <img src={XingIcon} alt="Xing" />
             </Link>
           </Box>
           <Box component="li" sx={{ margin: "0 10px" }}>
@@ -68,7 +74,7 @@ const Footer = () => {
               target="_blank"
               title="YouTube"
             >
-              <img src="src/assets/icons/youtube.svg" alt="YouTube" />
+              <img src={YouTubeIcon} alt="YouTube" />
             </Link>
           </Box>
           <Box component="li" sx={{ margin: "0 10px" }}>
@@ -77,7 +83,7 @@ const Footer = () => {
               target="_blank"
               title="X"
             >
-              <img src="src/assets/icons/x.svg" alt="X (Twitter)" />
+              <img src={XIcon} alt="X (Twitter)" />
             </Link>
           </Box>
         </Box>

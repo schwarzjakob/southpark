@@ -1,17 +1,28 @@
-// src/components/parking_space/EditParkingSpace.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Input, Switch, Select, Form } from "antd";
-import { Box, Typography, Paper, Button } from "@mui/material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Switch } from "antd";
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
 import WcRoundedIcon from "@mui/icons-material/WcRounded";
 import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import "./styles/parkingSpaces.css";
 
-const { Option } = Select;
+const TITLE = "Edit Parking Lot";
 
 const EditParkingSpace = () => {
   const [parkingSpace, setParkingSpace] = useState({
@@ -23,26 +34,27 @@ const EditParkingSpace = () => {
     external: false,
   });
 
-  const location = useLocation();
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const query = new URLSearchParams(location.search);
-  const id = query.get("id");
+  const { id } = useParams();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchParkingSpace = async () => {
+      console.log("ID:", id);
       try {
-        const response = await axios.get(
-          `http://localhost:5000/parking_spaces/${id}`
-        );
+        if (!id || isNaN(id)) {
+          setError("No valid ID provided.");
+          return;
+        }
+        const response = await axios.get(`/api/get_parking_space/${id}`);
         setParkingSpace(response.data);
       } catch (error) {
-        console.error("Error fetching parking space data", error);
+        console.error("Error fetching parking space data:", error);
+        setError("Error fetching parking space data.");
       }
     };
 
-    if (id) {
-      fetchData();
-    }
+    fetchParkingSpace();
   }, [id]);
 
   const handleChange = (e) => {
@@ -53,10 +65,17 @@ const EditParkingSpace = () => {
     });
   };
 
-  const handleSelectChange = (name, value) => {
+  const handleSwitchChange = (name) => (checked) => {
     setParkingSpace({
       ...parkingSpace,
-      [name]: value,
+      [name]: checked,
+    });
+  };
+
+  const handleSelectChange = (name) => (event) => {
+    setParkingSpace({
+      ...parkingSpace,
+      [name]: event.target.value,
     });
   };
 
@@ -64,113 +83,125 @@ const EditParkingSpace = () => {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `http://localhost:5000/parking_spaces/${id}`,
+        `/api/edit_parking_space/${id}`,
         parkingSpace
       );
       console.log("Parking space updated:", response.data);
-      navigate("/parking_spaces");
+      navigate(`/parking_space/${response.data.id}`);
     } catch (error) {
-      console.error("Error updating parking space:", error);
+      if (error.response && error.response.status === 400) {
+        setError("Parking space with this name already exists.");
+      } else {
+        console.error("Error updating parking space:", error);
+        setError("Error updating parking space.");
+      }
     }
   };
 
   return (
-    <Box className="editParkingSpace-form">
-      <Paper className="editParkingSpace-container">
+    <Box className="form-width">
+      <Paper className="form-container">
         <Box className="iconHeadline__container">
-          <GarageIcon className="demandTable__icon" />
+          <EditRoundedIcon />
           <Typography variant="h4" gutterBottom className="demandTable__title">
-            Edit Parking Lot
+            {TITLE}
           </Typography>
         </Box>
-        <Form layout="vertical" onSubmitCapture={handleSubmit}>
-          <Form.Item label="Name">
-            <Box className="editParkingSpace-item">
-              <GarageIcon className="editParkingSpace-icon" />
-              <Input
+        {error && (
+          <Typography color="error" variant="body1">
+            {error}
+          </Typography>
+        )}
+        <form onSubmit={handleSubmit}>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <GarageIcon className="input-container__icon" />
+              <TextField
+                label="Name"
                 name="name"
                 value={parkingSpace.name}
                 onChange={handleChange}
+                fullWidth
+                error={!!error}
+                helperText={error}
               />
             </Box>
-          </Form.Item>
-          <Form.Item label="Type">
-            <Box className="editParkingSpace-item">
-              <PlaceRoundedIcon className="editParkingSpace-icon" />
-              <Select
-                value={parkingSpace.external ? "External" : "Internal"}
-                onChange={(value) =>
-                  handleSelectChange("external", value === "External")
-                }
-              >
-                <Option value="Internal">Internal</Option>
-                <Option value="External">External</Option>
-              </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <PlaceRoundedIcon className="input-container__icon" />
+              <FormControl fullWidth>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={parkingSpace.external ? "External" : "Internal"}
+                  onChange={handleSelectChange("external")}
+                >
+                  <MenuItem value="Internal">Internal</MenuItem>
+                  <MenuItem value="External">External</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
-          </Form.Item>
-          <Form.Item label="Surface">
-            <Box className="editParkingSpace-item">
-              <AddRoadRoundedIcon className="editParkingSpace-icon" />
-              <Select
-                value={parkingSpace.surface_material}
-                onChange={(value) =>
-                  handleSelectChange("surface_material", value)
-                }
-              >
-                <Option value="Asphalt">Asphalt</Option>
-                <Option value="Gravel">Gravel</Option>
-                <Option value="Dirt">Dirt</Option>
-              </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <AddRoadRoundedIcon className="input-container__icon" />
+              <FormControl fullWidth>
+                <InputLabel>Surface</InputLabel>
+                <Select
+                  value={parkingSpace.surface_material}
+                  onChange={handleSelectChange("surface_material")}
+                >
+                  <MenuItem value="Asphalt">Asphalt</MenuItem>
+                  <MenuItem value="Gravel">Gravel</MenuItem>
+                  <MenuItem value="Dirt">Dirt</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
-          </Form.Item>
-          <Form.Item label="Pricing">
-            <Box className="editParkingSpace-item">
-              <AttachMoneyRoundedIcon className="editParkingSpace-icon" />
-              <Select
-                value={parkingSpace.pricing}
-                onChange={(value) => handleSelectChange("pricing", value)}
-              >
-                <Option value="low">Low</Option>
-                <Option value="medium">Medium</Option>
-                <Option value="high">High</Option>
-              </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <AttachMoneyRoundedIcon className="input-container__icon" />
+              <FormControl fullWidth>
+                <InputLabel>Pricing</InputLabel>
+                <Select
+                  value={parkingSpace.pricing}
+                  onChange={handleSelectChange("pricing")}
+                >
+                  <MenuItem value="low">Low</MenuItem>
+                  <MenuItem value="medium">Medium</MenuItem>
+                  <MenuItem value="high">High</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
-          </Form.Item>
-          <Form.Item label="Toilets" valuePropName="checked">
-            <Box className="editParkingSpace-item">
-              <WcRoundedIcon className="editParkingSpace-icon" />
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <WcRoundedIcon className="input-container__icon" />
+              <Typography style={{ marginRight: "10px" }}>Toilets</Typography>
               <Switch
                 name="service_toilets"
                 checked={parkingSpace.service_toilets}
-                onChange={(checked) =>
-                  handleSelectChange("service_toilets", checked)
-                }
+                onChange={handleSwitchChange("service_toilets")}
               />
             </Box>
-          </Form.Item>
-          <Form.Item label="Shelter" valuePropName="checked">
-            <Box className="editParkingSpace-item">
-              <RoofingRoundedIcon className="editParkingSpace-icon" />
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <RoofingRoundedIcon className="input-container__icon" />
+              <Typography style={{ marginRight: "10px" }}>Shelter</Typography>
               <Switch
                 name="service_shelter"
                 checked={parkingSpace.service_shelter}
-                onChange={(checked) =>
-                  handleSelectChange("service_shelter", checked)
-                }
+                onChange={handleSwitchChange("service_shelter")}
               />
             </Box>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              style={{ float: "right" }}
-            >
+          </FormControl>
+          <Box textAlign="right">
+            <Button type="submit" variant="contained" color="primary">
               Save
             </Button>
-          </Form.Item>
-        </Form>
+          </Box>
+        </form>
       </Paper>
     </Box>
   );

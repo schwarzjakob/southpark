@@ -3,7 +3,7 @@ import { Paper, Grid, Typography, Box } from "@mui/material";
 import axios from "axios";
 import CapacityUtilization from "./CapacityUtilizationBarChart.jsx";
 import LoadingAnimation from "../common/LoadingAnimation.jsx";
-import MonthlyDemandTable from "./CriticalDaysTable.jsx";
+import MonthlyDemandTable from "./criticalDaysTable.jsx";
 import InfoTextComponent from "../common/InfoText.jsx";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import dayjs from "dayjs";

@@ -20,6 +20,7 @@ import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import GarageIcon from "@mui/icons-material/GarageRounded";
+import logo from "../../assets/logo.svg";
 
 const Navigation = ({ isOpen, toggleNav }) => {
   return (
@@ -46,11 +47,7 @@ const Navigation = ({ isOpen, toggleNav }) => {
               alignItems: "center",
             }}
           >
-            <img
-              src="src/assets/logo.svg"
-              alt="Messe München"
-              style={{ marginRight: 16 }}
-            />
+            <img src={logo} alt="Messe München" style={{ marginRight: 16 }} />
             <Typography variant="h6" className="nav__page-title">
               Parking Space
               <br />

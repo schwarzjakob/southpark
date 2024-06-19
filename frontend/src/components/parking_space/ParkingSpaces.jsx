@@ -23,6 +23,7 @@ import WcRoundedIcon from "@mui/icons-material/WcRounded";
 import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
+import AddIcon from "@mui/icons-material/Add";
 
 import "./styles/parkingSpaces.css";
 
@@ -97,12 +98,14 @@ const ParkingSpaces = () => {
         </Typography>
       </Box>
       <Box>
-        <Link to="/parking_space/add" style={{ textDecoration: "none" }}>
+        <Link to="/add_parking_space" style={{ textDecoration: "none" }}>
           <Button
             variant="contained"
-            color="primary"
+            color="secondary"
             style={{ marginBottom: "1rem", float: "right" }}
           >
+            {" "}
+            <AddIcon className="addIcon" />
             Add Parking Space
           </Button>
         </Link>
@@ -198,7 +201,11 @@ const ParkingSpaces = () => {
             </TableHead>
             <TableBody>
               {sortedParkingSpaces.map((space) => (
-                <TableRow key={space.id}>
+                <TableRow
+                  key={space.id}
+                  onClick={() => navigate(`/parking_space/${space.id}`)}
+                  style={{ cursor: "pointer" }}
+                >
                   <TableCell className="parking-lot">
                     <Box className="parking-lot-box">
                       {capitalize(space.name)}
@@ -221,7 +228,7 @@ const ParkingSpaces = () => {
                   </TableCell>
                   <TableCell>
                     <IconButton
-                      onClick={() => navigate(`/parking_space?id=${space.id}`)}
+                      onClick={() => navigate(`/parking_space/${space.id}`)}
                       edge="start"
                       size="small"
                     >
