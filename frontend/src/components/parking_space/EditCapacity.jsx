@@ -243,17 +243,12 @@ const EditParkingSpaceCapacity = () => {
             </Box>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <Box className="input-container">
+            <Box className="input-container input-container__utalization">
               <LocalParkingRoundedIcon className="input-container__icon" />
               <InputLabel className="input-container__label-utilization">
                 Utilization Type
               </InputLabel>
-              <Select
-                name="utilization_type"
-                value={capacity.utilization_type}
-                onChange={handleChange}
-                fullWidth
-              >
+              <Select name="utilization_type" onChange={handleChange} fullWidth>
                 <MenuItem value="parking">Parking</MenuItem>
                 <MenuItem value="event">Event</MenuItem>
                 <MenuItem value="construction">Construction</MenuItem>

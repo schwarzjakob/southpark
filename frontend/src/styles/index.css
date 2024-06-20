@@ -1349,7 +1349,7 @@ div.MuiDataGrid-scrollbarFiller.MuiDataGrid-scrollbarFiller--header {
   color: var(--color-pure-white) !important;
 }
 
-.MuiInputLabel-animated {
+.input-container__utalization label {
   background: var(--color-pure-white) !important;
   padding: 0 5px !important;
 }
