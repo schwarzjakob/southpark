@@ -53,7 +53,7 @@ const AddParkingSpaceCapacity = () => {
     const fetchParkingLot = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space/${parkingLotId}`
+          `/api/get_parking_space/${parkingLotId}`,
         );
         setParkingLot(response.data);
       } catch (error) {
@@ -65,7 +65,7 @@ const AddParkingSpaceCapacity = () => {
     const fetchCapacities = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space_capacities/${parkingLotId}`
+          `/api/get_parking_space_capacities/${parkingLotId}`,
         );
         if (Array.isArray(response.data)) {
           setExistingCapacities(response.data);
@@ -116,7 +116,7 @@ const AddParkingSpaceCapacity = () => {
         (currentTo >= dayjs(cap.valid_from) &&
           currentTo <= dayjs(cap.valid_to)) ||
         (currentFrom <= dayjs(cap.valid_from) &&
-          currentTo >= dayjs(cap.valid_to))
+          currentTo >= dayjs(cap.valid_to)),
     );
 
     return overlappingCapacities;
@@ -132,11 +132,11 @@ const AddParkingSpaceCapacity = () => {
         .map(
           (cap) =>
             `${dayjs(cap.valid_from).format("DD/MM/YYYY")} - ${dayjs(
-              cap.valid_to
-            ).format("DD/MM/YYYY")}`
+              cap.valid_to,
+            ).format("DD/MM/YYYY")}`,
         )
         .join(
-          ", "
+          ", ",
         )}. Please choose a different time range or edit the conflicting capacities first.`;
       setError(errorMessage);
       return;
@@ -164,7 +164,9 @@ const AddParkingSpaceCapacity = () => {
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
       console.error("Error adding capacity:", error);
-      setError("Error adding capacity.");
+      const errorMessage =
+        error.response?.data?.error || "Error adding capacity.";
+      setError(errorMessage);
     }
   };
 

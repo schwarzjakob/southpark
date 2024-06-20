@@ -93,7 +93,9 @@ const ParkingSpace = () => {
               parkingSpace.pricing.slice(1)}
           </Typography>
           <Typography variant="body1" display="flex" gap="10px">
-            <AddRoadRoundedIcon /> Surface: {parkingSpace.surface_material}
+            <AddRoadRoundedIcon /> Surface:{" "}
+            {parkingSpace.surface_material.charAt(0).toUpperCase() +
+              parkingSpace.surface_material.slice(1)}
           </Typography>
           <Typography variant="body1" display="flex" gap="10px">
             <WcRoundedIcon /> Toilets:{" "}

@@ -31,7 +31,7 @@ const EditParkingSpace = () => {
   const [parkingSpace, setParkingSpace] = useState({
     name: "",
     service_toilets: false,
-    surface_material: "Asphalt",
+    surface_material: "asphalt",
     service_shelter: false,
     pricing: "low",
     external: false,
@@ -88,7 +88,7 @@ const EditParkingSpace = () => {
     try {
       const response = await axios.put(
         `/api/edit_parking_space/${id}`,
-        parkingSpace
+        parkingSpace,
       );
       console.log("Parking space updated:", response.data);
       navigate(`/parking_space/${response.data.id}`);
@@ -155,9 +155,9 @@ const EditParkingSpace = () => {
                   value={parkingSpace.surface_material}
                   onChange={handleSelectChange("surface_material")}
                 >
-                  <MenuItem value="Asphalt">Asphalt</MenuItem>
-                  <MenuItem value="Gravel">Gravel</MenuItem>
-                  <MenuItem value="Dirt">Dirt</MenuItem>
+                  <MenuItem value="asphalt">Asphalt</MenuItem>
+                  <MenuItem value="gravel">Gravel</MenuItem>
+                  <MenuItem value="dirt">Dirt</MenuItem>
                 </Select>
               </FormControl>
             </Box>

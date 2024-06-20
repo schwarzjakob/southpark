@@ -61,6 +61,7 @@ CREATE TABLE public.parking_lot_capacity (
     bus_limit INTEGER NOT NULL,
     valid_from DATE NOT NULL,
     valid_to DATE NOT NULL
+    CHECK (capacity >= truck_limit * 4 AND capacity >= bus_limit * 3)
 );
 
 CREATE TABLE public.parking_lot_allocation (
@@ -108,6 +109,28 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_parking_lot_capacity_constraints() RETURNS TRIGGER AS $$
+DECLARE
+    max_truck_limit INTEGER;
+    max_bus_limit INTEGER;
+BEGIN
+    max_truck_limit := NEW.capacity / 4;
+    max_bus_limit := NEW.capacity / 3;
+
+    IF NEW.truck_limit > max_truck_limit THEN
+        RAISE EXCEPTION 'Truck limit is too high for the given capacity. Maximum allowed: %, Given: %', max_truck_limit, NEW.truck_limit;
+    ELSIF NEW.bus_limit > max_bus_limit THEN
+        RAISE EXCEPTION 'Bus limit is too high for the given capacity. Maximum allowed: %, Given: %', max_bus_limit, NEW.bus_limit;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_check_parking_lot_capacity_constraints
+BEFORE INSERT OR UPDATE ON public.parking_lot_capacity
+FOR EACH ROW EXECUTE FUNCTION check_parking_lot_capacity_constraints();
 
 CREATE OR REPLACE FUNCTION check_allocation_within_capacity() RETURNS TRIGGER AS $$
 DECLARE

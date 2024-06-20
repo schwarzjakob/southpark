@@ -61,11 +61,11 @@ const EditParkingSpaceCapacity = () => {
     const fetchCapacity = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space_capacities/${parkingLotId}`
+          `/api/get_parking_space_capacities/${parkingLotId}`,
         );
         setExistingCapacities(response.data);
         const capacityData = response.data.find(
-          (item) => item.id === parseInt(capacityId)
+          (item) => item.id === parseInt(capacityId),
         );
         if (capacityData) {
           setCapacity({
@@ -89,7 +89,7 @@ const EditParkingSpaceCapacity = () => {
     const fetchParkingLot = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space/${parkingLotId}`
+          `/api/get_parking_space/${parkingLotId}`,
         );
         setParkingLot(response.data);
       } catch (error) {
@@ -130,7 +130,7 @@ const EditParkingSpaceCapacity = () => {
           (currentTo >= dayjs(cap.valid_from) &&
             currentTo <= dayjs(cap.valid_to)) ||
           (currentFrom <= dayjs(cap.valid_from) &&
-            currentTo >= dayjs(cap.valid_to)))
+            currentTo >= dayjs(cap.valid_to))),
     );
 
     return overlappingCapacities;
@@ -146,13 +146,13 @@ const EditParkingSpaceCapacity = () => {
         .map(
           (cap) =>
             `<a href="/edit_capacity/${cap.id}" target="_blank">${dayjs(
-              cap.valid_from
+              cap.valid_from,
             ).format("DD/MM/YYYY")} - ${dayjs(cap.valid_to).format(
-              "DD/MM/YYYY"
-            )}</a>`
+              "DD/MM/YYYY",
+            )}</a>`,
         )
         .join(
-          ", "
+          ", ",
         )}. Please choose a different time range or edit the conflicting capacities first.`;
       setError(errorMessage);
       return;
@@ -179,8 +179,11 @@ const EditParkingSpaceCapacity = () => {
       });
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
-      console.error("Error updating capacity:", error);
-      setError("Error updating capacity.");
+      if (error.response && error.response.data && error.response.data.error) {
+        setError(error.response.data.error);
+      } else {
+        setError("Error updating capacity.");
+      }
     }
   };
 

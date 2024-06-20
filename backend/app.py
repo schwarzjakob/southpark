@@ -113,6 +113,7 @@ def parse_date(date_str):
             continue
     raise ValueError(f"Date {date_str} is not in a recognized format.")
 
+
 # Update an event
 @app.route("/events/<int:id>", methods=["PUT"])
 def update_event(id):
@@ -213,6 +214,7 @@ def update_event(id):
     except Exception as e:
         logger.error("Failed to update event", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 
 # Dashboard section
 @app.route("/available_years", methods=["GET"])
@@ -379,6 +381,7 @@ def get_events_timeline(date):
         logger.error("Failed to fetch data from database", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+
 # get capacity utilization
 @app.route("/capacity_utilization", methods=["GET"])
 def get_capacity_utilization():
@@ -413,33 +416,36 @@ def get_capacity_utilization():
         events_per_day = get_data(query_events_per_day)
         events_dict = {}
         for _, row in events_per_day.iterrows():
-            date = row['date'].strftime("%Y-%m-%d")
+            date = row["date"].strftime("%Y-%m-%d")
             if date not in events_dict:
                 events_dict[date] = {}
-            if row['event_id'] not in events_dict[date]:
-                events_dict[date][row['event_id']] = {
+            if row["event_id"] not in events_dict[date]:
+                events_dict[date][row["event_id"]] = {
                     "event_id": row["event_id"],
                     "event_name": row["event_name"],
                     "capacity": 0,
-                    "event_color": row["event_color"]
+                    "event_color": row["event_color"],
                 }
-            events_dict[date][row['event_id']]["capacity"] += row["capacity"]
+            events_dict[date][row["event_id"]]["capacity"] += row["capacity"]
 
         data = []
         for _, row in total_capacity_utilization.iterrows():
-            date_str = row['date'].strftime("%Y-%m-%d")
-            data.append({
-                "date": date_str,
-                "total_demand": row["total_demand"],
-                "total_capacity": row["total_capacity"],
-                "events": list(events_dict.get(date_str, {}).values())
-            })
+            date_str = row["date"].strftime("%Y-%m-%d")
+            data.append(
+                {
+                    "date": date_str,
+                    "total_demand": row["total_demand"],
+                    "total_capacity": row["total_capacity"],
+                    "events": list(events_dict.get(date_str, {}).values()),
+                }
+            )
 
         logger.info("Capacity utilization data fetched successfully.")
         return jsonify(data), 200
     except Exception as e:
         logger.error("Failed to fetch capacity utilization data", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 
 def calculate_date_range(start_date, end_date):
     """Calculate the date range between the start and end dates of an events phase."""
@@ -450,6 +456,7 @@ def calculate_date_range(start_date, end_date):
         date_array.append(current_date.strftime("%Y-%m-%d"))
         current_date += pd.DateOffset(days=1)
     return date_array
+
 
 # Get capacity utilization for critical days
 @app.route("/capacity_utilization_critical_days/<int:year>", methods=["GET"])
@@ -474,29 +481,34 @@ def capacity_utilization_critical_days(year):
         monthly_data = {}
 
         for _, row in data.iterrows():
-            date = pd.to_datetime(row['date'])
+            date = pd.to_datetime(row["date"])
             month = date.strftime("%Y-%m")
             day = date.strftime("%d")
 
             if month not in monthly_data:
                 monthly_data[month] = {
                     "above_100": {"count": 0, "dates": []},
-                    "between_80_and_100": {"count": 0, "dates": []}
+                    "between_80_and_100": {"count": 0, "dates": []},
                 }
 
             demand = row["total_demand"]
             capacity = row["total_capacity"]
             if 0.8 * capacity <= demand <= capacity:
                 monthly_data[month]["between_80_and_100"]["count"] += 1
-                monthly_data[month]["between_80_and_100"]["dates"].append(date.strftime("%Y-%m-%d"))
+                monthly_data[month]["between_80_and_100"]["dates"].append(
+                    date.strftime("%Y-%m-%d")
+                )
             elif demand > capacity:
                 monthly_data[month]["above_100"]["count"] += 1
-                monthly_data[month]["above_100"]["dates"].append(date.strftime("%Y-%m-%d"))
+                monthly_data[month]["above_100"]["dates"].append(
+                    date.strftime("%Y-%m-%d")
+                )
 
         return jsonify(monthly_data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
 # Fetch total capacity
 @app.route("/total_capacity", methods=["GET"])
 def total_capacity():
@@ -507,45 +519,49 @@ def total_capacity():
         # Get the start_date and end_date from the query parameters
         start_date_str = request.args.get("start_date")
         end_date_str = request.args.get("end_date")
-        
+
         # Parse the dates
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
         end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-        
+
         logger.info(f"Calculating total capacity from {start_date} to {end_date}.")
-        
+
         # SQL query to fetch the required fields
         query = """
         SELECT id, parking_lot_id, capacity, valid_from, valid_to
         FROM public.parking_lot_capacity
         """
-        
+
         # Execute the query and fetch data
         result = get_data(query)
-        
+
         # Convert result to a list of dictionaries
         capacity_data = result.to_dict(orient="records")
-        
+
         # Calculate capacities for each day within the range
         total_capacities = []
         current_date = start_date
         while current_date <= end_date:
             total_capacity = sum(
-                entry["capacity"] for entry in capacity_data
+                entry["capacity"]
+                for entry in capacity_data
                 if entry["valid_from"] <= current_date <= entry["valid_to"]
             )
-            total_capacities.append({
-                "day": current_date.strftime("%Y-%m-%d"),
-                "total_capacity": total_capacity
-            })
+            total_capacities.append(
+                {
+                    "day": current_date.strftime("%Y-%m-%d"),
+                    "total_capacity": total_capacity,
+                }
+            )
             current_date += timedelta(days=1)
-        
+
         logger.info("Total capacities calculated successfully.")
         return jsonify(total_capacities), 200
     except Exception as e:
         logger.error("Failed to calculate total capacities", exc_info=True)
         return jsonify({"error": str(e)}), 500
-    
+
+
 # Check hall availability
 @app.route("/check_hall_availability", methods=["POST"])
 def check_hall_availability():
@@ -993,6 +1009,7 @@ def optimize_parking():
         logger.error("Error during optimization process", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+
 # Fetch parking spaces
 @app.route("/get_parking_spaces", methods=["GET"])
 def get_parking_spaces():
@@ -1011,7 +1028,8 @@ def get_parking_spaces():
     except Exception as e:
         logger.error("Failed to fetch parking spaces", exc_info=True)
         return jsonify({"error": str(e)}), 500
-    
+
+
 # Fetch parking space by ID
 @app.route("/get_parking_space/<int:id>", methods=["GET"])
 def get_parking_space(id):
@@ -1027,11 +1045,11 @@ def get_parking_space(id):
             """
             result = connection.execute(text(query), {"id": id})
             parking_space = result.fetchone()
-            
+
             if parking_space is None:
                 logger.info(f"Parking space with ID {id} not found.")
                 return jsonify({"error": "Parking space not found."}), 404
-            
+
             # Convert SQLAlchemy result to a dictionary
             parking_space_dict = {
                 "id": parking_space[0],
@@ -1041,7 +1059,7 @@ def get_parking_space(id):
                 "service_shelter": parking_space[4],
                 "pricing": parking_space[5],
                 "external": parking_space[6],
-                "coordinates": parking_space[7]
+                "coordinates": parking_space[7],
             }
 
             return jsonify(parking_space_dict), 200
@@ -1068,7 +1086,9 @@ def add_parking_space():
 
         with engine.begin() as connection:
             # Fetch the maximum existing ID
-            max_id_result = connection.execute(text("SELECT MAX(id) FROM public.parking_lot"))
+            max_id_result = connection.execute(
+                text("SELECT MAX(id) FROM public.parking_lot")
+            )
             max_id = max_id_result.scalar() or 0
             new_id = max_id + 1
 
@@ -1091,17 +1111,26 @@ def add_parking_space():
             result = connection.execute(text(query), params)
             parking_lot_id = result.fetchone()[0]
 
-        return jsonify({"message": "Parking space added successfully", "id": parking_lot_id}), 201
+        return (
+            jsonify(
+                {"message": "Parking space added successfully", "id": parking_lot_id}
+            ),
+            201,
+        )
     except IntegrityError as e:
-        if 'unique constraint' in str(e.orig):
+        if "unique constraint" in str(e.orig):
             logger.error("Failed to add parking space: duplicate name", exc_info=True)
-            return jsonify({"error": "Parking space with this name already exists."}), 400
+            return (
+                jsonify({"error": "Parking space with this name already exists."}),
+                400,
+            )
         else:
             logger.error("Failed to add parking space: integrity error", exc_info=True)
             return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
         logger.error("Failed to add parking space", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 
 # Edit parking space
 @app.route("/edit_parking_space/<int:id>", methods=["PUT"])
@@ -1146,17 +1175,35 @@ def edit_parking_space(id):
             result = connection.execute(text(query), params)
             parking_lot_id = result.fetchone()[0]
 
-        return jsonify({"message": "Parking space updated successfully", "id": parking_lot_id}), 200
+        return (
+            jsonify(
+                {"message": "Parking space updated successfully", "id": parking_lot_id}
+            ),
+            200,
+        )
     except IntegrityError as e:
-        if 'unique constraint' in str(e.orig):
-            logger.error("Failed to update parking space: duplicate name", exc_info=True)
-            return jsonify({"error": "Parking space with this name already exists."}), 400
+        if "unique constraint" in str(e.orig):
+            logger.error(
+                "Failed to update parking space: duplicate name", exc_info=True
+            )
+            return (
+                jsonify({"error": "Parking space with this name already exists."}),
+                400,
+            )
         else:
-            logger.error("Failed to update parking space: integrity error", exc_info=True)
+            logger.error(
+                "Failed to update parking space: integrity error", exc_info=True
+            )
             return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
         logger.error(f"Failed to update parking space with ID {id}: {e}", exc_info=True)
-        return jsonify({"error": f"Failed to update parking space with ID {id}: {str(e)}"}), 500
+        return (
+            jsonify(
+                {"error": f"Failed to update parking space with ID {id}: {str(e)}"}
+            ),
+            500,
+        )
+
 
 # Fetch parking space capacities by parking lot ID
 @app.route("/get_parking_space_capacities/<int:parking_lot_id>", methods=["GET"])
@@ -1202,7 +1249,9 @@ def add_parking_space_capacity(parking_lot_id):
 
         with engine.begin() as connection:
             # Fetch the maximum existing ID
-            max_id_result = connection.execute(text("SELECT MAX(id) FROM public.parking_lot_capacity"))
+            max_id_result = connection.execute(
+                text("SELECT MAX(id) FROM public.parking_lot_capacity")
+            )
             max_id = max_id_result.scalar() or 0
             new_id = max_id + 1
 
@@ -1222,23 +1271,32 @@ def add_parking_space_capacity(parking_lot_id):
                 "truck_limit": truck_limit,
                 "bus_limit": bus_limit,
                 "valid_from": valid_from,
-                "valid_to": valid_to
+                "valid_to": valid_to,
             }
 
             result = connection.execute(text(query), params)
             capacity_id = result.fetchone()[0]
 
-        return jsonify({"message": "New capacity added successfully", "id": capacity_id}), 201
+        return (
+            jsonify({"message": "New capacity added successfully", "id": capacity_id}),
+            201,
+        )
     except IntegrityError as e:
-        if 'unique constraint' in str(e.orig):
+        if "unique constraint" in str(e.orig):
             logger.error("Failed to add new capacity: duplicate entry", exc_info=True)
-            return jsonify({"error": "A capacity entry with this ID already exists."}), 400
+            return (
+                jsonify({"error": "A capacity entry with this ID already exists."}),
+                400,
+            )
         else:
             logger.error("Failed to add new capacity: integrity error", exc_info=True)
             return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
         logger.error("Failed to add new capacity", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        error_message = str(e)
+        if hasattr(e, "orig"):
+            error_message = str(e.orig).split("CONTEXT:")[0].strip()
+        return jsonify({"error": error_message}), 500
 
 
 # Edit parking space capacity
@@ -1267,7 +1325,7 @@ def edit_parking_space_capacity(capacity_id):
             "bus_limit": data["bus_limit"],
             "valid_from": data["valid_from"],
             "valid_to": data["valid_to"],
-            "capacity_id": capacity_id
+            "capacity_id": capacity_id,
         }
 
         with engine.connect() as connection:
@@ -1278,7 +1336,12 @@ def edit_parking_space_capacity(capacity_id):
         return jsonify({"message": "Capacity updated successfully"}), 200
     except Exception as e:
         logger.error("Failed to edit capacity", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        error_message = str(e)
+        if hasattr(e, "orig"):
+            # Extract only the relevant part of the error message
+            error_message = str(e.orig).split("CONTEXT:")[0].strip()
+        return jsonify({"error": error_message}), 500
+
 
 # Delete parking space capacity
 @app.route("/delete_parking_space_capacity/<int:capacity_id>", methods=["DELETE"])
@@ -1303,7 +1366,7 @@ def delete_parking_space_capacity(capacity_id):
     except Exception as e:
         logger.error("Failed to delete capacity", exc_info=True)
         return jsonify({"error": str(e)}), 500
-    
+
 
 if __name__ == "__main__":
     app.config["DEBUG"] = True
