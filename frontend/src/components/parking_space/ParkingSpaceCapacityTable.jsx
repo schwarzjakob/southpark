@@ -46,7 +46,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     const fetchCapacities = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space_capacities/${parkingLotId}`,
+          `/api/get_parking_space_capacities/${parkingLotId}`
         );
         if (response.status === 204) {
           setNotification("No capacities found for this parking lot.");
@@ -185,7 +185,14 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                       direction={orderBy === "capacity" ? order : "asc"}
                       onClick={() => handleRequestSort("capacity")}
                     >
-                      Total Capacity
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Total Capacity
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (Car Units)
+                        </Box>
+                      </Box>
                     </TableSortLabel>
                   </Box>
                 </TableCell>
@@ -200,7 +207,14 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                       direction={orderBy === "bus_limit" ? order : "asc"}
                       onClick={() => handleRequestSort("bus_limit")}
                     >
-                      Bus Limit
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Bus limit
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (= 3x Car Units)
+                        </Box>
+                      </Box>
                     </TableSortLabel>
                   </Box>
                 </TableCell>
@@ -215,7 +229,14 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                       direction={orderBy === "truck_limit" ? order : "asc"}
                       onClick={() => handleRequestSort("truck_limit")}
                     >
-                      Truck Limit
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Truck limit
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (= 4x Car Units)
+                        </Box>
+                      </Box>{" "}
                     </TableSortLabel>
                   </Box>
                 </TableCell>
@@ -231,7 +252,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                   hover
                   onClick={() =>
                     navigate(
-                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`,
+                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
                     )
                   }
                   style={{ cursor: "pointer" }}
@@ -239,7 +260,10 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                   <TableCell>{capacity.id}</TableCell>
                   <TableCell>{formatDate(capacity.valid_from)}</TableCell>
                   <TableCell>{formatDate(capacity.valid_to)}</TableCell>
-                  <TableCell>{capacity.utilization_type.charAt(0).toUpperCase() + capacity.utilization_type.slice(1)}</TableCell>
+                  <TableCell>
+                    {capacity.utilization_type.charAt(0).toUpperCase() +
+                      capacity.utilization_type.slice(1)}
+                  </TableCell>
                   <TableCell>{capacity.capacity}</TableCell>
                   <TableCell>{capacity.bus_limit}</TableCell>
                   <TableCell>{capacity.truck_limit}</TableCell>
@@ -248,7 +272,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(
-                          `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`,
+                          `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
                         );
                       }}
                       edge="start"

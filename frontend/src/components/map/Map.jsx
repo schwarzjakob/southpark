@@ -1,4 +1,3 @@
-// src/components/MapComponent.jsx
 import "leaflet/dist/leaflet.css";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
@@ -12,6 +11,7 @@ import {
 } from "react-leaflet";
 import dayjs from "dayjs";
 import axios from "axios";
+import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 
 const downwardsOverlays = [
   "C1",
@@ -71,7 +71,6 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const { data } = await axios.get(
           `/api/events_timeline/${selectedDate}`
         );
-        // DEBUG // console.log("Event API:", data);
         if (data) {
           setEvents(data);
         }
@@ -142,6 +141,13 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Status: {status}</p>
           <p>Entrance: {entrances}</p>
           <p>Allocated Parking Lots: {parkingLots}</p>
+
+          <div className="details-link_container">
+            <a href={`/event/${event.id}`}>
+              <LinkRoundedIcon />
+              {event.event_name} Details
+            </a>
+          </div>
         </div>
       );
     } else if (type === "entrance" && event.event_entrance) {
@@ -151,6 +157,12 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Status: {status}</p>
           <p>Allocated Halls: {event.halls}</p>
           <p>Allocated Parking Lots: {parkingLots}</p>
+          <div className="details-link_container">
+            <a href={`/event/${event.id}`}>
+              <LinkRoundedIcon />
+              {event.event_name} Details
+            </a>
+          </div>
         </div>
       );
     } else {
@@ -160,6 +172,12 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Status: {status}</p>
           <p>Entrance: {entrances}</p>
           <p>Associated Halls: {event.halls}</p>
+          <div className="details-link_container">
+            <a href={`/event/${event.id}`}>
+              <LinkRoundedIcon />
+              {event.event_name} Details
+            </a>
+          </div>
         </div>
       );
     }
@@ -328,11 +346,19 @@ const MapComponent = ({ selectedDate, zoom }) => {
               <span>{parkingLot.name}</span>
             </Tooltip>
             <Popup autoPan={false} offset={popupOffset}>
-              {event ? (
-                getPopupContent(event, parkingLot.name, "parking lot")
-              ) : (
-                <span>{parkingLot.name}: No Event!</span>
-              )}
+              <div>
+                {event ? (
+                  getPopupContent(event, parkingLot.name, "parking lot")
+                ) : (
+                  <span>{parkingLot.name}: No Event!</span>
+                )}
+                <div className="details-link_container">
+                  <a href={`/parking_space/${parkingLot.id}`}>
+                    <LinkRoundedIcon />
+                    {parkingLot.name} Details
+                  </a>
+                </div>
+              </div>
             </Popup>
           </Polygon>
         );

@@ -61,11 +61,11 @@ const EditParkingSpaceCapacity = () => {
     const fetchCapacity = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space_capacities/${parkingLotId}`,
+          `/api/get_parking_space_capacities/${parkingLotId}`
         );
         setExistingCapacities(response.data);
         const capacityData = response.data.find(
-          (item) => item.id === parseInt(capacityId),
+          (item) => item.id === parseInt(capacityId)
         );
         if (capacityData) {
           setCapacity({
@@ -89,7 +89,7 @@ const EditParkingSpaceCapacity = () => {
     const fetchParkingLot = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space/${parkingLotId}`,
+          `/api/get_parking_space/${parkingLotId}`
         );
         setParkingLot(response.data);
       } catch (error) {
@@ -130,7 +130,7 @@ const EditParkingSpaceCapacity = () => {
           (currentTo >= dayjs(cap.valid_from) &&
             currentTo <= dayjs(cap.valid_to)) ||
           (currentFrom <= dayjs(cap.valid_from) &&
-            currentTo >= dayjs(cap.valid_to))),
+            currentTo >= dayjs(cap.valid_to)))
     );
 
     return overlappingCapacities;
@@ -142,18 +142,20 @@ const EditParkingSpaceCapacity = () => {
     const overlappingCapacities = checkForOverlaps();
 
     if (overlappingCapacities.length > 0) {
-      const errorMessage = `The selected time range overlaps with the following capacities: ${overlappingCapacities
+      const errorMessage = `The selected time range overlaps with the following capacities:<br> ${overlappingCapacities
         .map(
           (cap) =>
-            `<a href="/edit_capacity/${cap.id}" target="_blank">${dayjs(
-              cap.valid_from,
+            `<a href="/capacity/edit/?capacityId=${
+              cap.id
+            }&parkinglotId=${parkingLotId}" target="_blank">${dayjs(
+              cap.valid_from
             ).format("DD/MM/YYYY")} - ${dayjs(cap.valid_to).format(
-              "DD/MM/YYYY",
-            )}</a>`,
+              "DD/MM/YYYY"
+            )}</a><br>`
         )
         .join(
-          ", ",
-        )}. Please choose a different time range or edit the conflicting capacities first.`;
+          ", "
+        )}. Please choose a different time range or edit the conflicting capacities first. <br>`;
       setError(errorMessage);
       return;
     }
@@ -263,7 +265,7 @@ const EditParkingSpaceCapacity = () => {
             <Box className="input-container">
               <DirectionsCarFilledIcon className="input-container__icon" />
               <TextField
-                label="Total Capacity"
+                label="Total Capacity (Car Units)"
                 name="capacity"
                 type="number"
                 value={capacity.capacity}
@@ -279,7 +281,7 @@ const EditParkingSpaceCapacity = () => {
             <Box className="input-container">
               <AirportShuttleRoundedIcon className="input-container__icon" />
               <TextField
-                label="Bus Limit"
+                label="Bus Limit (= 3x Car Units)"
                 name="bus_limit"
                 type="number"
                 value={capacity.bus_limit}
@@ -295,7 +297,7 @@ const EditParkingSpaceCapacity = () => {
             <Box className="input-container">
               <LocalShippingRoundedIcon className="input-container__icon" />
               <TextField
-                label="Truck Limit"
+                label="Truck Limit (= 4x Car Units)"
                 name="truck_limit"
                 type="number"
                 value={capacity.truck_limit}

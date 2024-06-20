@@ -48,3 +48,18 @@
 .icon__edit-parking-space {
   padding-right: 5px;
 }
+
+.header-icon-container__label {
+  display: flex;
+  flex-direction: column;
+  justify-items: first baseline;
+}
+.header-icon-container__label-unit {
+  font-size: 0.7rem;
+  color: var(--color-gray-100);
+  line-height: 1rem;
+}
+
+.capacity-chart {
+  padding: 1rem;
+}
