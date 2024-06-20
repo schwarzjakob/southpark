@@ -105,7 +105,7 @@ function EditEvent() {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get("/api/events");
+      const response = await axios.get("/api/events/");
       const eventsWithIds = response.data.map((event) => ({
         ...event,
         id: event.id,
@@ -119,7 +119,7 @@ function EditEvent() {
 
   const handleSearch = (value) => {
     const filtered = events.filter((event) =>
-      event.name.toLowerCase().includes(value.toLowerCase()),
+      event.name.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredEvents(filtered);
   };
@@ -361,7 +361,7 @@ function EditEvent() {
   };
 
   const checkHallAvailability = async () => {
-    const response = await axios.post("/api/check_hall_availability", {
+    const response = await axios.post("/api/events/check_hall_availability", {
       event_id: selectedEvent?.id,
       halls: eventData.halls,
       dates: eventData.dates,
@@ -396,10 +396,12 @@ function EditEvent() {
       setStep(1);
 
       try {
-        const optimizeResponse = await axios.post("/api/optimize_distance");
+        const optimizeResponse = await axios.post(
+          "/api/events/optimize_distance"
+        );
         console.log(
           "Optimization triggered successfully:",
-          optimizeResponse.data,
+          optimizeResponse.data
         );
         setFeedback({
           open: true,
@@ -417,7 +419,7 @@ function EditEvent() {
       navigate("/mapview", {
         state: {
           selectedDate: dayjs(eventData.dates.runtime.start).format(
-            "YYYY-MM-DD",
+            "YYYY-MM-DD"
           ),
         },
       });
@@ -496,7 +498,7 @@ function EditEvent() {
                   return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
                 })
                 .join("<br>");
-            }),
+            })
           )
           .join("<br>");
 
@@ -606,7 +608,7 @@ function EditEvent() {
                             <MenuItem key={value} value={value}>
                               {label}
                             </MenuItem>
-                          ),
+                          )
                         )}
                       </Select>
                     </FormControl>
@@ -635,7 +637,7 @@ function EditEvent() {
                                 handleDateChange(
                                   phase,
                                   "start",
-                                  newValue ? newValue.format("YYYY-MM-DD") : "",
+                                  newValue ? newValue.format("YYYY-MM-DD") : ""
                                 )
                               }
                               slotProps={{
@@ -665,7 +667,7 @@ function EditEvent() {
                                 handleDateChange(
                                   phase,
                                   "end",
-                                  newValue ? newValue.format("YYYY-MM-DD") : "",
+                                  newValue ? newValue.format("YYYY-MM-DD") : ""
                                 )
                               }
                               slotProps={{
@@ -726,12 +728,12 @@ function EditEvent() {
                             (new Date(eventData.dates[phase].end) -
                               new Date(eventData.dates[phase].start)) /
                               (1000 * 3600 * 24) +
-                              1,
+                              1
                           )
                             .fill()
                             .map((_, index) => {
                               const date = new Date(
-                                eventData.dates[phase].start,
+                                eventData.dates[phase].start
                               );
                               date.setDate(date.getDate() + index);
                               const dateString = date
@@ -749,7 +751,7 @@ function EditEvent() {
                                       handleDemandChange(
                                         phase,
                                         dateString,
-                                        e.target.value,
+                                        e.target.value
                                       )
                                     }
                                     required
@@ -760,7 +762,7 @@ function EditEvent() {
                               );
                             })}
                         </React.Fragment>
-                      ),
+                      )
                   )}
                   <Grid item xs={6}>
                     <Button

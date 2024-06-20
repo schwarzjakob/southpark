@@ -5,6 +5,8 @@ pandas==2.2.2
 python-dotenv==1.0.1
 psycopg2-binary==2.9.9
 SQLAlchemy==2.0.30
+Flask-SQLAlchemy==3.0.3
+Flask-Migrate==4.0.0
 
 # allocation_algorithm
 PuLP==2.8.0

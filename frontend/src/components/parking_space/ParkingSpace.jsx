@@ -24,7 +24,7 @@ const ParkingSpace = () => {
   useEffect(() => {
     const fetchParkingSpace = async () => {
       try {
-        const response = await axios.get(`/api/get_parking_space/${id}`);
+        const response = await axios.get(`/api/parking/space/${id}`);
         setParkingSpace(response.data);
       } catch (error) {
         console.error("Error fetching parking space data:", error);

@@ -37,7 +37,7 @@ const TITLE = "Edit Capacity";
 const EditParkingSpaceCapacity = () => {
   const [capacity, setCapacity] = useState({
     capacity: 0,
-    utilization_type: "",
+    utilization_type: "parking",
     truck_limit: 0,
     bus_limit: 0,
     valid_from: null,
@@ -61,7 +61,7 @@ const EditParkingSpaceCapacity = () => {
     const fetchCapacity = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space_capacities/${parkingLotId}`
+          `/api/parking/capacities/${parkingLotId}`
         );
         setExistingCapacities(response.data);
         const capacityData = response.data.find(
@@ -70,6 +70,7 @@ const EditParkingSpaceCapacity = () => {
         if (capacityData) {
           setCapacity({
             ...capacityData,
+            utilization_type: capacityData.utilization_type || "parking",
             valid_from: capacityData.valid_from
               ? dayjs(capacityData.valid_from)
               : null,
@@ -88,9 +89,7 @@ const EditParkingSpaceCapacity = () => {
 
     const fetchParkingLot = async () => {
       try {
-        const response = await axios.get(
-          `/api/get_parking_space/${parkingLotId}`
-        );
+        const response = await axios.get(`/api/parking/space/${parkingLotId}`);
         setParkingLot(response.data);
       } catch (error) {
         console.error("Error fetching parking lot data:", error);
@@ -174,7 +173,7 @@ const EditParkingSpaceCapacity = () => {
       : null;
 
     try {
-      await axios.put(`/api/edit_parking_space_capacity/${capacityId}`, {
+      await axios.put(`/api/parking/capacities//${capacityId}`, {
         ...capacity,
         valid_from: updatedValidFrom,
         valid_to: updatedValidTo,
@@ -191,7 +190,7 @@ const EditParkingSpaceCapacity = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/delete_parking_space_capacity/${capacityId}`);
+      await axios.delete(`/api/parking/capacities/${capacityId}`);
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
       console.error("Error deleting capacity:", error);
@@ -248,7 +247,12 @@ const EditParkingSpaceCapacity = () => {
               <InputLabel className="input-container__label-utilization">
                 Utilization Type
               </InputLabel>
-              <Select name="utilization_type" onChange={handleChange} fullWidth>
+              <Select
+                name="utilization_type"
+                value={capacity.utilization_type}
+                onChange={handleChange}
+                fullWidth
+              >
                 <MenuItem value="parking">Parking</MenuItem>
                 <MenuItem value="event">Event</MenuItem>
                 <MenuItem value="construction">Construction</MenuItem>

@@ -114,7 +114,7 @@ const ImportCSV = () => {
           setCsvHeaders(Object.keys(results.data[0]));
           const autoMapping = Object.keys(defaultMapping).reduce((acc, key) => {
             const header = Object.keys(results.data[0]).find((h) =>
-              h.toLowerCase().includes(defaultMapping[key].toLowerCase()),
+              h.toLowerCase().includes(defaultMapping[key].toLowerCase())
             );
             acc[key] = header || "";
             return acc;
@@ -313,7 +313,7 @@ const ImportCSV = () => {
       updatedDates,
       phase,
       dateType,
-      value,
+      value
     );
     setEvents(updatedEvents);
   };
@@ -344,7 +344,7 @@ const ImportCSV = () => {
   };
 
   const checkHallAvailability = async (eventData) => {
-    const response = await axios.post("/api/check_hall_availability", {
+    const response = await axios.post("/api/events/check_hall_availability", {
       halls: eventData.halls,
       dates: eventData.dates,
     });
@@ -462,7 +462,7 @@ const ImportCSV = () => {
                     return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
                   })
                   .join("<br>");
-              }),
+              })
             )
             .join("<br>");
 
@@ -604,7 +604,7 @@ const ImportCSV = () => {
                           handleEventChange(
                             index,
                             "halls",
-                            e.target.value.join(","),
+                            e.target.value.join(",")
                           )
                         }
                         label="Halls"
@@ -639,7 +639,7 @@ const ImportCSV = () => {
                             <MenuItem key={value} value={value}>
                               {label}
                             </MenuItem>
-                          ),
+                          )
                         )}
                       </Select>
                     </FormControl>
@@ -669,7 +669,7 @@ const ImportCSV = () => {
                                   index,
                                   phase,
                                   "start",
-                                  newValue ? newValue.format("YYYY-MM-DD") : "",
+                                  newValue ? newValue.format("YYYY-MM-DD") : ""
                                 )
                               }
                               slotProps={{
@@ -700,7 +700,7 @@ const ImportCSV = () => {
                                   index,
                                   phase,
                                   "end",
-                                  newValue ? newValue.format("YYYY-MM-DD") : "",
+                                  newValue ? newValue.format("YYYY-MM-DD") : ""
                                 )
                               }
                               slotProps={{

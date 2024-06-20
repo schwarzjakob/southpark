@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Paper, Grid, Typography, Box } from "@mui/material";
 import axios from "axios";
-import CapacityUtilization from "./CapacityUtilizationBarChart.jsx";
 import LoadingAnimation from "../common/LoadingAnimation.jsx";
-import MonthlyDemandTable from "./criticalDaysTable.jsx";
 import InfoTextComponent from "../common/InfoText.jsx";
+import CapacityUtilization from "./CapacityUtilizationBarChart.jsx";
+import CriticalCapacityTable from "./CriticalCapacityTable.jsx";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import dayjs from "dayjs";
 
@@ -27,7 +27,7 @@ const Dashboard = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("/api/capacity_utilization");
+      const response = await axios.get("/api/dashboard/capacity_utilization");
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -82,7 +82,7 @@ const Dashboard = () => {
       </Box>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MonthlyDemandTable
+          <CriticalCapacityTable
             selectedYear={selectedYear}
             setSelectedYear={handleYearChange}
             setDateRange={setDateRange}

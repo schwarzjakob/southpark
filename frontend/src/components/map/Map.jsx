@@ -53,7 +53,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
   useEffect(() => {
     const fetchCoordinates = async () => {
       try {
-        const { data } = await axios.get("/api/coordinates");
+        const { data } = await axios.get("/api/map/coordinates");
         if (data) {
           setEntrances(data.entrances);
           setHalls(data.halls);
@@ -69,7 +69,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/events_timeline/${selectedDate}`
+          `/api/map/events_timeline/${selectedDate}`
         );
         if (data) {
           setEvents(data);

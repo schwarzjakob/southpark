@@ -294,7 +294,7 @@ function AddEvent() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post("/api/add_event", eventData);
+      const response = await axios.post("/api/events/add_event", eventData);
       console.log("Event created successfully:", response.data);
       setFeedback({
         open: true,
@@ -304,7 +304,9 @@ function AddEvent() {
       handleResetDates();
 
       try {
-        const optimizeResponse = await axios.post("/api/optimize_distance");
+        const optimizeResponse = await axios.post(
+          "/api/events/optimize_distance"
+        );
         console.log(
           "Optimization triggered successfully:",
           optimizeResponse.data
@@ -348,7 +350,7 @@ function AddEvent() {
   };
 
   const checkHallAvailability = async () => {
-    const response = await axios.post("/api/check_hall_availability", {
+    const response = await axios.post("/api/events/check_hall_availability", {
       halls: eventData.halls,
       dates: eventData.dates,
     });

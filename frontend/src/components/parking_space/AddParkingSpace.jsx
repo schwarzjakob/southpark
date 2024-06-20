@@ -66,7 +66,7 @@ const AddParkingSpace = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/add_parking_space", parkingSpace);
+      const response = await axios.post("/api/parking/space", parkingSpace);
       const parkingLotId = response.data.id;
       console.log("Parking space added:", parkingLotId);
       navigate(`/parking_space/${parkingLotId}`);

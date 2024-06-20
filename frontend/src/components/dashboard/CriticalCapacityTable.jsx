@@ -59,7 +59,7 @@ const MonthlyDemandTable = ({
   const fetchData = useCallback(async () => {
     try {
       const response = await axios.get(
-        `/api/capacity_utilization_critical_days/${selectedYear}`
+        `/api/dashboard/capacity_utilization_critical_days/${selectedYear}`
       );
       setData(response.data);
       //DEBUG

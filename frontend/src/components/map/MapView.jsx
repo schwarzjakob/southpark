@@ -22,7 +22,7 @@ const MapView = () => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/events_timeline/${selectedDate}`
+          `/api/map/events_timeline/${selectedDate}`
         );
         setEvents(data);
       } catch (error) {

@@ -49,7 +49,7 @@ const EditParkingSpace = () => {
           setError("No valid ID provided.");
           return;
         }
-        const response = await axios.get(`/api/get_parking_space/${id}`);
+        const response = await axios.get(`/api/parking/space/${id}`);
         setParkingSpace(response.data);
       } catch (error) {
         console.error("Error fetching parking space data:", error);
@@ -87,8 +87,8 @@ const EditParkingSpace = () => {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `/api/edit_parking_space/${id}`,
-        parkingSpace,
+        `/api/parking/space/${id}`,
+        parkingSpace
       );
       console.log("Parking space updated:", response.data);
       navigate(`/parking_space/${response.data.id}`);

@@ -46,7 +46,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     const fetchCapacities = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space_capacities/${parkingLotId}`
+          `/api/parking/capacities/${parkingLotId}`
         );
         if (response.status === 204) {
           setNotification("No capacities found for this parking lot.");

@@ -52,9 +52,7 @@ const AddParkingSpaceCapacity = () => {
   useEffect(() => {
     const fetchParkingLot = async () => {
       try {
-        const response = await axios.get(
-          `/api/get_parking_space/${parkingLotId}`
-        );
+        const response = await axios.get(`/api/parking/space/${parkingLotId}`);
         setParkingLot(response.data);
       } catch (error) {
         console.error("Error fetching parking lot data:", error);
@@ -65,7 +63,7 @@ const AddParkingSpaceCapacity = () => {
     const fetchCapacities = async () => {
       try {
         const response = await axios.get(
-          `/api/get_parking_space_capacities/${parkingLotId}`
+          `/api/parking/capacities/${parkingLotId}`
         );
         if (Array.isArray(response.data)) {
           setExistingCapacities(response.data);
@@ -156,7 +154,7 @@ const AddParkingSpaceCapacity = () => {
       : null;
 
     try {
-      await axios.post(`/api/add_parking_space_capacity/${parkingLotId}`, {
+      await axios.post(`/api/parking/capacities/${parkingLotId}`, {
         ...capacity,
         valid_from: updatedValidFrom,
         valid_to: updatedValidTo,

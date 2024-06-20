@@ -43,7 +43,9 @@ const InputDemands = () => {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("/api/events_without_valid_demands");
+      const response = await axios.get(
+        "/api/events/events_without_valid_demands"
+      );
       const eventsWithDemands = response.data.events.reduce((acc, event) => {
         const { event_id, demand_id, date, demand, ...rest } = event;
         const formattedDate = dayjs(date).format("YYYY-MM-DD");
@@ -108,8 +110,8 @@ const InputDemands = () => {
                 [date]: { ...event.demands[date], demand: value },
               },
             }
-          : event,
-      ),
+          : event
+      )
     );
   };
 
@@ -121,7 +123,7 @@ const InputDemands = () => {
     for (const event of events) {
       const demands = {};
       for (const [date, { demand_id, demand }] of Object.entries(
-        event.demands,
+        event.demands
       )) {
         if (
           demand !== undefined &&
@@ -151,14 +153,14 @@ const InputDemands = () => {
 
     try {
       for (const { event_id, demands } of demandsToSave) {
-        await axios.post(`/api/add_demands/${event_id}`, {
+        await axios.post(`/api/events/add_demands/${event_id}`, {
           demands,
         });
       }
 
       let optimizationMessage = "";
       try {
-        await axios.post("/api/optimize_distance");
+        await axios.post("/api/events/optimize_distance");
         optimizationMessage = "Optimization completed successfully.";
       } catch (optimizeError) {
         optimizationMessage = "Failed to complete optimization.";
@@ -213,13 +215,13 @@ const InputDemands = () => {
     }
 
     try {
-      await axios.post(`/api/add_demands/${event.event_id}`, {
+      await axios.post(`/api/events/add_demands/${event.event_id}`, {
         demands,
       });
 
       let optimizationMessage = "";
       try {
-        await axios.post("/api/optimize_distance");
+        await axios.post("/api/events/optimize_distance");
         optimizationMessage = "Optimization completed successfully.";
       } catch (optimizeError) {
         optimizationMessage = "Failed to complete optimization.";
@@ -302,8 +304,8 @@ const InputDemands = () => {
                       const dates = Object.keys(event.demands).filter(
                         (date) =>
                           dayjs(date).isAfter(
-                            dayjs(startDate).subtract(1, "day"),
-                          ) && dayjs(date).isBefore(dayjs(endDate)),
+                            dayjs(startDate).subtract(1, "day")
+                          ) && dayjs(date).isBefore(dayjs(endDate))
                       );
 
                       if (dates.length > 0) {
@@ -338,7 +340,7 @@ const InputDemands = () => {
                                       handleDemandChange(
                                         event.event_id,
                                         date,
-                                        value,
+                                        value
                                       );
                                     }
                                   }}

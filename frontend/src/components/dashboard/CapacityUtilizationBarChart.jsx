@@ -102,7 +102,7 @@ const CapacityUtilization = ({
   const fetchData = useCallback(async (range) => {
     try {
       const response = await axios.get(
-        `/api/capacity_utilization?start_date=${range[0].format(
+        `/api/dashboard/capacity_utilization?start_date=${range[0].format(
           "YYYY-MM-DD"
         )}&end_date=${range[1].format("YYYY-MM-DD")}`
       );
@@ -151,7 +151,7 @@ const CapacityUtilization = ({
   const fetchTotalCapacity = async (range) => {
     try {
       const response = await axios.get(
-        `/api/total_capacity?start_date=${range[0].format(
+        `/api/dashboard/total_capacity?start_date=${range[0].format(
           "YYYY-MM-DD"
         )}&end_date=${range[1].format("YYYY-MM-DD")}`
       );

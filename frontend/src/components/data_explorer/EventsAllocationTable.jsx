@@ -19,7 +19,7 @@ const EventsAllocationTable = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/events_parking_lots_allocation")
+    fetch("/api/data/events_parking_lots_allocation")
       .then((response) => response.json())
       .then((data) => {
         // DEBUG
