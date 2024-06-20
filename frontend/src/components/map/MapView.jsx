@@ -1,11 +1,10 @@
 // src/components/MapView.jsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./Map.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
-import axios from "axios";
 import "./styles/mapView.css";
 import dayjs from "dayjs";
 
@@ -16,22 +15,7 @@ const MapView = () => {
   const initialDate =
     location.state?.selectedDate || dayjs().format("YYYY-MM-DD");
   const [selectedDate, setSelectedDate] = useState(initialDate);
-  const [events, setEvents] = useState([]);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
-        );
-        setEvents(data);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-
-    fetchEvents();
-  }, [selectedDate]);
+  const [events] = useState([]);
 
   return (
     <Box>
