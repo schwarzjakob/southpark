@@ -90,7 +90,7 @@ const EventDemandTable = ({ eventId }) => {
   const handleEditChange = (id, field, value) => {
     setEditedDemands((prevEditedDemands) =>
       prevEditedDemands.map((demand) =>
-        demand.id === id ? { ...demand, [field]: value } : demand,
+        demand.id === id ? { ...demand, [field]: Number(value) } : demand,
       ),
     );
   };
@@ -180,7 +180,15 @@ const EventDemandTable = ({ eventId }) => {
     }
   };
 
-  const getAllocatedTotal = (demandDate, demandTotal) => {
+  const getAllocatedTotal = (demandDate) => {
+    const demand = editedDemands.find(
+      (d) => formatDate(d.date) === formatDate(demandDate),
+    );
+    if (!demand) return `0/0`;
+
+    const demandTotal =
+      demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
+
     if (!Array.isArray(allocations)) return `0/${demandTotal}`;
 
     const allocation = allocations.find(
@@ -480,9 +488,7 @@ const EventDemandTable = ({ eventId }) => {
                             demand.bus_demand
                           )}
                         </TableCell>
-                        <TableCell>
-                          {getAllocatedTotal(demand.date, demand.demand)}
-                        </TableCell>
+                        <TableCell>{getAllocatedTotal(demand.date)}</TableCell>
                         <TableCell>
                           <Box display="flex" alignItems="center">
                             {getStatusCircle(
