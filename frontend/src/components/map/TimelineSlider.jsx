@@ -67,7 +67,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
 
         const rows = [];
         eventsData.forEach((event) => {
-          event.event_color = `#${event.event_color}`; // Add this line to prepend '#'
+          event.event_color = `${event.event_color}`; // Add this line to prepend '#'
           const eventStart = dayjs(event.assembly_start_date).format(
             "YYYY-MM-DD"
           );
