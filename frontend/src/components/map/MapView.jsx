@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./Map.jsx";
+import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
 import "./styles/mapView.css";
 import dayjs from "dayjs";
@@ -61,19 +62,47 @@ const MapView = () => {
           />
         </Box>
         <Box
-          className="map__map-component"
+          className="map__main-content"
           display="flex"
-          alignItems="center"
+          alignItems="stretch"
           justifyContent="center"
-          border="1px solid"
-          borderColor="grey.300"
-          p={2}
+          width="100%"
+          height="70vh"
+          gap={2}
         >
-          <MapComponent
-            selectedDate={selectedDate}
-            events={events}
-            zoom={15.5}
-          />
+          <Box
+            className="map__map-component"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            border="1px solid"
+            borderColor="grey.300"
+            p={2}
+            width="75vw"
+            height="100%"
+          >
+            <MapComponent
+              selectedDate={selectedDate}
+              events={events}
+              zoom={15.5}
+            />
+          </Box>
+          <Box
+            className="map__bar-chart-component"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            border="1px solid"
+            borderColor="grey.300"
+            width="25vw"
+            height={"100%"}
+            overflow={"auto"}
+          >
+            <OccupanciesBarChart
+              className="bar-chart"
+              selectedDate={selectedDate}
+            />
+          </Box>
         </Box>
       </Box>
     </Box>

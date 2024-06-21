@@ -233,7 +233,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
           event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? `#${event.event_color}` : "gray";
+        const fillColor = event ? `${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
 
         return (
@@ -274,7 +274,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
             : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? `#${event.event_color}` : "gray";
+        const fillColor = event ? `${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
         const popupOffset = downwardsOverlays.includes(entrance.name)
           ? [0, 50]
