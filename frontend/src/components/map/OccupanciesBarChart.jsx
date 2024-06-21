@@ -27,7 +27,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ChartDataLabels
+  ChartDataLabels,
 );
 
 const TITLE = "Parking Lot Utilization";
@@ -60,7 +60,7 @@ const ParkingLotBarChart = ({ selectedDate }) => {
       try {
         setLoading(true);
         const { data } = await axios.get(
-          `/api/dashboard/parking-occupancies/${selectedDate}`
+          `/api/map/parking-occupancies/${selectedDate}`,
         );
         if (data) {
           const { parking_lots: parkingLots, occupancy: parkingLotOccupancy } =
@@ -72,7 +72,7 @@ const ParkingLotBarChart = ({ selectedDate }) => {
               name: lot.external ? `${lot.name} (ext.)` : lot.name,
             }))
             .sort(
-              (a, b) => a.external - b.external || a.name.localeCompare(b.name)
+              (a, b) => a.external - b.external || a.name.localeCompare(b.name),
             );
 
           setParkingLots(sortedParkingLots);
@@ -87,7 +87,7 @@ const ParkingLotBarChart = ({ selectedDate }) => {
           parkingLotOccupancy.forEach((item) => {
             const index = sortedParkingLots.findIndex(
               (lot) =>
-                lot.name.replace(" (external)", "") === item.parking_lot_name
+                lot.name.replace(" (external)", "") === item.parking_lot_name,
             );
             if (index >= 0) {
               const totalCapacity = sortedParkingLots[index].capacity;
