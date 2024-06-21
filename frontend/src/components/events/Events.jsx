@@ -44,7 +44,7 @@ const Events = () => {
       try {
         const [eventsResponse, statusResponse] = await Promise.all([
           axios.get("/api/events/events"),
-          axios.get("/api/events/status"),
+          axios.get("/api/events/events_status"),
         ]);
 
         const events = eventsResponse.data;
@@ -291,7 +291,7 @@ const Events = () => {
               {sortedEvents.map((event) => (
                 <TableRow
                   key={event.id}
-                  onClick={() => navigate(`/event/${event.id}`)}
+                  onClick={() => navigate(`/events/event/${event.id}`)}
                   style={{ cursor: "pointer" }}
                 >
                   <TableCell className="event-name">
@@ -358,7 +358,7 @@ const Events = () => {
 
                   <TableCell>
                     <IconButton
-                      onClick={() => navigate(`/event/${event.id}`)}
+                      onClick={() => navigate(`/events/event/${event.id}`)}
                       edge="start"
                       size="small"
                     >

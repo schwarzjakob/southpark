@@ -10,6 +10,7 @@ import Footer from "./components/common/Footer.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
 import MapView from "./components/map/MapView.jsx";
 import Events from "./components/events/Events.jsx";
+import Event from "./components/events/Event.jsx";
 import ParkingSpaces from "./components/parking_space/ParkingSpaces.jsx";
 import ParkingSpace from "./components/parking_space/ParkingSpace.jsx";
 import Team from "./components/team/Team.jsx";
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/user" element={<Team />} />
                 {/* Events Routes*/}
                 <Route path="/events" element={<Events />} />
+                <Route path="/events/event/:id" element={<Event />} />
                 {/* Parking Spaces Routes*/}
                 <Route path="/parking_spaces" element={<ParkingSpaces />} />
                 <Route path="/parking_space/:id" element={<ParkingSpace />} />

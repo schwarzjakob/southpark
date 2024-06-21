@@ -57,7 +57,7 @@ def get_events():
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/status", methods=["GET"])
+@events_bp.route("/events_status", methods=["GET"])
 def get_event_status():
     try:
         query = """
@@ -196,6 +196,69 @@ def get_event_status():
             logger.info(row)
 
         return jsonify(events_status), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/events", methods=["POST"])
+def add_event():
+    try:
+        data = request.json
+        query = """
+            INSERT INTO public.event (name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date, color)
+            VALUES (:name, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date, :color)
+            RETURNING id
+        """
+        result = db.session.execute(query, data)
+        db.session.commit()
+        event_id = result.fetchone()[0]
+        return jsonify({"id": event_id}), 201
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/event/<int:id>", methods=["PUT"])
+def edit_event(id):
+    try:
+        data = request.json
+        data["id"] = id
+        query = """
+            UPDATE public.event
+            SET name = :name,
+                assembly_start_date = :assembly_start_date,
+                assembly_end_date = :assembly_end_date,
+                runtime_start_date = :runtime_start_date,
+                runtime_end_date = :runtime_end_date,
+                disassembly_start_date = :disassembly_start_date,
+                disassembly_end_date = :disassembly_end_date,
+                color = :color
+            WHERE id = :id
+        """
+        db.session.execute(query, data)
+        db.session.commit()
+        return jsonify({"message": "Event updated successfully"}), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/event/<int:id>", methods=["GET"])
+def get_event(id):
+    try:
+        query_event = """
+            SELECT e.id, e.name, e.assembly_start_date, e.assembly_end_date, e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, e.disassembly_end_date, e.color,
+            ARRAY(SELECT DISTINCT h.name FROM hall h INNER JOIN hall_occupation ho ON h.id = ho.hall_id WHERE ho.event_id = e.id) AS halls,
+            ARRAY(SELECT DISTINCT en.name FROM entrance en INNER JOIN entrance_occupation eo ON en.id = eo.entrance_id WHERE eo.event_id = e.id) AS entrances
+            FROM event e
+            WHERE e.id = :id
+        """
+        event = get_data(query_event, {"id": id}).to_dict(orient="records")
+        if event:
+            return jsonify(event[0]), 200
+        else:
+            return jsonify({"error": "Event not found"}), 404
     except Exception as e:
         logger.error(e)
         return jsonify({"error": str(e)}), 500
