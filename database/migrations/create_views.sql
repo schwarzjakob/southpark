@@ -161,3 +161,24 @@ GROUP BY
     e.id, e.name, en.name, e.color
 ORDER BY
     MIN(e.early_assembly_start_date), MIN(e.assembly_start_date), MIN(e.runtime_start_date), MIN(e.disassembly_start_date), MIN(e.late_disassembly_start_date);
+
+-- Create the daily capacity and occupation view
+CREATE OR REPLACE VIEW view_schema.view_daily_parking_lot_capacity_and_occupation AS
+SELECT 
+    pla.date,
+    pl.name AS parking_lot_name,
+    plc.capacity,
+    pla.allocated_capacity AS occupied_capacity,
+    plc.capacity - pla.allocated_capacity AS free_capacity,
+    plc.truck_limit,
+    plc.bus_limit
+FROM 
+    public.parking_lot_allocation pla
+JOIN 
+    public.parking_lot pl ON pla.parking_lot_id = pl.id
+JOIN 
+    public.parking_lot_capacity plc ON pl.id = plc.parking_lot_id
+WHERE 
+    pla.date BETWEEN plc.valid_from AND plc.valid_to
+ORDER BY 
+    pla.date, pl.name;
