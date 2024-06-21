@@ -46,7 +46,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     const fetchCapacities = async () => {
       try {
         const response = await axios.get(
-          `/api/parking/capacities/${parkingLotId}`
+          `/api/parking/capacities/${parkingLotId}`,
         );
         if (response.status === 204) {
           setNotification("No capacities found for this parking lot.");
@@ -82,7 +82,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
-    return `${month}.${day}.${year}`;
+    return `${day}.${month}.${year}`;
   };
 
   return (
@@ -252,7 +252,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                   hover
                   onClick={() =>
                     navigate(
-                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
+                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`,
                     )
                   }
                   style={{ cursor: "pointer" }}
@@ -272,7 +272,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(
-                          `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
+                          `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`,
                         );
                       }}
                       edge="start"

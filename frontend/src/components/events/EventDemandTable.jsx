@@ -70,12 +70,40 @@ const EventDemandTable = ({ eventId }) => {
 
   const sortedDemands = demands.sort((a, b) => {
     const isAsc = order === "asc";
-    if (orderBy === "date") {
-      return isAsc
-        ? new Date(a.date) - new Date(b.date)
-        : new Date(b.date) - new Date(a.date);
+    const statusOrder = [
+      "early_assembly",
+      "assembly",
+      "runtime",
+      "disassembly",
+      "late_disassembly",
+    ];
+    switch (orderBy) {
+      case "date":
+        return isAsc
+          ? new Date(a.date) - new Date(b.date)
+          : new Date(b.date) - new Date(a.date);
+      case "car_demand":
+        return isAsc
+          ? a.car_demand - b.car_demand
+          : b.car_demand - a.car_demand;
+      case "truck_demand":
+        return isAsc
+          ? a.truck_demand - b.truck_demand
+          : b.truck_demand - a.truck_demand;
+      case "bus_demand":
+        return isAsc
+          ? a.bus_demand - b.bus_demand
+          : b.bus_demand - a.bus_demand;
+      case "demand":
+        return isAsc ? a.demand - b.demand : b.demand - a.demand;
+      case "status":
+        return isAsc
+          ? statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status)
+          : statusOrder.indexOf(b.status) - statusOrder.indexOf(a.status);
+
+      default:
+        return 0;
     }
-    return 0;
   });
 
   const formatDate = (dateString) => {
@@ -90,12 +118,27 @@ const EventDemandTable = ({ eventId }) => {
     switch (phase) {
       case "early_assembly":
       case "assembly":
-        return <ArrowCircleUpRoundedIcon fontSize="small" />;
+        return (
+          <ArrowCircleUpRoundedIcon
+            fontSize="small"
+            style={{ margin: "0 0.5rem 0 0" }}
+          />
+        );
       case "runtime":
-        return <PlayCircleFilledRoundedIcon fontSize="small" />;
+        return (
+          <PlayCircleFilledRoundedIcon
+            fontSize="small"
+            style={{ margin: "0 0.5rem 0 0" }}
+          />
+        );
       case "disassembly":
       case "late_disassembly":
-        return <ArrowCircleDownRoundedIcon fontSize="small" />;
+        return (
+          <ArrowCircleDownRoundedIcon
+            fontSize="small"
+            style={{ margin: "0 0.5rem 0 0" }}
+          />
+        );
       default:
         return null;
     }
@@ -151,7 +194,13 @@ const EventDemandTable = ({ eventId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Car Demand
+                    <TableSortLabel
+                      active={orderBy === "car_demand"}
+                      direction={orderBy === "car_demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("car_demand")}
+                    >
+                      Car Demand
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -160,7 +209,13 @@ const EventDemandTable = ({ eventId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Truck Demand
+                    <TableSortLabel
+                      active={orderBy === "truck_demand"}
+                      direction={orderBy === "truck_demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("truck_demand")}
+                    >
+                      Truck Demand
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -169,7 +224,13 @@ const EventDemandTable = ({ eventId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Bus Demand
+                    <TableSortLabel
+                      active={orderBy === "bus_demand"}
+                      direction={orderBy === "bus_demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("bus_demand")}
+                    >
+                      Bus Demand
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -178,7 +239,13 @@ const EventDemandTable = ({ eventId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Total Demand
+                    <TableSortLabel
+                      active={orderBy === "demand"}
+                      direction={orderBy === "demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("demand")}
+                    >
+                      Total Demand
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -187,7 +254,13 @@ const EventDemandTable = ({ eventId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Phase
+                    <TableSortLabel
+                      active={orderBy === "status"}
+                      direction={orderBy === "status" ? order : "asc"}
+                      onClick={() => handleRequestSort("status")}
+                    >
+                      Phase
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>

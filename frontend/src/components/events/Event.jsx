@@ -1,12 +1,30 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Box, Typography, Paper, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  Button,
+} from "@mui/material";
+import {
+  ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
+  PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
+  ArrowCircleDownRounded as ArrowCircleDownRoundedIcon,
+} from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
+import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import EventDemandTable from "./EventDemandTable";
-
 import "./styles/events.css";
 
 const TITLE = "Event Details";
@@ -30,6 +48,45 @@ const Event = () => {
 
     fetchEvent();
   }, [id]);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear().toString().slice(2); // Last two digits of the year
+    return `${day}.${month}.${year}`;
+  };
+
+  const renderHallMatrix = (halls) => {
+    const hallMatrix = [];
+    const rows = 3;
+    const cols = 6;
+
+    for (let row = 0; row < rows; row++) {
+      const rowData = [];
+      for (let col = 1; col <= cols; col++) {
+        const hall = `${String.fromCharCode(67 - row)}${col}`;
+        rowData.push(
+          <TableCell
+            key={hall}
+            style={{
+              backgroundColor: halls.includes(hall)
+                ? event.color
+                : "transparent",
+              color: halls.includes(hall)
+                ? getContrastingTextColor(event.color)
+                : "inherit",
+            }}
+          >
+            {hall}
+          </TableCell>,
+        );
+      }
+      hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
+    }
+
+    return hallMatrix;
+  };
 
   if (!event) {
     return (
@@ -94,42 +151,100 @@ const Event = () => {
               >
                 {event.name}
               </Box>
+              <Box display="flex" alignItems="center" ml={2}>
+                <DoorSlidingRoundedIcon fontSize="small" />
+                <Typography variant="body1" ml={1}>
+                  {event.entrances.join(", ")}
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Box>
-        <Box display="flex" justifyContent="space-between" padding="16px">
-          <Typography variant="body1">
-            Assembly Period:{" "}
-            {`${new Date(
-              event.assembly_start_date,
-            ).toLocaleDateString()} - ${new Date(
-              event.assembly_end_date,
-            ).toLocaleDateString()}`}
-          </Typography>
-          <Typography variant="body1">
-            Runtime Period:{" "}
-            {`${new Date(
-              event.runtime_start_date,
-            ).toLocaleDateString()} - ${new Date(
-              event.runtime_end_date,
-            ).toLocaleDateString()}`}
-          </Typography>
-          <Typography variant="body1">
-            Disassembly Period:{" "}
-            {`${new Date(
-              event.disassembly_start_date,
-            ).toLocaleDateString()} - ${new Date(
-              event.disassembly_end_date,
-            ).toLocaleDateString()}`}
-          </Typography>
+        <Box padding="16px">
+          <TableContainer className="events-container" component={Paper}>
+            <Table className="parkingSpaces-table">
+              <TableHead className="parkingSpaces-table__header">
+                <TableRow>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <ArrowCircleUpRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel>Assembly</TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <PlayCircleFilledRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel>Runtime</TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <ArrowCircleDownRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel>Disassembly</TableSortLabel>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <Box display="flex" justifyContent="space-between">
+                      <Box>{formatDate(event.assembly_start_date)}</Box>
+                      <Box> - </Box>
+                      <Box>{formatDate(event.assembly_end_date)}</Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box display="flex" justifyContent="space-between">
+                      <Box>{formatDate(event.runtime_start_date)}</Box>
+                      <Box> - </Box>
+                      <Box style={{ textAlign: "right" }}>
+                        {formatDate(event.runtime_end_date)}
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box display="flex" justifyContent="space-between">
+                      <Box>{formatDate(event.disassembly_start_date)}</Box>
+                      <Box> - </Box>
+                      <Box style={{ textAlign: "right" }}>
+                        {formatDate(event.disassembly_end_date)}
+                      </Box>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Box>
-        <Box display="flex" flexDirection="column" padding="16px">
-          <Typography variant="body1">
-            Halls: {event.halls.join(", ")}
-          </Typography>
-          <Typography variant="body1">
-            Entrances: {event.entrances.join(", ")}
-          </Typography>
+        <Box padding="16px">
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={6} style={{ textAlign: "center" }}>
+                    <Box className="header-icon-container">
+                      <OtherHousesRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel>Halls</TableSortLabel>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>{renderHallMatrix(event.halls)}</TableBody>
+            </Table>
+          </TableContainer>
         </Box>
       </Paper>
       <EventDemandTable eventId={id} />
