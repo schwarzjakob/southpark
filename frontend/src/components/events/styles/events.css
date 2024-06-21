@@ -18,11 +18,11 @@
 
 /* Add Event */
 
-.form-container {
+/* .event-form-container {
   display: flex;
   justify-content: center;
   align-items: center;
-}
+} */
 
 .addEvent-header {
   display: flex;
@@ -60,4 +60,31 @@
 
 .capacity-chart {
   padding: 1rem;
+}
+
+/* Event demands */
+.eventDemandTable-container {
+  background-color: #f5f5f5; /* or any other grey background color */
+}
+
+.eventDemandTable-title {
+  font-weight: bold;
+}
+
+.add-demand-button {
+  margin-bottom: 1rem;
+  float: right;
+}
+
+.eventDemandTable {
+  width: 100%;
+}
+
+.eventDemandTable-header {
+  background-color: #e0e0e0;
+}
+
+.edit-demand-button,
+.delete-demand-button {
+  margin-right: 0.5rem;
 }

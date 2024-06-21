@@ -262,3 +262,20 @@ def get_event(id):
     except Exception as e:
         logger.error(e)
         return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/demands/<int:event_id>", methods=["GET"])
+def get_event_demands(event_id):
+    try:
+        query = """
+            SELECT vd.id, vd.date, vd.car_demand, vd.truck_demand, vd.bus_demand, vd.demand, vd.status
+            FROM visitor_demand vd
+            WHERE vd.event_id = :event_id
+        """
+        demands = get_data(query, {"event_id": event_id}).to_dict(orient="records")
+        if not demands:
+            return jsonify([]), 204
+        return jsonify(demands), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
