@@ -7,13 +7,14 @@ import MobileWarning from "./components/common/MobileWarning.jsx";
 import Header from "./components/common/Header.jsx";
 import Navigation from "./components/common/Navigation.jsx";
 import Footer from "./components/common/Footer.jsx";
+import Team from "./components/team/Team.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
 import MapView from "./components/map/MapView.jsx";
 import Events from "./components/events/Events.jsx";
 import Event from "./components/events/Event.jsx";
+import EditEvent from "./components/events/EditEvent.jsx";
 import ParkingSpaces from "./components/parking_space/ParkingSpaces.jsx";
 import ParkingSpace from "./components/parking_space/ParkingSpace.jsx";
-import Team from "./components/team/Team.jsx";
 import AddParkingSpace from "./components/parking_space/AddParkingSpace.jsx";
 import EditParkingSpace from "./components/parking_space/EditParkingSpace.jsx";
 import EditCapacity from "./components/parking_space/EditCapacity.jsx";
@@ -54,12 +55,13 @@ function App() {
             <Header toggleNav={toggleNav} />
             <div className="grid-main">
               <Routes>
+                <Route path="/user" element={<Team />} />
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/mapview" element={<MapView />} />
-                <Route path="/user" element={<Team />} />
                 {/* Events Routes*/}
                 <Route path="/events" element={<Events />} />
                 <Route path="/events/event/:id" element={<Event />} />
+                <Route path="/events/event/edit/:id" element={<EditEvent />} />
                 {/* Parking Spaces Routes*/}
                 <Route path="/parking_spaces" element={<ParkingSpaces />} />
                 <Route path="/parking_space/:id" element={<ParkingSpace />} />
