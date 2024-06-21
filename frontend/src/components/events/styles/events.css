@@ -1,0 +1,65 @@
+/* Events */
+
+.event-box {
+  background-color: var(--color-event);
+  color: var(--color-pure-white);
+  border-radius: 5px;
+  padding: 4px 12px;
+  margin: 2px;
+  display: inline-block;
+}
+
+.header-icon-container {
+  display: flex;
+  align-items: center;
+}
+.header-icon {
+  color: var(--color-pure-white);
+  margin-right: 5px;
+}
+
+/* Add Event */
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.addEvent-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.addEvent-header .MuiTypography-root {
+  display: flex;
+  align-items: center;
+}
+
+.addEvent-header .MuiSvgIcon-root {
+  margin-right: 10px;
+}
+
+.input-container__label-utilization {
+  left: 35px !important;
+}
+
+.icon__edit-event {
+  padding-right: 5px;
+}
+
+.header-icon-container__label {
+  display: flex;
+  flex-direction: column;
+  justify-items: first baseline;
+}
+.header-icon-container__label-unit {
+  font-size: 0.7rem;
+  color: var(--color-gray-100);
+  line-height: 1rem;
+}
+
+.capacity-chart {
+  padding: 1rem;
+}

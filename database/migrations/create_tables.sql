@@ -34,10 +34,10 @@ CREATE TABLE public.visitor_demand (
     id SERIAL PRIMARY KEY,
     event_id INTEGER NOT NULL REFERENCES public.event(id),
     date DATE NOT NULL,
-    demand INTEGER NOT NULL,
     car_demand INTEGER NOT NULL,
     truck_demand INTEGER NOT NULL,
     bus_demand INTEGER NOT NULL,
+    demand INTEGER GENERATED ALWAYS AS (car_demand + 4 * truck_demand + 3 * bus_demand) STORED,
     status VARCHAR(50) CHECK (status IN ('early_assembly', 'assembly', 'runtime', 'disassembly', 'late_disassembly')) NOT NULL
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE public.parking_lot_capacity (
     truck_limit INTEGER NOT NULL,
     bus_limit INTEGER NOT NULL,
     valid_from DATE NOT NULL,
-    valid_to DATE NOT NULL
+    valid_to DATE NOT NULL,
     CHECK (capacity >= truck_limit * 4 AND capacity >= bus_limit * 3)
 );
 

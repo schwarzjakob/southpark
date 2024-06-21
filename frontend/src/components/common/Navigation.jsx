@@ -1,4 +1,3 @@
-// src/components/Navigation.jsx
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import {
@@ -12,13 +11,9 @@ import {
   Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import MapIcon from "@mui/icons-material/MapRounded";
-import TableChartRoundedIcon from "@mui/icons-material/TableChartRounded";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import FileUploadIcon from "@mui/icons-material/FileUpload";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import MapIcon from "@mui/icons-material/MapRounded";
+import EventIcon from "@mui/icons-material/Event";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import logo from "../../assets/logo.svg";
 
@@ -89,7 +84,7 @@ const Navigation = ({ isOpen, toggleNav }) => {
             </ListItemButton>
           </Link>
           <Link
-            to="/tableview"
+            to="/events"
             style={{
               textDecoration: "none",
               color: "inherit",
@@ -99,73 +94,9 @@ const Navigation = ({ isOpen, toggleNav }) => {
           >
             <ListItemButton onClick={toggleNav}>
               <ListItemIcon>
-                <TableChartRoundedIcon />
+                <EventIcon />
               </ListItemIcon>
-              <ListItemText primary="Table View" />
-            </ListItemButton>
-          </Link>
-          <Link
-            to="/addEvent"
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <ListItemButton onClick={toggleNav}>
-              <ListItemIcon>
-                <AddIcon />
-              </ListItemIcon>
-              <ListItemText primary="Add Event" />
-            </ListItemButton>
-          </Link>
-          <Link
-            to="/editEvent"
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <ListItemButton onClick={toggleNav}>
-              <ListItemIcon>
-                <EditIcon />
-              </ListItemIcon>
-              <ListItemText primary="Edit Event" />
-            </ListItemButton>
-          </Link>
-          <Link
-            to="/import"
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <ListItemButton onClick={toggleNav}>
-              <ListItemIcon>
-                <FileUploadIcon />
-              </ListItemIcon>
-              <ListItemText primary="Upload Events" />
-            </ListItemButton>
-          </Link>
-          <Link
-            to="/input_demands"
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <ListItemButton onClick={toggleNav}>
-              <ListItemIcon>
-                <DirectionsCarIcon />
-              </ListItemIcon>
-              <ListItemText primary="Add Missing Demands" />
+              <ListItemText primary="Events" />
             </ListItemButton>
           </Link>
           <Link
