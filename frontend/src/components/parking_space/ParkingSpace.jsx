@@ -45,12 +45,27 @@ const ParkingSpace = () => {
 
   return (
     <Box className="form-width">
-      <Box className="iconHeadline__container">
-        <GarageIcon />
-        <Typography variant="h4" gutterBottom className="demandTable__title">
-          {TITLE}
-        </Typography>
+      <Box className="form-headline-button__container">
+        <Box className="iconHeadline__container">
+          <GarageIcon />
+          <Typography variant="h4" gutterBottom className="demandTable__title">
+            {TITLE}
+          </Typography>
+        </Box>
+        <Box>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate(`/parking_space/edit/${id}`)}
+          >
+            <Box display="flex" alignItems="center">
+              <EditRoundedIcon className="icon__edit-parking-space" />
+            </Box>
+            Edit Parking Space
+          </Button>
+        </Box>
       </Box>
+
       <Paper className="form-container">
         {error && (
           <Typography color="error" variant="body1">
@@ -72,18 +87,6 @@ const ParkingSpace = () => {
                 {parkingSpace.external ? "External" : "Internal"}
               </Typography>
             </Box>
-          </Box>
-          <Box>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => navigate(`/parking_space/edit/${id}`)}
-            >
-              <Box display="flex" alignItems="center">
-                <EditRoundedIcon className="icon__edit-parking-space" />
-              </Box>
-              Edit Parking Space
-            </Button>
           </Box>
         </Box>
         <Box display="flex" justifyContent="space-between" padding="16px">

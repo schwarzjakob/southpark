@@ -22,10 +22,11 @@ import {
   LocalShippingRounded as LocalShippingRoundedIcon,
   NumbersRounded as NumbersRoundedIcon,
   Add as AddIcon,
-  ArrowUpwardRounded as ArrowUpwardRoundedIcon,
-  PlayArrowRounded as PlayArrowRoundedIcon,
-  ArrowDownwardRounded as ArrowDownwardRoundedIcon,
 } from "@mui/icons-material";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -89,12 +90,12 @@ const EventDemandTable = ({ eventId }) => {
     switch (phase) {
       case "early_assembly":
       case "assembly":
-        return <ArrowUpwardRoundedIcon fontSize="small" />;
+        return <ArrowCircleUpRoundedIcon fontSize="small" />;
       case "runtime":
-        return <PlayArrowRoundedIcon fontSize="small" />;
+        return <PlayCircleFilledRoundedIcon fontSize="small" />;
       case "disassembly":
       case "late_disassembly":
-        return <ArrowDownwardRoundedIcon fontSize="small" />;
+        return <ArrowCircleDownRoundedIcon fontSize="small" />;
       default:
         return null;
     }

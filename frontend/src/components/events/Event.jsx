@@ -51,11 +51,25 @@ const Event = () => {
 
   return (
     <Box className="form-width">
-      <Box className="iconHeadline__container">
-        <InsertInvitationRoundedIcon />
-        <Typography variant="h4" gutterBottom className="demandTable__title">
-          {TITLE}
-        </Typography>
+      <Box className="form-headline-button__container">
+        <Box className="iconHeadline__container">
+          <InsertInvitationRoundedIcon />
+          <Typography variant="h4" gutterBottom className="demandTable__title">
+            {TITLE}
+          </Typography>
+        </Box>
+        <Box>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate(`/events/event/edit/${id}`)}
+          >
+            <Box display="flex" alignItems="center">
+              <EditRoundedIcon className="icon__edit-event" />
+            </Box>
+            Edit Event
+          </Button>
+        </Box>
       </Box>
       <Paper className="form-container">
         {error && (
@@ -81,18 +95,6 @@ const Event = () => {
                 {event.name}
               </Box>
             </Box>
-          </Box>
-          <Box>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => navigate(`/events/event/edit/${id}`)}
-            >
-              <Box display="flex" alignItems="center">
-                <EditRoundedIcon className="icon__edit-event" />
-              </Box>
-              Edit Event
-            </Button>
           </Box>
         </Box>
         <Box display="flex" justifyContent="space-between" padding="16px">
