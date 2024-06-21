@@ -27,8 +27,11 @@ import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
+import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import CircleIcon from "@mui/icons-material/Circle";
+
 import "./styles/events.css";
 
 const TITLE = "Event Demands";
@@ -125,31 +128,6 @@ const EventDemandTable = ({ eventId }) => {
     return `${day}.${month}.${year}`;
   };
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case "allocated":
-        return (
-          <Box className="status-label" style={{ color: "green" }}>
-            <Typography variant="body2">Demand Fully allocated</Typography>
-          </Box>
-        );
-      case "partially_allocated":
-        return (
-          <Box className="status-label" style={{ color: "orange" }}>
-            <Typography variant="body2">Partly allocated</Typography>
-          </Box>
-        );
-      case "not_allocated":
-        return (
-          <Box className="status-label" style={{ color: "red" }}>
-            <Typography variant="body2">Not allocated</Typography>
-          </Box>
-        );
-      default:
-        return null;
-    }
-  };
-
   const getPhaseIcon = (phase) => {
     switch (phase) {
       case "assembly":
@@ -173,6 +151,64 @@ const EventDemandTable = ({ eventId }) => {
     return allocation
       ? `${allocation.allocated_capacity}/${demandTotal}`
       : `0/${demandTotal}`;
+  };
+
+  const calculateStatus = (demandDate, demandTotal) => {
+    if (!Array.isArray(allocations)) return "not_allocated";
+
+    const allocation = allocations.find(
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
+    );
+
+    if (!allocation) return "not_allocated";
+
+    const ratio = allocation.allocated_capacity / demandTotal;
+    if (ratio === 0) return "not_allocated";
+    if (ratio === 1) return "allocated";
+    return "partially_allocated";
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "allocated":
+        return (
+          <Box className="status-label">
+            <Typography variant="body2">Demand Fully allocated</Typography>
+          </Box>
+        );
+      case "partially_allocated":
+        return (
+          <Box className="status-label">
+            <Typography variant="body2">Partly allocated</Typography>
+          </Box>
+        );
+      case "not_allocated":
+        return (
+          <Box className="status-label">
+            <Typography variant="body2">Not allocated</Typography>
+          </Box>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getStatusCircle = (status) => {
+    let color;
+    switch (status) {
+      case "allocated":
+        color = "green";
+        break;
+      case "partially_allocated":
+        color = "orange";
+        break;
+      case "not_allocated":
+        color = "red";
+        break;
+      default:
+        color = "grey";
+    }
+    return <CircleIcon style={{ color }} />;
   };
 
   return (
@@ -278,6 +314,21 @@ const EventDemandTable = ({ eventId }) => {
                   </TableSortLabel>
                 </Box>
               </TableCell>
+              <TableCell>
+                <Box className="header-icon-container">
+                  <LocalParkingRoundedIcon
+                    fontSize="small"
+                    className="header-icon"
+                  />
+                  <TableSortLabel
+                    active={orderBy === "status"}
+                    direction={orderBy === "status" ? order : "asc"}
+                    onClick={() => handleRequestSort("status")}
+                  >
+                    Status
+                  </TableSortLabel>
+                </Box>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -310,6 +361,21 @@ const EventDemandTable = ({ eventId }) => {
                         <TableCell>{demand.bus_demand}</TableCell>
                         <TableCell>
                           {getAllocatedTotal(demand.date, demand.demand)}
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            {getStatusCircle(
+                              calculateStatus(demand.date, demand.demand),
+                            )}
+                            <Typography
+                              variant="body2"
+                              style={{ color: "black", marginLeft: "0.5rem" }}
+                            >
+                              {getStatusLabel(
+                                calculateStatus(demand.date, demand.demand),
+                              )}
+                            </Typography>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}
