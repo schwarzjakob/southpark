@@ -163,11 +163,16 @@ const EventDemandTable = ({ eventId }) => {
     }
   };
 
-  const getAllocatedTotal = (demandDate) => {
+  const getAllocatedTotal = (demandDate, demandTotal) => {
+    if (!Array.isArray(allocations)) return `0/${demandTotal}`;
+
     const allocation = allocations.find(
       (alloc) => formatDate(alloc.date) === formatDate(demandDate),
     );
-    return allocation ? allocation.allocated_capacity : 0;
+
+    return allocation
+      ? `${allocation.allocated_capacity}/${demandTotal}`
+      : `0/${demandTotal}`;
   };
 
   return (
@@ -303,7 +308,9 @@ const EventDemandTable = ({ eventId }) => {
                         <TableCell>{demand.car_demand}</TableCell>
                         <TableCell>{demand.truck_demand}</TableCell>
                         <TableCell>{demand.bus_demand}</TableCell>
-                        <TableCell>{getAllocatedTotal(demand.date)}</TableCell>
+                        <TableCell>
+                          {getAllocatedTotal(demand.date, demand.demand)}
+                        </TableCell>
                       </TableRow>
                     ))}
                     <TableRow>

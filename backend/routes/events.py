@@ -279,3 +279,20 @@ def get_event_demands(event_id):
     except Exception as e:
         logger.error(e)
         return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/allocations/<int:event_id>", methods=["GET"])
+def get_event_allocations(event_id):
+    try:
+        query = """
+            SELECT date, allocated_cars, allocated_trucks, allocated_buses, allocated_capacity
+            FROM public.parking_lot_allocation
+            WHERE event_id = :event_id
+        """
+        allocations = get_data(query, {"event_id": event_id}).to_dict(orient="records")
+        if not allocations:
+            return jsonify([]), 204
+        return jsonify(allocations), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
