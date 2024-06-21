@@ -2,8 +2,10 @@ from flask import Blueprint, jsonify, request
 from utils.helpers import get_data
 from sqlalchemy import text
 from datetime import datetime, timedelta
+import logging
 
 dashboard_bp = Blueprint('dashboard', __name__)
+logger = logging.getLogger(__name__)
 
 
 @dashboard_bp.route("/capacity_utilization", methods=["GET"])
@@ -137,4 +139,66 @@ def total_capacity():
 
         return jsonify(total_capacities), 200
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@dashboard_bp.route("/parking-occupancies/<date>", methods=["GET"])
+def get_parking_lot_occupancy(date):
+    """
+    Endpoint to retrieve parking lot occupancy data for a specific date.
+    """
+    try:
+        date = datetime.strptime(date, "%Y-%m-%d").date()
+
+        logger.info(
+            f"Fetching parking lot occupancy data from the database for date: {date}"
+        )
+
+        query_occupancy = f"""
+        SELECT 
+            *
+        FROM
+            view_schema.view_parking_lot_occupancy
+        WHERE
+            date = '{date}'
+        """
+
+        df_occupancy = get_data(query_occupancy)
+        if df_occupancy.empty:
+            logger.info(f"No data available for parking lot occupancy on date: {date}")
+            df_occupancy = []
+            return jsonify({"message": "No data found"}), 204
+
+        query_parking_lots = """
+        SELECT
+            pl.id,
+            pl.name AS name,
+            pl.external AS external,
+            plc.capacity AS capacity
+        FROM
+            public.parking_lot pl
+            JOIN public.parking_lot_capacity plc ON pl.id = plc.parking_lot_id
+        WHERE
+            plc.valid_from <= CURRENT_DATE
+            AND plc.valid_to >= CURRENT_DATE
+        ORDER BY
+            pl.id;
+        """
+        df_parking_lots = get_data(query_parking_lots)
+        if df_parking_lots.empty:
+            logger.info("No data available for parking lots.")
+            parking_lots_data = []
+        else:
+            logger.info("Parking lots data fetched successfully.")
+            parking_lots_data = df_parking_lots.to_dict(orient="records")
+
+        data = {
+            "occupancy": df_occupancy.to_dict(orient="records"),
+            "parking_lots": parking_lots_data,
+        }
+
+        logger.info(f"Parking lot occupancy data fetched successfully for date: {date}")
+        return jsonify(data), 200
+    except Exception as e:
+        logger.error("Failed to fetch parking lot occupancy data", exc_info=True)
         return jsonify({"error": str(e)}), 500
