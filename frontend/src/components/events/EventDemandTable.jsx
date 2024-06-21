@@ -12,6 +12,7 @@ import {
   TableRow,
   TableSortLabel,
   Button,
+  TextField,
   Alert,
   Divider,
 } from "@mui/material";
@@ -28,10 +29,12 @@ import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRou
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
 import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
-import { Link, useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
 import CircleIcon from "@mui/icons-material/Circle";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
 
+import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
 import "./styles/events.css";
 
 const TITLE = "Event Demands";
@@ -46,6 +49,8 @@ const EventDemandTable = ({ eventId }) => {
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("date");
   const [notification, setNotification] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [editedDemands, setEditedDemands] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,6 +61,7 @@ const EventDemandTable = ({ eventId }) => {
           setNotification("No demands found for this event.");
         } else {
           setDemands(response.data);
+          setEditedDemands(response.data);
         }
       } catch (error) {
         console.error("Error fetching demands data:", error);
@@ -79,6 +85,39 @@ const EventDemandTable = ({ eventId }) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
+  };
+
+  const handleEditChange = (id, field, value) => {
+    setEditedDemands((prevEditedDemands) =>
+      prevEditedDemands.map((demand) =>
+        demand.id === id ? { ...demand, [field]: value } : demand,
+      ),
+    );
+  };
+
+  const handleSave = async () => {
+    const fetchAllocations = async () => {
+      try {
+        const response = await axios.get(`/api/events/allocations/${eventId}`);
+        setAllocations(response.data);
+      } catch (error) {
+        console.error("Error fetching allocations data:", error);
+      }
+    };
+
+    try {
+      await axios.put(`/api/events/demands/${eventId}`, editedDemands);
+      setDemands(editedDemands);
+      setEditMode(false);
+      await fetchAllocations(); // Fetch updated allocations after saving
+    } catch (error) {
+      console.error("Error saving demands data:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedDemands(demands);
+    setEditMode(false);
   };
 
   const sortedDemands = demands.sort((a, b) => {
@@ -220,20 +259,48 @@ const EventDemandTable = ({ eventId }) => {
             {TITLE}
           </Typography>
         </Box>
-        <Link
-          to={`/events/event/${eventId}/add-demand`}
-          style={{ textDecoration: "none" }}
-        >
+        {editMode ? (
+          <Box display="flex" justifyContent="flex-end">
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<ClearRoundedIcon />}
+              onClick={handleCancel}
+              style={{
+                marginBottom: "1rem",
+                marginRight: "1rem",
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<SaveRoundedIcon />}
+              style={{
+                marginBottom: "1rem",
+              }}
+              onClick={handleSave}
+            >
+              Save Demands
+            </Button>
+          </Box>
+        ) : (
           <Button
             variant="contained"
             color="secondary"
-            style={{ marginBottom: "1rem", float: "right" }}
+            onClick={() => setEditMode(true)}
+            style={{
+              marginBottom: "1rem",
+              float: "right",
+            }}
           >
             <EditIcon className="addIcon" />
             Edit Demands
           </Button>
-        </Link>
+        )}
       </Box>
+
       {notification && <Alert severity="info">{notification}</Alert>}
       <TableContainer className="events-container" component={Paper}>
         <Table className="events-table">
@@ -356,9 +423,63 @@ const EventDemandTable = ({ eventId }) => {
                     {groupedDemands[phase].map((demand) => (
                       <TableRow key={demand.id} hover>
                         <TableCell>{formatDate(demand.date)}</TableCell>
-                        <TableCell>{demand.car_demand}</TableCell>
-                        <TableCell>{demand.truck_demand}</TableCell>
-                        <TableCell>{demand.bus_demand}</TableCell>
+                        <TableCell>
+                          {editMode ? (
+                            <TextField
+                              value={
+                                editedDemands.find((d) => d.id === demand.id)
+                                  .car_demand
+                              }
+                              onChange={(e) =>
+                                handleEditChange(
+                                  demand.id,
+                                  "car_demand",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          ) : (
+                            demand.car_demand
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editMode ? (
+                            <TextField
+                              value={
+                                editedDemands.find((d) => d.id === demand.id)
+                                  .truck_demand
+                              }
+                              onChange={(e) =>
+                                handleEditChange(
+                                  demand.id,
+                                  "truck_demand",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          ) : (
+                            demand.truck_demand
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editMode ? (
+                            <TextField
+                              value={
+                                editedDemands.find((d) => d.id === demand.id)
+                                  .bus_demand
+                              }
+                              onChange={(e) =>
+                                handleEditChange(
+                                  demand.id,
+                                  "bus_demand",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          ) : (
+                            demand.bus_demand
+                          )}
+                        </TableCell>
                         <TableCell>
                           {getAllocatedTotal(demand.date, demand.demand)}
                         </TableCell>
@@ -367,14 +488,9 @@ const EventDemandTable = ({ eventId }) => {
                             {getStatusCircle(
                               calculateStatus(demand.date, demand.demand),
                             )}
-                            <Typography
-                              variant="body2"
-                              style={{ color: "black", marginLeft: "0.5rem" }}
-                            >
-                              {getStatusLabel(
-                                calculateStatus(demand.date, demand.demand),
-                              )}
-                            </Typography>
+                            {getStatusLabel(
+                              calculateStatus(demand.date, demand.demand),
+                            )}
                           </Box>
                         </TableCell>
                       </TableRow>

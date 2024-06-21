@@ -1,9 +1,11 @@
 import os
 import logging
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from extensions import db
 from utils.helpers import get_data
 import pandas as pd
+from sqlalchemy import text
+
 
 events_bp = Blueprint("events", __name__)
 logger = logging.getLogger(__name__)
@@ -293,6 +295,30 @@ def get_event_allocations(event_id):
         if not allocations:
             return jsonify([]), 204
         return jsonify(allocations), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/demands/<int:event_id>", methods=["PUT"])
+def update_event_demands(event_id):
+    try:
+        data = request.json
+        for demand in data:
+            demand["event_id"] = event_id
+            query = text(
+                """
+                UPDATE visitor_demand
+                SET car_demand = :car_demand,
+                    truck_demand = :truck_demand,
+                    bus_demand = :bus_demand,
+                    status = :status
+                WHERE id = :id AND event_id = :event_id
+            """
+            )
+            db.session.execute(query, demand)
+        db.session.commit()
+        return jsonify({"message": "Demands updated successfully"}), 200
     except Exception as e:
         logger.error(e)
         return jsonify({"error": str(e)}), 500
