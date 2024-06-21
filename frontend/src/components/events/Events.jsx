@@ -27,7 +27,6 @@ import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRou
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import WarningIcon from "@mui/icons-material/Warning";
 
 import "./styles/events.css";
 
@@ -43,8 +42,23 @@ const Events = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("/api/events/events");
-        setEvents(response.data);
+        const [eventsResponse, statusResponse] = await Promise.all([
+          axios.get("/api/events/events"),
+          axios.get("/api/events/status"),
+        ]);
+
+        const events = eventsResponse.data;
+        const statusMap = statusResponse.data.reduce((acc, status) => {
+          acc[status.event_id] = status.status;
+          return acc;
+        }, {});
+
+        const eventsWithStatus = events.map((event) => ({
+          ...event,
+          status: statusMap[event.id] || "unknown",
+        }));
+
+        setEvents(eventsWithStatus);
       } catch (error) {
         console.error("Error fetching events data", error);
       }
@@ -74,8 +88,8 @@ const Events = () => {
         : b.name.localeCompare(a.name);
     } else if (orderBy === "entrance") {
       return order === "asc"
-        ? a.entrance.localeCompare(b.entrance)
-        : b.entrance.localeCompare(a.entrance);
+        ? a.entrances.join(", ").localeCompare(b.entrances.join(", "))
+        : b.entrances.join(", ").localeCompare(a.entrances.join(", "));
     } else if (orderBy === "halls") {
       return order === "asc"
         ? a.halls.length - b.halls.length
@@ -109,6 +123,16 @@ const Events = () => {
       acc[letter].push(hall);
       return acc;
     }, {});
+  };
+
+  const getContrastingTextColor = (backgroundColor) => {
+    const hex = backgroundColor.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    return luminance > 0.5 ? "black" : "white";
   };
 
   return (
@@ -254,7 +278,7 @@ const Events = () => {
                       direction={orderBy === "status" ? order : "asc"}
                       onClick={() => handleRequestSort("status")}
                     >
-                      Status
+                      Capacity Status
                     </TableSortLabel>
                   </Box>
                 </TableCell>
@@ -271,7 +295,15 @@ const Events = () => {
                   style={{ cursor: "pointer" }}
                 >
                   <TableCell className="event-name">
-                    <Box className="event-name-box">{event.name}</Box>
+                    <Box
+                      className="event-box"
+                      style={{
+                        backgroundColor: event.color,
+                        color: getContrastingTextColor(event.color),
+                      }}
+                    >
+                      {event.name}
+                    </Box>
                   </TableCell>
                   <TableCell className="entrances">
                     {event.entrances.join(", ")}
@@ -305,19 +337,25 @@ const Events = () => {
                     ).toLocaleDateString()}`}
                   </TableCell>
                   <TableCell className="status">
-                    <Box className="status-box">
+                    <Box
+                      className="status-box"
+                      display="flex"
+                      alignItems="center"
+                    >
                       <Box
                         className="status-circle"
                         style={{
+                          width: "10px",
+                          height: "10px",
+                          borderRadius: "50%",
                           backgroundColor: getStatusColor(event.status),
+                          marginRight: "8px",
                         }}
                       ></Box>
-                      {event.status === "not_enough_capacity" && (
-                        <WarningIcon color="error" />
-                      )}
                       {getStatusText(event.status)}
                     </Box>
                   </TableCell>
+
                   <TableCell>
                     <IconButton
                       onClick={() => navigate(`/event/${event.id}`)}

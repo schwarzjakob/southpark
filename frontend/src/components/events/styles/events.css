@@ -1,8 +1,6 @@
 /* Events */
 
 .event-box {
-  background-color: var(--color-event);
-  color: var(--color-pure-white);
   border-radius: 5px;
   padding: 4px 12px;
   margin: 2px;

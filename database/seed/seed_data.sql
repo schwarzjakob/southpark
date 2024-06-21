@@ -326,12 +326,12 @@ INSERT INTO public.parking_lot_capacity (id, parking_lot_id, capacity, utilizati
 -- Insert events into the event table
 INSERT INTO public.event (id, name, early_assembly_start_date, early_assembly_end_date, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date, late_disassembly_start_date, late_disassembly_end_date, color)
 VALUES
-(379, 'IFAT Munich 2024', NULL, NULL, '2024-05-09', '2024-05-12', '2024-05-13', '2024-05-17', '2024-05-18', '2024-05-20', NULL, NULL, 'FF0000'),
-(22, 'fre.e + IMOT', NULL, NULL, '2025-02-14', '2025-02-18', '2025-02-19', '2025-02-23', '2025-02-24', '2025-02-25', NULL, NULL, '00FF00'),
-(12, 'Münchner Autotage', NULL, NULL, '2025-02-16', '2025-02-18', '2025-02-19', '2025-02-23', '2025-02-24', '2025-02-25', NULL, NULL, '0000FF'),
-(1, 'inhorgenta', NULL, NULL, '2025-02-17', '2025-02-20', '2025-02-21', '2025-02-24', '2025-02-25', '2025-02-27', NULL, NULL, 'FFFF00'),
-(34, 'Lopec', NULL, NULL, '2025-02-23', '2025-02-24', '2025-02-25', '2025-02-27', '2025-02-28', '2025-02-28', NULL, NULL, 'FFA500'),
-(58, 'IFAT Munich 2025', NULL, NULL, '2025-02-24', '2025-02-25', '2025-02-26', '2025-02-26', '2025-02-27', '2025-02-27', NULL, NULL, '800080');
+(379, 'IFAT Munich 2024', NULL, NULL, '2024-05-09', '2024-05-12', '2024-05-13', '2024-05-17', '2024-05-18', '2024-05-20', NULL, NULL, '#FF0000'),
+(22, 'fre.e + IMOT', NULL, NULL, '2025-02-14', '2025-02-18', '2025-02-19', '2025-02-23', '2025-02-24', '2025-02-25', NULL, NULL, '#00FF00'),
+(12, 'Münchner Autotage', NULL, NULL, '2025-02-16', '2025-02-18', '2025-02-19', '2025-02-23', '2025-02-24', '2025-02-25', NULL, NULL, '#0000FF'),
+(1, 'inhorgenta', NULL, NULL, '2025-02-17', '2025-02-20', '2025-02-21', '2025-02-24', '2025-02-25', '2025-02-27', NULL, NULL, '#FFFF00'),
+(34, 'Lopec', NULL, NULL, '2025-02-23', '2025-02-24', '2025-02-25', '2025-02-27', '2025-02-28', '2025-02-28', NULL, NULL, '#FFA500'),
+(58, 'IFAT Munich 2025', NULL, NULL, '2025-02-24', '2025-02-25', '2025-02-26', '2025-02-26', '2025-02-27', '2025-02-27', NULL, NULL, '#800080');
 
 -- Insert hall occupations
 INSERT INTO public.hall_occupation (event_id, hall_id, date)
@@ -362,9 +362,8 @@ VALUES
 (1, '2025-02-17', 280, 0, 0, 0, 'assembly'), (1, '2025-02-18', 330, 0, 0, 0, 'assembly'), (1, '2025-02-19', 420, 0, 0, 0, 'assembly'), (1, '2025-02-20', 420, 0, 0, 0, 'assembly'),
 (1, '2025-02-25', 340, 0, 0, 0, 'disassembly'), (1, '2025-02-26', 332, 0, 0, 0, 'disassembly'), (1, '2025-02-27', 320, 0, 0, 0, 'disassembly'),
 (1, '2025-02-21', 500, 0, 0, 0, 'runtime'), (1, '2025-02-22', 500, 0, 0, 0, 'runtime'), (1, '2025-02-23', 550, 0, 0, 0, 'runtime'), (1, '2025-02-24', 500, 0, 0, 0, 'runtime'),
-(34, '2025-02-23', 390, 0, 0, 0, 'assembly'), (34, '2025-02-24', 390, 0, 0, 0, 'assembly'), (34, '2025-02-25', 390, 0, 0, 0, 'assembly'),
-(34, '2025-02-28', 500, 0, 0, 0, 'disassembly'),
-(34, '2025-02-25', 6000, 0, 0, 0, 'runtime'), (34, '2025-02-26', 2600, 0, 0, 0, 'runtime'), (34, '2025-02-27', 2600, 0, 0, 0, 'runtime');
+(34, '2025-02-23', 390, 0, 0, 0, 'assembly'), (34, '2025-02-24', 390, 0, 0, 0, 'assembly'), (34, '2025-02-25', 390, 0, 0, 0, 'assembly'),(34, '2025-02-26', 2600, 0, 0, 0, 'runtime'),
+(34, '2025-02-27', 2600, 0, 0, 0, 'runtime'), (34, '2025-02-28', 500, 0, 0, 0, 'disassembly');
 
 -- Insert entrance occupations
 INSERT INTO public.entrance_occupation (event_id, entrance_id, date)
