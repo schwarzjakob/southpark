@@ -320,7 +320,7 @@ INSERT INTO public.parking_lot_capacity (id, parking_lot_id, capacity, utilizati
 (17, 17, 1340, 'parking', 335, 446, '2000-01-01', '2099-12-31'),
 (18, 18, 1340, 'parking', 335, 446, '2000-01-01', '2099-12-31'),
 (19, 19, 1230, 'parking', 307, 410, '2000-01-01', '2099-12-31'),
-(20, 20, 4600, 'parking', 1150, 1533, '2000-01-01', '2099-12-31');
+(20, 20, 4600, 'parking', 0, 0, '2000-01-01', '2099-12-31');
 
 -- Seed for events
 -- Insert events into the event table
