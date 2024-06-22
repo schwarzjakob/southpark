@@ -334,6 +334,8 @@ const Events = () => {
                       style={{
                         backgroundColor: event.color,
                         color: getContrastingTextColor(event.color),
+                        wordWrap: "break-word",
+                        maxWidth: "200px",
                       }}
                     >
                       {event.name}

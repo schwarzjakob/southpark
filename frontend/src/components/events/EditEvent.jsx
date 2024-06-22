@@ -245,6 +245,7 @@ const EditEvent = () => {
               color: halls.includes(hall)
                 ? getContrastingTextColor(event.color)
                 : "inherit",
+              textAlign: "center",
               cursor: "pointer",
             }}
           >

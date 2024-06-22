@@ -76,6 +76,7 @@ const Event = () => {
               color: halls.includes(hall)
                 ? getContrastingTextColor(event.color)
                 : "inherit",
+              textAlign: "center",
             }}
           >
             {hall}
