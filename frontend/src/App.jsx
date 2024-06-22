@@ -11,6 +11,7 @@ import Team from "./components/team/Team.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
 import MapView from "./components/map/MapView.jsx";
 import Events from "./components/events/Events.jsx";
+import AddEvent from "./components/events/AddEvent.jsx";
 import Event from "./components/events/Event.jsx";
 import EditEvent from "./components/events/EditEvent.jsx";
 import ParkingSpaces from "./components/parking_space/ParkingSpaces.jsx";
@@ -60,6 +61,7 @@ function App() {
                 <Route path="/mapview" element={<MapView />} />
                 {/* Events Routes*/}
                 <Route path="/events" element={<Events />} />
+                <Route path="/event/add" element={<AddEvent />} />
                 <Route path="/events/event/:id" element={<Event />} />
                 <Route path="/events/event/edit/:id" element={<EditEvent />} />
                 {/* Parking Spaces Routes*/}

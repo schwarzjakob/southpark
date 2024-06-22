@@ -5,6 +5,7 @@ from extensions import db
 from utils.helpers import get_data
 import pandas as pd
 from sqlalchemy import text
+from datetime import datetime, timedelta
 
 
 events_bp = Blueprint("events", __name__)
@@ -206,18 +207,111 @@ def get_event_status():
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/events", methods=["POST"])
+@events_bp.route("/event", methods=["POST"])
 def add_event():
     try:
         data = request.json
-        query = """
+        event_data = {
+            "name": data["name"],
+            "assembly_start_date": data["assembly_start_date"],
+            "assembly_end_date": data["assembly_end_date"],
+            "runtime_start_date": data["runtime_start_date"],
+            "runtime_end_date": data["runtime_end_date"],
+            "disassembly_start_date": data["disassembly_start_date"],
+            "disassembly_end_date": data["disassembly_end_date"],
+            "color": data["color"],
+        }
+
+        # Insert the event
+        event_query = """
             INSERT INTO public.event (name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date, color)
             VALUES (:name, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date, :color)
             RETURNING id
         """
-        result = db.session.execute(query, data)
-        db.session.commit()
+        result = db.session.execute(text(event_query), event_data)
         event_id = result.fetchone()[0]
+
+        # Insert halls
+        if "halls" in data:
+            hall_ids = db.session.execute(
+                text("SELECT id FROM hall WHERE name IN :names"),
+                {"names": tuple(data["halls"])},
+            ).fetchall()
+            for hall_id in hall_ids:
+                hall_id = hall_id[0]  # fetchall() returns a list of tuples
+                current_date = datetime.strptime(
+                    data["assembly_start_date"], "%Y-%m-%d"
+                )
+                end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
+                while current_date <= end_date:
+                    hall_query = """
+                        INSERT INTO hall_occupation (event_id, hall_id, date)
+                        VALUES (:event_id, :hall_id, :date)
+                    """
+                    db.session.execute(
+                        text(hall_query),
+                        {
+                            "event_id": event_id,
+                            "hall_id": hall_id,
+                            "date": current_date.strftime("%Y-%m-%d"),
+                        },
+                    )
+                    current_date += timedelta(days=1)
+
+        # Insert entrances
+        if "entrances" in data:
+            entrance_ids = db.session.execute(
+                text("SELECT id FROM entrance WHERE name IN :names"),
+                {"names": tuple(data["entrances"])},
+            ).fetchall()
+            for entrance_id in entrance_ids:
+                entrance_id = entrance_id[0]  # fetchall() returns a list of tuples
+                current_date = datetime.strptime(
+                    data["assembly_start_date"], "%Y-%m-%d"
+                )
+                end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
+                while current_date <= end_date:
+                    entrance_query = """
+                        INSERT INTO entrance_occupation (event_id, entrance_id, date)
+                        VALUES (:event_id, :entrance_id, :date)
+                    """
+                    db.session.execute(
+                        text(entrance_query),
+                        {
+                            "event_id": event_id,
+                            "entrance_id": entrance_id,
+                            "date": current_date.strftime("%Y-%m-%d"),
+                        },
+                    )
+                    current_date += timedelta(days=1)
+
+        # Initialize visitor demand with zero values for each day within the event period
+        current_date = datetime.strptime(data["assembly_start_date"], "%Y-%m-%d")
+        end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
+        while current_date <= end_date:
+            if current_date < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):
+                status = "assembly"
+            elif current_date <= datetime.strptime(
+                data["runtime_end_date"], "%Y-%m-%d"
+            ):
+                status = "runtime"
+            else:
+                status = "disassembly"
+            demand_query = """
+                INSERT INTO visitor_demand (event_id, date, car_demand, truck_demand, bus_demand, status)
+                VALUES (:event_id, :date, 0, 0, 0, :status)
+            """
+            db.session.execute(
+                text(demand_query),
+                {
+                    "event_id": event_id,
+                    "date": current_date.strftime("%Y-%m-%d"),
+                    "status": status,
+                },
+            )
+            current_date += timedelta(days=1)
+
+        db.session.commit()
         return jsonify({"id": event_id}), 201
     except Exception as e:
         logger.error(e)
