@@ -14,6 +14,13 @@ import {
   Alert,
   Checkbox,
   ListItemText,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
@@ -31,27 +38,6 @@ import DateRangePicker from "../controls/DateRangePicker";
 import "./styles/events.css";
 
 const TITLE = "Edit Event";
-
-const hallOptions = [
-  "A1",
-  "A2",
-  "A3",
-  "A4",
-  "A5",
-  "A6",
-  "B1",
-  "B2",
-  "B3",
-  "B4",
-  "B5",
-  "B6",
-  "C1",
-  "C2",
-  "C3",
-  "C4",
-  "C5",
-  "C6",
-];
 
 const entranceOptions = ["West", "North West", "North", "North East", "East"];
 
@@ -117,6 +103,58 @@ const EditEvent = () => {
         severity: "error",
       });
     }
+  };
+
+  const toggleHall = (hall) => {
+    setEvent((prevEvent) => {
+      const halls = prevEvent.halls.includes(hall)
+        ? prevEvent.halls.filter((h) => h !== hall)
+        : [...prevEvent.halls, hall];
+      return { ...prevEvent, halls };
+    });
+  };
+
+  const getContrastingTextColor = (backgroundColor) => {
+    const hex = backgroundColor.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    return luminance > 0.5 ? "black" : "white";
+  };
+
+  const renderHallMatrix = (halls) => {
+    const hallMatrix = [];
+    const rows = 3;
+    const cols = 6;
+
+    for (let row = 0; row < rows; row++) {
+      const rowData = [];
+      for (let col = 1; col <= cols; col++) {
+        const hall = `${String.fromCharCode(67 - row)}${col}`;
+        rowData.push(
+          <TableCell
+            key={hall}
+            onClick={() => toggleHall(hall)}
+            style={{
+              backgroundColor: halls.includes(hall)
+                ? event.color
+                : "transparent",
+              color: halls.includes(hall)
+                ? getContrastingTextColor(event.color)
+                : "inherit",
+              cursor: "pointer",
+            }}
+          >
+            {hall}
+          </TableCell>,
+        );
+      }
+      hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
+    }
+
+    return hallMatrix;
   };
 
   if (!event) {
@@ -233,21 +271,28 @@ const EditEvent = () => {
           </FormControl>
           <FormControl fullWidth margin="normal">
             <Box className="input-container">
-              <OtherHousesRoundedIcon className="input-container__icon" />
-              <InputLabel>Halls</InputLabel>
-              <Select
-                multiple
-                value={event.halls}
-                onChange={(e) => setEvent({ ...event, halls: e.target.value })}
-                renderValue={(selected) => selected.join(", ")}
-              >
-                {hallOptions.map((hall) => (
-                  <MenuItem key={hall} value={hall}>
-                    <Checkbox checked={event.halls.indexOf(hall) > -1} />
-                    <ListItemText primary={hall} />
-                  </MenuItem>
-                ))}
-              </Select>
+              {/* <OtherHousesRoundedIcon className="input-container__icon" /> */}
+              {/* <InputLabel>Halls</InputLabel> */}
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell colSpan={6} style={{ textAlign: "center" }}>
+                        <Box className="header-icon-container">
+                          <OtherHousesRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Halls</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>{renderHallMatrix(event.halls)}</TableBody>
+                </Table>
+              </TableContainer>
             </Box>
           </FormControl>
           <FormControl fullWidth margin="normal">
@@ -264,14 +309,15 @@ const EditEvent = () => {
               >
                 {entranceOptions.map((entrance) => (
                   <MenuItem key={entrance} value={entrance}>
-                    <Checkbox checked={event.entrances.indexOf(entrance) > -1} />
+                    <Checkbox
+                      checked={event.entrances.indexOf(entrance) > -1}
+                    />
                     <ListItemText primary={entrance} />
                   </MenuItem>
                 ))}
               </Select>
             </Box>
           </FormControl>
-
           <Box display="flex" justifyContent="space-between" mt={2}>
             <Button
               className="back-button"
