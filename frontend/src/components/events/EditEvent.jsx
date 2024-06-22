@@ -238,69 +238,103 @@ const EditEvent = () => {
             </Box>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <Typography variant="h5" style={{ padding: "0 0 0 36px" }}>
-              Assembly
-            </Typography>
             <Box className="input-container">
-              <ArrowCircleUpRoundedIcon className="input-container__icon" />
-              <DateRangePicker
-                dateRange={[
-                  event.assembly_start_date
-                    ? dayjs(event.assembly_start_date)
-                    : null,
-                  event.assembly_end_date
-                    ? dayjs(event.assembly_end_date)
-                    : null,
-                ]}
-                setDateRange={(dates) =>
-                  handleDateRangeChange("assembly", dates)
-                }
-                width100={true}
-              />
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>
+                        <Box className="header-icon-container">
+                          <ArrowCircleUpRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Assembly</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box className="header-icon-container">
+                          <PlayCircleFilledRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Runtime</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box className="header-icon-container">
+                          <ArrowCircleDownRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Disassembly</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <DateRangePicker
+                          dateRange={[
+                            event.assembly_start_date
+                              ? dayjs(event.assembly_start_date)
+                              : null,
+                            event.assembly_end_date
+                              ? dayjs(event.assembly_end_date)
+                              : null,
+                          ]}
+                          setDateRange={(dates) =>
+                            handleDateRangeChange("assembly", dates)
+                          }
+                          width100={true}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <DateRangePicker
+                          dateRange={[
+                            event.runtime_start_date
+                              ? dayjs(event.runtime_start_date)
+                              : null,
+                            event.runtime_end_date
+                              ? dayjs(event.runtime_end_date)
+                              : null,
+                          ]}
+                          setDateRange={(dates) =>
+                            handleDateRangeChange("runtime", dates)
+                          }
+                          width100={true}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <DateRangePicker
+                          dateRange={[
+                            event.disassembly_start_date
+                              ? dayjs(event.disassembly_start_date)
+                              : null,
+                            event.disassembly_end_date
+                              ? dayjs(event.disassembly_end_date)
+                              : null,
+                          ]}
+                          setDateRange={(dates) =>
+                            handleDateRangeChange("disassembly", dates)
+                          }
+                          width100={true}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </Box>
           </FormControl>
-          <FormControl fullWidth margin="normal">
-            <Typography variant="h5" style={{ padding: "0 0 0 36px" }}>
-              Runtime
-            </Typography>
-            <Box className="input-container">
-              <PlayCircleFilledRoundedIcon className="input-container__icon" />
-              <DateRangePicker
-                dateRange={[
-                  event.runtime_start_date
-                    ? dayjs(event.runtime_start_date)
-                    : null,
-                  event.runtime_end_date ? dayjs(event.runtime_end_date) : null,
-                ]}
-                setDateRange={(dates) =>
-                  handleDateRangeChange("runtime", dates)
-                }
-                width100={true}
-              />
-            </Box>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <Typography variant="h5" style={{ padding: "0 0 0 36px" }}>
-              Disassembly
-            </Typography>
-            <Box className="input-container">
-              <ArrowCircleDownRoundedIcon className="input-container__icon" />
-              <DateRangePicker
-                dateRange={[
-                  event.disassembly_start_date
-                    ? dayjs(event.disassembly_start_date)
-                    : null,
-                  event.disassembly_end_date
-                    ? dayjs(event.disassembly_end_date)
-                    : null,
-                ]}
-                setDateRange={(dates) =>
-                  handleDateRangeChange("disassembly", dates)
-                }
-                width100={true}
-              />
-            </Box>
-          </FormControl>
+
           <FormControl fullWidth margin="normal">
             <Box className="input-container">
               <TableContainer component={Paper}>
