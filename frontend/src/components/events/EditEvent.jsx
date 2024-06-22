@@ -1,820 +1,508 @@
-// src/components/EditEvent.jsx
-
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
-  TextField,
+  Box,
+  Typography,
+  Paper,
   Button,
-  Grid,
-  Select,
-  MenuItem,
+  TextField,
   FormControl,
-  InputLabel,
   Snackbar,
   Alert,
-  Typography,
-  Box,
-  Checkbox,
-  ListItemText,
-  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
 } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { useNavigate, useParams } from "react-router-dom";
+import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import ColorLensIcon from "@mui/icons-material/ColorLens";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import dayjs from "dayjs";
-import axios from "axios";
-import { DataGrid, GridToolbarExport } from "@mui/x-data-grid";
+import DateRangePicker from "../controls/DateRangePicker";
+import "./styles/events.css";
 
-const phaseLabels = {
-  assembly: "Assembly",
-  runtime: "Runtime",
-  disassembly: "Disassembly",
-};
+const TITLE = "Edit Event";
 
-const entranceLabels = {
-  west: "West",
-  north_west: "Northwest",
-  north: "North",
-  north_east: "Northeast",
-  east: "East",
-};
-
-const hallOptions = [
-  "A1",
-  "A2",
-  "A3",
-  "A4",
-  "A5",
-  "A6",
-  "B1",
-  "B2",
-  "B3",
-  "B4",
-  "B5",
-  "B6",
-  "C1",
-  "C2",
-  "C3",
-  "C4",
-  "C5",
-  "C6",
-];
-
-const columns = [
-  { field: "id", headerName: "ID", flex: 1 },
-  { field: "name", headerName: "Event Name", flex: 1 },
-  { field: "runtime_start_date", headerName: "Start Date", flex: 1 },
-  { field: "runtime_end_date", headerName: "End Date", flex: 1 },
-  { field: "entrance", headerName: "Entrance", flex: 1 },
-];
-
-function EditEvent() {
-  const initialEventData = {
-    name: "",
-    dates: {
-      assembly: { start: "", end: "" },
-      runtime: { start: "", end: "" },
-      disassembly: { start: "", end: "" },
-    },
-    halls: [],
-    entrance: "west",
-    demands: {
-      assembly: {},
-      runtime: {},
-      disassembly: {},
-    },
-  };
-
-  const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [eventData, setEventData] = useState(initialEventData);
-  const [step, setStep] = useState(1);
+const EditEvent = () => {
+  const [event, setEvent] = useState(null);
+  const [error, setError] = useState("");
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
     severity: "info",
   });
-  const [loading, setLoading] = useState(false);
-  const eventDetailsRef = useRef(null);
+
+  const navigate = useNavigate();
+  const { id } = useParams();
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await axios.get("/api/events/");
-      const eventsWithIds = response.data.map((event) => ({
-        ...event,
-        id: event.id,
-      }));
-      setEvents(eventsWithIds);
-      setFilteredEvents(eventsWithIds);
-    } catch (error) {
-      console.error("Error fetching events:", error);
-    }
-  };
-
-  const handleSearch = (value) => {
-    const filtered = events.filter((event) =>
-      event.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredEvents(filtered);
-  };
-
-  const handleEdit = (event) => {
-    setSelectedEvent(event);
-    setEventData({
-      name: event.name,
-      dates: {
-        assembly: {
-          start: event.assembly_start_date,
-          end: event.assembly_end_date,
-        },
-        runtime: {
-          start: event.runtime_start_date,
-          end: event.runtime_end_date,
-        },
-        disassembly: {
-          start: event.disassembly_start_date,
-          end: event.disassembly_end_date,
-        },
-      },
-      halls: [...new Set(event.halls)] || [],
-      entrance: event.entrance,
-      demands: event.demands || {
-        assembly: {},
-        runtime: {},
-        disassembly: {},
-      },
-    });
-    setStep(1);
-    setTimeout(() => {
-      eventDetailsRef.current.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-  };
-
-  const isValidDate = (date) => {
-    return date && dayjs(date).isValid();
-  };
-
-  const isDateRangeValid = (startDate, endDate) => {
-    const start = dayjs(startDate);
-    const end = dayjs(endDate);
-    return end.diff(start, "year") < 1;
-  };
-
-  const adjustDates = (dates, phase, dateType, value) => {
-    const { assembly, runtime, disassembly } = dates;
-
-    if (!isValidDate(value)) {
-      return dates;
-    }
-
-    const dateValue = dayjs(value);
-
-    if (dateType === "start") {
-      if (phase === "assembly") {
-        if (
-          !isValidDate(assembly.end) ||
-          dateValue.isAfter(dayjs(assembly.end))
-        ) {
-          dates.assembly.end = value;
-        }
-        dates.runtime.start = dateValue.add(1, "day").format("YYYY-MM-DD");
-        if (
-          !isValidDate(runtime.end) ||
-          dayjs(dates.runtime.start).isAfter(dayjs(runtime.end))
-        ) {
-          dates.runtime.end = dates.runtime.start;
-        }
-        dates.disassembly.start = dayjs(dates.runtime.end)
-          .add(1, "day")
-          .format("YYYY-MM-DD");
-        if (
-          !isValidDate(disassembly.end) ||
-          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
-        ) {
-          dates.disassembly.end = dates.disassembly.start;
-        }
+    const fetchEvent = async () => {
+      try {
+        const response = await axios.get(`/api/events/event/${id}`);
+        console.log("Fetched event data:", response.data);
+        setEvent(response.data);
+      } catch (error) {
+        console.error("Error fetching event data:", error);
+        setError("Error fetching event data.");
       }
+    };
 
-      if (phase === "runtime") {
-        dates.assembly.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
-        if (
-          !isValidDate(assembly.start) ||
-          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
-        ) {
-          dates.assembly.start = dates.assembly.end;
-        }
-        if (
-          !isValidDate(runtime.end) ||
-          dateValue.isAfter(dayjs(runtime.end))
-        ) {
-          dates.runtime.end = value;
-        }
-        dates.disassembly.start = dayjs(dates.runtime.end)
-          .add(1, "day")
-          .format("YYYY-MM-DD");
-        if (
-          !isValidDate(disassembly.end) ||
-          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
-        ) {
-          dates.disassembly.end = dates.disassembly.start;
-        }
-      }
+    fetchEvent();
+  }, [id]);
 
-      if (phase === "disassembly") {
-        dates.runtime.end = dateValue.subtract(1, "day").format("YYYY-MM-DD");
-        if (
-          !isValidDate(runtime.start) ||
-          dayjs(dates.runtime.end).isBefore(dayjs(runtime.start))
-        ) {
-          dates.runtime.start = dates.runtime.end;
-        }
-        dates.assembly.end = dayjs(dates.runtime.start)
-          .subtract(1, "day")
-          .format("YYYY-MM-DD");
-        if (
-          !isValidDate(assembly.start) ||
-          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
-        ) {
-          dates.assembly.start = dates.assembly.end;
-        }
-        if (
-          !isValidDate(disassembly.end) ||
-          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
-        ) {
-          dates.disassembly.end = dates.disassembly.start;
-        }
-      }
-    }
-
-    if (dateType === "end") {
-      if (phase === "disassembly") {
-        if (
-          !isValidDate(disassembly.start) ||
-          dateValue.isBefore(dayjs(disassembly.start))
-        ) {
-          dates.disassembly.start = value;
-        }
-        dates.runtime.end = dayjs(dates.disassembly.start)
-          .subtract(1, "day")
-          .format("YYYY-MM-DD");
-        if (
-          !isValidDate(runtime.start) ||
-          dayjs(dates.runtime.end).isBefore(dayjs(runtime.start))
-        ) {
-          dates.runtime.start = dates.runtime.end;
-        }
-        dates.assembly.end = dayjs(dates.runtime.start)
-          .subtract(1, "day")
-          .format("YYYY-MM-DD");
-        if (
-          !isValidDate(assembly.start) ||
-          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
-        ) {
-          dates.assembly.start = dates.assembly.end;
-        }
-      }
-
-      if (phase === "runtime") {
-        dates.disassembly.start = dateValue.add(1, "day").format("YYYY-MM-DD");
-        if (
-          !isValidDate(disassembly.end) ||
-          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
-        ) {
-          dates.disassembly.end = dates.disassembly.start;
-        }
-        if (
-          !isValidDate(runtime.start) ||
-          dateValue.isBefore(dayjs(runtime.start))
-        ) {
-          dates.runtime.start = value;
-        }
-        dates.assembly.end = dayjs(dates.runtime.start)
-          .subtract(1, "day")
-          .format("YYYY-MM-DD");
-        if (
-          !isValidDate(assembly.start) ||
-          dayjs(dates.assembly.end).isBefore(dayjs(assembly.start))
-        ) {
-          dates.assembly.start = dates.assembly.end;
-        }
-      }
-
-      if (phase === "assembly") {
-        if (
-          !isValidDate(assembly.start) ||
-          dateValue.isBefore(dayjs(assembly.start))
-        ) {
-          dates.assembly.start = value;
-        }
-        dates.runtime.start = dateValue.add(1, "day").format("YYYY-MM-DD");
-        if (
-          !isValidDate(runtime.end) ||
-          dayjs(dates.runtime.start).isAfter(dayjs(runtime.end))
-        ) {
-          dates.runtime.end = dates.runtime.start;
-        }
-        dates.disassembly.start = dayjs(dates.runtime.end)
-          .add(1, "day")
-          .format("YYYY-MM-DD");
-        if (
-          !isValidDate(disassembly.end) ||
-          dayjs(dates.disassembly.start).isAfter(dayjs(disassembly.end))
-        ) {
-          dates.disassembly.end = dates.disassembly.start;
-        }
-      }
-    }
-
-    return dates;
-  };
-
-  const handleDateChange = (phase, dateType, value) => {
-    setEventData((prevState) => {
-      const updatedDates = { ...prevState.dates };
-      updatedDates[phase][dateType] = value;
-      const adjustedDates = adjustDates(updatedDates, phase, dateType, value);
-
-      return {
-        ...prevState,
-        dates: adjustedDates,
-      };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEvent({
+      ...event,
+      [name]: value,
     });
   };
 
-  const handleDemandChange = (phase, date, value) => {
-    setEventData((prevState) => ({
-      ...prevState,
-      demands: {
-        ...prevState.demands,
-        [phase]: {
-          ...prevState.demands[phase],
-          [date]: value,
-        },
-      },
-    }));
+  const handleDateRangeChange = (phase, dates) => {
+    let updatedEvent = { ...event };
+    const start = dates[0] ? dates[0].format("YYYY-MM-DD") : "";
+    const end = dates[1] ? dates[1].format("YYYY-MM-DD") : "";
+
+    updatedEvent[`${phase}_start_date`] = start;
+    updatedEvent[`${phase}_end_date`] = end;
+
+    if (phase === "assembly") {
+      const runtimeStartDate = dates[1] ? dayjs(dates[1]).add(1, "day") : null;
+      if (
+        runtimeStartDate &&
+        (!event.runtime_start_date ||
+          runtimeStartDate.isAfter(dayjs(event.runtime_start_date)))
+      ) {
+        updatedEvent.runtime_start_date = runtimeStartDate.format("YYYY-MM-DD");
+        if (
+          !event.runtime_end_date ||
+          runtimeStartDate.isAfter(dayjs(event.runtime_end_date))
+        ) {
+          updatedEvent.runtime_end_date = runtimeStartDate.format("YYYY-MM-DD");
+        }
+        const disassemblyStartDate = runtimeStartDate.add(1, "day");
+        updatedEvent.disassembly_start_date =
+          disassemblyStartDate.format("YYYY-MM-DD");
+        if (
+          !event.disassembly_end_date ||
+          disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
+        ) {
+          updatedEvent.disassembly_end_date =
+            disassemblyStartDate.format("YYYY-MM-DD");
+        }
+      }
+    }
+
+    if (phase === "runtime") {
+      const assemblyEndDate = dates[0]
+        ? dayjs(dates[0]).subtract(1, "day")
+        : null;
+      const disassemblyStartDate = dates[1]
+        ? dayjs(dates[1]).add(1, "day")
+        : null;
+
+      if (
+        assemblyEndDate &&
+        (!event.assembly_end_date ||
+          assemblyEndDate.isBefore(dayjs(event.assembly_end_date)))
+      ) {
+        updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
+        if (
+          !event.assembly_start_date ||
+          assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
+        ) {
+          updatedEvent.assembly_start_date =
+            assemblyEndDate.format("YYYY-MM-DD");
+        }
+      }
+
+      if (
+        disassemblyStartDate &&
+        (!event.disassembly_start_date ||
+          disassemblyStartDate.isAfter(dayjs(event.disassembly_start_date)))
+      ) {
+        updatedEvent.disassembly_start_date =
+          disassemblyStartDate.format("YYYY-MM-DD");
+        if (
+          !event.disassembly_end_date ||
+          disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
+        ) {
+          updatedEvent.disassembly_end_date =
+            disassemblyStartDate.format("YYYY-MM-DD");
+        }
+      }
+    }
+
+    if (phase === "disassembly") {
+      const runtimeEndDate = dates[0]
+        ? dayjs(dates[0]).subtract(1, "day")
+        : null;
+
+      if (
+        runtimeEndDate &&
+        (!event.runtime_end_date ||
+          runtimeEndDate.isBefore(dayjs(event.runtime_end_date)))
+      ) {
+        updatedEvent.runtime_end_date = runtimeEndDate.format("YYYY-MM-DD");
+        if (
+          !event.runtime_start_date ||
+          runtimeEndDate.isBefore(dayjs(event.runtime_start_date))
+        ) {
+          updatedEvent.runtime_start_date = runtimeEndDate.format("YYYY-MM-DD");
+        }
+        const assemblyEndDate = runtimeEndDate.subtract(1, "day");
+        updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
+        if (
+          !event.assembly_start_date ||
+          assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
+        ) {
+          updatedEvent.assembly_start_date =
+            assemblyEndDate.format("YYYY-MM-DD");
+        }
+      }
+    }
+
+    setEvent(updatedEvent);
   };
 
-  const checkHallAvailability = async () => {
-    const response = await axios.post("/api/events/check_hall_availability", {
-      event_id: selectedEvent?.id,
-      halls: eventData.halls,
-      dates: eventData.dates,
-    });
-    return response.data;
-  };
-
-  const handleFormSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      const updatedEvent = {
-        ...selectedEvent,
-        ...eventData,
-        assembly_start_date: eventData.dates.assembly.start,
-        assembly_end_date: eventData.dates.assembly.end,
-        runtime_start_date: eventData.dates.runtime.start,
-        runtime_end_date: eventData.dates.runtime.end,
-        disassembly_start_date: eventData.dates.disassembly.start,
-        disassembly_end_date: eventData.dates.disassembly.end,
-      };
-
-      await axios.put(`/api/events/${selectedEvent.id}`, updatedEvent);
-      fetchEvents();
+      await axios.put(`/api/events/event/${id}`, event);
       setFeedback({
         open: true,
-        message: "Event updated successfully",
+        message: "Event updated successfully.",
         severity: "success",
       });
-      setSelectedEvent(null);
-      setEventData(initialEventData);
-      setStep(1);
-
-      try {
-        const optimizeResponse = await axios.post(
-          "/api/events/optimize_distance"
-        );
-        console.log(
-          "Optimization triggered successfully:",
-          optimizeResponse.data
-        );
-        setFeedback({
-          open: true,
-          message: optimizeResponse.data.message,
-          severity: "success",
-        });
-      } catch (optimizeError) {
-        console.error("Error triggering optimization:", optimizeError);
-        setFeedback({
-          open: true,
-          message: "Error triggering optimization",
-          severity: "error",
-        });
-      }
-      navigate("/mapview", {
-        state: {
-          selectedDate: dayjs(eventData.dates.runtime.start).format(
-            "YYYY-MM-DD"
-          ),
-        },
-      });
+      navigate(`/events/event/${id}`);
     } catch (error) {
       console.error("Error updating event:", error);
+      setError("Error updating event.");
       setFeedback({
         open: true,
-        message: "Error updating event",
-        severity: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNext = async () => {
-    const missingFields = [];
-
-    if (!eventData.name) missingFields.push("Event name");
-    if (!eventData.halls.length) missingFields.push("Halls");
-    if (!eventData.entrance) missingFields.push("Entrance");
-    if (!isValidDate(eventData.dates.assembly.start))
-      missingFields.push("Assembly start date");
-    if (!isValidDate(eventData.dates.assembly.end))
-      missingFields.push("Assembly end date");
-    if (!isValidDate(eventData.dates.runtime.start))
-      missingFields.push("Runtime start date");
-    if (!isValidDate(eventData.dates.runtime.end))
-      missingFields.push("Runtime end date");
-    if (!isValidDate(eventData.dates.disassembly.start))
-      missingFields.push("Disassembly start date");
-    if (!isValidDate(eventData.dates.disassembly.end))
-      missingFields.push("Disassembly end date");
-
-    if (missingFields.length > 0) {
-      setFeedback({
-        open: true,
-        message: `Please fill all required fields: ${missingFields.join(", ")}`,
-        severity: "warning",
-      });
-      return;
-    }
-
-    for (const phase in eventData.dates) {
-      const { start, end } = eventData.dates[phase];
-      if (
-        isValidDate(start) &&
-        isValidDate(end) &&
-        !isDateRangeValid(start, end)
-      ) {
-        setFeedback({
-          open: true,
-          message: `The date range for ${phaseLabels[phase]} exceeds one year.`,
-          severity: "error",
-        });
-        return;
-      }
-    }
-
-    try {
-      const availability = await checkHallAvailability();
-      const { occupied_halls, free_halls } = availability;
-
-      if (occupied_halls && Object.keys(occupied_halls).length > 0) {
-        const conflictMessages = [
-          "<strong>Did you select the wrong hall?</strong><br>",
-        ]
-          .concat(
-            Object.entries(occupied_halls).map(([hall, conflicts]) => {
-              return conflicts
-                .map((conflict) => {
-                  const freeHallsOnThatDay =
-                    free_halls[
-                      conflict.date.split(".").reverse().join("-")
-                    ].join(", ");
-                  return `Hall <strong>${hall}</strong> is occupied on <strong>${conflict.date}</strong> by <strong>${conflict.event_name}</strong>.<br>Free halls on that day: <strong>${freeHallsOnThatDay}</strong>.<br>`;
-                })
-                .join("<br>");
-            })
-          )
-          .join("<br>");
-
-        setFeedback({
-          open: true,
-          message: conflictMessages,
-          severity: "error",
-        });
-        return;
-      }
-
-      setStep(2);
-    } catch (error) {
-      setFeedback({
-        open: true,
-        message: "Failed to check hall availability.",
+        message: "Error updating event.",
         severity: "error",
       });
     }
   };
 
-  const handleBack = () => setStep(1);
+  const toggleHall = (hall) => {
+    setEvent((prevEvent) => {
+      const halls = prevEvent.halls.includes(hall)
+        ? prevEvent.halls.filter((h) => h !== hall)
+        : [...prevEvent.halls, hall];
+      return { ...prevEvent, halls };
+    });
+  };
+
+  const toggleEntrance = (entrance) => {
+    setEvent((prevEvent) => {
+      const entrances = prevEvent.entrances.includes(entrance)
+        ? prevEvent.entrances.filter((e) => e !== entrance)
+        : [...prevEvent.entrances, entrance];
+      return { ...prevEvent, entrances };
+    });
+  };
+
+  const getContrastingTextColor = (backgroundColor) => {
+    const hex = backgroundColor.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    return luminance > 0.5 ? "black" : "white";
+  };
+
+  const renderHallMatrix = (halls) => {
+    const hallMatrix = [];
+    const rows = 3;
+    const cols = 6;
+
+    for (let row = 0; row < rows; row++) {
+      const rowData = [];
+      for (let col = 1; col <= cols; col++) {
+        const hall = `${String.fromCharCode(67 - row)}${col}`;
+        rowData.push(
+          <TableCell
+            key={hall}
+            onClick={() => toggleHall(hall)}
+            style={{
+              backgroundColor: halls.includes(hall)
+                ? event.color
+                : "transparent",
+              color: halls.includes(hall)
+                ? getContrastingTextColor(event.color)
+                : "inherit",
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            {hall}
+          </TableCell>,
+        );
+      }
+      hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
+    }
+
+    return hallMatrix;
+  };
+
+  const renderEntranceGrid = (entrances) => {
+    const entranceGrid = [
+      ["North West", "North", "North East"],
+      ["West", "", "East"],
+    ];
+
+    return entranceGrid.map((row, rowIndex) => (
+      <TableRow key={rowIndex}>
+        {row.map((cell, cellIndex) => (
+          <TableCell
+            key={cellIndex}
+            onClick={() => cell && toggleEntrance(cell)}
+            style={{
+              backgroundColor: entrances.includes(cell)
+                ? event.color
+                : "transparent",
+              color: entrances.includes(cell)
+                ? getContrastingTextColor(event.color)
+                : "inherit",
+              cursor: cell ? "pointer" : "default",
+              textAlign: "center",
+            }}
+          >
+            {cell}
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
+  };
+
+  if (!event) {
+    return (
+      <Box className="form-width">
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ pt: 3, pb: 3, pl: 10, pr: 10 }}>
-      <Typography variant="h3" component="h2" gutterBottom>
-        Edit Event
-      </Typography>
-      <TextField
-        label="Search Events"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        onChange={(e) => handleSearch(e.target.value)}
-      />
-      <Box sx={{ mb: 3 }}>
-        <DataGrid
-          rows={filteredEvents}
-          columns={columns}
-          getRowId={(row) => row.id}
-          components={{
-            Toolbar: GridToolbarExport,
-          }}
-          disableSelectionOnClick
-          autoHeight
-          onRowClick={(params) => handleEdit(params.row)}
-        />
-      </Box>
-      {selectedEvent && (
-        <form onSubmit={handleFormSubmit}>
-          <Box ref={eventDetailsRef} sx={{ pt: 3, pb: 3 }}>
-            <Typography variant="h5" component="h3" gutterBottom>
-              Event Details
-            </Typography>
-            {step === 1 && (
-              <Box sx={{ pt: 3, pb: 3 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Event"
-                      value={eventData.name}
-                      onChange={(e) =>
-                        setEventData({ ...eventData, name: e.target.value })
-                      }
-                      required
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <FormControl fullWidth required variant="outlined">
-                      <InputLabel>Halls</InputLabel>
-                      <Select
-                        multiple
-                        value={eventData.halls}
-                        onChange={(e) =>
-                          setEventData({ ...eventData, halls: e.target.value })
-                        }
-                        label="Halls"
-                        renderValue={(selected) => selected.join(", ")}
-                      >
-                        {hallOptions.map((hall) => (
-                          <MenuItem key={hall} value={hall}>
-                            <Checkbox
-                              checked={eventData.halls.indexOf(hall) > -1}
-                            />
-                            <ListItemText primary={hall} />
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <FormControl fullWidth required variant="outlined">
-                      <InputLabel>Entrance</InputLabel>
-                      <Select
-                        value={eventData.entrance}
-                        onChange={(e) =>
-                          setEventData({
-                            ...eventData,
-                            entrance: e.target.value,
-                          })
-                        }
-                        label="Entrance"
-                      >
-                        {Object.entries(entranceLabels).map(
-                          ([value, label]) => (
-                            <MenuItem key={value} value={value}>
-                              {label}
-                            </MenuItem>
-                          )
-                        )}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  {Object.keys(phaseLabels).map((phase) => (
-                    <React.Fragment key={phase}>
-                      <Grid item xs={12}>
-                        <Typography variant="h5" component="h3" gutterBottom>
-                          {phaseLabels[phase]}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <FormControl fullWidth required variant="outlined">
-                          <LocalizationProvider
-                            dateAdapter={AdapterDayjs}
-                            adapterLocale={"de"}
-                          >
-                            <DatePicker
-                              label="Start Date"
-                              value={
-                                eventData.dates[phase].start
-                                  ? dayjs(eventData.dates[phase].start)
-                                  : null
-                              }
-                              onChange={(newValue) =>
-                                handleDateChange(
-                                  phase,
-                                  "start",
-                                  newValue ? newValue.format("YYYY-MM-DD") : ""
-                                )
-                              }
-                              slotProps={{
-                                textField: {
-                                  variant: "outlined",
-                                  error: false,
-                                },
-                              }}
-                            />
-                          </LocalizationProvider>
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <FormControl fullWidth required variant="outlined">
-                          <LocalizationProvider
-                            dateAdapter={AdapterDayjs}
-                            adapterLocale={"de"}
-                          >
-                            <DatePicker
-                              label="End Date"
-                              value={
-                                eventData.dates[phase].end
-                                  ? dayjs(eventData.dates[phase].end)
-                                  : null
-                              }
-                              onChange={(newValue) =>
-                                handleDateChange(
-                                  phase,
-                                  "end",
-                                  newValue ? newValue.format("YYYY-MM-DD") : ""
-                                )
-                              }
-                              slotProps={{
-                                textField: {
-                                  variant: "outlined",
-                                  error: false,
-                                },
-                              }}
-                            />
-                          </LocalizationProvider>
-                        </FormControl>
-                      </Grid>
-                    </React.Fragment>
-                  ))}
-                  <Grid item xs={6}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => setEventData(initialEventData)}
-                      fullWidth
-                    >
-                      Reset
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      type="button"
-                      onClick={handleNext}
-                      fullWidth
-                    >
-                      Continue with Demands
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-            {step === 2 && (
-              <Box sx={{ pt: 3, pb: 3 }}>
-                <Grid container spacing={2}>
-                  {Object.keys(eventData.dates).map(
-                    (phase) =>
-                      eventData.dates[phase].start &&
-                      new Date(eventData.dates[phase].start) <=
-                        new Date(eventData.dates[phase].end) && (
-                        <React.Fragment key={phase}>
-                          <Grid item xs={12}>
-                            <Typography
-                              variant="h5"
-                              component="h3"
-                              gutterBottom
-                            >
-                              {phaseLabels[phase]}
-                            </Typography>
-                          </Grid>
-                          {new Array(
-                            (new Date(eventData.dates[phase].end) -
-                              new Date(eventData.dates[phase].start)) /
-                              (1000 * 3600 * 24) +
-                              1
-                          )
-                            .fill()
-                            .map((_, index) => {
-                              const date = new Date(
-                                eventData.dates[phase].start
-                              );
-                              date.setDate(date.getDate() + index);
-                              const dateString = date
-                                .toISOString()
-                                .slice(0, 10);
-                              return (
-                                <Grid item xs={12} key={dateString}>
-                                  <TextField
-                                    label={`${dateString} Demand`}
-                                    type="number"
-                                    value={
-                                      eventData.demands[phase][dateString] || ""
-                                    }
-                                    onChange={(e) =>
-                                      handleDemandChange(
-                                        phase,
-                                        dateString,
-                                        e.target.value
-                                      )
-                                    }
-                                    required
-                                    fullWidth
-                                    variant="outlined"
-                                  />
-                                </Grid>
-                              );
-                            })}
-                        </React.Fragment>
-                      )
-                  )}
-                  <Grid item xs={6}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={handleBack}
-                      fullWidth
-                    >
-                      Back
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => setEventData(initialEventData)}
-                      fullWidth
-                    >
-                      Reset
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}></Grid>
-                </Grid>
-                <Grid item xs={6} sx={{ position: "relative" }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    type="submit"
-                    fullWidth
-                    disabled={loading}
-                  >
-                    Submit Event
-                  </Button>
-                  {loading && (
-                    <CircularProgress
-                      size={24}
-                      sx={{
-                        color: "primary.main",
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        marginTop: "-12px",
-                        marginLeft: "-12px",
-                      }}
-                    />
-                  )}
-                </Grid>
-              </Box>
-            )}
+    <Box className="form-width">
+      <Paper className="form-container">
+        <Box className="iconHeadline__container">
+          <EditRoundedIcon />
+          <Typography variant="h4" gutterBottom className="demandTable__title">
+            {TITLE}
+          </Typography>
+        </Box>
+        {error && (
+          <Typography color="error" variant="body1">
+            {error}
+          </Typography>
+        )}
+        <form onSubmit={handleSubmit}>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <InsertInvitationRoundedIcon className="input-container__icon" />
+              <TextField
+                label="Name"
+                name="name"
+                value={event.name}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Box>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <ColorLensIcon className="input-container__icon" />
+              <TextField
+                label="Color"
+                name="color"
+                type="color"
+                value={event.color}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Box>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>
+                        <Box className="header-icon-container">
+                          <ArrowCircleUpRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Assembly</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box className="header-icon-container">
+                          <PlayCircleFilledRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Runtime</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box className="header-icon-container">
+                          <ArrowCircleDownRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Disassembly</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <DateRangePicker
+                          dateRange={[
+                            event.assembly_start_date
+                              ? dayjs(event.assembly_start_date)
+                              : null,
+                            event.assembly_end_date
+                              ? dayjs(event.assembly_end_date)
+                              : null,
+                          ]}
+                          setDateRange={(dates) =>
+                            handleDateRangeChange("assembly", dates)
+                          }
+                          width100={true}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <DateRangePicker
+                          dateRange={[
+                            event.runtime_start_date
+                              ? dayjs(event.runtime_start_date)
+                              : null,
+                            event.runtime_end_date
+                              ? dayjs(event.runtime_end_date)
+                              : null,
+                          ]}
+                          setDateRange={(dates) =>
+                            handleDateRangeChange("runtime", dates)
+                          }
+                          width100={true}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <DateRangePicker
+                          dateRange={[
+                            event.disassembly_start_date
+                              ? dayjs(event.disassembly_start_date)
+                              : null,
+                            event.disassembly_end_date
+                              ? dayjs(event.disassembly_end_date)
+                              : null,
+                          ]}
+                          setDateRange={(dates) =>
+                            handleDateRangeChange("disassembly", dates)
+                          }
+                          width100={true}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell colSpan={6} style={{ textAlign: "center" }}>
+                        <Box className="header-icon-container">
+                          <OtherHousesRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Halls</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>{renderHallMatrix(event.halls)}</TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Box className="input-container">
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell colSpan={5} style={{ textAlign: "center" }}>
+                        <Box className="header-icon-container">
+                          <DoorSlidingRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Entrances</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>{renderEntranceGrid(event.entrances)}</TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          </FormControl>
+          <Box display="flex" justifyContent="space-between" mt={2}>
+            <Button
+              className="back-button"
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              startIcon={<SaveRoundedIcon />}
+            >
+              Save
+            </Button>
           </Box>
         </form>
-      )}
+      </Paper>
       <Snackbar
         open={feedback.open}
         autoHideDuration={6000}
@@ -825,11 +513,11 @@ function EditEvent() {
           severity={feedback.severity}
           sx={{ width: "100%" }}
         >
-          <span dangerouslySetInnerHTML={{ __html: feedback.message }} />
+          {feedback.message}
         </Alert>
       </Snackbar>
     </Box>
   );
-}
+};
 
 export default EditEvent;

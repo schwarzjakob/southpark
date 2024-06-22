@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import dayjs from "dayjs";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import axios from "axios";
 import PropTypes from "prop-types";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+
+dayjs.extend(isBetween);
 
 const ROW_HEIGHT = 24;
 const OFFSET = 100;
@@ -42,7 +45,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
       const today = dayjs(centerDate);
       const halfNumberOfDays = Math.floor(numberOfDays / 2);
       return Array.from({ length: numberOfDays }, (_, i) =>
-        today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD")
+        today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD"),
       );
     };
 
@@ -60,7 +63,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
+          `/api/map/events_timeline/${selectedDate}`,
         );
         const eventsData = Array.isArray(data) ? data : [];
         setEvents(eventsData);
@@ -69,10 +72,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         eventsData.forEach((event) => {
           event.event_color = `${event.event_color}`; // Add this line to prepend '#'
           const eventStart = dayjs(event.assembly_start_date).format(
-            "YYYY-MM-DD"
+            "YYYY-MM-DD",
           );
           const eventEnd = dayjs(event.disassembly_end_date).format(
-            "YYYY-MM-DD"
+            "YYYY-MM-DD",
           );
           let assigned = false;
           for (let i = 0; i < rows.length; i++) {
@@ -82,7 +85,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
                   dayjs(eventStart).isBetween(e.start, e.end, "day", "[]") ||
                   dayjs(eventEnd).isBetween(e.start, e.end, "day", "[]") ||
                   dayjs(e.start).isBetween(eventStart, eventEnd, "day", "[]") ||
-                  dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]")
+                  dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]"),
               )
             ) {
               rows[i].push({ start: eventStart, end: eventEnd, event });
@@ -111,7 +114,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     const newDate = dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD"))
+      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD")),
     );
   }, [selectedDate, setSelectedDate, setDays]);
 
@@ -119,7 +122,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     const newDate = dayjs(selectedDate).add(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD"))
+      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD")),
     );
   }, [selectedDate, setSelectedDate, setDays]);
 
@@ -128,7 +131,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
       if (event.key === "ArrowLeft") handleLeftClick();
       if (event.key === "ArrowRight") handleRightClick();
     },
-    [handleLeftClick, handleRightClick]
+    [handleLeftClick, handleRightClick],
   );
 
   useEffect(() => {
@@ -233,7 +236,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     endIndex,
     opacity,
     labelText,
-    additionalClass = ""
+    additionalClass = "",
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
@@ -293,7 +296,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           dayjs(event.assembly_start_date).startOf("day"),
           dayjs(event.disassembly_end_date).endOf("day"),
           "day",
-          "[]"
+          "[]",
         )
       ) {
         uniqueEvents[event.event_id] = event;
@@ -305,7 +308,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     // Ensure empty rows are added if necessary
     const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
     const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
-      dayEvents.find((event) => event.row === index)
+      dayEvents.find((event) => event.row === index),
     );
 
     // Sort events by row to maintain consistent display order
@@ -351,10 +354,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
         const phaseStart = dayjs(phase.startDate);
         const phaseEnd = dayjs(phase.endDate);
         const startIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseStart, "day")
+          dayjs(d).isSame(phaseStart, "day"),
         );
         const endIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseEnd, "day")
+          dayjs(d).isSame(phaseEnd, "day"),
         );
         if (startIndex === -1 || endIndex === -1) return null;
 
@@ -368,7 +371,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           endIndex,
           phase.opacity,
           labelText,
-          phase.className
+          phase.className,
         );
       });
 

@@ -1,525 +1,463 @@
 import os
 import logging
 from flask import Blueprint, jsonify, request
+from extensions import db
+from utils.helpers import get_data
+import pandas as pd
 from sqlalchemy import text
 from datetime import datetime, timedelta
-from extensions import db
-from utils.helpers import get_data, parse_date, calculate_date_range
-from scripts.allocation_algorithm import fetch_and_optimize_parking_lots
-from sqlalchemy import create_engine, text
 
-events_bp = Blueprint('events', __name__)
+
+events_bp = Blueprint("events", __name__)
 logger = logging.getLogger(__name__)
 
-database_url = os.getenv("DATABASE_URL")
-if not database_url:
-    raise ValueError("No DATABASE_URL found in environment variables")
 
-engine = create_engine(database_url)
-
-
-@events_bp.route("/", methods=["GET"])
+@events_bp.route("/events", methods=["GET"])
 def get_events():
     try:
-        query_events = "SELECT * FROM event ORDER BY runtime_start_date"
-        query_demands = "SELECT event_id, date, demand, status FROM visitor_demand"
-        query_halls = """
-        SELECT ho.event_id, h.name as hall_name
-        FROM hall_occupation ho
-        JOIN hall h ON ho.hall_id = h.id
+        query_events = """
+            SELECT e.id, e.name, e.assembly_start_date, e.assembly_end_date, e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, e.disassembly_end_date, e.color,
+            ARRAY(SELECT DISTINCT h.name FROM hall h INNER JOIN hall_occupation ho ON h.id = ho.hall_id WHERE ho.event_id = e.id) AS halls,
+            ARRAY(SELECT DISTINCT en.name FROM entrance en INNER JOIN entrance_occupation eo ON en.id = eo.entrance_id WHERE eo.event_id = e.id) AS entrances
+            FROM event e
+            ORDER BY e.runtime_start_date
+        """
+        query_demands = """
+            SELECT vd.event_id, vd.status, SUM(vd.demand) AS total_demand
+            FROM visitor_demand vd
+            GROUP BY vd.event_id, vd.status
         """
 
         events = get_data(query_events).to_dict(orient="records")
         demands = get_data(query_demands).to_dict(orient="records")
-        halls = get_data(query_halls).to_dict(orient="records")
 
         event_map = {event["id"]: event for event in events}
         for demand in demands:
             event_id = demand["event_id"]
-            date_str = demand["date"].strftime("%Y-%m-%d")
-            if "demands" not in event_map[event_id]:
-                event_map[event_id]["demands"] = {
-                    "assembly": {},
-                    "runtime": {},
-                    "disassembly": {},
-                }
-            event_map[event_id]["demands"][demand["status"]][date_str] = demand[
-                "demand"
-            ]
+            if event_id in event_map:
+                event_map[event_id][f"{demand['status']}_demand"] = demand[
+                    "total_demand"
+                ]
 
-        for hall in halls:
-            event_id = hall["event_id"]
-            if "halls" not in event_map[event_id]:
-                event_map[event_id]["halls"] = []
-            event_map[event_id]["halls"].append(hall["hall_name"])
+        # Add status to each event
+        for event in event_map.values():
+            if "assembly_demand" not in event:
+                event["status"] = "no_demands"
+            else:
+                total_demand = (
+                    event.get("assembly_demand", 0)
+                    + event.get("runtime_demand", 0)
+                    + event.get("disassembly_demand", 0)
+                )
+                if total_demand == 0:
+                    event["status"] = "no_demands"
+                else:
+                    event["status"] = "not_enough_capacity"
 
         return jsonify(list(event_map.values())), 200
     except Exception as e:
+        logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/<int:id>", methods=["PUT"])
-def update_event(id):
+@events_bp.route("/events_status", methods=["GET"])
+def get_event_status():
     try:
-        data = request.json
+        query = """
+        WITH event_details AS (
+            SELECT
+                e.id AS event_id,
+                e.name AS event_name,
+                e.assembly_start_date,
+                e.assembly_end_date,
+                e.runtime_start_date,
+                e.runtime_end_date,
+                e.disassembly_start_date,
+                e.disassembly_end_date
+            FROM
+                public.event e
+        ),
+        daily_demands AS (
+            SELECT
+                vd.date,
+                SUM(vd.demand) AS total_demand,
+                SUM(vd.car_demand) AS total_car_demand,
+                SUM(vd.truck_demand) AS total_truck_demand,
+                SUM(vd.bus_demand) AS total_bus_demand
+            FROM
+                public.visitor_demand vd
+            GROUP BY
+                vd.date
+        ),
+        daily_allocations AS (
+            SELECT
+                pa.date,
+                COALESCE(SUM(pa.allocated_capacity), 0) AS total_allocated_capacity,
+                COALESCE(SUM(pa.allocated_cars), 0) AS total_allocated_cars,
+                COALESCE(SUM(pa.allocated_trucks), 0) AS total_allocated_trucks,
+                COALESCE(SUM(pa.allocated_buses), 0) AS total_allocated_buses
+            FROM
+                public.parking_lot_allocation pa
+            GROUP BY
+                pa.date
+        ),
+        capacity_per_date AS (
+            SELECT
+                pc.parking_lot_id,
+                pc.capacity,
+                pc.truck_limit,
+                pc.bus_limit,
+                pc.valid_from,
+                pc.valid_to,
+                generate_series(pc.valid_from, pc.valid_to, '1 day'::interval)::date AS date
+            FROM
+                public.parking_lot_capacity pc
+        ),
+        total_capacity_per_day AS (
+            SELECT
+                date,
+                SUM(capacity) AS total_capacity,
+                SUM(capacity) AS total_car_capacity,
+                SUM(truck_limit) AS total_truck_capacity,
+                SUM(bus_limit) AS total_bus_capacity
+            FROM
+                capacity_per_date
+            GROUP BY
+                date
+        ),
+        combined AS (
+            SELECT
+                ed.event_id,
+                ed.event_name,
+                ed.assembly_start_date,
+                ed.assembly_end_date,
+                ed.runtime_start_date,
+                ed.runtime_end_date,
+                ed.disassembly_start_date,
+                ed.disassembly_end_date,
+                dd.date,
+                dd.total_demand,
+                dd.total_car_demand,
+                dd.total_truck_demand,
+                dd.total_bus_demand,
+                COALESCE(da.total_allocated_capacity, 0) AS total_allocated_capacity,
+                COALESCE(da.total_allocated_cars, 0) AS total_allocated_cars,
+                COALESCE(da.total_allocated_trucks, 0) AS total_allocated_trucks,
+                COALESCE(da.total_allocated_buses, 0) AS total_allocated_buses,
+                tcd.total_capacity,
+                tcd.total_truck_capacity,
+                tcd.total_bus_capacity,
+                tcd.total_car_capacity
+            FROM
+                event_details ed
+            LEFT JOIN
+                daily_demands dd ON dd.date BETWEEN ed.assembly_start_date AND ed.disassembly_end_date
+            LEFT JOIN
+                daily_allocations da ON da.date = dd.date
+            LEFT JOIN
+                total_capacity_per_day tcd ON dd.date = tcd.date
+        )
+        SELECT
+            event_id,
+            event_name,
+            assembly_start_date,
+            assembly_end_date,
+            runtime_start_date,
+            runtime_end_date,
+            disassembly_start_date,
+            disassembly_end_date,
+            date,
+            total_demand,
+            total_car_demand,
+            total_truck_demand,
+            total_bus_demand,
+            total_allocated_capacity,
+            total_allocated_cars,
+            total_allocated_trucks,
+            total_allocated_buses,
+            total_capacity,
+            total_truck_capacity,
+            total_bus_capacity,
+            total_car_capacity,
+            CASE
+                WHEN total_demand IS NULL THEN 'no_demands'
+                WHEN total_demand > total_capacity THEN 'not_enough_capacity'
+                WHEN total_demand > total_allocated_capacity THEN 'demands_to_allocate'
+                WHEN (total_demand > 0 AND total_allocated_capacity = 0) THEN 'demands_to_allocate'
+                ELSE 'ok'
+            END AS status
+        FROM
+            combined
+        ORDER BY
+            event_id, date;
 
-        event_query = """
-        UPDATE event
-        SET name = :name,
-            entrance = :entrance,
-            assembly_start_date = :assembly_start_date,
-            assembly_end_date = :assembly_end_date,
-            runtime_start_date = :runtime_start_date,
-            runtime_end_date = :runtime_end_date,
-            disassembly_start_date = :disassembly_start_date,
-            disassembly_end_date = :disassembly_end_date
-        WHERE id = :id
         """
-        event_params = {
-            "id": id,
-            "name": data["name"],
-            "entrance": data["entrance"],
-            "assembly_start_date": parse_date(data["dates"]["assembly"]["start"]),
-            "assembly_end_date": parse_date(data["dates"]["assembly"]["end"]),
-            "runtime_start_date": parse_date(data["dates"]["runtime"]["start"]),
-            "runtime_end_date": parse_date(data["dates"]["runtime"]["end"]),
-            "disassembly_start_date": parse_date(data["dates"]["disassembly"]["start"]),
-            "disassembly_end_date": parse_date(data["dates"]["disassembly"]["end"]),
-        }
 
-        with db.engine.begin() as connection:
-            connection.execute(text(event_query), event_params)
-            connection.execute(
-                text("DELETE FROM hall_occupation WHERE event_id = :event_id"),
-                {"event_id": id},
-            )
+        df = pd.read_sql_query(query, db.engine)
+        events_status = df.to_dict(orient="records")
 
-            for hall in data["halls"]:
-                hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
-                hall_id = connection.execute(
-                    text(hall_id_query), {"hall_name": hall}
-                ).fetchone()[0]
+        # Print the table for debugging
+        logger.info("Event Status Table:")
+        for row in events_status:
+            logger.info(row)
 
-                for phase, phase_dates in data["dates"].items():
-                    start_date = parse_date(phase_dates["start"])
-                    end_date = parse_date(phase_dates["end"])
-                    current_date = start_date
-                    while current_date <= end_date:
-                        connection.execute(
-                            text(
-                                """
-                                INSERT INTO hall_occupation (event_id, hall_id, date)
-                                VALUES (:event_id, :hall_id, :date)
-                            """
-                            ),
-                            {"event_id": id, "hall_id": hall_id, "date": current_date},
-                        )
-                        current_date += timedelta(days=1)
-
-            connection.execute(
-                text("DELETE FROM visitor_demand WHERE event_id = :event_id"),
-                {"event_id": id},
-            )
-            for phase, demands in data["demands"].items():
-                for date, demand in demands.items():
-                    connection.execute(
-                        text(
-                            """
-                            INSERT INTO visitor_demand (event_id, date, demand, status)
-                            VALUES (:event_id, :date, :demand, :status)
-                        """
-                        ),
-                        {
-                            "event_id": id,
-                            "date": parse_date(date),
-                            "demand": demand,
-                            "status": phase,
-                        },
-                    )
-
-        return jsonify({"message": "Event updated successfully"}), 200
+        return jsonify(events_status), 200
     except Exception as e:
+        logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/add_event", methods=["POST"])
+@events_bp.route("/event", methods=["POST"])
 def add_event():
     try:
         data = request.json
-        name = data["name"]
-        dates = data["dates"]
-        halls = data["halls"]
-        entrances = data["entrances"]
-        demands = data["demands"]
-
-        query_event = """
-        INSERT INTO event (name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date)
-        VALUES (:name, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date)
-        RETURNING id
-        """
-        params_event = {
-            "name": name,
-            "assembly_start_date": dates["assembly"]["start"],
-            "assembly_end_date": dates["assembly"]["end"],
-            "runtime_start_date": dates["runtime"]["start"],
-            "runtime_end_date": dates["runtime"]["end"],
-            "disassembly_start_date": dates["disassembly"]["start"],
-            "disassembly_end_date": dates["disassembly"]["end"],
+        event_data = {
+            "name": data["name"],
+            "assembly_start_date": data["assembly_start_date"],
+            "assembly_end_date": data["assembly_end_date"],
+            "runtime_start_date": data["runtime_start_date"],
+            "runtime_end_date": data["runtime_end_date"],
+            "disassembly_start_date": data["disassembly_start_date"],
+            "disassembly_end_date": data["disassembly_end_date"],
+            "color": data["color"],
         }
 
-        with db.engine.begin() as connection:
-            result = connection.execute(text(query_event), params_event)
-            event_id = result.fetchone()[0]
+        # Insert the event
+        event_query = """
+            INSERT INTO public.event (name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date, color)
+            VALUES (:name, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date, :color)
+            RETURNING id
+        """
+        result = db.session.execute(text(event_query), event_data)
+        event_id = result.fetchone()[0]
 
-            queries = []
-            for phase in ["assembly", "runtime", "disassembly"]:
-                all_dates = calculate_date_range(
-                    dates[phase]["start"], dates[phase]["end"]
+        # Insert halls
+        if "halls" in data:
+            hall_ids = db.session.execute(
+                text("SELECT id FROM hall WHERE name IN :names"),
+                {"names": tuple(data["halls"])},
+            ).fetchall()
+            for hall_id in hall_ids:
+                hall_id = hall_id[0]  # fetchall() returns a list of tuples
+                current_date = datetime.strptime(
+                    data["assembly_start_date"], "%Y-%m-%d"
                 )
-                for event_date in all_dates:
-                    demand = demands[phase].get(event_date, 0)
-                    query_demand = """
-                    INSERT INTO visitor_demand (event_id, date, demand, car_demand, truck_demand, bus_demand, status)
-                    VALUES (:event_id, :date, :demand, :car_demand, :truck_demand, :bus_demand, :status)
-                    """
-                    params_demand = {
-                        "event_id": event_id,
-                        "date": event_date,
-                        "demand": demand,
-                        "car_demand": demands[phase].get("car", 0),
-                        "truck_demand": demands[phase].get("truck", 0),
-                        "bus_demand": demands[phase].get("bus", 0),
-                        "status": phase,
-                    }
-                    queries.append((query_demand, params_demand))
-
-            for query, params in queries:
-                connection.execute(text(query), params)
-
-            hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
-            hall_occupation_queries = []
-            for hall_name in halls:
-                hall_id = connection.execute(
-                    text(hall_id_query), {"hall_name": hall_name}
-                ).fetchone()[0]
-
-                for phase in ["assembly", "runtime", "disassembly"]:
-                    all_dates = calculate_date_range(
-                        dates[phase]["start"], dates[phase]["end"]
-                    )
-                    for event_date in all_dates:
-                        query_hall_occupation = """
+                end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
+                while current_date <= end_date:
+                    hall_query = """
                         INSERT INTO hall_occupation (event_id, hall_id, date)
                         VALUES (:event_id, :hall_id, :date)
-                        """
-                        params_hall_occupation = {
+                    """
+                    db.session.execute(
+                        text(hall_query),
+                        {
                             "event_id": event_id,
                             "hall_id": hall_id,
-                            "date": event_date,
-                        }
-                        hall_occupation_queries.append(
-                            (query_hall_occupation, params_hall_occupation)
-                        )
+                            "date": current_date.strftime("%Y-%m-%d"),
+                        },
+                    )
+                    current_date += timedelta(days=1)
 
-            for query, params in hall_occupation_queries:
-                connection.execute(text(query), params)
+        # Insert entrances
+        if "entrances" in data:
+            entrance_ids = db.session.execute(
+                text("SELECT id FROM entrance WHERE name IN :names"),
+                {"names": tuple(data["entrances"])},
+            ).fetchall()
+            for entrance_id in entrance_ids:
+                entrance_id = entrance_id[0]  # fetchall() returns a list of tuples
+                current_date = datetime.strptime(
+                    data["assembly_start_date"], "%Y-%m-%d"
+                )
+                end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
+                while current_date <= end_date:
+                    entrance_query = """
+                        INSERT INTO entrance_occupation (event_id, entrance_id, date)
+                        VALUES (:event_id, :entrance_id, :date)
+                    """
+                    db.session.execute(
+                        text(entrance_query),
+                        {
+                            "event_id": event_id,
+                            "entrance_id": entrance_id,
+                            "date": current_date.strftime("%Y-%m-%d"),
+                        },
+                    )
+                    current_date += timedelta(days=1)
 
-            entrance_id_query = "SELECT id FROM entrance WHERE name = :entrance_name"
-            entrance_occupation_queries = []
-            for entrance_name in entrances:
-                entrance_id_result = connection.execute(
-                    text(entrance_id_query), {"entrance_name": entrance_name}
-                ).fetchone()
+        # Initialize visitor demand with zero values for each day within the event period
+        current_date = datetime.strptime(data["assembly_start_date"], "%Y-%m-%d")
+        end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
+        while current_date <= end_date:
+            if current_date < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):
+                status = "assembly"
+            elif current_date <= datetime.strptime(
+                data["runtime_end_date"], "%Y-%m-%d"
+            ):
+                status = "runtime"
+            else:
+                status = "disassembly"
+            demand_query = """
+                INSERT INTO visitor_demand (event_id, date, car_demand, truck_demand, bus_demand, status)
+                VALUES (:event_id, :date, 0, 0, 0, :status)
+            """
+            db.session.execute(
+                text(demand_query),
+                {
+                    "event_id": event_id,
+                    "date": current_date.strftime("%Y-%m-%d"),
+                    "status": status,
+                },
+            )
+            current_date += timedelta(days=1)
 
-                if entrance_id_result:
-                    entrance_id = entrance_id_result[0]
-
-                    for phase in ["assembly", "runtime", "disassembly"]:
-                        all_dates = calculate_date_range(
-                            dates[phase]["start"], dates[phase]["end"]
-                        )
-                        for event_date in all_dates:
-                            query_entrance_occupation = """
-                            INSERT INTO entrance_occupation (event_id, entrance_id, date)
-                            VALUES (:event_id, :entrance_id, :date)
-                            """
-                            params_entrance_occupation = {
-                                "event_id": event_id,
-                                "entrance_id": entrance_id,
-                                "date": event_date,
-                            }
-                            entrance_occupation_queries.append(
-                                (query_entrance_occupation, params_entrance_occupation)
-                            )
-
-            for query, params in entrance_occupation_queries:
-                connection.execute(text(query), params)
-
-        return jsonify({"message": "Event added successfully"}), 200
+        db.session.commit()
+        return jsonify({"id": event_id}), 201
     except Exception as e:
+        logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/import_events", methods=["POST"])
-def import_events():
+@events_bp.route("/event/<int:id>", methods=["PUT"])
+def edit_event(id):
     try:
         data = request.json
-        csv_data = data.get("csv_data")
-        mapping = data.get("mapping", {
-            "name": "name",
-            "halls": "halls",
-            "assembly_start_date": "assembly_start_date",
-            "assembly_end_date": "assembly_end_date",
-            "runtime_start_date": "runtime_start_date",
-            "runtime_end_date": "runtime_end_date",
-            "disassembly_start_date": "disassembly_start_date",
-            "disassembly_end_date": "disassembly_end_date",
-            "entrance": "entrance",
-        })
+        data["id"] = id
 
-        required_fields = [
-            "name",
-            "assembly_start_date",
-            "assembly_end_date",
-            "runtime_start_date",
-            "runtime_end_date",
-            "disassembly_start_date",
-            "disassembly_end_date",
-            "entrance",
-            "halls",
-        ]
+        # Update the event details
+        update_event_query = text(
+            """
+            UPDATE public.event
+            SET name = :name,
+                assembly_start_date = :assembly_start_date,
+                assembly_end_date = :assembly_end_date,
+                runtime_start_date = :runtime_start_date,
+                runtime_end_date = :runtime_end_date,
+                disassembly_start_date = :disassembly_start_date,
+                disassembly_end_date = :disassembly_end_date,
+                color = :color
+            WHERE id = :id
+            """
+        )
+        db.session.execute(update_event_query, data)
 
-        missing_fields = [field for field in required_fields if field not in mapping]
-        if missing_fields:
-            return jsonify({"error": f"Missing required fields in mapping: {missing_fields}"}), 400
+        # Clear existing halls and entrances
+        clear_halls_query = text("DELETE FROM hall_occupation WHERE event_id = :id")
+        clear_entrances_query = text(
+            "DELETE FROM entrance_occupation WHERE event_id = :id"
+        )
 
-        events = []
-        for row in csv_data:
-            try:
-                event = {
-                    "name": row.get(mapping["name"], "").strip(),
-                    "assembly_start_date": row.get(mapping["assembly_start_date"], "").strip(),
-                    "assembly_end_date": row.get(mapping["assembly_end_date"], "").strip(),
-                    "runtime_start_date": row.get(mapping["runtime_start_date"], "").strip(),
-                    "runtime_end_date": row.get(mapping["runtime_end_date"], "").strip(),
-                    "disassembly_start_date": row.get(mapping["disassembly_start_date"], "").strip(),
-                    "disassembly_end_date": row.get(mapping["disassembly_end_date"], "").strip(),
-                    "entrance": row.get(mapping["entrance"], "").strip(),
-                    "halls": [hall.strip() for hall in row.get(mapping["halls"], "").split(",")],
-                }
+        db.session.execute(clear_halls_query, {"id": id})
+        db.session.execute(clear_entrances_query, {"id": id})
 
-                for key, value in event.items():
-                    if not value and key != "halls":
-                        raise KeyError(f"Missing field in row: '{key}'")
+        # Insert new halls
+        insert_halls_query = text(
+            """
+            INSERT INTO hall_occupation (event_id, hall_id, date)
+            SELECT :event_id, id, (SELECT runtime_start_date FROM public.event WHERE id = :event_id)
+            FROM hall
+            WHERE name = :hall_name
+            """
+        )
+        for hall_name in data["halls"]:
+            db.session.execute(
+                insert_halls_query, {"event_id": id, "hall_name": hall_name}
+            )
 
-                events.append(event)
-            except KeyError as e:
-                continue
+        # Insert new entrances
+        insert_entrances_query = text(
+            """
+            INSERT INTO entrance_occupation (event_id, entrance_id, date)
+            SELECT :event_id, id, (SELECT runtime_start_date FROM public.event WHERE id = :event_id)
+            FROM entrance
+            WHERE name = :entrance_name
+            """
+        )
+        for entrance_name in data["entrances"]:
+            db.session.execute(
+                insert_entrances_query, {"event_id": id, "entrance_name": entrance_name}
+            )
 
-        with db.engine.begin() as connection:
-            for event in events:
-                query_event = """
-                INSERT INTO event (name, entrance, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date)
-                VALUES (:name, :entrance, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date)
-                RETURNING id
-                """
-                params_event = {
-                    "name": event["name"],
-                    "entrance": event["entrance"],
-                    "assembly_start_date": event["assembly_start_date"],
-                    "assembly_end_date": event["assembly_end_date"],
-                    "runtime_start_date": event["runtime_start_date"],
-                    "runtime_end_date": event["runtime_end_date"],
-                    "disassembly_start_date": event["disassembly_start_date"],
-                    "disassembly_end_date": event["disassembly_end_date"],
-                }
-                result = connection.execute(text(query_event), params_event)
-                event_id = result.fetchone()[0]
-
-                for phase in ["assembly", "runtime", "disassembly"]:
-                    all_dates = calculate_date_range(
-                        event[f"{phase}_start_date"], event[f"{phase}_end_date"]
-                    )
-                    for event_date in all_dates:
-                        query_demand = """
-                        INSERT INTO visitor_demand (event_id, date, demand, status)
-                        VALUES (:event_id, :date, :demand, :status)
-                        """
-                        params_demand = {
-                            "event_id": event_id,
-                            "date": event_date,
-                            "demand": 0,
-                            "status": phase,
-                        }
-                        connection.execute(text(query_demand), params_demand)
-
-                hall_id_query = "SELECT id FROM hall WHERE name = :hall_name"
-                for hall_name in event["halls"]:
-                    hall_id = connection.execute(
-                        text(hall_id_query), {"hall_name": hall_name}
-                    ).fetchone()[0]
-                    for phase in ["assembly", "runtime", "disassembly"]:
-                        all_dates = calculate_date_range(
-                            event[f"{phase}_start_date"], event[f"{phase}_end_date"]
-                        )
-                        for event_date in all_dates:
-                            query_hall_occupation = """
-                            INSERT INTO hall_occupation (event_id, hall_id, date)
-                            VALUES (:event_id, :hall_id, :date)
-                            """
-                            params_hall_occupation = {
-                                "event_id": event_id,
-                                "hall_id": hall_id,
-                                "date": event_date,
-                            }
-                            connection.execute(text(query_hall_occupation), params_hall_occupation)
-
-        return jsonify({"message": "Events imported successfully"}), 200
+        db.session.commit()
+        return jsonify({"message": "Event updated successfully"}), 200
     except Exception as e:
+        logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/events_without_valid_demands", methods=["GET"])
-def events_without_valid_demands():
+@events_bp.route("/event/<int:id>", methods=["GET"])
+def get_event(id):
+    try:
+        query_event = """
+            SELECT e.id, e.name, e.assembly_start_date, e.assembly_end_date, e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, e.disassembly_end_date, e.color,
+            ARRAY(SELECT DISTINCT h.name FROM hall h INNER JOIN hall_occupation ho ON h.id = ho.hall_id WHERE ho.event_id = e.id) AS halls,
+            ARRAY(SELECT DISTINCT en.name FROM entrance en INNER JOIN entrance_occupation eo ON en.id = eo.entrance_id WHERE eo.event_id = e.id) AS entrances
+            FROM event e
+            WHERE e.id = :id
+        """
+        event = get_data(query_event, {"id": id}).to_dict(orient="records")
+        if event:
+            return jsonify(event[0]), 200
+        else:
+            return jsonify({"error": "Event not found"}), 404
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/demands/<int:event_id>", methods=["GET"])
+def get_event_demands(event_id):
     try:
         query = """
-        SELECT e.id as event_id, e.name, e.assembly_start_date, e.assembly_end_date, 
-               e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, 
-               e.disassembly_end_date, vd.id as demand_id, vd.date, vd.demand, vd.status
-        FROM event e
-        LEFT JOIN visitor_demand vd ON e.id = vd.event_id
-        WHERE vd.demand = 0
+            SELECT vd.id, vd.date, vd.car_demand, vd.truck_demand, vd.bus_demand, vd.demand, vd.status
+            FROM visitor_demand vd
+            WHERE vd.event_id = :event_id
         """
-        events = get_data(query).to_dict(orient="records")
-        return jsonify({"events": events}), 200
+        demands = get_data(query, {"event_id": event_id}).to_dict(orient="records")
+        if not demands:
+            return jsonify([]), 204
+        return jsonify(demands), 200
     except Exception as e:
+        logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/add_demands/<int:event_id>", methods=["POST"])
-def add_demands(event_id):
+@events_bp.route("/allocations/<int:event_id>", methods=["GET"])
+def get_event_allocations(event_id):
     try:
-        demands = request.json["demands"]
-        queries = []
-
-        for demand_id, demand_data in demands.items():
-            query_demand = """
-            UPDATE visitor_demand
-            SET demand = :demand
-            WHERE id = :demand_id
-            """
-            params_demand = {
-                "demand_id": demand_id,
-                "demand": demand_data["demand"],
-            }
-            queries.append((query_demand, params_demand))
-
-        with db.engine.begin() as connection:
-            for query, params in queries:
-                connection.execute(text(query), params)
-
-        return jsonify({"message": "Demands updated successfully"}), 200
+        query = """
+            SELECT date, allocated_cars, allocated_trucks, allocated_buses, allocated_capacity
+            FROM public.parking_lot_allocation
+            WHERE event_id = :event_id
+        """
+        allocations = get_data(query, {"event_id": event_id}).to_dict(orient="records")
+        if not allocations:
+            return jsonify([]), 204
+        return jsonify(allocations), 200
     except Exception as e:
+        logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/check_hall_availability", methods=["POST"])
-def check_hall_availability():
+@events_bp.route("/demands/<int:event_id>", methods=["PUT"])
+def update_event_demands(event_id):
     try:
         data = request.json
-        event_id = data.get("event_id", None)
-        selected_halls = data["halls"]
-        dates = data["dates"]
-
-        all_dates = []
-        for phase in ["assembly", "runtime", "disassembly"]:
-            all_dates += calculate_date_range(
-                dates[phase]["start"], dates[phase]["end"]
+        for demand in data:
+            demand["event_id"] = event_id
+            query = text(
+                """
+                UPDATE visitor_demand
+                SET car_demand = :car_demand,
+                    truck_demand = :truck_demand,
+                    bus_demand = :bus_demand,
+                    status = :status
+                WHERE id = :id AND event_id = :event_id
+            """
             )
-
-        hall_id_query = "SELECT id, name FROM hall"
-        hall_occupation_query = """
-        SELECT ho.event_id, ho.hall_id, ho.date, e.name as event_name
-        FROM hall_occupation ho
-        JOIN event e ON ho.event_id = e.id
-        WHERE ho.date IN :dates
-        AND (ho.event_id != :event_id OR :event_id IS NULL)
-        """
-
-        occupied_halls = {}
-        free_halls_by_date = {date: set() for date in all_dates}
-
-        with db.engine.connect() as connection:
-            hall_ids = connection.execute(text(hall_id_query)).fetchall()
-            hall_map = {hall[0]: hall[1] for hall in hall_ids}
-            all_halls = set(hall_map.values())
-
-            result = connection.execute(
-                text(hall_occupation_query),
-                {
-                    "dates": tuple(all_dates),
-                    "event_id": event_id,
-                },
-            ).fetchall()
-
-            for row in result:
-                hall_name = hall_map[row[1]]
-                date_str = row[2].strftime("%Y-%m-%d")
-                if hall_name not in occupied_halls:
-                    occupied_halls[hall_name] = []
-                occupied_halls[hall_name].append(
-                    {
-                        "event_id": row[0],
-                        "date": row[2].strftime("%d.%m.%Y"),
-                        "event_name": row[3],
-                    }
-                )
-                free_halls_by_date[date_str].discard(hall_name)
-
-        for date in all_dates:
-            free_halls_by_date[date] = sorted(
-                all_halls
-                - set(
-                    hall_map[hall_id]
-                    for hall_id, hall_name in hall_ids
-                    if hall_name in occupied_halls
-                )
-            )
-
-        selected_occupied_halls = {
-            hall: occupied_halls[hall]
-            for hall in selected_halls
-            if hall in occupied_halls
-        }
-
-        return (
-            jsonify(
-                {
-                    "occupied_halls": selected_occupied_halls,
-                    "free_halls": free_halls_by_date,
-                }
-            ),
-            200,
-        )
+            db.session.execute(query, demand)
+        db.session.commit()
+        return jsonify({"message": "Demands updated successfully"}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@events_bp.route("/optimize_distance", methods=["POST"])
-def optimize_parking():
-    """
-    Endpoint to optimize the parking lot allocation. It fetches data from the database,
-    optimizes the allocation, and saves the results back to the database.
-
-    Returns:
-        JSON response with a success message if the optimization is completed successfully,
-        or an error message if an exception is raised.
-    """
-    logger.info("Received request to optimize parking allocations.")
-    try:
-        logger.info("Fetching and optimizing parking lot allocations.")
-        message = fetch_and_optimize_parking_lots()
-        logger.info("Optimization and saving of results completed successfully.")
-        return jsonify({"message": message}), 200
-    except Exception as e:
-        logger.error("Error during optimization process", exc_info=True)
+        logger.error(e)
         return jsonify({"error": str(e)}), 500
