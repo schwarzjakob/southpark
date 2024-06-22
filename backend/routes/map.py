@@ -99,13 +99,15 @@ def get_parking_lot_capacity(date):
         ORDER BY
             pl.id;
         """
+
         df_parking_lots = get_data(query_parking_lots)
-        parking_lots_data = (
-            df_parking_lots.to_dict(orient="records")
-            if not df_parking_lots.empty
-            else []
-        )
+        if df_parking_lots.empty:
+            logger.info(f"No data available for parking lots on date: {date}")
+            return jsonify({"message": "No data found"}), 204
+
         logger.info(f"Parking lot capacity data fetched successfully for date: {date}")
+
+        parking_lots_data = df_parking_lots.to_dict(orient="records")
         return jsonify(parking_lots_data), 200
     except Exception as e:
         logger.error("Failed to fetch parking lot capacity data", exc_info=True)
@@ -125,27 +127,26 @@ def get_parking_lot_occupancy(date):
         )
 
         query_occupancy = f"""
-        SELECT 
-            *
-        FROM
-            view_schema.view_parking_lot_occupancy
-        WHERE
-            date = '{date}'
+        SELECT
+            vd.date,
+            vd.parking_lot_name,
+            vd.occupied_capacity AS occupancy,
+            vd.free_capacity,
+            truck_limit,
+            bus_limit
+        FROM view_schema.view_daily_parking_lot_capacity_and_occupation vd
+        WHERE vd.date = '{date}'
         """
 
         df_occupancy = get_data(query_occupancy)
         if df_occupancy.empty:
             logger.info(f"No data available for parking lot occupancy on date: {date}")
-            df_occupancy = []
             return jsonify({"message": "No data found"}), 204
 
-        data = {
-            "occupancy": df_occupancy.to_dict(orient="records"),
-            "parking_lots": parking_lots_data,
-        }
-
         logger.info(f"Parking lot occupancy data fetched successfully for date: {date}")
-        return jsonify(data), 200
+
+        occupancy_data = df_occupancy.to_dict(orient="records")
+        return jsonify(occupancy_data), 200
     except Exception as e:
         logger.error("Failed to fetch parking lot occupancy data", exc_info=True)
         return jsonify({"error": str(e)}), 500
