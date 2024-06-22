@@ -6,14 +6,9 @@ import {
   Paper,
   Button,
   TextField,
-  MenuItem,
-  Select,
-  InputLabel,
   FormControl,
   Snackbar,
   Alert,
-  Checkbox,
-  ListItemText,
   Table,
   TableBody,
   TableCell,
@@ -38,8 +33,6 @@ import DateRangePicker from "../controls/DateRangePicker";
 import "./styles/events.css";
 
 const TITLE = "Edit Event";
-
-const entranceOptions = ["West", "North West", "North", "North East", "East"];
 
 const EditEvent = () => {
   const [event, setEvent] = useState(null);
@@ -114,6 +107,15 @@ const EditEvent = () => {
     });
   };
 
+  const toggleEntrance = (entrance) => {
+    setEvent((prevEvent) => {
+      const entrances = prevEvent.entrances.includes(entrance)
+        ? prevEvent.entrances.filter((e) => e !== entrance)
+        : [...prevEvent.entrances, entrance];
+      return { ...prevEvent, entrances };
+    });
+  };
+
   const getContrastingTextColor = (backgroundColor) => {
     const hex = backgroundColor.replace("#", "");
     const r = parseInt(hex.substr(0, 2), 16);
@@ -155,6 +157,36 @@ const EditEvent = () => {
     }
 
     return hallMatrix;
+  };
+
+  const renderEntranceGrid = (entrances) => {
+    const entranceGrid = [
+      ["North West", "North", "North East"],
+      ["West", "", "East"],
+    ];
+
+    return entranceGrid.map((row, rowIndex) => (
+      <TableRow key={rowIndex}>
+        {row.map((cell, cellIndex) => (
+          <TableCell
+            key={cellIndex}
+            onClick={() => cell && toggleEntrance(cell)}
+            style={{
+              backgroundColor: entrances.includes(cell)
+                ? event.color
+                : "transparent",
+              color: entrances.includes(cell)
+                ? getContrastingTextColor(event.color)
+                : "inherit",
+              cursor: cell ? "pointer" : "default",
+              textAlign: "center",
+            }}
+          >
+            {cell}
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
   };
 
   if (!event) {
@@ -271,8 +303,6 @@ const EditEvent = () => {
           </FormControl>
           <FormControl fullWidth margin="normal">
             <Box className="input-container">
-              {/* <OtherHousesRoundedIcon className="input-container__icon" /> */}
-              {/* <InputLabel>Halls</InputLabel> */}
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
@@ -297,25 +327,26 @@ const EditEvent = () => {
           </FormControl>
           <FormControl fullWidth margin="normal">
             <Box className="input-container">
-              <DoorSlidingRoundedIcon className="input-container__icon" />
-              <InputLabel>Entrances</InputLabel>
-              <Select
-                multiple
-                value={event.entrances}
-                onChange={(e) =>
-                  setEvent({ ...event, entrances: e.target.value })
-                }
-                renderValue={(selected) => selected.join(", ")}
-              >
-                {entranceOptions.map((entrance) => (
-                  <MenuItem key={entrance} value={entrance}>
-                    <Checkbox
-                      checked={event.entrances.indexOf(entrance) > -1}
-                    />
-                    <ListItemText primary={entrance} />
-                  </MenuItem>
-                ))}
-              </Select>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell colSpan={5} style={{ textAlign: "center" }}>
+                        <Box className="header-icon-container">
+                          <DoorSlidingRoundedIcon
+                            fontSize="small"
+                            className="header-icon"
+                          />
+                          <Typography variant="h6">
+                            <TableSortLabel>Entrances</TableSortLabel>
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>{renderEntranceGrid(event.entrances)}</TableBody>
+                </Table>
+              </TableContainer>
             </Box>
           </FormControl>
           <Box display="flex" justifyContent="space-between" mt={2}>

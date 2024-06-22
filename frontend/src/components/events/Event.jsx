@@ -88,6 +88,34 @@ const Event = () => {
     return hallMatrix;
   };
 
+  const renderEntranceGrid = (entrances) => {
+    const entranceGrid = [
+      ["North West", "North", "North East"],
+      ["West", "", "East"],
+    ];
+
+    return entranceGrid.map((row, rowIndex) => (
+      <TableRow key={rowIndex}>
+        {row.map((cell, cellIndex) => (
+          <TableCell
+            key={cellIndex}
+            style={{
+              backgroundColor: entrances.includes(cell)
+                ? event.color
+                : "transparent",
+              color: entrances.includes(cell)
+                ? getContrastingTextColor(event.color)
+                : "inherit",
+              textAlign: "center",
+            }}
+          >
+            {cell}
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
+  };
+
   if (!event) {
     return (
       <Box className="form-width">
@@ -134,30 +162,18 @@ const Event = () => {
             {error}
           </Typography>
         )}
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          padding="16px"
-        >
-          <Box display="flex" alignItems="end" gap="10px">
-            <Box display="flex" alignItems="center">
-              <Box
-                className="event-box"
-                style={{
-                  backgroundColor: event.color,
-                  color: getContrastingTextColor(event.color),
-                }}
-              >
-                {event.name}
-              </Box>
-              <Box display="flex" alignItems="center" ml={2}>
-                <DoorSlidingRoundedIcon fontSize="small" />
-                <Typography variant="body1" ml={1}>
-                  {event.entrances.join(", ")}
-                </Typography>
-              </Box>
-            </Box>
+        <Box padding="16px" textAlign="center">
+          <Box
+            className="event-box"
+            style={{
+              backgroundColor: event.color,
+              color: getContrastingTextColor(event.color),
+              display: "inline-block",
+              padding: "10px 20px",
+              borderRadius: "4px",
+            }}
+          >
+            {event.name}
           </Box>
         </Box>
         <Box padding="16px">
@@ -243,6 +259,26 @@ const Event = () => {
                 </TableRow>
               </TableHead>
               <TableBody>{renderHallMatrix(event.halls)}</TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+        <Box padding="16px">
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={3} style={{ textAlign: "center" }}>
+                    <Box className="header-icon-container">
+                      <DoorSlidingRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel>Entrances</TableSortLabel>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>{renderEntranceGrid(event.entrances)}</TableBody>
             </Table>
           </TableContainer>
         </Box>
