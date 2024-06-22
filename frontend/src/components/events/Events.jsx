@@ -27,10 +27,44 @@ import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRou
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
+import CircleIcon from "@mui/icons-material/Circle";
 
 import "./styles/events.css";
 
 const TITLE = "Events";
+
+const getStatusCircle = (status) => {
+  let color;
+  switch (status) {
+    case "ok":
+      color = "green";
+      break;
+    case "demands_to_allocate":
+      color = "orange";
+      break;
+    case "not_enough_capacity":
+      color = "red";
+      break;
+    default:
+      color = "gray";
+  }
+  return <CircleIcon style={{ color }} />;
+};
+
+const getStatusText = (status) => {
+  switch (status) {
+    case "no_demands":
+      return "No demands known";
+    case "ok":
+      return "O.K.";
+    case "demands_to_allocate":
+      return "Demands to allocate";
+    case "not_enough_capacity":
+      return "Not enough capacity";
+    default:
+      return "Unknown status";
+  }
+};
 
 const Events = () => {
   const [events, setEvents] = useState([]);
@@ -342,20 +376,12 @@ const Events = () => {
                       display="flex"
                       alignItems="center"
                     >
-                      <Box
-                        className="status-circle"
-                        style={{
-                          width: "10px",
-                          height: "10px",
-                          borderRadius: "50%",
-                          backgroundColor: getStatusColor(event.status),
-                          marginRight: "8px",
-                        }}
-                      ></Box>
-                      {getStatusText(event.status)}
+                      {getStatusCircle(event.status)}
+                      <Typography variant="body2" style={{ marginLeft: "8px" }}>
+                        {getStatusText(event.status)}
+                      </Typography>
                     </Box>
                   </TableCell>
-
                   <TableCell>
                     <IconButton
                       onClick={() => navigate(`/events/event/${event.id}`)}
@@ -373,36 +399,6 @@ const Events = () => {
       </Box>
     </Box>
   );
-};
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case "no_demands":
-      return "grey";
-    case "ok":
-      return "green";
-    case "demands_to_allocate":
-      return "yellow";
-    case "not_enough_capacity":
-      return "red";
-    default:
-      return "grey";
-  }
-};
-
-const getStatusText = (status) => {
-  switch (status) {
-    case "no_demands":
-      return "No demands known";
-    case "ok":
-      return "O.K.";
-    case "demands_to_allocate":
-      return "Demands to allocate";
-    case "not_enough_capacity":
-      return "Not enough capacity";
-    default:
-      return "Unknown status";
-  }
 };
 
 export default Events;
