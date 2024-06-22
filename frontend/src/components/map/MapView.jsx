@@ -104,7 +104,7 @@ const MapView = () => {
             display="flex"
             flexDirection={"column"}
             alignItems="center"
-            justifyContent="center"
+            justifyContent="flex-start"
             border="1px solid"
             borderColor="grey.300"
             width="25vw"

@@ -120,12 +120,14 @@ def get_parking_lot_occupancy(date):
     Endpoint to retrieve parking lot occupancy data for a specific date.
     """
     try:
+        # Parse the date from the URL
         date = datetime.strptime(date, "%Y-%m-%d").date()
 
         logger.info(
             f"Fetching parking lot occupancy data from the database for date: {date}"
         )
 
+        # Define the query to fetch occupancy data
         query_occupancy = f"""
         SELECT
             vd.date,
@@ -138,15 +140,21 @@ def get_parking_lot_occupancy(date):
         WHERE vd.date = '{date}'
         """
 
+        # Execute the query and get the data
         df_occupancy = get_data(query_occupancy)
+
+        # Check if the data is empty and return appropriate response
         if df_occupancy.empty:
             logger.info(f"No data available for parking lot occupancy on date: {date}")
             return jsonify({"message": "No data found"}), 204
 
         logger.info(f"Parking lot occupancy data fetched successfully for date: {date}")
 
+        # Convert the DataFrame to a dictionary and return it as JSON
         occupancy_data = df_occupancy.to_dict(orient="records")
         return jsonify(occupancy_data), 200
+
     except Exception as e:
+        # Log the exception and return an error response
         logger.error("Failed to fetch parking lot occupancy data", exc_info=True)
         return jsonify({"error": str(e)}), 500
