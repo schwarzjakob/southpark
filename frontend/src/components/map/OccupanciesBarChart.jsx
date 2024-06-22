@@ -54,14 +54,13 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
         setLoading(true);
         const [parkingLotOccupancyResponse, parkingLotsResponse] =
           await Promise.all([
-            axios.get(`/api/map/parking_occupancies/${selectedDate}`),
+            axios.get(`/api/map/parking_occupancy/${selectedDate}`),
             axios.get(`/api/map/parking_lots_capacity/${selectedDate}`),
           ]);
 
         const parkingLotOccupancy = parkingLotOccupancyResponse.data;
         const parkingLots = parkingLotsResponse.data;
 
-        console.log(parkingLots, parkingLotOccupancy);
         if (parkingLots) {
           const sortedParkingLots = [...parkingLots]
             .map((lot) => ({
@@ -81,26 +80,28 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
             ? Array(sortedParkingLots.length).fill(100)
             : [...sortedParkingLots.map((item) => item.capacity)];
 
-          parkingLotOccupancy.forEach((item) => {
-            const index = sortedParkingLots.findIndex(
-              (lot) =>
-                lot.name.replace(" (ext.)", "") === item.parking_lot_name,
-            );
-            if (index >= 0) {
-              const totalCapacity = sortedParkingLots[index].capacity;
-              const usedCapacity = item.occupancy;
-              const freeCapacity = totalCapacity - usedCapacity;
-              const usedPercentage = (usedCapacity / totalCapacity) * 100;
-              const freePercentage = (freeCapacity / totalCapacity) * 100;
+          if (parkingLotOccupancy !== "No data") {
+            parkingLotOccupancy.forEach((item) => {
+              const index = sortedParkingLots.findIndex(
+                (lot) =>
+                  lot.name.replace(" (ext.)", "") === item.parking_lot_name,
+              );
+              if (index >= 0) {
+                const totalCapacity = sortedParkingLots[index].capacity;
+                const usedCapacity = item.occupancy;
+                const freeCapacity = totalCapacity - usedCapacity;
+                const usedPercentage = (usedCapacity / totalCapacity) * 100;
+                const freePercentage = (freeCapacity / totalCapacity) * 100;
 
-              usedCapacityData[index] = isPercentage
-                ? usedPercentage
-                : usedCapacity;
-              freeCapacityData[index] = isPercentage
-                ? freePercentage
-                : freeCapacity;
-            }
-          });
+                usedCapacityData[index] = isPercentage
+                  ? usedPercentage
+                  : usedCapacity;
+                freeCapacityData[index] = isPercentage
+                  ? freePercentage
+                  : freeCapacity;
+              }
+            });
+          }
           const datasets = [];
 
           if (!isPercentage) {
