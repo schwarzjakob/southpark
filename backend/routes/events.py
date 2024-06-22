@@ -229,7 +229,10 @@ def edit_event(id):
     try:
         data = request.json
         data["id"] = id
-        query = """
+
+        # Update the event details
+        update_event_query = text(
+            """
             UPDATE public.event
             SET name = :name,
                 assembly_start_date = :assembly_start_date,
@@ -240,8 +243,47 @@ def edit_event(id):
                 disassembly_end_date = :disassembly_end_date,
                 color = :color
             WHERE id = :id
-        """
-        db.session.execute(query, data)
+            """
+        )
+        db.session.execute(update_event_query, data)
+
+        # Clear existing halls and entrances
+        clear_halls_query = text("DELETE FROM hall_occupation WHERE event_id = :id")
+        clear_entrances_query = text(
+            "DELETE FROM entrance_occupation WHERE event_id = :id"
+        )
+
+        db.session.execute(clear_halls_query, {"id": id})
+        db.session.execute(clear_entrances_query, {"id": id})
+
+        # Insert new halls
+        insert_halls_query = text(
+            """
+            INSERT INTO hall_occupation (event_id, hall_id, date)
+            SELECT :event_id, id, (SELECT runtime_start_date FROM public.event WHERE id = :event_id)
+            FROM hall
+            WHERE name = :hall_name
+            """
+        )
+        for hall_name in data["halls"]:
+            db.session.execute(
+                insert_halls_query, {"event_id": id, "hall_name": hall_name}
+            )
+
+        # Insert new entrances
+        insert_entrances_query = text(
+            """
+            INSERT INTO entrance_occupation (event_id, entrance_id, date)
+            SELECT :event_id, id, (SELECT runtime_start_date FROM public.event WHERE id = :event_id)
+            FROM entrance
+            WHERE name = :entrance_name
+            """
+        )
+        for entrance_name in data["entrances"]:
+            db.session.execute(
+                insert_entrances_query, {"event_id": id, "entrance_name": entrance_name}
+            )
+
         db.session.commit()
         return jsonify({"message": "Event updated successfully"}), 200
     except Exception as e:

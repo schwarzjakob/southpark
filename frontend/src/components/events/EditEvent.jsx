@@ -53,13 +53,7 @@ const hallOptions = [
   "C6",
 ];
 
-const entranceLabels = {
-  west: "West",
-  north_west: "Northwest",
-  north: "North",
-  north_east: "Northeast",
-  east: "East",
-};
+const entranceOptions = ["West", "North West", "North", "North East", "East"];
 
 const EditEvent = () => {
   const [event, setEvent] = useState(null);
@@ -77,6 +71,7 @@ const EditEvent = () => {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/events/event/${id}`);
+        console.log("Fetched event data:", response.data); // Add this line
         setEvent(response.data);
       } catch (error) {
         console.error("Error fetching event data:", error);
@@ -267,15 +262,16 @@ const EditEvent = () => {
                 }
                 renderValue={(selected) => selected.join(", ")}
               >
-                {Object.entries(entranceLabels).map(([value, label]) => (
-                  <MenuItem key={value} value={value}>
-                    <Checkbox checked={event.entrances.indexOf(value) > -1} />
-                    <ListItemText primary={label} />
+                {entranceOptions.map((entrance) => (
+                  <MenuItem key={entrance} value={entrance}>
+                    <Checkbox checked={event.entrances.indexOf(entrance) > -1} />
+                    <ListItemText primary={entrance} />
                   </MenuItem>
                 ))}
               </Select>
             </Box>
           </FormControl>
+
           <Box display="flex" justifyContent="space-between" mt={2}>
             <Button
               className="back-button"
