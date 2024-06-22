@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
+import { Switch } from "antd";
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./Map.jsx";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
@@ -17,6 +18,17 @@ const MapView = () => {
     location.state?.selectedDate || dayjs().format("YYYY-MM-DD");
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [events] = useState([]);
+  const [isPercentage, setIsPercentage] = useState(true);
+
+  const handleToggle = () => {
+    setIsPercentage(!isPercentage);
+  };
+
+  const formattedDate = new Date(selectedDate).toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   return (
     <Box>
@@ -90,6 +102,7 @@ const MapView = () => {
           <Box
             className="map__bar-chart-component"
             display="flex"
+            flexDirection={"column"}
             alignItems="center"
             justifyContent="center"
             border="1px solid"
@@ -98,9 +111,42 @@ const MapView = () => {
             height={"100%"}
             overflow={"auto"}
           >
+            <Box className="chart-title">
+              <Box>
+                <Typography sx={{ fontSize: "0.8rem", fontWeight: "bold" }}>
+                  {"Parking Lot Utilization"} | {formattedDate}
+                </Typography>
+              </Box>
+              <Box
+                className="switch-container"
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  fontSize: "0.8rem",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "0.8rem",
+                    marginRight: "0.5rem",
+                  }}
+                >
+                  {isPercentage ? "Percentage" : "Absolute"}
+                </Typography>
+                <Switch
+                  checked={isPercentage}
+                  onChange={handleToggle}
+                  className="switch"
+                  size="small"
+                />
+              </Box>
+            </Box>
             <OccupanciesBarChart
               className="bar-chart"
               selectedDate={selectedDate}
+              isPercentage={isPercentage}
+              handleToggle={handleToggle}
             />
           </Box>
         </Box>

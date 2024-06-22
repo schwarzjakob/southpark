@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
-import { Switch } from "antd";
+
 import { Typography, Box } from "@mui/material";
 import PropTypes from "prop-types";
 import "chart.js/auto";
@@ -30,7 +30,6 @@ ChartJS.register(
   ChartDataLabels,
 );
 
-const TITLE = "Parking Lot Utilization";
 const NO_DATA_MESSAGE = "No data available for the selected day.";
 const ANIMATION_DURATION = 100;
 const ANIMATION_EASING = "easeInOutQuad";
@@ -38,21 +37,16 @@ const FONT_SIZE = 10;
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 
-const ParkingLotBarChart = ({ selectedDate }) => {
+const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
   ParkingLotBarChart.propTypes = {
     selectedDate: PropTypes.string.isRequired,
+    isPercentage: PropTypes.bool.isRequired,
   };
-
-  const formattedDate = new Date(selectedDate).toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
 
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [setError] = useState(null);
-  const [isPercentage, setIsPercentage] = useState(true);
+
   const [parkingLots, setParkingLots] = useState([]);
 
   useEffect(() => {
@@ -309,49 +303,12 @@ const ParkingLotBarChart = ({ selectedDate }) => {
     maintainAspectRatio: false,
   };
 
-  const handleToggle = () => {
-    setIsPercentage(!isPercentage);
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
     <Box className="chart-container">
-      <Box className="chart-title">
-        <Box>
-          <Typography sx={{ fontSize: "0.8rem", fontWeight: "bold" }}>
-            {TITLE} | {formattedDate}
-          </Typography>
-        </Box>
-        {chartData ? (
-          <Box
-            className="switch-container"
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              fontSize: "0.8rem",
-              alignItems: "center",
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: "0.8rem",
-                marginRight: "0.5rem",
-              }}
-            >
-              {isPercentage ? "Percentage" : "Absolute"}
-            </Typography>
-            <Switch
-              checked={isPercentage}
-              onChange={handleToggle}
-              className="switch"
-              size="small"
-            />
-          </Box>
-        ) : null}
-      </Box>
       {chartData ? (
         <Box
           sx={{
