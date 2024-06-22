@@ -90,7 +90,7 @@ const MapView = () => {
             border="1px solid"
             borderColor="grey.300"
             p={2}
-            width="75vw"
+            width="70vw"
             height="100%"
           >
             <MapComponent
@@ -107,12 +107,19 @@ const MapView = () => {
             justifyContent="flex-start"
             border="1px solid"
             borderColor="grey.300"
-            width="25vw"
+            width="30vw"
             height={"100%"}
             overflow={"auto"}
           >
             <Box className="chart-title">
-              <Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: "0",
+                }}
+              >
                 <Typography sx={{ fontSize: "0.8rem", fontWeight: "bold" }}>
                   {"Parking Lot Utilization"} | {formattedDate}
                 </Typography>

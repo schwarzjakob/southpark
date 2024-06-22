@@ -114,7 +114,7 @@ def get_parking_lot_capacity(date):
         return jsonify({"error": str(e)}), 500
 
 
-@map_bp.route("/parking_occupancies/<date>", methods=["GET"])
+@map_bp.route("/parking_occupancy/<date>", methods=["GET"])
 def get_parking_lot_occupancy(date):
     """
     Endpoint to retrieve parking lot occupancy data for a specific date.
@@ -140,13 +140,15 @@ def get_parking_lot_occupancy(date):
         WHERE vd.date = '{date}'
         """
 
+        logger.info(f"Executing query: {query_occupancy}")
+
         # Execute the query and get the data
         df_occupancy = get_data(query_occupancy)
 
         # Check if the data is empty and return appropriate response
         if df_occupancy.empty:
             logger.info(f"No data available for parking lot occupancy on date: {date}")
-            return jsonify({"message": "No data found"}), 204
+            return jsonify("No data"), 200
 
         logger.info(f"Parking lot occupancy data fetched successfully for date: {date}")
 
