@@ -139,10 +139,10 @@ def get_event_status():
                 dd.total_car_demand,
                 dd.total_truck_demand,
                 dd.total_bus_demand,
-                da.total_allocated_capacity,
-                da.total_allocated_cars,
-                da.total_allocated_trucks,
-                da.total_allocated_buses,
+                COALESCE(da.total_allocated_capacity, 0) AS total_allocated_capacity,
+                COALESCE(da.total_allocated_cars, 0) AS total_allocated_cars,
+                COALESCE(da.total_allocated_trucks, 0) AS total_allocated_trucks,
+                COALESCE(da.total_allocated_buses, 0) AS total_allocated_buses,
                 tcd.total_capacity,
                 tcd.total_truck_capacity,
                 tcd.total_bus_capacity,
@@ -155,38 +155,41 @@ def get_event_status():
                 daily_allocations da ON da.date = dd.date
             LEFT JOIN
                 total_capacity_per_day tcd ON dd.date = tcd.date
-        ),
-        daily_status AS (
-            SELECT
-                event_id,
-                event_name,
-                date,
-                CASE
-                    WHEN total_demand IS NULL THEN 'no_demands'
-                    WHEN total_capacity < total_demand THEN 'not_enough_capacity'
-                    WHEN total_demand > total_allocated_capacity THEN 'demands_to_allocate'
-                    ELSE 'ok'
-                END AS status
-            FROM
-                combined
         )
         SELECT
-            ds.event_id,
-            ed.event_name,
+            event_id,
+            event_name,
+            assembly_start_date,
+            assembly_end_date,
+            runtime_start_date,
+            runtime_end_date,
+            disassembly_start_date,
+            disassembly_end_date,
+            date,
+            total_demand,
+            total_car_demand,
+            total_truck_demand,
+            total_bus_demand,
+            total_allocated_capacity,
+            total_allocated_cars,
+            total_allocated_trucks,
+            total_allocated_buses,
+            total_capacity,
+            total_truck_capacity,
+            total_bus_capacity,
+            total_car_capacity,
             CASE
-                WHEN MAX(CASE WHEN ds.status = 'not_enough_capacity' THEN 1 ELSE 0 END) = 1 THEN 'not_enough_capacity'
-                WHEN MAX(CASE WHEN ds.status = 'demands_to_allocate' THEN 1 ELSE 0 END) = 1 THEN 'demands_to_allocate'
-                WHEN MAX(CASE WHEN ds.status = 'no_demands' THEN 1 ELSE 0 END) = 1 THEN 'no_demands'
+                WHEN total_demand IS NULL THEN 'no_demands'
+                WHEN total_demand > total_capacity THEN 'not_enough_capacity'
+                WHEN total_demand > total_allocated_capacity THEN 'demands_to_allocate'
+                WHEN (total_demand > 0 AND total_allocated_capacity = 0) THEN 'demands_to_allocate'
                 ELSE 'ok'
             END AS status
         FROM
-            daily_status ds
-        JOIN
-            event_details ed ON ds.event_id = ed.event_id
-        GROUP BY
-            ds.event_id, ed.event_name
+            combined
         ORDER BY
-            ds.event_id;
+            event_id, date;
+
         """
 
         df = pd.read_sql_query(query, db.engine)
