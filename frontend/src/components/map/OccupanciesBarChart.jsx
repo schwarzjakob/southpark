@@ -45,21 +45,24 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
 
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [setError] = useState(null);
-
+  const [error, setError] = useState(null);
   const [parkingLots, setParkingLots] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(
-          `/api/map/parking-occupancies/${selectedDate}`,
-        );
-        if (data) {
-          const { parking_lots: parkingLots, occupancy: parkingLotOccupancy } =
-            data;
+        const [parkingLotOccupancyResponse, parkingLotsResponse] =
+          await Promise.all([
+            axios.get(`/api/map/parking_occupancies/${selectedDate}`),
+            axios.get(`/api/map/parking_lots_capacity/${selectedDate}`),
+          ]);
 
+        const parkingLotOccupancy = parkingLotOccupancyResponse.data;
+        const parkingLots = parkingLotsResponse.data;
+
+        console.log(parkingLots, parkingLotOccupancy);
+        if (parkingLots) {
           const sortedParkingLots = [...parkingLots]
             .map((lot) => ({
               ...lot,
@@ -81,7 +84,7 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
           parkingLotOccupancy.forEach((item) => {
             const index = sortedParkingLots.findIndex(
               (lot) =>
-                lot.name.replace(" (external)", "") === item.parking_lot_name,
+                lot.name.replace(" (ext.)", "") === item.parking_lot_name,
             );
             if (index >= 0) {
               const totalCapacity = sortedParkingLots[index].capacity;
@@ -214,15 +217,16 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
         } else {
           setChartData(null);
           setLoading(false);
-          return;
         }
       } catch (error) {
-        console.error();
+        console.error(error);
+        setError(error);
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [selectedDate, isPercentage, setError]);
+  }, [selectedDate, isPercentage]);
 
   const options = {
     indexAxis: "y",
