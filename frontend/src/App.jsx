@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
+import "./components/common/styles/common.css";
 
 import theme from "./styles/muiCustomTheme";
 import MobileWarning from "./components/common/MobileWarning.jsx";
 import Header from "./components/common/Header.jsx";
-import Navigation from "./components/common/Navigation.jsx";
 import Footer from "./components/common/Footer.jsx";
 import Team from "./components/team/Team.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
@@ -22,12 +22,7 @@ import EditCapacity from "./components/parking_space/EditCapacity.jsx";
 import AddCapacity from "./components/parking_space/AddCapacity.jsx";
 
 function App() {
-  const [isNavOpen, setNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
-  const toggleNav = () => {
-    setNavOpen(!isNavOpen);
-  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -51,12 +46,11 @@ function App() {
     <ThemeProvider theme={theme}>
       <BrowserRouter>
         <div className="App">
-          <Navigation isOpen={isNavOpen} toggleNav={toggleNav} />
           <div className="grid-parent">
-            <Header toggleNav={toggleNav} />
+            <Header />
             <div className="grid-main">
               <Routes>
-                <Route path="/user" element={<Team />} />
+                <Route path="/team" element={<Team />} />
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/mapview" element={<MapView />} />
                 {/* Events Routes*/}

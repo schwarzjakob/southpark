@@ -1,9 +1,10 @@
-// src/components/Header.jsx
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
+import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
+import MapIcon from "@mui/icons-material/MapRounded";
+import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import EventIcon from "@mui/icons-material/Event";
+import GarageIcon from "@mui/icons-material/GarageRounded";
+import GroupsIcon from "@mui/icons-material/Groups";
 import { styled } from "@mui/system";
 import logo from "../../assets/logo_white.svg";
 
@@ -15,26 +16,17 @@ const LogoContainer = styled(Link)({
 });
 
 const Logo = styled("img")({
-  marginRight: 2,
+  marginRight: 8,
 });
 
 const Grow = styled("div")({
   flexGrow: 1,
 });
 
-function Header({ toggleNav }) {
+function Header() {
   return (
     <AppBar position="sticky" className="header-container">
       <Toolbar>
-        <IconButton
-          className="menu-button"
-          edge="start"
-          color="inherit"
-          onClick={toggleNav}
-          aria-label="menu"
-        >
-          <MenuIcon />
-        </IconButton>
         <LogoContainer to="/">
           <Logo src={logo} alt="Messe München" className="logo" />
           <Typography variant="h6" className="page-title">
@@ -44,16 +36,56 @@ function Header({ toggleNav }) {
           </Typography>
         </LogoContainer>
         <Grow />
-        <IconButton color="inherit" component={Link} to="/user">
-          <AccountCircle />
-        </IconButton>
+        <Box className="nav-buttons">
+          <Button
+            component={Link}
+            to="/"
+            color="inherit"
+            startIcon={<DashboardRoundedIcon />}
+            className="nav-button"
+          >
+            Dashboard
+          </Button>
+          <Button
+            component={Link}
+            to="/mapview"
+            color="inherit"
+            startIcon={<MapIcon />}
+            className="nav-button"
+          >
+            Map
+          </Button>
+          <Button
+            component={Link}
+            to="/events"
+            color="inherit"
+            startIcon={<EventIcon />}
+            className="nav-button"
+          >
+            Events
+          </Button>
+          <Button
+            component={Link}
+            to="/parking_spaces"
+            color="inherit"
+            startIcon={<GarageIcon />}
+            className="nav-button"
+          >
+            Parking Spaces
+          </Button>
+          <Button
+            component={Link}
+            to="/team"
+            color="inherit"
+            startIcon={<GroupsIcon />}
+            className="nav-button"
+          >
+            Team
+          </Button>
+        </Box>
       </Toolbar>
     </AppBar>
   );
 }
-
-Header.propTypes = {
-  toggleNav: PropTypes.func.isRequired,
-};
 
 export default Header;
