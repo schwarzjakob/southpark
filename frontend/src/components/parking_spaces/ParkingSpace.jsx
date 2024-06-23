@@ -16,6 +16,7 @@ import WcRoundedIcon from "@mui/icons-material/WcRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 
 import "./styles/parkingSpaces.css";
 
@@ -27,12 +28,20 @@ const ParkingSpace = () => {
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
   const navigate = useNavigate();
+  const [breadcrumbLinks, setBreadcrumbLinks] = useState([
+    { label: "Parking Spaces", path: "/parking_spaces" },
+    { label: "", path: "" },
+  ]);
 
   useEffect(() => {
     const fetchParkingSpace = async () => {
       try {
         const response = await axios.get(`/api/parking/space/${id}`);
         setParkingSpace(response.data);
+        setBreadcrumbLinks([
+          { label: "Parking Spaces", path: "/parking_spaces" },
+          { label: response.data.name, path: `/parking_spaces/${id}` },
+        ]);
       } catch (error) {
         console.error("Error fetching parking space data:", error);
         setError("Error fetching parking space data.");
@@ -60,6 +69,7 @@ const ParkingSpace = () => {
 
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs links={breadcrumbLinks} />
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
           <GarageIcon />
