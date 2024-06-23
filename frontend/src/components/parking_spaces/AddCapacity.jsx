@@ -67,7 +67,6 @@ const AddParkingSpaceCapacity = () => {
         if (Array.isArray(response.data)) {
           setExistingCapacities(response.data);
         } else {
-          console.warn("Expected an array but got:", response.data);
           setExistingCapacities([]);
         }
       } catch (error) {

@@ -130,7 +130,7 @@ const AddParkingSpace = () => {
                 >
                   <MenuItem value="asphalt">Asphalt</MenuItem>
                   <MenuItem value="gravel">Gravel</MenuItem>
-                  <MenuItem value="dirt">Dirt</MenuItem>
+                  <MenuItem value="field">Field</MenuItem>
                 </Select>
               </FormControl>
             </Box>

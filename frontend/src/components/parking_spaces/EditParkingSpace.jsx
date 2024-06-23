@@ -50,7 +50,11 @@ const EditParkingSpace = () => {
           return;
         }
         const response = await axios.get(`/api/parking/space/${id}`);
-        setParkingSpace(response.data);
+        const data = response.data;
+        if (!["asphalt", "gravel", "field"].includes(data.surface_material)) {
+          data.surface_material = "asphalt";
+        }
+        setParkingSpace(data);
       } catch (error) {
         console.error("Error fetching parking space data:", error);
         setError("Error fetching parking space data.");
@@ -90,7 +94,8 @@ const EditParkingSpace = () => {
         `/api/parking/space/${id}`,
         parkingSpace
       );
-      console.log("Parking space updated:", response.data);
+      // DEBUG
+      // console.log("Parking space updated:", response.data);
       navigate(`/parking_space/${response.data.id}`);
     } catch (error) {
       if (error.response && error.response.status === 400) {
@@ -157,7 +162,7 @@ const EditParkingSpace = () => {
                 >
                   <MenuItem value="asphalt">Asphalt</MenuItem>
                   <MenuItem value="gravel">Gravel</MenuItem>
-                  <MenuItem value="dirt">Dirt</MenuItem>
+                  <MenuItem value="field">Field</MenuItem>
                 </Select>
               </FormControl>
             </Box>
