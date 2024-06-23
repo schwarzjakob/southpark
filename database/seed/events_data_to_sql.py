@@ -76,7 +76,7 @@ def generate_event_inserts(df):
             int(row["previous_event_id"]) if row["previous_event_id"] else "NULL"
         )
         event_inserts.append(
-            f"INSERT INTO public.event (id, name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date, color, previous_event) VALUES ({row['id']}, '{row['name']}', '{row['assembly_start_date']}', '{row['assembly_end_date']}', '{row['runtime_start_date']}', '{row['runtime_end_date']}', '{row['disassembly_start_date']}', '{row['disassembly_end_date']}', '{row['color']}', {previous_event});"
+            f"INSERT INTO public.event (id, name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date, color, previous_event) VALUES ({row['id']}, '{row['name']}', '{row['assembly_start_date']}', '{row['assembly_end_date']}', '{row['runtime_start_date']}', '{row['runtime_end_date']}', '{row['disassembly_start_date']}', '{row['disassembly_end_date']}', '{row['color']}', {previous_event}) ON CONFLICT DO NOTHING;"
         )
     return event_inserts
 
@@ -91,7 +91,7 @@ def generate_visitor_demand_inserts(df):
         for date in dates:
             status = get_status(date, row)
             visitor_demand_inserts.append(
-                f"INSERT INTO public.visitor_demand (event_id, date, car_demand, truck_demand, bus_demand, status) VALUES ({row['id']}, '{date.date()}', {row[f'{status}_demand_cars']}, {row[f'{status}_demand_trucks']}, {row[f'{status}_demand_busses']}, '{status}');"
+                f"INSERT INTO public.visitor_demand (event_id, date, car_demand, truck_demand, bus_demand, status) VALUES ({row['id']}, '{date.date()}', {row[f'{status}_demand_cars']}, {row[f'{status}_demand_trucks']}, {row[f'{status}_demand_busses']}, '{status}') ON CONFLICT DO NOTHING;"
             )
     return visitor_demand_inserts
 
@@ -120,7 +120,7 @@ def generate_hall_occupation_inserts(df):
         for date in dates:
             for hall_id in halls:
                 hall_occupation_inserts.append(
-                    f"INSERT INTO public.hall_occupation (event_id, hall_id, date) VALUES ({row['id']}, {hall_id}, '{date.date()}');"
+                    f"INSERT INTO public.hall_occupation (event_id, hall_id, date) VALUES ({row['id']}, {hall_id}, '{date.date()}') ON CONFLICT DO NOTHING;"
                 )
     return hall_occupation_inserts
 
@@ -136,7 +136,7 @@ def generate_entrance_occupation_inserts(df):
         for date in dates:
             for entrance in entrances:
                 entrance_occupation_inserts.append(
-                    f"INSERT INTO public.entrance_occupation (event_id, entrance_id, date) VALUES ({row['id']}, (SELECT id FROM public.entrance WHERE name = '{entrance}'), '{date.date()}');"
+                    f"INSERT INTO public.entrance_occupation (event_id, entrance_id, date) VALUES ({row['id']}, (SELECT id FROM public.entrance WHERE name = '{entrance}'), '{date.date()}') ON CONFLICT DO NOTHING;"
                 )
     return entrance_occupation_inserts
 
