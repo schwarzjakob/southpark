@@ -96,6 +96,7 @@ def get_parking_lot_capacity(date):
         WHERE
             plc.valid_from <= '{date}'
             AND plc.valid_to >= '{date}'
+            AND plc.utilization_type = 'parking'
         ORDER BY
             pl.id;
         """
