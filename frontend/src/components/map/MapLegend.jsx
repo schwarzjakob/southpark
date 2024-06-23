@@ -11,7 +11,7 @@ const getContrastingTextColor = (backgroundColor) => {
   const b = parseInt(hex.substr(4, 2), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-  return luminance > 0.5 ? "white" : "white";
+  return luminance > 0.5 ? "black" : "white";
 };
 
 const MapLegendComponent = ({ events, selectedDate }) => {
@@ -55,10 +55,16 @@ const MapLegendComponent = ({ events, selectedDate }) => {
   };
 
   const phasesUsed = new Set();
+  const sortedEvents = [...events].sort((a, b) => {
+    const phaseOrder = ["assembly", "runtime", "disassembly"];
+    const phaseA = getEventPhase(a, selectedDate);
+    const phaseB = getEventPhase(b, selectedDate);
+    return phaseOrder.indexOf(phaseA) - phaseOrder.indexOf(phaseB);
+  });
 
   return (
     <div className="legend">
-      {events.map((event) => {
+      {sortedEvents.map((event) => {
         const phase = getEventPhase(event, selectedDate);
         if (!phase) return null;
 
