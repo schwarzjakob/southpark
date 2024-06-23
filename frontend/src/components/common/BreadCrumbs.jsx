@@ -37,7 +37,7 @@ const CustomBreadcrumb = ({ links }) => {
   });
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} className="breadcrumbs">
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
         aria-label="breadcrumb"
