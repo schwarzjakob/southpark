@@ -1,5 +1,18 @@
 import PropTypes from "prop-types";
 import dayjs from "dayjs";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import PlayCircleRoundedIcon from "@mui/icons-material/PlayCircleOutline";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+
+const getContrastingTextColor = (backgroundColor) => {
+  const hex = backgroundColor.replace("#", "");
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return luminance > 0.5 ? "white" : "white";
+};
 
 const MapLegendComponent = ({ events, selectedDate }) => {
   const getEventPhase = (event, date) => {
@@ -41,29 +54,69 @@ const MapLegendComponent = ({ events, selectedDate }) => {
     return null;
   };
 
+  const phasesUsed = new Set();
+
   return (
     <div className="legend">
       {events.map((event) => {
         const phase = getEventPhase(event, selectedDate);
         if (!phase) return null;
 
+        phasesUsed.add(phase);
+
+        const phaseIcon =
+          phase === "assembly" ? (
+            <ArrowCircleUpRoundedIcon />
+          ) : phase === "runtime" ? (
+            <PlayCircleRoundedIcon />
+          ) : (
+            <ArrowCircleDownRoundedIcon />
+          );
+
+        const contrastColor = getContrastingTextColor(event.event_color);
+
+        const phaseStyle =
+          phase === "assembly" || phase === "disassembly"
+            ? {
+                backgroundColor: `${event.event_color}80`, // 50% transparency
+                border: `1px solid ${event.event_color}`,
+                color: event.event_color,
+              }
+            : {
+                backgroundColor: event.event_color,
+                color: contrastColor,
+              };
+
         return (
           <div key={event.event_id} className="legend-item">
-            <div
-              className="legend-color"
-              style={{ backgroundColor: event.event_color }}
-            ></div>
+            <div className="legend-color" style={phaseStyle}>
+              {phaseIcon}
+            </div>
             <div className="legend-text">
-              <div
-                className={`legend-${phase}`}
-                style={{ color: "var(--textColor)" }}
-              >
-                <strong>{event.event_name}</strong> ({phase})
+              <div className={`legend-${phase}`}>
+                <strong>{event.event_name}</strong>
               </div>
             </div>
           </div>
         );
       })}
+      <div className="legend-icons">
+        {phasesUsed.has("assembly") && (
+          <div className="legend-icon">
+            <ArrowCircleUpRoundedIcon /> assembly
+          </div>
+        )}
+        {phasesUsed.has("runtime") && (
+          <div className="legend-icon">
+            <PlayCircleRoundedIcon /> runtime
+          </div>
+        )}
+        {phasesUsed.has("disassembly") && (
+          <div className="legend-icon">
+            <ArrowCircleDownRoundedIcon /> disassembly
+          </div>
+        )}
+      </div>
     </div>
   );
 };

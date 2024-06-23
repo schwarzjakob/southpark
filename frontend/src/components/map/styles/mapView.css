@@ -349,9 +349,13 @@
 }
 
 .legend-color {
-  width: 20px;
-  height: 20px;
+  width: 26px; /* Increased size to account for padding */
+  height: 26px; /* Increased size to account for padding */
   margin-right: 10px;
+  padding: 3px; /* Added padding */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .legend-text {
@@ -363,4 +367,18 @@
 .legend-assembly,
 .legend-disassembly {
   color: var(--textColor); /* Set font color */
+}
+
+.legend-icons {
+  display: flex;
+  margin-top: 10px;
+}
+
+.legend-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+.legend-icon svg {
+  margin-right: 5px;
 }
