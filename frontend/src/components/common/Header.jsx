@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
 import MapIcon from "@mui/icons-material/MapRounded";
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
 import EventIcon from "@mui/icons-material/Event";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -41,19 +41,19 @@ function Header() {
             component={Link}
             to="/"
             color="inherit"
-            startIcon={<DashboardRoundedIcon />}
-            className="nav-button"
-          >
-            Dashboard
-          </Button>
-          <Button
-            component={Link}
-            to="/mapview"
-            color="inherit"
             startIcon={<MapIcon />}
             className="nav-button"
           >
             Map
+          </Button>
+          <Button
+            component={Link}
+            to="/dashboard"
+            color="inherit"
+            startIcon={<BarChartRoundedIcon />}
+            className="nav-button"
+          >
+            Dashboard
           </Button>
           <Button
             component={Link}

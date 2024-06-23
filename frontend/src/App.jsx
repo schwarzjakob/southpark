@@ -9,17 +9,17 @@ import Header from "./components/common/Header.jsx";
 import Footer from "./components/common/Footer.jsx";
 import Team from "./components/team/Team.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
-import MapView from "./components/map/MapView.jsx";
+import Map from "./components/map/Map.jsx";
 import Events from "./components/events/Events.jsx";
 import AddEvent from "./components/events/AddEvent.jsx";
 import Event from "./components/events/Event.jsx";
 import EditEvent from "./components/events/EditEvent.jsx";
-import ParkingSpaces from "./components/parking_space/ParkingSpaces.jsx";
-import ParkingSpace from "./components/parking_space/ParkingSpace.jsx";
-import AddParkingSpace from "./components/parking_space/AddParkingSpace.jsx";
-import EditParkingSpace from "./components/parking_space/EditParkingSpace.jsx";
-import EditCapacity from "./components/parking_space/EditCapacity.jsx";
-import AddCapacity from "./components/parking_space/AddCapacity.jsx";
+import ParkingSpaces from "./components/parking_spaces/ParkingSpaces.jsx";
+import ParkingSpace from "./components/parking_spaces/ParkingSpace.jsx";
+import AddParkingSpace from "./components/parking_spaces/AddParkingSpace.jsx";
+import EditParkingSpace from "./components/parking_spaces/EditParkingSpace.jsx";
+import EditCapacity from "./components/parking_spaces/EditCapacity.jsx";
+import AddCapacity from "./components/parking_spaces/AddCapacity.jsx";
 
 function App() {
   const [isMobile, setIsMobile] = useState(false);
@@ -50,9 +50,12 @@ function App() {
             <Header />
             <div className="grid-main">
               <Routes>
-                <Route path="/team" element={<Team />} />
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/mapview" element={<MapView />} />
+                {/* Map Route */}
+                <Route path="/" element={<Map />} />
+
+                {/* Dashboard Route */}
+                <Route path="/dashboard" element={<Dashboard />} />
+
                 {/* Events Routes*/}
                 <Route path="/events" element={<Events />} />
                 <Route path="/event/add" element={<AddEvent />} />
@@ -72,6 +75,9 @@ function App() {
                 {/* Capacity Routes*/}
                 <Route path="/capacity/edit" element={<EditCapacity />} />
                 <Route path="/capacity/add" element={<AddCapacity />} />
+
+                {/* Team Route */}
+                <Route path="/team" element={<Team />} />
               </Routes>
             </div>
             <Footer />

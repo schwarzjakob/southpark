@@ -7,7 +7,8 @@ import LoadingAnimation from "../common/LoadingAnimation.jsx";
 import InfoTextComponent from "../common/InfoText.jsx";
 import CapacityUtilization from "./CapacityUtilizationBarChart.jsx";
 import CriticalCapacityTable from "./CriticalCapacityTable.jsx";
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+
 import "./styles/dashboard.css";
 
 const TITLE = "Dashboard";
@@ -77,7 +78,7 @@ const Dashboard = () => {
   return (
     <div>
       <Box className="iconHeadline__container">
-        <DashboardRoundedIcon />
+        <BarChartRoundedIcon />
         <Typography variant="h4" gutterBottom>
           {TITLE}
         </Typography>
