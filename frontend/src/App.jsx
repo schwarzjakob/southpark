@@ -61,6 +61,7 @@ function App() {
                 <Route path="/event/add" element={<AddEvent />} />
                 <Route path="/events/event/:id" element={<Event />} />
                 <Route path="/events/event/edit/:id" element={<EditEvent />} />
+
                 {/* Parking Spaces Routes*/}
                 <Route path="/parking_spaces" element={<ParkingSpaces />} />
                 <Route path="/parking_space/:id" element={<ParkingSpace />} />
@@ -72,9 +73,14 @@ function App() {
                   path="/parking_space/edit/:id"
                   element={<EditParkingSpace />}
                 />
-                {/* Capacity Routes*/}
-                <Route path="/capacity/edit" element={<EditCapacity />} />
-                <Route path="/capacity/add" element={<AddCapacity />} />
+                <Route
+                  path="/parking_space/capacity/edit"
+                  element={<EditCapacity />}
+                />
+                <Route
+                  path="/parking_space/capacity/add"
+                  element={<AddCapacity />}
+                />
 
                 {/* Team Route */}
                 <Route path="/team" element={<Team />} />

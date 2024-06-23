@@ -1,7 +1,6 @@
-// src/components/MapView.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 
@@ -23,7 +22,20 @@ const MapView = () => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [events] = useState([]);
   const [isPercentage, setIsPercentage] = useState(true);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Simulate data fetching
+    const fetchData = async () => {
+      setLoading(true);
+      // Here you would fetch the events or other data
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate a 2 second delay
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   const handleToggle = () => {
     setIsPercentage(!isPercentage);
@@ -34,6 +46,19 @@ const MapView = () => {
     month: "2-digit",
     year: "numeric",
   });
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>

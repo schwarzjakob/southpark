@@ -6,6 +6,7 @@ import { Box } from "@mui/material";
 import PropTypes from "prop-types";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import clsx from "clsx";
+import "./styles/controls.css";
 
 const { RangePicker } = DatePicker;
 

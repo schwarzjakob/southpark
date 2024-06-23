@@ -12,6 +12,7 @@ import {
   TableRow,
   TableSortLabel,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
@@ -32,6 +33,7 @@ const TITLE = "Event Details";
 const Event = () => {
   const [event, setEvent] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -43,6 +45,8 @@ const Event = () => {
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -117,14 +121,6 @@ const Event = () => {
     ));
   };
 
-  if (!event) {
-    return (
-      <Box className="form-width">
-        <Typography>Loading...</Typography>
-      </Box>
-    );
-  }
-
   const getContrastingTextColor = (backgroundColor) => {
     const hex = backgroundColor.replace("#", "");
     const r = parseInt(hex.substr(0, 2), 16);
@@ -134,6 +130,20 @@ const Event = () => {
 
     return luminance > 0.5 ? "black" : "white";
   };
+
+  if (loading) {
+    return (
+      <Box
+        className="form-width"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box className="form-width">

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
 import MapIcon from "@mui/icons-material/MapRounded";
 import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
@@ -24,6 +24,15 @@ const Grow = styled("div")({
 });
 
 function Header() {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const isPathSelected = (path) => {
+    return (
+      currentPath === path || (path !== "/" && currentPath.startsWith(path))
+    );
+  };
+
   return (
     <AppBar position="sticky" className="header-container">
       <Toolbar>
@@ -42,7 +51,7 @@ function Header() {
             to="/"
             color="inherit"
             startIcon={<MapIcon />}
-            className="nav-button"
+            className={`nav-button ${currentPath === "/" ? "selected" : ""}`}
           >
             Map
           </Button>
@@ -51,7 +60,9 @@ function Header() {
             to="/dashboard"
             color="inherit"
             startIcon={<BarChartRoundedIcon />}
-            className="nav-button"
+            className={`nav-button ${
+              isPathSelected("/dashboard") ? "selected" : ""
+            }`}
           >
             Dashboard
           </Button>
@@ -60,7 +71,11 @@ function Header() {
             to="/events"
             color="inherit"
             startIcon={<EventIcon />}
-            className="nav-button"
+            className={`nav-button ${
+              isPathSelected("/events") || isPathSelected("/event")
+                ? "selected"
+                : ""
+            }`}
           >
             Events
           </Button>
@@ -69,7 +84,12 @@ function Header() {
             to="/parking_spaces"
             color="inherit"
             startIcon={<GarageIcon />}
-            className="nav-button"
+            className={`nav-button ${
+              isPathSelected("/parking_spaces") ||
+              isPathSelected("/parking_space")
+                ? "selected"
+                : ""
+            }`}
           >
             Parking Spaces
           </Button>
@@ -78,7 +98,9 @@ function Header() {
             to="/team"
             color="inherit"
             startIcon={<GroupsIcon />}
-            className="nav-button"
+            className={`nav-button ${
+              isPathSelected("/team") ? "selected" : ""
+            }`}
           >
             Team
           </Button>

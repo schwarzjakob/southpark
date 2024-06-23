@@ -23,7 +23,7 @@ import {
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import dayjs from "dayjs";
-import DateRangePicker from "../controls/DateRangePicker"; // Ensure this path is correct
+import DateRangePicker from "../controls/DateRangePicker";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Add Capacity";
@@ -44,7 +44,6 @@ const AddParkingSpaceCapacity = () => {
   const [error, setError] = useState("");
   const [existingCapacities, setExistingCapacities] = useState([]);
   const navigate = useNavigate();
-
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const parkingLotId = searchParams.get("parkinglotId");
@@ -98,8 +97,8 @@ const AddParkingSpaceCapacity = () => {
   };
 
   const checkForOverlaps = () => {
-    const currentFrom = capacity.valid_from;
-    const currentTo = capacity.valid_to;
+    const currentFrom = dayjs(capacity.valid_from);
+    const currentTo = dayjs(capacity.valid_to);
 
     if (!Array.isArray(existingCapacities)) {
       console.error("existingCapacities is not an array:", existingCapacities);
@@ -109,12 +108,20 @@ const AddParkingSpaceCapacity = () => {
 
     const overlappingCapacities = existingCapacities.filter(
       (cap) =>
-        (currentFrom >= dayjs(cap.valid_from) &&
-          currentFrom <= dayjs(cap.valid_to)) ||
-        (currentTo >= dayjs(cap.valid_from) &&
-          currentTo <= dayjs(cap.valid_to)) ||
-        (currentFrom <= dayjs(cap.valid_from) &&
-          currentTo >= dayjs(cap.valid_to))
+        currentFrom.isBetween(
+          dayjs(cap.valid_from),
+          dayjs(cap.valid_to),
+          null,
+          "[]"
+        ) ||
+        currentTo.isBetween(
+          dayjs(cap.valid_from),
+          dayjs(cap.valid_to),
+          null,
+          "[]"
+        ) ||
+        (currentFrom.isBefore(dayjs(cap.valid_from)) &&
+          currentTo.isAfter(dayjs(cap.valid_to)))
     );
 
     return overlappingCapacities;

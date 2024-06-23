@@ -1,4 +1,5 @@
 /* Header */
+
 .logo {
   margin-right: 16px !important;
 }
@@ -27,9 +28,20 @@ h6.page-title a:hover {
   margin-right: 8px;
 }
 
-/* MUI header */
 .header-container div {
   padding: 10px 24px !important;
+}
+
+.nav-button {
+  box-shadow: none !important;
+}
+
+.nav-button.selected {
+  border: 1px solid var(--color-pure-white) !important;
+}
+
+.nav-button:hover {
+  background-color: var(--color-pure-white) !important;
 }
 
 /* Footer */
@@ -123,53 +135,6 @@ h6.page-title a:hover {
 .infoText__Icon {
   width: 16px !important ;
   height: 16px !important;
-}
-
-/* LoadingAnimation */
-.loader {
-  width: 200px;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.animated-svg path {
-  stroke: var(--color-primary-700);
-  stroke-width: 1;
-  stroke-linecap: round;
-  fill: var(--color-primary-500);
-  animation: draw 3s infinite alternate;
-}
-
-@keyframes draw {
-  0% {
-    stroke-dasharray: 0, 1000;
-    stroke: var(--color-primary-200);
-  }
-  25% {
-    stroke: var(--color-primary-400);
-  }
-  50% {
-    stroke-dasharray: 500, 1000;
-    stroke: var(--color-primary-500);
-  }
-  75% {
-    stroke: var(--color-primary-600);
-  }
-  100% {
-    stroke-dasharray: 1000, 0;
-    stroke: var(--color-primary-700);
-  }
-}
-
-.loading-text {
-  color: #fff;
-  font-size: 18px;
-  position: absolute;
-  top: 250px;
-  text-align: center;
-  width: 100%;
 }
 
 /* MobileWarning */

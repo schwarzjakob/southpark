@@ -13,6 +13,7 @@ import {
   TableSortLabel,
   Typography,
   Box,
+  CircularProgress,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -33,6 +34,7 @@ const ParkingSpaces = () => {
   const [parkingSpaces, setParkingSpaces] = useState([]);
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("name");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +44,8 @@ const ParkingSpaces = () => {
         setParkingSpaces(response.data);
       } catch (error) {
         console.error("Error fetching parking spaces data", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -109,139 +113,157 @@ const ParkingSpaces = () => {
           </Button>
         </Link>
       </Box>
-      <Box>
-        <TableContainer className="parkingSpaces-container" component={Paper}>
-          <Table className="parkingSpaces-table">
-            <TableHead className="parkingSpaces-table__header">
-              <TableRow>
-                <TableCell>
-                  <TableSortLabel
-                    active={orderBy === "name"}
-                    direction={orderBy === "name" ? order : "asc"}
-                    onClick={() => handleRequestSort("name")}
-                  >
-                    Parking Lot
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <PlaceRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
+      {loading ? (
+        <Box
+          className="circular-loading_container"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="100%"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box>
+          <TableContainer className="parkingSpaces-container" component={Paper}>
+            <Table className="parkingSpaces-table">
+              <TableHead className="parkingSpaces-table__header">
+                <TableRow>
+                  <TableCell>
                     <TableSortLabel
-                      active={orderBy === "type"}
-                      direction={orderBy === "type" ? order : "asc"}
-                      onClick={() => handleRequestSort("type")}
+                      active={orderBy === "name"}
+                      direction={orderBy === "name" ? order : "asc"}
+                      onClick={() => handleRequestSort("name")}
                     >
-                      Type
+                      Parking Lot
                     </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <AddRoadRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "surface_material"}
-                      direction={orderBy === "surface_material" ? order : "asc"}
-                      onClick={() => handleRequestSort("surface_material")}
-                    >
-                      Surface
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <RoofingRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "service_shelter"}
-                      direction={orderBy === "service_shelter" ? order : "asc"}
-                      onClick={() => handleRequestSort("service_shelter")}
-                    >
-                      Shelter
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <WcRoundedIcon fontSize="small" className="header-icon" />
-                    <TableSortLabel
-                      active={orderBy === "service_toilets"}
-                      direction={orderBy === "service_toilets" ? order : "asc"}
-                      onClick={() => handleRequestSort("service_toilets")}
-                    >
-                      Toilets
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <AttachMoneyRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "pricing"}
-                      direction={orderBy === "pricing" ? order : "asc"}
-                      onClick={() => handleRequestSort("pricing")}
-                    >
-                      Pricing
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <p></p>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedParkingSpaces.map((space) => (
-                <TableRow
-                  key={space.id}
-                  onClick={() => navigate(`/parking_space/${space.id}`)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <TableCell className="parking-lot">
-                    <Box className="parking-lot-box">
-                      {capitalize(space.name)}
-                    </Box>
-                  </TableCell>
-                  <TableCell className="type">
-                    {space.external ? "External" : "Internal"}
-                  </TableCell>
-                  <TableCell className="surface">
-                    {capitalize(space.surface_material)}
-                  </TableCell>
-                  <TableCell className="shelter">
-                    {space.service_shelter ? "✓" : "✗"}
-                  </TableCell>
-                  <TableCell className="toilets">
-                    {space.service_toilets ? "✓" : "✗"}
-                  </TableCell>
-                  <TableCell className="pricing">
-                    {capitalize(space.pricing)}
                   </TableCell>
                   <TableCell>
-                    <IconButton
-                      onClick={() => navigate(`/parking_space/${space.id}`)}
-                      edge="start"
-                      size="small"
-                    >
-                      <ArrowForwardIosIcon fontSize="small" />
-                    </IconButton>
+                    <Box className="header-icon-container">
+                      <PlaceRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "type"}
+                        direction={orderBy === "type" ? order : "asc"}
+                        onClick={() => handleRequestSort("type")}
+                      >
+                        Type
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <AddRoadRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "surface_material"}
+                        direction={
+                          orderBy === "surface_material" ? order : "asc"
+                        }
+                        onClick={() => handleRequestSort("surface_material")}
+                      >
+                        Surface
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <RoofingRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "service_shelter"}
+                        direction={
+                          orderBy === "service_shelter" ? order : "asc"
+                        }
+                        onClick={() => handleRequestSort("service_shelter")}
+                      >
+                        Shelter
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <WcRoundedIcon fontSize="small" className="header-icon" />
+                      <TableSortLabel
+                        active={orderBy === "service_toilets"}
+                        direction={
+                          orderBy === "service_toilets" ? order : "asc"
+                        }
+                        onClick={() => handleRequestSort("service_toilets")}
+                      >
+                        Toilets
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <AttachMoneyRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "pricing"}
+                        direction={orderBy === "pricing" ? order : "asc"}
+                        onClick={() => handleRequestSort("pricing")}
+                      >
+                        Pricing
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <p></p>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+              </TableHead>
+              <TableBody>
+                {sortedParkingSpaces.map((space) => (
+                  <TableRow
+                    key={space.id}
+                    onClick={() => navigate(`/parking_space/${space.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <TableCell className="parking-lot">
+                      <Box className="parking-lot-box">
+                        {capitalize(space.name)}
+                      </Box>
+                    </TableCell>
+                    <TableCell className="type">
+                      {space.external ? "External" : "Internal"}
+                    </TableCell>
+                    <TableCell className="surface">
+                      {capitalize(space.surface_material)}
+                    </TableCell>
+                    <TableCell className="shelter">
+                      {space.service_shelter ? "✓" : "✗"}
+                    </TableCell>
+                    <TableCell className="toilets">
+                      {space.service_toilets ? "✓" : "✗"}
+                    </TableCell>
+                    <TableCell className="pricing">
+                      {capitalize(space.pricing)}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
+                        onClick={() => navigate(`/parking_space/${space.id}`)}
+                        edge="start"
+                        size="small"
+                      >
+                        <ArrowForwardIosIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
     </Box>
   );
 };

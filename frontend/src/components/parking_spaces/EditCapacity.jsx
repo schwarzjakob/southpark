@@ -144,7 +144,7 @@ const EditParkingSpaceCapacity = () => {
       const errorMessage = `The selected time range overlaps with the following capacities:<br> ${overlappingCapacities
         .map(
           (cap) =>
-            `<a href="/capacity/edit/?capacityId=${
+            `<a href="/parking_space/capacity/edit/?capacityId=${
               cap.id
             }&parkinglotId=${parkingLotId}" target="_blank">${dayjs(
               cap.valid_from

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { Paper, Grid, Typography, Box } from "@mui/material";
+import { Paper, Grid, Typography, Box, CircularProgress } from "@mui/material";
 import axios from "axios";
 import dayjs from "dayjs";
 
-import LoadingAnimation from "../common/LoadingAnimation.jsx";
 import InfoTextComponent from "../common/InfoText.jsx";
 import CapacityUtilization from "./CapacityUtilizationBarChart.jsx";
 import CriticalCapacityTable from "./CriticalCapacityTable.jsx";
@@ -70,7 +69,9 @@ const Dashboard = () => {
         alignItems="center"
         height="100vh"
       >
-        <LoadingAnimation />
+        <Box className="circular-loading_container">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }

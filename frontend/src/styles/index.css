@@ -392,9 +392,14 @@ td {
   border-bottom: 1px solid var(--color-primary-200);
 }
 
+th span,
+th svg {
+  color: var(--color-pure-white) !important;
+}
+
 th {
   background-color: var(--color-primary-500);
-  color: var(--color-pure-white);
+  color: var(--color-pure-white) !important;
   font-family: var(--brand-font-family);
   font-weight: var(--brand-font-weight);
 }
@@ -441,6 +446,11 @@ table tfoot td:last-child {
 }
 
 /* Mui Styling */
+
+.MuiInputLabel-root {
+  background-color: var(--color-pure-white) !important;
+  padding: 0 0.2rem !important;
+}
 
 .MuiDataGrid-columnHeader {
   background-color: var(--color-primary-500);

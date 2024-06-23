@@ -55,3 +55,24 @@
 .switch-container label span {
   font-size: var(--smallText) !important;
 }
+
+.ant-picker-form,
+.date-picker-container-form {
+  width: 100%;
+}
+.ant-picker {
+  display: flex;
+}
+
+.ant-picker-form > *:nth-child(1),
+.ant-picker-form > *:nth-child(2),
+.ant-picker-form > *:nth-child(3) {
+  margin-right: 0;
+  width: fit-content;
+}
+
+.ant-picker-form > *:nth-child(4),
+.ant-picker-form > *:nth-child(5) {
+  margin-left: auto;
+}
+
