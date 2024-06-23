@@ -67,6 +67,22 @@ const ParkingSpace = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Box
+        className="form-width"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <Typography color="error" variant="body1">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box className="form-width">
       <CustomBreadcrumbs links={breadcrumbLinks} />
@@ -92,11 +108,6 @@ const ParkingSpace = () => {
       </Box>
 
       <Paper className="form-container">
-        {error && (
-          <Typography color="error" variant="body1">
-            {error}
-          </Typography>
-        )}
         {parkingSpace && (
           <>
             <Box

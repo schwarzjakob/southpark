@@ -22,6 +22,7 @@ import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx"; // Import the Breadcrumbs component
 
 import "./styles/parkingSpaces.css";
 
@@ -79,8 +80,14 @@ const AddParkingSpace = () => {
     }
   };
 
+  const breadcrumbLinks = [
+    { label: "Parking Spaces", path: "/parking_spaces" },
+    { label: "Add Parking Space", path: "/parking_space/add" },
+  ];
+
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs links={breadcrumbLinks} />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <AddBoxIcon />

@@ -22,6 +22,7 @@ import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 
 import "./styles/parkingSpaces.css";
 
@@ -37,27 +38,30 @@ const EditParkingSpace = () => {
     external: false,
   });
 
+  const [originalParkingSpace, setOriginalParkingSpace] = useState(null);
   const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
     const fetchParkingSpace = async () => {
-      console.log("ID:", id);
       try {
-        if (!id || isNaN(id)) {
-          setError("No valid ID provided.");
-          return;
-        }
         const response = await axios.get(`/api/parking/space/${id}`);
         const data = response.data;
+        if (!data) {
+          setNotFound(true);
+          return;
+        }
         if (!["asphalt", "gravel", "field"].includes(data.surface_material)) {
           data.surface_material = "asphalt";
         }
         setParkingSpace(data);
+        setOriginalParkingSpace(data);
       } catch (error) {
         console.error("Error fetching parking space data:", error);
         setError("Error fetching parking space data.");
+        setNotFound(true);
       }
     };
 
@@ -87,16 +91,29 @@ const EditParkingSpace = () => {
     });
   };
 
+  const hasUnsavedChanges = () => {
+    return (
+      JSON.stringify(parkingSpace) !== JSON.stringify(originalParkingSpace)
+    );
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(
-        `/api/parking/space/${id}`,
-        parkingSpace
-      );
-      // DEBUG
-      // console.log("Parking space updated:", response.data);
-      navigate(`/parking_space/${response.data.id}`);
+      await axios.put(`/api/parking/space/${id}`, parkingSpace);
+      navigate(`/parking_space/${id}`);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setError("Parking space with this name already exists.");
@@ -107,8 +124,35 @@ const EditParkingSpace = () => {
     }
   };
 
+  const breadcrumbLinks = [
+    { label: "Parking Spaces", path: "/parking_spaces" },
+    { label: parkingSpace.name, path: `/parking_space/${id}` },
+    { label: "Edit", path: `/parking_space/${id}/edit` },
+  ];
+
+  if (notFound) {
+    return (
+      <Box className="form-width">
+        <Typography color="error" variant="h4">
+          Parking Space Not Found
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/parking_spaces")}
+        >
+          Back to Parking Spaces
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <EditRoundedIcon />
@@ -211,7 +255,7 @@ const EditParkingSpace = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(-1)}
+              onClick={() => handleNavigate(`/parking_space/${id}`)}
             >
               Back
             </Button>
