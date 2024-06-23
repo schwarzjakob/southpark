@@ -111,16 +111,16 @@ const MapView = () => {
             height={"100%"}
             overflow={"auto"}
           >
-            <Box className="chart-title">
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: "0",
-                }}
-              >
-                <Typography sx={{ fontSize: "0.8rem", fontWeight: "bold" }}>
+            <Box className="chart-header">
+              <Box>
+                <Typography
+                  sx={{
+                    fontSize: "0.8rem",
+                    fontWeight: "bold",
+                    color: "var(--textColor)",
+                    padding: "0.3rem",
+                  }}
+                >
                   {"Parking Lot Utilization"} | {formattedDate}
                 </Typography>
               </Box>
@@ -131,6 +131,7 @@ const MapView = () => {
                   justifyContent: "flex-end",
                   fontSize: "0.8rem",
                   alignItems: "center",
+                  padding: "0.3rem",
                 }}
               >
                 <Typography
