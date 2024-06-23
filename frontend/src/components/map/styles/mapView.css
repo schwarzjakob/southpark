@@ -310,10 +310,20 @@
   align-items: center;
   width: 100%;
   border-bottom: 1px solid var(--color-gray-150);
+  flex-direction: column;
 }
 
 .no-data {
   display: flex;
   align-items: center;
   height: 100%;
+}
+
+.switch-container {
+  width: 100%;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  top: 6px;
+  right: 6px;
 }
