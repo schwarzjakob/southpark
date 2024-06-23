@@ -24,6 +24,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import dayjs from "dayjs";
 import DateRangePicker from "../controls/DateRangePicker";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Add Capacity";
@@ -42,6 +43,7 @@ const AddParkingSpaceCapacity = () => {
     external: false,
   });
   const [error, setError] = useState("");
+  const [originalCapacity] = useState(null);
   const [existingCapacities, setExistingCapacities] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -126,6 +128,22 @@ const AddParkingSpaceCapacity = () => {
     return overlappingCapacities;
   };
 
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(capacity) !== JSON.stringify(originalCapacity);
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -174,8 +192,21 @@ const AddParkingSpaceCapacity = () => {
     }
   };
 
+  const breadcrumbLinks = [
+    { label: "Parking Spaces", path: "/parking_spaces" },
+    { label: parkingLot.name, path: `/parking_space/${parkingLotId}` },
+    {
+      label: `Add Capacity`,
+      path: `/parking_space/${parkingLotId}/add_capacity`,
+    },
+  ];
+
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <AddBoxIcon />
@@ -280,7 +311,7 @@ const AddParkingSpaceCapacity = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(`/parking_space/${parkingLotId}`)}
+              onClick={() => handleNavigate(`/parking_space/${parkingLotId}`)}
             >
               Back
             </Button>
