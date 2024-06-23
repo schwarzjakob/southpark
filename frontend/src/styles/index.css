@@ -480,22 +480,15 @@ table tfoot td:last-child {
   background-color: var(--color-gray-300) !important;
 }
 
-.css-n3fyjk-MuiDataGrid-root .MuiDataGrid-columnHeader:focus,
-.css-n3fyjk-MuiDataGrid-root .MuiDataGrid-cell:focus {
-  outline: none !important;
-}
-
 a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
   color: var(--color-primary-600);
 }
 
-:where(.css-dev-only-do-not-override-zg0ahe).ant-switch.ant-switch-checked {
-  background-color: var(--color-primary);
+.ant-switch.ant-switch-checked {
+  background-color: var(--color-primary) !important;
 }
 
-:where(
-    .css-dev-only-do-not-override-zg0ahe
-  ).ant-switch.ant-switch-checked:hover {
+.ant-switch.ant-switch-checked:hover {
   background-color: var(--color-primary) !important;
 }
 

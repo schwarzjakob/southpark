@@ -30,6 +30,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBackRounded";
 import dayjs from "dayjs";
 import DateRangePicker from "../controls/DateRangePicker";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Edit Capacity";
@@ -47,6 +48,7 @@ const EditParkingSpaceCapacity = () => {
     name: "",
     external: false,
   });
+  const [originalCapacity, setOriginalCapacity] = useState(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [existingCapacities, setExistingCapacities] = useState([]);
@@ -69,6 +71,16 @@ const EditParkingSpaceCapacity = () => {
         );
         if (capacityData) {
           setCapacity({
+            ...capacityData,
+            utilization_type: capacityData.utilization_type || "parking",
+            valid_from: capacityData.valid_from
+              ? dayjs(capacityData.valid_from)
+              : null,
+            valid_to: capacityData.valid_to
+              ? dayjs(capacityData.valid_to)
+              : null,
+          });
+          setOriginalCapacity({
             ...capacityData,
             utilization_type: capacityData.utilization_type || "parking",
             valid_from: capacityData.valid_from
@@ -133,6 +145,22 @@ const EditParkingSpaceCapacity = () => {
     );
 
     return overlappingCapacities;
+  };
+
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(capacity) !== JSON.stringify(originalCapacity);
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
   };
 
   const handleSubmit = async (e) => {
@@ -206,8 +234,21 @@ const EditParkingSpaceCapacity = () => {
     setOpen(false);
   };
 
+  const breadcrumbLinks = [
+    { label: "Parking Spaces", path: "/parking_spaces" },
+    { label: parkingLot.name, path: `/parking_space/${parkingLotId}` },
+    {
+      label: `Edit Capacity #${capacityId}`,
+      path: `/parking_space/${parkingLotId}/edit_capacity/${capacityId}`,
+    },
+  ];
+
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <EditRoundedIcon />
@@ -314,7 +355,7 @@ const EditParkingSpaceCapacity = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(`/parking_space/${parkingLotId}`)}
+              onClick={() => handleNavigate(`/parking_space/${parkingLotId}`)}
             >
               Back
             </Button>
