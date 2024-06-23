@@ -136,6 +136,7 @@ body {
 
   /* Set the small text based on the parent */
   --smallText: 0.7em;
+  --mediumText: 0.8em;
 
   /* rest of the vars */
   --backgroundColor: var(--color-gray-50);
@@ -476,4 +477,30 @@ table tfoot td:last-child {
 
 a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
   color: var(--color-primary-600);
+}
+
+:where(.css-dev-only-do-not-override-zg0ahe).ant-switch.ant-switch-checked {
+  background-color: var(--color-primary);
+}
+
+:where(
+    .css-dev-only-do-not-override-zg0ahe
+  ).ant-switch.ant-switch-checked:hover {
+  background-color: var(--color-primary) !important;
+}
+
+.switch-label {
+  gap: 10px;
+}
+
+.switch-container label span {
+  font-size: var(--smallText) !important;
+}
+
+/* Loading animation */
+.circular-loading_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }

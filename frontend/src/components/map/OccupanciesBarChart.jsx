@@ -6,6 +6,8 @@ import { Typography, Box } from "@mui/material";
 import PropTypes from "prop-types";
 import "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import CircularProgress from "@mui/material/CircularProgress";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -320,9 +322,12 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box className="circular-loading_container">
+        <CircularProgress />
+      </Box>
+    );
   }
-
   return (
     <Box className="chart-container">
       {chartData ? (

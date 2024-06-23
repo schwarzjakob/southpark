@@ -2,6 +2,7 @@
 .demandTable__itemLabel-container {
   display: flex !important;
   min-width: 15rem;
+  padding: 0.1rem !important;
 }
 
 .demandTable__itemLabel svg,
@@ -106,4 +107,12 @@
 .demandTable__itemText,
 .demandTable__subitem p {
   transition: color 0.3s;
+}
+
+.demandTable__itemText {
+  font-size: var(--mediumText) !important;
+}
+
+.critical-days-table tr td {
+  padding: 0.2rem 0.5rem !important;
 }

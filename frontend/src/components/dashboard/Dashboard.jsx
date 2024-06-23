@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Paper, Grid, Typography, Box } from "@mui/material";
 import axios from "axios";
+import dayjs from "dayjs";
+
 import LoadingAnimation from "../common/LoadingAnimation.jsx";
 import InfoTextComponent from "../common/InfoText.jsx";
 import CapacityUtilization from "./CapacityUtilizationBarChart.jsx";
 import CriticalCapacityTable from "./CriticalCapacityTable.jsx";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
-import dayjs from "dayjs";
+import "./styles/dashboard.css";
 
 const TITLE = "Dashboard";
 

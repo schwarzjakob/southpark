@@ -23,7 +23,6 @@ import BackupTableOutlinedIcon from "@mui/icons-material/BackupTableOutlined";
 import CheckIcon from "@mui/icons-material/Check";
 import InfoHoverComponent from "../common/InfoHover.jsx";
 import InfoTextComponent from "../common/InfoText.jsx";
-import "./styles/criticalDaysTable.css";
 
 const TITLE = "Capacity Utilization Heatmap";
 const LABEL_OVER100_TITLE = "TAKE ACTION";
@@ -178,14 +177,14 @@ const MonthlyDemandTable = ({
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody className="critical-days-table">
             <TableRow>
               <TableCell className="demandTable__itemLabel">
                 <Box className="demandTable__itemLabel-container">
                   <WarningIcon className="demandTable__warningIcon" />
                   <Box className="demandTable__itemFont">
                     <Typography
-                      variant="h6"
+                      variant="body1"
                       style={{ fontWeight: "bold" }}
                       className="demandTable__itemHeader"
                     >
