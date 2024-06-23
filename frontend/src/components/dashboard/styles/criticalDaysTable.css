@@ -6,7 +6,6 @@
 
 .demandTable__itemLabel svg,
 .demandTable__subitem svg:hover,
-.demandTable__icon:hover,
 .demandTable__checkIcon:hover,
 .demandTable__subitem p:hover {
   margin-top: auto;

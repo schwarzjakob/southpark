@@ -1,12 +1,16 @@
 // src/components/MapView.jsx
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { Switch } from "antd";
+import { useNavigate } from "react-router-dom";
+
 import TimelineSlider from "./TimelineSlider.jsx";
 import MapComponent from "./Map.jsx";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+
 import "./styles/mapView.css";
 import dayjs from "dayjs";
 
@@ -19,6 +23,7 @@ const MapView = () => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [events] = useState([]);
   const [isPercentage, setIsPercentage] = useState(true);
+  const navigate = useNavigate();
 
   const handleToggle = () => {
     setIsPercentage(!isPercentage);
@@ -33,31 +38,27 @@ const MapView = () => {
   return (
     <Box>
       <Box display="flex" flexDirection="column" gap={2}>
-        <Box
-          className="mapView__title"
-          display="flex"
-          flexDirection="row"
-          alignContent="center"
-          gap={2}
-        >
+        <Box className="form-headline-button__container">
           <Box className="iconHeadline__container">
-            <MapIcon className="demandTable__icon" />{" "}
-            <Typography
-              variant="h4"
-              gutterBottom
-              className="demandTable__title"
-            >
+            <MapIcon />
+            <Typography variant="h4" gutterBottom>
               {TITLE}
             </Typography>
           </Box>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="left"
-            borderColor="grey.300"
-            p={1}
-          ></Box>
+          <Box>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => navigate(`/event/add`)}
+            >
+              <Box display="flex" alignItems="center">
+                <AddRoundedIcon className="icon__edit-parking-space" />
+              </Box>
+              Add Event
+            </Button>
+          </Box>
         </Box>
+
         <Box
           className="map__timeline-slider"
           display="flex"
@@ -132,6 +133,7 @@ const MapView = () => {
                   fontSize: "0.8rem",
                   alignItems: "center",
                   padding: "0.3rem",
+                  width: "100%",
                 }}
               >
                 <Typography

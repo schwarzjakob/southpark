@@ -60,7 +60,8 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
 
         const parkingLotOccupancy = parkingLotOccupancyResponse.data;
         const parkingLots = parkingLotsResponse.data;
-        console.log(parkingLots);
+        //DEBUG
+        //console.log(parkingLots);
 
         if (parkingLots) {
           const sortedParkingLots = [...parkingLots]

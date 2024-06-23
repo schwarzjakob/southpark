@@ -75,8 +75,8 @@ const Dashboard = () => {
   return (
     <div>
       <Box className="iconHeadline__container">
-        <DashboardRoundedIcon className="demandTable__icon" />{" "}
-        <Typography variant="h4" gutterBottom className="demandTable__title">
+        <DashboardRoundedIcon />
+        <Typography variant="h4" gutterBottom>
           {TITLE}
         </Typography>
       </Box>

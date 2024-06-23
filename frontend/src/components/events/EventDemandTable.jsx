@@ -90,8 +90,8 @@ const EventDemandTable = ({ eventId }) => {
   const handleEditChange = (id, field, value) => {
     setEditedDemands((prevEditedDemands) =>
       prevEditedDemands.map((demand) =>
-        demand.id === id ? { ...demand, [field]: Number(value) } : demand,
-      ),
+        demand.id === id ? { ...demand, [field]: Number(value) } : demand
+      )
     );
   };
 
@@ -182,7 +182,7 @@ const EventDemandTable = ({ eventId }) => {
 
   const getAllocatedTotal = (demandDate) => {
     const demand = editedDemands.find(
-      (d) => formatDate(d.date) === formatDate(demandDate),
+      (d) => formatDate(d.date) === formatDate(demandDate)
     );
     if (!demand) return `0/0`;
 
@@ -192,7 +192,7 @@ const EventDemandTable = ({ eventId }) => {
     if (!Array.isArray(allocations)) return `0/${demandTotal}`;
 
     const allocation = allocations.find(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate)
     );
 
     return allocation
@@ -204,7 +204,7 @@ const EventDemandTable = ({ eventId }) => {
     if (!Array.isArray(allocations)) return "not_allocated";
 
     const allocation = allocations.find(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate)
     );
 
     if (!allocation) return "not_allocated";
@@ -262,8 +262,8 @@ const EventDemandTable = ({ eventId }) => {
     <Box className="capacitiesTable-container">
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
-          <NumbersRoundedIcon className="demandTable__icon" />
-          <Typography variant="h4" gutterBottom className="demandTable__title">
+          <NumbersRoundedIcon />
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>
@@ -442,7 +442,7 @@ const EventDemandTable = ({ eventId }) => {
                                 handleEditChange(
                                   demand.id,
                                   "car_demand",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />
@@ -461,7 +461,7 @@ const EventDemandTable = ({ eventId }) => {
                                 handleEditChange(
                                   demand.id,
                                   "truck_demand",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />
@@ -480,7 +480,7 @@ const EventDemandTable = ({ eventId }) => {
                                 handleEditChange(
                                   demand.id,
                                   "bus_demand",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />
@@ -492,10 +492,10 @@ const EventDemandTable = ({ eventId }) => {
                         <TableCell>
                           <Box display="flex" alignItems="center">
                             {getStatusCircle(
-                              calculateStatus(demand.date, demand.demand),
+                              calculateStatus(demand.date, demand.demand)
                             )}
                             {getStatusLabel(
-                              calculateStatus(demand.date, demand.demand),
+                              calculateStatus(demand.date, demand.demand)
                             )}
                           </Box>
                         </TableCell>
@@ -508,7 +508,7 @@ const EventDemandTable = ({ eventId }) => {
                           color="primary"
                           onClick={() =>
                             navigate(
-                              `/events/event/${eventId}/allocate-parking/${phase}`,
+                              `/events/event/${eventId}/allocate-parking/${phase}`
                             )
                           }
                           style={{ margin: "1rem 0" }}
