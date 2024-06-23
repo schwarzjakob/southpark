@@ -84,7 +84,7 @@ const AddParkingSpace = () => {
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <AddBoxIcon />
-          <Typography variant="h4" gutterBottom className="demandTable__title">
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>

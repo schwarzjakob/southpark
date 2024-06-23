@@ -80,7 +80,7 @@ const Event = () => {
             }}
           >
             {hall}
-          </TableCell>,
+          </TableCell>
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
@@ -140,7 +140,7 @@ const Event = () => {
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
           <InsertInvitationRoundedIcon />
-          <Typography variant="h4" gutterBottom className="demandTable__title">
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>

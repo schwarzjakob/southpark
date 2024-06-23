@@ -482,8 +482,8 @@ const CapacityUtilization = ({
   return (
     <div className="capacity-utilization">
       <Box className="iconHeadline__container">
-        <BarChartRoundedIcon className="demandTable__icon" />{" "}
-        <Typography variant="h5" gutterBottom className="demandTable__title">
+        <BarChartRoundedIcon />{" "}
+        <Typography variant="h5" gutterBottom>
           {TITLE}
         </Typography>
       </Box>

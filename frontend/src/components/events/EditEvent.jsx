@@ -250,7 +250,7 @@ const EditEvent = () => {
             }}
           >
             {hall}
-          </TableCell>,
+          </TableCell>
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
@@ -302,7 +302,7 @@ const EditEvent = () => {
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <EditRoundedIcon />
-          <Typography variant="h4" gutterBottom className="demandTable__title">
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>

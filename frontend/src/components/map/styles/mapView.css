@@ -319,10 +319,6 @@
   height: 100%;
 }
 
-.switch-container {
-  width: 100%;
-}
-
 .leaflet-container a.leaflet-popup-close-button {
   top: 6px;
   right: 6px;

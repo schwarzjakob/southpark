@@ -152,7 +152,8 @@ const MapComponent = ({ selectedDate, zoom }) => {
         </div>
       );
     } else if (type === "entrance" && event.event_entrance) {
-      console.log(event);
+      // DEBUG
+      //console.log(event);
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>

@@ -301,7 +301,7 @@ const AddEvent = () => {
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <EditRoundedIcon />
-          <Typography variant="h4" gutterBottom className="demandTable__title">
+          <Typography variant="h4" gutterBottom >
             {TITLE}
           </Typography>
         </Box>

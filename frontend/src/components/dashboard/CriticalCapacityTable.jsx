@@ -115,8 +115,8 @@ const MonthlyDemandTable = ({
       style={{ padding: 20, marginBottom: 20 }}
     >
       <Box className="iconHeadline__container">
-        <BackupTableOutlinedIcon className="demandTable__icon" />{" "}
-        <Typography variant="h5" gutterBottom className="demandTable__title">
+        <BackupTableOutlinedIcon />
+        <Typography variant="h5" gutterBottom>
           {TITLE}
         </Typography>
       </Box>

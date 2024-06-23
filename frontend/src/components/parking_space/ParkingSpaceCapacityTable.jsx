@@ -46,7 +46,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     const fetchCapacities = async () => {
       try {
         const response = await axios.get(
-          `/api/parking/capacities/${parkingLotId}`,
+          `/api/parking/capacities/${parkingLotId}`
         );
         if (response.status === 204) {
           setNotification("No capacities found for this parking lot.");
@@ -89,8 +89,8 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     <Box className="capacitiesTable-container">
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
-          <NumbersRoundedIcon className="demandTable__icon" />
-          <Typography variant="h4" gutterBottom className="demandTable__title">
+          <NumbersRoundedIcon />
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>
@@ -252,7 +252,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                   hover
                   onClick={() =>
                     navigate(
-                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`,
+                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
                     )
                   }
                   style={{ cursor: "pointer" }}
@@ -272,7 +272,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(
-                          `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`,
+                          `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
                         );
                       }}
                       edge="start"

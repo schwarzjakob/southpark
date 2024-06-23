@@ -48,7 +48,7 @@ const ParkingSpace = () => {
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
           <GarageIcon />
-          <Typography variant="h4" gutterBottom className="demandTable__title">
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>
