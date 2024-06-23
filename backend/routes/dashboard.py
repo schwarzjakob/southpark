@@ -1,9 +1,12 @@
-from flask import Blueprint, jsonify, request
-from utils.helpers import get_data
-from sqlalchemy import text
+import logging
 from datetime import datetime, timedelta
 
-dashboard_bp = Blueprint('dashboard', __name__)
+from flask import Blueprint, jsonify, request
+from sqlalchemy import text
+from utils.helpers import get_data
+
+dashboard_bp = Blueprint("dashboard", __name__)
+logger = logging.getLogger(__name__)
 
 
 @dashboard_bp.route("/capacity_utilization", methods=["GET"])

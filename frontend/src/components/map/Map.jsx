@@ -62,14 +62,14 @@ const MapComponent = ({ selectedDate, zoom }) => {
       } catch (error) {
         console.error(
           "There was an error fetching the coordinates data!",
-          error
+          error,
         );
       }
     };
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
+          `/api/map/events_timeline/${selectedDate}`,
         );
         if (data) {
           setEvents(data);
@@ -100,7 +100,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.assembly_start_date,
         event.assembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "assembly";
@@ -111,7 +111,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.runtime_start_date,
         event.runtime_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "runtime";
@@ -122,7 +122,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.disassembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "disassembly";
@@ -143,7 +143,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Allocated Parking Lots: {parkingLots}</p>
 
           <div className="details-link_container">
-            <a href={`/event/${event.id}`}>
+            <a href={`/events/event/${event.event_id}`}>
               <LinkRoundedIcon />
               {event.event_name} Details
             </a>
@@ -151,6 +151,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         </div>
       );
     } else if (type === "entrance" && event.event_entrance) {
+      console.log(event);
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
@@ -158,7 +159,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Allocated Halls: {event.halls}</p>
           <p>Allocated Parking Lots: {parkingLots}</p>
           <div className="details-link_container">
-            <a href={`/event/${event.id}`}>
+            <a href={`/events/event/${event.event_id}`}>
               <LinkRoundedIcon />
               {event.event_name} Details
             </a>
@@ -173,7 +174,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Entrance: {entrances}</p>
           <p>Associated Halls: {event.halls}</p>
           <div className="details-link_container">
-            <a href={`/event/${event.id}`}>
+            <a href={`/events/event/${event.event_id}`}>
               <LinkRoundedIcon />
               {event.event_name} Details
             </a>
@@ -194,9 +195,9 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.assembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]"
+        "[]",
       ) ||
-      dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
+      dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
   );
 
   const SetZoomLevel = ({ zoom }) => {
@@ -230,7 +231,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = filteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false
+          event.halls ? event.halls.split(", ").includes(hall.name) : false,
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? `${event.event_color}` : "gray";
@@ -271,7 +272,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const event = filteredEvents.find((event) =>
           event.event_entrance
             ? event.event_entrance.includes(entrance.name)
-            : false
+            : false,
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? `${event.event_color}` : "gray";
@@ -317,7 +318,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
             ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
                 .split(", ")
                 .includes(parkingLot.name)
-            : false
+            : false,
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? `${event.event_color}` : "gray";
