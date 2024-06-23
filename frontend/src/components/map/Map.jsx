@@ -12,6 +12,7 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
+import MapLegendComponent from "./MapLegend";
 
 const downwardsOverlays = [
   "C1",
@@ -62,14 +63,14 @@ const MapComponent = ({ selectedDate, zoom }) => {
       } catch (error) {
         console.error(
           "There was an error fetching the coordinates data!",
-          error,
+          error
         );
       }
     };
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`,
+          `/api/map/events_timeline/${selectedDate}`
         );
         if (data) {
           setEvents(data);
@@ -85,7 +86,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
 
   const transformCoordinates = (originalCoords) => {
     const transformedCoords = [];
-    for (let i = 0; i < originalCoords.length; i += 2) {
+    for (let i = 0; originalCoords && i < originalCoords.length; i += 2) {
       transformedCoords.push([originalCoords[i], originalCoords[i + 1]]);
     }
     return transformedCoords;
@@ -100,7 +101,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.assembly_start_date,
         event.assembly_end_date,
         null,
-        "[]",
+        "[]"
       )
     ) {
       return "assembly";
@@ -111,7 +112,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.runtime_start_date,
         event.runtime_end_date,
         null,
-        "[]",
+        "[]"
       )
     ) {
       return "runtime";
@@ -122,7 +123,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.disassembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]",
+        "[]"
       )
     ) {
       return "disassembly";
@@ -195,9 +196,9 @@ const MapComponent = ({ selectedDate, zoom }) => {
         event.assembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]",
+        "[]"
       ) ||
-      dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
+      dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
   );
 
   const SetZoomLevel = ({ zoom }) => {
@@ -213,7 +214,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
 
   return (
     <MapContainer
-      center={[48.1375, 11.702]}
+      center={[48.1385, 11.702]}
       zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={false}
@@ -227,11 +228,16 @@ const MapComponent = ({ selectedDate, zoom }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
+      <MapLegendComponent
+        events={filteredEvents}
+        selectedDate={selectedDate}
+      />{" "}
+      {/* Add Legend component here */}
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = filteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false,
+          event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? `${event.event_color}` : "gray";
@@ -272,14 +278,14 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const event = filteredEvents.find((event) =>
           event.event_entrance
             ? event.event_entrance.includes(entrance.name)
-            : false,
+            : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? `${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
         const popupOffset = downwardsOverlays.includes(entrance.name)
-          ? [0, 50]
-          : [0, 0];
+          ? [80, 60]
+          : [0, 60];
 
         return (
           <Polygon
@@ -318,14 +324,14 @@ const MapComponent = ({ selectedDate, zoom }) => {
             ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
                 .split(", ")
                 .includes(parkingLot.name)
-            : false,
+            : false
         );
         const status = event ? getEventStatus(event, selectedDate) : "unknown";
         const fillColor = event ? `${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
         const popupOffset = downwardsOverlays.includes(parkingLot.name)
-          ? [0, 80]
-          : [0, 0];
+          ? [60, 60]
+          : [0, 60];
 
         return (
           <Polygon

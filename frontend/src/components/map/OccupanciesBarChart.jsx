@@ -27,7 +27,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ChartDataLabels,
+  ChartDataLabels
 );
 
 const NO_DATA_MESSAGE = "No data available for the selected day.";
@@ -45,7 +45,7 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
 
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [setError] = useState(null);
   const [parkingLots, setParkingLots] = useState([]);
 
   useEffect(() => {
@@ -94,7 +94,7 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
             parkingLotOccupancy.forEach((item) => {
               const index = sortedParkingLots.findIndex(
                 (lot) =>
-                  lot.name.replace(" (ext.)", "") === item.parking_lot_name,
+                  lot.name.replace(" (ext.)", "") === item.parking_lot_name
               );
               if (index >= 0) {
                 const totalCapacity = sortedParkingLots[index].capacity;
@@ -237,7 +237,7 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
     };
 
     fetchData();
-  }, [selectedDate, isPercentage]);
+  }, [selectedDate, isPercentage, setError]);
 
   const options = {
     indexAxis: "y",
