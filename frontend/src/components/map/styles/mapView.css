@@ -17,6 +17,21 @@
   line-height: 1;
 }
 
+.leaflet-popup-content-wrapper {
+  padding: 0.5rem 0.5rem;
+  font-size: 11px;
+}
+
+.leaflet-popup-tip {
+  display: none;
+}
+
+.leaflet-popup-content {
+  margin: 1rem 0.5rem;
+  max-width: 250px; /* Adjust as needed */
+  line-height: 1;
+}
+
 .cap {
   text-transform: capitalize;
 }
@@ -45,18 +60,6 @@
   white-space: pre-wrap;
   text-align: center;
   font-size: 8px;
-}
-
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  padding: 0.5rem 0.5rem; /* Adjust as needed */
-  font-size: 11px;
-}
-
-.leaflet-popup-content {
-  margin: 1rem 0.5rem;
-  max-width: 250px; /* Adjust as needed */
-  line-height: 1;
 }
 
 /* Timeline Component */
@@ -271,7 +274,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding-top: 10px;
+  /* padding-top: 0.1rem; */
 }
 
 .details-link_container svg {

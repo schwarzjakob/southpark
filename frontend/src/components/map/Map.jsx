@@ -213,7 +213,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
 
   return (
     <MapContainer
-      center={[48.1375, 11.702]}
+      center={[48.1385, 11.702]}
       zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={false}
@@ -278,8 +278,8 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const fillColor = event ? `${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
         const popupOffset = downwardsOverlays.includes(entrance.name)
-          ? [0, 50]
-          : [0, 0];
+          ? [80, 60]
+          : [0, 60];
 
         return (
           <Polygon
@@ -324,8 +324,8 @@ const MapComponent = ({ selectedDate, zoom }) => {
         const fillColor = event ? `${event.event_color}` : "gray";
         const opacity = event ? getPolygonOpacity(status) : 0.9;
         const popupOffset = downwardsOverlays.includes(parkingLot.name)
-          ? [0, 80]
-          : [0, 0];
+          ? [60, 60]
+          : [0, 60];
 
         return (
           <Polygon
