@@ -6,8 +6,27 @@
   overflow: hidden;
 }
 
+/* Popup Styling */
+.leaflet-popup-content-wrapper {
+  background: var(--color-pure-white);
+  color: var(--textColor);
+  border-radius: 8px;
+  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+  margin: 0.25rem;
+  max-width: 250px;
+  line-height: 1;
+}
+
 .cap {
   text-transform: capitalize;
+}
+
+.cap p {
+  margin: 0.5rem 0;
+}
+
+.cap h4 {
+  margin-bottom: 0.5rem;
 }
 
 .leaflet-zoom-animated .leaflet-interactive {
