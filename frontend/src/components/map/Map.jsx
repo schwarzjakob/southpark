@@ -5,7 +5,7 @@ import { Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 
 import TimelineSlider from "./TimelineSlider.jsx";
-import MapComponent from "./MapSection.jsx";
+import MapComponent from "./LeafletMap.jsx";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
@@ -26,11 +26,9 @@ const MapView = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate data fetching
     const fetchData = async () => {
       setLoading(true);
-      // Here you would fetch the events or other data
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate a 2 second delay
+      await new Promise((resolve) => setTimeout(resolve, 10));
       setLoading(false);
     };
 

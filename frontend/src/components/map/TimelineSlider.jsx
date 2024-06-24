@@ -78,9 +78,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        setLoading(true);
+        const startDate = days[0];
+        const endDate = days[days.length - 1];
         const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
+          `/api/map/events_timeline/${startDate}/${endDate}`
         );
         const eventsData = Array.isArray(data) ? data : [];
         setEvents(eventsData);
@@ -126,8 +127,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
       }
     };
 
-    fetchEvents();
-  }, [selectedDate]);
+    if (days.length > 0) {
+      fetchEvents();
+    }
+  }, [selectedDate, days]);
 
   const handleLeftClick = useCallback(() => {
     const newDate = dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD");
@@ -308,7 +311,6 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   const renderEvents = (day) => {
     const uniqueEvents = {};
 
-    // Filter and make unique
     events.forEach((event) => {
       if (
         dayjs(day).isBetween(
@@ -324,13 +326,11 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
 
     const dayEvents = Object.values(uniqueEvents);
 
-    // Ensure empty rows are added if necessary
     const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
     const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
       dayEvents.find((event) => event.row === index)
     );
 
-    // Sort events by row to maintain consistent display order
     filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
     return filledRows.map((event, index) => {
       if (!event) {
@@ -419,7 +419,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           <Box
             sx={{
               position: "absolute",
-              top: "calc(50% + 40px)", // This moves the spinner 20px down
+              top: "calc(50% + 40px)",
               left: "50%",
               transform: "translate(-50%, -50%)",
               zIndex: 10,
