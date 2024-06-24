@@ -41,16 +41,11 @@ function App() {
   useEffect(() => {
     const overlay = document.querySelector(".page-transition-overlay");
 
-    overlay.classList.remove("slide-up");
-    overlay.classList.add("slide-down");
-
     const handleRouteChange = () => {
-      overlay.classList.remove("slide-down");
-      overlay.classList.add("slide-up");
+      overlay.classList.add("active");
 
       setTimeout(() => {
-        overlay.classList.remove("slide-up");
-        overlay.classList.add("slide-down");
+        overlay.classList.remove("active");
       }, 500);
     };
 
