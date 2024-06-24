@@ -67,7 +67,7 @@ const RED_BORDER_THRESHOLD = 100;
 
 // Transparency settings for chart elements
 // Hex codes for transparency 10%: "1A", 20%: "33", 30%: "4D", 40%: "66", 50%: "80", 60%: "99", 70%: "B3", 80%: "CC", 90%: "E6", 100%: "FF"
-const TRANSPARENCY = "4D";
+const TRANSPARENCY = "66";
 
 const applyTransparency = (color) => {
   if (!color || typeof color !== "string") {
