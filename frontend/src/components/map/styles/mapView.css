@@ -331,7 +331,6 @@
   left: 10px;
   background: white;
   padding: 10px;
-  border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   font-family: Arial, sans-serif;
   font-size: 12px; /* Made the font smaller */
@@ -342,27 +341,32 @@
   display: flex;
   align-items: center;
   margin-bottom: 5px;
+  transition: all 0.3s ease-in-out;
 }
 
 .legend-color {
-  width: 26px; /* Increased size to account for padding */
-  height: 26px; /* Increased size to account for padding */
+  width: 26px;
+  height: 26px;
   margin-right: 10px;
-  padding: 3px; /* Added padding */
+  padding: 3px;
   display: flex;
   justify-content: center;
   align-items: center;
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
 .legend-text {
   display: flex;
   flex-direction: column;
+  transition: color 0.3s ease-in-out;
 }
 
 .legend-runtime,
 .legend-assembly,
 .legend-disassembly {
-  color: var(--textColor); /* Set font color */
+  color: var(--textColor);
+  transition: color 0.3s ease-in-out;
 }
 
 .legend-icons {
@@ -374,7 +378,10 @@
   display: flex;
   align-items: center;
   margin-right: 10px;
+  transition: color 0.3s ease-in-out;
 }
+
 .legend-icon svg {
   margin-right: 5px;
+  transition: fill 0.3s ease-in-out;
 }
