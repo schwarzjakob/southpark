@@ -7,6 +7,7 @@ psycopg2-binary==2.9.9
 SQLAlchemy==2.0.30
 Flask-SQLAlchemy==3.0.3
 Flask-Migrate==4.0.0
+Flask-Caching==2.3.0
 
 # allocation_algorithm
 PuLP==2.8.0
