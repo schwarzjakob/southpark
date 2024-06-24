@@ -25,6 +25,7 @@ import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import EventDemandTable from "./EventDemandTable";
 import "./styles/events.css";
 
@@ -34,6 +35,7 @@ const Event = () => {
   const [event, setEvent] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [originalEvent, setOriginalEvent] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -42,6 +44,7 @@ const Event = () => {
       try {
         const response = await axios.get(`/api/events/event/${id}`);
         setEvent(response.data);
+        setOriginalEvent(response.data);
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
@@ -52,6 +55,22 @@ const Event = () => {
 
     fetchEvent();
   }, [id]);
+
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(event) !== JSON.stringify(originalEvent);
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -131,6 +150,11 @@ const Event = () => {
     return luminance > 0.5 ? "black" : "white";
   };
 
+  const breadcrumbLinks = [
+    { label: "Events", path: "/events" },
+    { label: event ? event.name : "Event", path: `/events/event/${id}` },
+  ];
+
   if (loading) {
     return (
       <Box
@@ -147,6 +171,10 @@ const Event = () => {
 
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
           <InsertInvitationRoundedIcon />
@@ -173,7 +201,7 @@ const Event = () => {
             {error}
           </Typography>
         )}
-        <Box padding="16px" textAlign="center">
+        <Box padding="16px">
           <Box
             className="event-box"
             style={{
@@ -301,7 +329,7 @@ const Event = () => {
           variant="outlined"
           color="primary"
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(`/events/`)}
+          onClick={() => handleNavigate(`/events/`)}
         >
           Back
         </Button>
