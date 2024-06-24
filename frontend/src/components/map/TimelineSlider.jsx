@@ -1,11 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  Box,
-  IconButton,
-  Typography,
-  useTheme,
-  CircularProgress,
-} from "@mui/material";
+import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import axios from "axios";
@@ -34,61 +28,40 @@ const MONTHS = [
 ];
 
 const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
-  TimelineSlider.propTypes = {
-    selectedDate: PropTypes.string.isRequired,
-    setSelectedDate: PropTypes.func.isRequired,
-  };
-
   const theme = useTheme();
   const [days, setDays] = useState([]);
   const [events, setEvents] = useState([]);
   const [eventRows, setEventRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showSpinner, setShowSpinner] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSpinner(true);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const calculateNumberOfDays = () => Math.floor(window.innerWidth / 45);
-
-    const generateDays = (centerDate, numberOfDays) => {
-      const today = dayjs(centerDate);
-      const halfNumberOfDays = Math.floor(numberOfDays / 2);
-      return Array.from({ length: numberOfDays }, (_, i) =>
-        today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD")
-      );
-    };
-
     const updateDays = () => {
+      const calculateNumberOfDays = () => Math.floor(window.innerWidth / 45);
+      const generateDays = (centerDate, numberOfDays) => {
+        const today = dayjs(centerDate);
+        const halfNumberOfDays = Math.floor(numberOfDays / 2);
+        return Array.from({ length: numberOfDays }, (_, i) =>
+          today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD")
+        );
+      };
       setDays(generateDays(selectedDate, calculateNumberOfDays() + BUFFER * 2));
     };
 
     updateDays();
     window.addEventListener("resize", updateDays);
-
     return () => window.removeEventListener("resize", updateDays);
   }, [selectedDate]);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const startDate = days[0];
-        const endDate = days[days.length - 1];
         const { data } = await axios.get(
-          `/api/map/events_timeline/${startDate}/${endDate}`
+          `/api/map/events_timeline/${selectedDate}`
         );
         const eventsData = Array.isArray(data) ? data : [];
         setEvents(eventsData);
 
         const rows = [];
         eventsData.forEach((event) => {
-          event.event_color = `${event.event_color}`;
           const eventStart = dayjs(event.assembly_start_date).format(
             "YYYY-MM-DD"
           );
@@ -122,15 +95,11 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
       } catch (error) {
         console.error("Error fetching events:", error);
         setEvents([]);
-      } finally {
-        setLoading(false);
       }
     };
 
-    if (days.length > 0) {
-      fetchEvents();
-    }
-  }, [selectedDate, days]);
+    fetchEvents();
+  }, [selectedDate]);
 
   const handleLeftClick = useCallback(() => {
     const newDate = dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD");
@@ -138,7 +107,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     setDays((prevDays) =>
       prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD"))
     );
-  }, [selectedDate, setSelectedDate, setDays]);
+  }, [selectedDate, setSelectedDate]);
 
   const handleRightClick = useCallback(() => {
     const newDate = dayjs(selectedDate).add(1, "day").format("YYYY-MM-DD");
@@ -146,36 +115,19 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     setDays((prevDays) =>
       prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD"))
     );
-  }, [selectedDate, setSelectedDate, setDays]);
-
-  const handleKeyDown = useCallback(
-    (event) => {
-      if (event.key === "ArrowLeft") handleLeftClick();
-      if (event.key === "ArrowRight") handleRightClick();
-    },
-    [handleLeftClick, handleRightClick]
-  );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+  }, [selectedDate, setSelectedDate]);
 
   const handleYearClick = (year) => {
     let newDate = dayjs(selectedDate).year(year);
     const daysInMonth = newDate.daysInMonth();
-    if (newDate.date() > daysInMonth) {
-      newDate = newDate.date(daysInMonth);
-    }
+    if (newDate.date() > daysInMonth) newDate = newDate.date(daysInMonth);
     setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
   const handleMonthClick = (monthIndex) => {
     let newDate = dayjs(selectedDate).month(monthIndex);
     const daysInMonth = newDate.daysInMonth();
-    if (newDate.date() > daysInMonth) {
-      newDate = newDate.date(daysInMonth);
-    }
+    if (newDate.date() > daysInMonth) newDate = newDate.date(daysInMonth);
     setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
@@ -186,15 +138,12 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   const renderYears = () => {
     const startYear = dayjs().subtract(10, "year").year();
     const endYear = dayjs().add(10, "year").year();
-
     return Array.from({ length: 21 }, (_, i) => {
       const year = dayjs(selectedDate)
         .add(i - 10, "year")
         .year();
       if (year < startYear || year > endYear) return null;
-
       const isSelected = year === dayjs(selectedDate).year();
-
       return (
         <Typography
           key={year}
@@ -217,8 +166,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     }).filter(Boolean);
   };
 
-  const renderMonths = (months) => {
-    return months.map((month, index) => (
+  const renderMonths = () => {
+    return MONTHS.map((month, index) => (
       <Typography
         key={month}
         variant="body2"
@@ -243,13 +192,87 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     ));
   };
 
-  const getContrastColor = (hexColor) => {
-    const hex = hexColor.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? "black" : "white";
+  const renderEvents = (day) => {
+    const uniqueEvents = {};
+    events.forEach((event) => {
+      if (
+        dayjs(day).isBetween(
+          dayjs(event.assembly_start_date).startOf("day"),
+          dayjs(event.disassembly_end_date).endOf("day"),
+          "day",
+          "[]"
+        )
+      ) {
+        uniqueEvents[event.event_id] = event;
+      }
+    });
+    const dayEvents = Object.values(uniqueEvents);
+    const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
+    const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
+      dayEvents.find((event) => event.row === index)
+    );
+    filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
+
+    return filledRows.map((event, index) => {
+      if (!event) {
+        return (
+          <Box
+            key={`empty-${index}`}
+            className="event-row"
+            sx={{
+              height: "22px",
+              marginBottom: "2px",
+              position: "relative",
+              backgroundColor: "transparent",
+            }}
+          />
+        );
+      }
+      const phases = [
+        {
+          startDate: event.assembly_start_date,
+          endDate: event.assembly_end_date,
+          opacity: 0.05,
+          className: "status-assembly",
+        },
+        {
+          startDate: event.runtime_start_date,
+          endDate: event.runtime_end_date,
+          opacity: 1,
+          className: "",
+        },
+        {
+          startDate: event.disassembly_start_date,
+          endDate: event.disassembly_end_date,
+          opacity: 0.05,
+          className: "status-disassembly",
+        },
+      ];
+      const phaseSegments = phases.map((phase, idx) => {
+        const phaseStart = dayjs(phase.startDate);
+        const phaseEnd = dayjs(phase.endDate);
+        const startIndex = days.findIndex((d) =>
+          dayjs(d).isSame(phaseStart, "day")
+        );
+        const endIndex = days.findIndex((d) =>
+          dayjs(d).isSame(phaseEnd, "day")
+        );
+        if (startIndex === -1 || endIndex === -1) return null;
+        const labelText =
+          dayjs(day).isSame(event.runtime_start_date, "day") && idx === 1
+            ? event.event_name
+            : null;
+        return renderEventSegments(
+          event,
+          startIndex,
+          endIndex,
+          phase.opacity,
+          labelText,
+          phase.className
+        );
+      });
+      return phaseSegments;
+    });
   };
 
   const renderEventSegments = (
@@ -308,94 +331,13 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
     );
   };
 
-  const renderEvents = (day) => {
-    const uniqueEvents = {};
-
-    events.forEach((event) => {
-      if (
-        dayjs(day).isBetween(
-          dayjs(event.assembly_start_date).startOf("day"),
-          dayjs(event.disassembly_end_date).endOf("day"),
-          "day",
-          "[]"
-        )
-      ) {
-        uniqueEvents[event.event_id] = event;
-      }
-    });
-
-    const dayEvents = Object.values(uniqueEvents);
-
-    const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
-    const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
-      dayEvents.find((event) => event.row === index)
-    );
-
-    filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
-    return filledRows.map((event, index) => {
-      if (!event) {
-        return (
-          <Box
-            key={`empty-${index}`}
-            className="event-row"
-            sx={{
-              height: "22px",
-              marginBottom: "2px",
-              position: "relative",
-              backgroundColor: "transparent",
-            }}
-          />
-        );
-      }
-
-      const phases = [
-        {
-          startDate: event.assembly_start_date,
-          endDate: event.assembly_end_date,
-          opacity: 0.05,
-          className: "status-assembly",
-        },
-        {
-          startDate: event.runtime_start_date,
-          endDate: event.runtime_end_date,
-          opacity: 1,
-          className: "",
-        },
-        {
-          startDate: event.disassembly_start_date,
-          endDate: event.disassembly_end_date,
-          opacity: 0.05,
-          className: "status-disassembly",
-        },
-      ];
-
-      const phaseSegments = phases.map((phase, idx) => {
-        const phaseStart = dayjs(phase.startDate);
-        const phaseEnd = dayjs(phase.endDate);
-        const startIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseStart, "day")
-        );
-        const endIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseEnd, "day")
-        );
-        if (startIndex === -1 || endIndex === -1) return null;
-
-        const labelText =
-          dayjs(day).isSame(event.runtime_start_date, "day") && idx === 1
-            ? event.event_name
-            : null;
-        return renderEventSegments(
-          event,
-          startIndex,
-          endIndex,
-          phase.opacity,
-          labelText,
-          phase.className
-        );
-      });
-
-      return phaseSegments;
-    });
+  const getContrastColor = (hexColor) => {
+    const hex = hexColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? "black" : "white";
   };
 
   return (
@@ -410,24 +352,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
       </Box>
       <Box
         className="timeline-container"
-        sx={{
-          height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
-          position: "relative",
-        }}
+        sx={{ height: `${eventRows.length * ROW_HEIGHT + OFFSET}px` }}
       >
-        {loading && showSpinner && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: "calc(50% + 40px)",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 10,
-            }}
-          >
-            <CircularProgress sx={{ color: "white" }} />
-          </Box>
-        )}
         <Box
           className="timeline-slider years"
           display="flex"
@@ -442,7 +368,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           justifyContent="center"
           alignItems="center"
         >
-          {renderMonths(MONTHS)}
+          {renderMonths()}
         </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box position="relative" sx={{ flexGrow: 1 }}>
@@ -499,6 +425,11 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
       </Box>
     </Box>
   );
+};
+
+TimelineSlider.propTypes = {
+  selectedDate: PropTypes.string.isRequired,
+  setSelectedDate: PropTypes.func.isRequired,
 };
 
 export default TimelineSlider;

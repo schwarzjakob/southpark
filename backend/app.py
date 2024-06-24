@@ -28,7 +28,7 @@ def create_app():
     app.register_blueprint(parking_bp, url_prefix='/parking')
     app.register_blueprint(data_bp, url_prefix='/data')
 
-    # Print all routes
+    # Print routes
     with app.app_context():
         for rule in app.url_map.iter_rules():
             print(f'{rule.endpoint}: {rule}')

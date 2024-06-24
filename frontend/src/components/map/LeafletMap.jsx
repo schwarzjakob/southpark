@@ -1,6 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import PropTypes from "prop-types";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -49,8 +49,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
   const [entrances, setEntrances] = useState([]);
-  const [events, setEvents] = useState({});
-  const [loadedDateRanges, setLoadedDateRanges] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const fetchCoordinates = async () => {
@@ -68,73 +67,22 @@ const MapComponent = ({ selectedDate, zoom }) => {
         );
       }
     };
-    fetchCoordinates();
-  }, []);
-
-  const fetchEvents = async (startDate, endDate) => {
-    const cacheKey = `events_${startDate}_${endDate}`;
-    const cachedData = sessionStorage.getItem(cacheKey);
-    if (cachedData) {
-      return JSON.parse(cachedData);
-    }
-
-    try {
-      const { data } = await axios.get(
-        `/api/map/events_timeline/${startDate}/${endDate}`
-      );
-      sessionStorage.setItem(cacheKey, JSON.stringify(data));
-      return data;
-    } catch (error) {
-      console.error("There was an error fetching the events data!", error);
-      return [];
-    }
-  };
-
-  const loadEvents = useCallback(
-    async (centerDate) => {
-      const startDate = dayjs(centerDate)
-        .subtract(45, "day")
-        .format("YYYY-MM-DD");
-      const endDate = dayjs(centerDate).add(45, "day").format("YYYY-MM-DD");
-
-      if (
-        loadedDateRanges.some(
-          (range) => range.startDate === startDate && range.endDate === endDate
-        )
-      ) {
-        return;
+    const fetchEvents = async () => {
+      try {
+        const { data } = await axios.get(
+          `/api/map/events_timeline/${selectedDate}`
+        );
+        if (data) {
+          setEvents(data);
+        }
+      } catch (error) {
+        console.error("There was an error fetching the events data!", error);
       }
+    };
 
-      const eventsData = await fetchEvents(startDate, endDate);
-
-      setEvents((prevEvents) => ({
-        ...prevEvents,
-        ...eventsData.reduce((acc, event) => {
-          const start = dayjs(event.assembly_start_date).format("YYYY-MM-DD");
-          const end = dayjs(event.disassembly_end_date).format("YYYY-MM-DD");
-          for (
-            let d = dayjs(start);
-            d.isBefore(dayjs(end));
-            d = d.add(1, "day")
-          ) {
-            const dateStr = d.format("YYYY-MM-DD");
-            acc[dateStr] = acc[dateStr] ? [...acc[dateStr], event] : [event];
-          }
-          return acc;
-        }, {}),
-      }));
-
-      setLoadedDateRanges((prevRanges) => [
-        ...prevRanges,
-        { startDate, endDate },
-      ]);
-    },
-    [loadedDateRanges]
-  );
-
-  useEffect(() => {
-    loadEvents(selectedDate);
-  }, [selectedDate, loadEvents]);
+    fetchCoordinates();
+    fetchEvents();
+  }, [selectedDate]);
 
   const transformCoordinates = (originalCoords) => {
     const transformedCoords = [];
@@ -204,6 +152,8 @@ const MapComponent = ({ selectedDate, zoom }) => {
         </div>
       );
     } else if (type === "entrance" && event.event_entrance) {
+      // DEBUG
+      //console.log(event);
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
@@ -240,7 +190,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
     return status === "runtime" ? 0.9 : 0.3;
   };
 
-  const filteredEvents = (events[selectedDate] || []).filter(
+  const filteredEvents = events.filter(
     (event) =>
       dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
       dayjs(selectedDate).isBetween(
@@ -279,7 +229,11 @@ const MapComponent = ({ selectedDate, zoom }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
-      <MapLegendComponent events={filteredEvents} selectedDate={selectedDate} />
+      <MapLegendComponent
+        events={filteredEvents}
+        selectedDate={selectedDate}
+      />{" "}
+      {/* Add Legend component here */}
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);

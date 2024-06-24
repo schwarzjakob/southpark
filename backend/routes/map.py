@@ -49,19 +49,24 @@ def get_coordinates():
         return jsonify({"error": str(e)}), 500
 
 
-@map_bp.route("/events_timeline/<start_date>/<end_date>", methods=["GET"])
-def get_events_timeline(start_date, end_date):
+@map_bp.route("/events_timeline/<date>", methods=["GET"])
+def get_events_timeline(date):
     try:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        date = datetime.strptime(date, "%Y-%m-%d")
+        start_date = date - timedelta(days=45)
+        end_date = date + timedelta(days=45)
 
         query = f"""
         SELECT * FROM view_schema.view_events_timeline
-        WHERE (disassembly_end_date >= '{start_date}' AND assembly_start_date <= '{end_date}')
+        WHERE
+            (disassembly_end_date >= '{start_date}' AND assembly_start_date <= '{end_date}')
         """
-        # Assume get_data(query) is a function that executes the SQL and returns a pandas DataFrame
         df_events_timeline = get_data(query)
-        events_timeline = df_events_timeline.to_dict(orient="records") if not df_events_timeline.empty else []
+        events_timeline = (
+            df_events_timeline.to_dict(orient="records")
+            if not df_events_timeline.empty
+            else []
+        )
 
         return jsonify(events_timeline), 200
     except Exception as e:

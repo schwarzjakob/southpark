@@ -261,7 +261,7 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
         stacked: true,
         title: {
           display: false,
-          text: "Parking Lots",
+          text: "Parking Spaces",
         },
         ticks: {
           autoSkip: false,

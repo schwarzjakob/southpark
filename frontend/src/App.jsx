@@ -54,7 +54,7 @@ function App() {
       }, 500);
     };
 
-    handleRouteChange(); // Initial call
+    handleRouteChange();
 
     return () => {
       window.removeEventListener("beforeunload", handleRouteChange);
