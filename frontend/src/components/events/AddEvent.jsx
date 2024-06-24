@@ -30,6 +30,7 @@ import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRound
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import dayjs from "dayjs";
 import DateRangePicker from "../controls/DateRangePicker";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/events.css";
 
 const TITLE = "Add Event";
@@ -47,7 +48,8 @@ const AddEvent = () => {
     halls: [],
     entrances: [],
   });
-  const [error, setError] = useState("");
+  const [originalEvent] = useState({ ...event });
+  const [error] = useState("");
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
@@ -55,6 +57,22 @@ const AddEvent = () => {
   });
 
   const navigate = useNavigate();
+
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(event) !== JSON.stringify(originalEvent);
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -257,7 +275,7 @@ const AddEvent = () => {
             }}
           >
             {hall}
-          </TableCell>,
+          </TableCell>
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
@@ -296,12 +314,21 @@ const AddEvent = () => {
     ));
   };
 
+  const breadcrumbLinks = [
+    { label: "Events", path: "/events" },
+    { label: "Add Event", path: "/events/add" },
+  ];
+
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <EditRoundedIcon />
-          <Typography variant="h4" gutterBottom >
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>
@@ -487,7 +514,7 @@ const AddEvent = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(-1)}
+              onClick={() => handleNavigate("/events")}
             >
               Back
             </Button>

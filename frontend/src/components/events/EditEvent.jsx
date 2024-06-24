@@ -30,12 +30,14 @@ import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRound
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import dayjs from "dayjs";
 import DateRangePicker from "../controls/DateRangePicker";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/events.css";
 
 const TITLE = "Edit Event";
 
 const EditEvent = () => {
   const [event, setEvent] = useState(null);
+  const [originalEvent, setOriginalEvent] = useState(null);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState({
     open: false,
@@ -50,8 +52,8 @@ const EditEvent = () => {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/events/event/${id}`);
-        console.log("Fetched event data:", response.data);
         setEvent(response.data);
+        setOriginalEvent(response.data);
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
@@ -60,6 +62,22 @@ const EditEvent = () => {
 
     fetchEvent();
   }, [id]);
+
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(event) !== JSON.stringify(originalEvent);
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -297,8 +315,18 @@ const EditEvent = () => {
     );
   }
 
+  const breadcrumbLinks = [
+    { label: "Events", path: "/events" },
+    { label: event.name, path: `/events/event/${id}` },
+    { label: "Edit Event", path: `/events/event/edit/${id}` },
+  ];
+
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <EditRoundedIcon />
@@ -488,7 +516,7 @@ const EditEvent = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(-1)}
+              onClick={() => handleNavigate(`/events/event/${id}`)}
             >
               Back
             </Button>
