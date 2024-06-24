@@ -1,11 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
+import SearchAppBar from "./SearchAppBar";
 import MapIcon from "@mui/icons-material/MapRounded";
 import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
 import EventIcon from "@mui/icons-material/Event";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import GroupsIcon from "@mui/icons-material/Groups";
-import { styled } from "@mui/system";
+import { styled } from "@mui/material/styles";
 import logo from "../../assets/logo_white.svg";
 
 const LogoContainer = styled(Link)({
@@ -35,7 +36,7 @@ function Header() {
 
   return (
     <AppBar position="sticky" className="header-container">
-      <Toolbar>
+      <Toolbar className="header-toolbar">
         <LogoContainer to="/">
           <Logo src={logo} alt="Messe München" className="logo" />
           <Typography variant="h6" className="page-title">
@@ -45,7 +46,7 @@ function Header() {
           </Typography>
         </LogoContainer>
         <Grow />
-        <Box className="nav-buttons">
+        <Box className="nav-buttons" display="flex" alignItems="center">
           <Button
             component={Link}
             to="/"
@@ -104,6 +105,7 @@ function Header() {
           >
             Team
           </Button>
+          <SearchAppBar />
         </Box>
       </Toolbar>
     </AppBar>
