@@ -100,6 +100,7 @@ const AddParkingSpace = () => {
                 fullWidth
                 error={!!error}
                 helperText={error}
+                required={true}
               />
             </Box>
           </FormControl>
