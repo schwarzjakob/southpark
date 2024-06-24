@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import text
 from extensions import db
 
+
 def get_data(query, params=None):
     try:
         with db.engine.connect() as connection:
