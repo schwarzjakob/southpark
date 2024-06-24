@@ -16,7 +16,7 @@ const getContrastingTextColor = (backgroundColor) => {
   return luminance > 0.5 ? "black" : "white";
 };
 
-const MapLegendComponent = ({ events, selectedDate }) => {
+const MapLegendComponent = ({ events, selectedDate, eventId }) => {
   const getEventPhase = (event, date) => {
     const eventDate = dayjs(date);
     if (
@@ -66,75 +66,81 @@ const MapLegendComponent = ({ events, selectedDate }) => {
 
   return (
     <div className="legend">
-      <Typography
-        sx={{
-          fontSize: "0.8rem",
-          fontWeight: "bold",
-          color: "var(--textColor)",
-          padding: "0.3rem",
-        }}
-      >
-        {"Legend"}
-      </Typography>
-      {sortedEvents.map((event) => {
-        const phase = getEventPhase(event, selectedDate);
-        if (!phase) return null;
+      {events.length > 0 ? (
+        <>
+          <Typography
+            sx={{
+              fontSize: "0.8rem",
+              fontWeight: "bold",
+              color: "var(--textColor)",
+              padding: "0.3rem",
+            }}
+          >
+            {"Legend"}
+          </Typography>
+          {sortedEvents.map((event) => {
+            if (eventId && event.event_id !== eventId) return null;
 
-        phasesUsed.add(phase);
+            const phase = getEventPhase(event, selectedDate);
+            if (!phase) return null;
 
-        const phaseIcon =
-          phase === "assembly" ? (
-            <ArrowCircleUpRoundedIcon />
-          ) : phase === "runtime" ? (
-            <PlayCircleRoundedIcon />
-          ) : (
-            <ArrowCircleDownRoundedIcon />
-          );
+            phasesUsed.add(phase);
 
-        const contrastColor = getContrastingTextColor(event.event_color);
+            const phaseIcon =
+              phase === "assembly" ? (
+                <ArrowCircleUpRoundedIcon />
+              ) : phase === "runtime" ? (
+                <PlayCircleRoundedIcon />
+              ) : (
+                <ArrowCircleDownRoundedIcon />
+              );
 
-        const phaseStyle =
-          phase === "assembly" || phase === "disassembly"
-            ? {
-                backgroundColor: `${event.event_color}80`, // 50% transparency
-                border: `1px solid ${event.event_color}`,
-                color: event.event_color,
-              }
-            : {
-                backgroundColor: event.event_color,
-                color: contrastColor,
-              };
+            const contrastColor = getContrastingTextColor(event.event_color);
 
-        return (
-          <div key={event.event_id} className="legend-item">
-            <div className="legend-color" style={phaseStyle}>
-              {phaseIcon}
-            </div>
-            <div className="legend-text">
-              <div className={`legend-${phase}`}>
-                <span>{event.event_name}</span>
+            const phaseStyle =
+              phase === "assembly" || phase === "disassembly"
+                ? {
+                    backgroundColor: `${event.event_color}80`, // 50% transparency
+                    border: `1px solid ${event.event_color}`,
+                    color: event.event_color,
+                  }
+                : {
+                    backgroundColor: event.event_color,
+                    color: contrastColor,
+                  };
+
+            return (
+              <div key={event.event_id} className="legend-item">
+                <div className="legend-color" style={phaseStyle}>
+                  {phaseIcon}
+                </div>
+                <div className="legend-text">
+                  <div className={`legend-${phase}`}>
+                    <span>{event.event_name}</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            );
+          })}
+          <div className="legend-icons">
+            {phasesUsed.has("assembly") && (
+              <div className="legend-icon">
+                <ArrowCircleUpRoundedIcon /> assembly
+              </div>
+            )}
+            {phasesUsed.has("runtime") && (
+              <div className="legend-icon">
+                <PlayCircleRoundedIcon /> runtime
+              </div>
+            )}
+            {phasesUsed.has("disassembly") && (
+              <div className="legend-icon">
+                <ArrowCircleDownRoundedIcon /> disassembly
+              </div>
+            )}
           </div>
-        );
-      })}
-      <div className="legend-icons">
-        {phasesUsed.has("assembly") && (
-          <div className="legend-icon">
-            <ArrowCircleUpRoundedIcon /> assembly
-          </div>
-        )}
-        {phasesUsed.has("runtime") && (
-          <div className="legend-icon">
-            <PlayCircleRoundedIcon /> runtime
-          </div>
-        )}
-        {phasesUsed.has("disassembly") && (
-          <div className="legend-icon">
-            <ArrowCircleDownRoundedIcon /> disassembly
-          </div>
-        )}
-      </div>
+        </>
+      ) : null}
     </div>
   );
 };
@@ -142,6 +148,7 @@ const MapLegendComponent = ({ events, selectedDate }) => {
 MapLegendComponent.propTypes = {
   events: PropTypes.arrayOf(PropTypes.object).isRequired,
   selectedDate: PropTypes.string.isRequired,
+  eventId: PropTypes.string, // Optional prop for event ID filtering
 };
 
 export default MapLegendComponent;

@@ -233,8 +233,6 @@ const MapComponent = ({ selectedDate, zoom }) => {
         events={filteredEvents}
         selectedDate={selectedDate}
       />{" "}
-      {/* Add Legend component here */}
-      {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = filteredEvents.find((event) =>
