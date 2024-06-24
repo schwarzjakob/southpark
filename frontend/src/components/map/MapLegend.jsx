@@ -1,4 +1,6 @@
 import PropTypes from "prop-types";
+import { Typography } from "@mui/material";
+
 import dayjs from "dayjs";
 import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleRoundedIcon from "@mui/icons-material/PlayCircleOutline";
@@ -64,6 +66,16 @@ const MapLegendComponent = ({ events, selectedDate }) => {
 
   return (
     <div className="legend">
+      <Typography
+        sx={{
+          fontSize: "0.8rem",
+          fontWeight: "bold",
+          color: "var(--textColor)",
+          padding: "0.3rem",
+        }}
+      >
+        {"Legend"}
+      </Typography>
       {sortedEvents.map((event) => {
         const phase = getEventPhase(event, selectedDate);
         if (!phase) return null;
@@ -100,7 +112,7 @@ const MapLegendComponent = ({ events, selectedDate }) => {
             </div>
             <div className="legend-text">
               <div className={`legend-${phase}`}>
-                <strong>{event.event_name}</strong>
+                <span>{event.event_name}</span>
               </div>
             </div>
           </div>
