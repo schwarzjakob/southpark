@@ -14,6 +14,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
+
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
   PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
@@ -23,10 +24,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
-import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
+import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
+
 import EventDemandTable from "./EventDemandTable";
+import LeafletMap from "../map/LeafletMap";
+import TimelineSlider from "../map/TimelineSlider";
+import "../map/styles/mapView.css";
+
 import "./styles/events.css";
 
 const TITLE = "Event Details";
@@ -38,13 +43,42 @@ const Event = () => {
   const [originalEvent, setOriginalEvent] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
+  const [events] = useState([]);
+
+  const initialDate = "2023-01-02";
+  const [selectedDate, setSelectedDate] = useState(initialDate);
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/events/event/${id}`);
-        setEvent(response.data);
-        setOriginalEvent(response.data);
+        const eventData = response.data;
+
+        // Convert dates to "YYYY-MM-DD" format
+        eventData.assembly_start_date = formatDateToISO(
+          eventData.assembly_start_date
+        );
+        eventData.assembly_end_date = formatDateToISO(
+          eventData.assembly_end_date
+        );
+        eventData.runtime_start_date = formatDateToISO(
+          eventData.runtime_start_date
+        );
+        eventData.runtime_end_date = formatDateToISO(
+          eventData.runtime_end_date
+        );
+        eventData.disassembly_start_date = formatDateToISO(
+          eventData.disassembly_start_date
+        );
+        eventData.disassembly_end_date = formatDateToISO(
+          eventData.disassembly_end_date
+        );
+
+        setEvent(eventData);
+        setOriginalEvent(eventData);
+        if (eventData && eventData.runtime_start_date) {
+          setSelectedDate(eventData.runtime_start_date);
+        }
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
@@ -52,7 +86,8 @@ const Event = () => {
         setLoading(false);
       }
     };
-
+    console.log(id);
+    console.log(typeof id);
     fetchEvent();
   }, [id]);
 
@@ -80,64 +115,12 @@ const Event = () => {
     return `${day}.${month}.${year}`;
   };
 
-  const renderHallMatrix = (halls) => {
-    const hallMatrix = [];
-    const rows = 3;
-    const cols = 6;
-
-    for (let row = 0; row < rows; row++) {
-      const rowData = [];
-      for (let col = 1; col <= cols; col++) {
-        const hall = `${String.fromCharCode(67 - row)}${col}`;
-        rowData.push(
-          <TableCell
-            key={hall}
-            style={{
-              backgroundColor: halls.includes(hall)
-                ? event.color
-                : "transparent",
-              color: halls.includes(hall)
-                ? getContrastingTextColor(event.color)
-                : "inherit",
-              textAlign: "center",
-            }}
-          >
-            {hall}
-          </TableCell>
-        );
-      }
-      hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
-    }
-
-    return hallMatrix;
-  };
-
-  const renderEntranceGrid = (entrances) => {
-    const entranceGrid = [
-      ["North West", "North", "North East"],
-      ["West", "", "East"],
-    ];
-
-    return entranceGrid.map((row, rowIndex) => (
-      <TableRow key={rowIndex}>
-        {row.map((cell, cellIndex) => (
-          <TableCell
-            key={cellIndex}
-            style={{
-              backgroundColor: entrances.includes(cell)
-                ? event.color
-                : "transparent",
-              color: entrances.includes(cell)
-                ? getContrastingTextColor(event.color)
-                : "inherit",
-              textAlign: "center",
-            }}
-          >
-            {cell}
-          </TableCell>
-        ))}
-      </TableRow>
-    ));
+  const formatDateToISO = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
   };
 
   const getContrastingTextColor = (backgroundColor) => {
@@ -154,6 +137,14 @@ const Event = () => {
     { label: "Events", path: "/events" },
     { label: event ? event.name : "Event", path: `/events/event/${id}` },
   ];
+
+  const calculateDaysBetween = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   if (loading) {
     return (
@@ -207,9 +198,6 @@ const Event = () => {
             style={{
               backgroundColor: event.color,
               color: getContrastingTextColor(event.color),
-              display: "inline-block",
-              padding: "10px 20px",
-              borderRadius: "4px",
             }}
           >
             {event.name}
@@ -251,27 +239,62 @@ const Event = () => {
               </TableHead>
               <TableBody>
                 <TableRow>
-                  <TableCell>
+                  <TableCell className="time-span-container">
                     <Box display="flex" justifyContent="space-between">
-                      <Box>{formatDate(event.assembly_start_date)}</Box>
-                      <Box> - </Box>
-                      <Box>{formatDate(event.assembly_end_date)}</Box>
+                      <Box className="time-span-days">
+                        {calculateDaysBetween(
+                          event.assembly_start_date,
+                          event.assembly_end_date
+                        )}{" "}
+                        Days
+                      </Box>
+                      <Box className="time-span-date">
+                        {formatDate(event.assembly_start_date)}
+                      </Box>
+                      <ArrowForwardIosRoundedIcon className="time-span-icon" />
+                      <Box className="time-span-date">
+                        {formatDate(event.assembly_end_date)}
+                      </Box>
                     </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="time-span-container">
                     <Box display="flex" justifyContent="space-between">
-                      <Box>{formatDate(event.runtime_start_date)}</Box>
-                      <Box> - </Box>
-                      <Box style={{ textAlign: "right" }}>
+                      <Box className="time-span-days">
+                        {calculateDaysBetween(
+                          event.runtime_start_date,
+                          event.runtime_end_date
+                        )}{" "}
+                        Days
+                      </Box>
+                      <Box className="time-span-date">
+                        {formatDate(event.runtime_start_date)}
+                      </Box>
+                      <ArrowForwardIosRoundedIcon className="time-span-icon" />
+                      <Box
+                        className="time-span-date"
+                        style={{ textAlign: "right" }}
+                      >
                         {formatDate(event.runtime_end_date)}
                       </Box>
                     </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="time-span-container">
                     <Box display="flex" justifyContent="space-between">
-                      <Box>{formatDate(event.disassembly_start_date)}</Box>
-                      <Box> - </Box>
-                      <Box style={{ textAlign: "right" }}>
+                      <Box className="time-span-days">
+                        {calculateDaysBetween(
+                          event.disassembly_start_date,
+                          event.disassembly_end_date
+                        )}{" "}
+                        Days
+                      </Box>
+                      <Box className="time-span-date">
+                        {formatDate(event.disassembly_start_date)}
+                      </Box>
+                      <ArrowForwardIosRoundedIcon className="time-span-icon" />
+                      <Box
+                        className="time-span-date"
+                        style={{ textAlign: "right" }}
+                      >
                         {formatDate(event.disassembly_end_date)}
                       </Box>
                     </Box>
@@ -281,48 +304,57 @@ const Event = () => {
             </Table>
           </TableContainer>
         </Box>
-        <Box padding="16px">
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell colSpan={6} style={{ textAlign: "center" }}>
-                    <Box className="header-icon-container">
-                      <OtherHousesRoundedIcon
-                        fontSize="small"
-                        className="header-icon"
-                      />
-                      <TableSortLabel>Halls</TableSortLabel>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>{renderHallMatrix(event.halls)}</TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-        <Box padding="16px">
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell colSpan={3} style={{ textAlign: "center" }}>
-                    <Box className="header-icon-container">
-                      <DoorSlidingRoundedIcon
-                        fontSize="small"
-                        className="header-icon"
-                      />
-                      <TableSortLabel>Entrances</TableSortLabel>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>{renderEntranceGrid(event.entrances)}</TableBody>
-            </Table>
-          </TableContainer>
+        <Box display="flex" flexDirection="column" gap="1rem">
+          <Box
+            className="map__timeline-slider"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            border="1px solid"
+            borderColor="grey.300"
+            p={2}
+          >
+            <TimelineSlider
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              events={events}
+              highlightEventId={parseInt(id)}
+            />
+          </Box>
+
+          <Box
+            className="map__main-content"
+            display="flex"
+            alignItems="stretch"
+            justifyContent="center"
+            width="100%"
+            height="50vh"
+            gap="1rem"
+          >
+            <Box
+              className="map__map-component"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              border="1px solid"
+              borderColor="grey.300"
+              p={2}
+              width="100%"
+              height="100%"
+            >
+              <LeafletMap
+                selectedDate={selectedDate}
+                events={events}
+                zoom={15.5}
+                selectedEventId={parseInt(id)}
+              />
+            </Box>
+          </Box>
         </Box>
       </Paper>
+
       <EventDemandTable eventId={id} />
+
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Button
           className="back-button"

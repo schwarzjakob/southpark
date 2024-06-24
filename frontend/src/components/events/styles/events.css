@@ -82,3 +82,35 @@
 .delete-demand-button {
   margin-right: 0.5rem;
 }
+
+.time-span-icon {
+  color: var(--color-gray-400);
+  width: 16px !important;
+}
+
+.time-span-container {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+}
+
+.time-span-days {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  padding: 0.3rem;
+  margin: 0 !important;
+  border-radius: 3px;
+}
+
+.event-box {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.time-span-date {
+  margin: auto;
+}

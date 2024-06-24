@@ -3,15 +3,13 @@ import { useLocation } from "react-router-dom";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { Switch } from "antd";
 import { useNavigate } from "react-router-dom";
-
+import dayjs from "dayjs";
+import "./styles/mapView.css";
 import TimelineSlider from "./TimelineSlider.jsx";
-import MapComponent from "./LeafletMap.jsx";
+import LeafletMap from "./LeafletMap.jsx";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-
-import "./styles/mapView.css";
-import dayjs from "dayjs";
 
 const TITLE = "Map";
 
@@ -117,7 +115,7 @@ const MapView = () => {
             width="70vw"
             height="100%"
           >
-            <MapComponent
+            <LeafletMap
               selectedDate={selectedDate}
               events={events}
               zoom={15.5}

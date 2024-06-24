@@ -281,7 +281,7 @@ ul {
 
 /* form */
 .form-width {
-  max-width: 80% !important;
+  max-width: 1000px !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -522,7 +522,7 @@ a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
   z-index: 9999;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.1s ease-in-out;
 }
 
 .page-transition-overlay.active {

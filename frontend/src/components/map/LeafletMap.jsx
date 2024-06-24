@@ -12,7 +12,6 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
-import MapLegendComponent from "./MapLegend";
 
 const downwardsOverlays = [
   "C1",
@@ -40,12 +39,13 @@ const downwardsOverlays = [
   "PN12",
 ];
 
-const MapComponent = ({ selectedDate, zoom }) => {
-  MapComponent.propTypes = {
-    selectedDate: PropTypes.string.isRequired,
-    zoom: PropTypes.number.isRequired,
-  };
+// Occupancies settings
 
+const RUNTIME = 0.9;
+const NOT_RUNTIME = 0.5;
+const GREYED_OUT = 0.25;
+
+const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
   const [entrances, setEntrances] = useState([]);
@@ -86,7 +86,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
 
   const transformCoordinates = (originalCoords) => {
     const transformedCoords = [];
-    for (let i = 0; originalCoords && i < originalCoords.length; i += 2) {
+    for (let i = 0; i < originalCoords.length; i += 2) {
       transformedCoords.push([originalCoords[i], originalCoords[i + 1]]);
     }
     return transformedCoords;
@@ -152,8 +152,6 @@ const MapComponent = ({ selectedDate, zoom }) => {
         </div>
       );
     } else if (type === "entrance" && event.event_entrance) {
-      // DEBUG
-      //console.log(event);
       return (
         <div className="cap">
           <h4>{event.event_name}</h4>
@@ -161,7 +159,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Allocated Halls: {event.halls}</p>
           <p>Allocated Parking Lots: {parkingLots}</p>
           <div className="details-link_container">
-            <a href={`/events/event/${event.event_id}`}>
+            <a href={`/event/${event.event_id}`}>
               <LinkRoundedIcon />
               {event.event_name} Details
             </a>
@@ -176,7 +174,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
           <p>Entrance: {entrances}</p>
           <p>Associated Halls: {event.halls}</p>
           <div className="details-link_container">
-            <a href={`/events/event/${event.event_id}`}>
+            <a href={`/event/${event.event_id}`}>
               <LinkRoundedIcon />
               {event.event_name} Details
             </a>
@@ -184,10 +182,6 @@ const MapComponent = ({ selectedDate, zoom }) => {
         </div>
       );
     }
-  };
-
-  const getPolygonOpacity = (status) => {
-    return status === "runtime" ? 0.9 : 0.3;
   };
 
   const filteredEvents = events.filter(
@@ -215,7 +209,7 @@ const MapComponent = ({ selectedDate, zoom }) => {
 
   return (
     <MapContainer
-      center={[48.1385, 11.702]}
+      center={[48.1375, 11.702]}
       zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={false}
@@ -229,18 +223,29 @@ const MapComponent = ({ selectedDate, zoom }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
-      <MapLegendComponent
-        events={filteredEvents}
-        selectedDate={selectedDate}
-      />{" "}
+      {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = filteredEvents.find((event) =>
           event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
-        const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? `${event.event_color}` : "gray";
-        const opacity = event ? getPolygonOpacity(status) : 0.9;
+        const fillColor = selectedEventId
+          ? event && event.event_id === selectedEventId
+            ? `${event.event_color}`
+            : "gray"
+          : event
+          ? `${event.event_color}`
+          : "gray";
+        const borderColor = event ? `${event.event_color}` : "transparent";
+        const opacity = selectedEventId
+          ? event && event.event_id === selectedEventId
+            ? getEventStatus(event, selectedDate) === "runtime"
+              ? RUNTIME
+              : NOT_RUNTIME
+            : GREYED_OUT
+          : event && getEventStatus(event, selectedDate) === "runtime"
+          ? RUNTIME
+          : NOT_RUNTIME;
 
         return (
           <Polygon
@@ -248,9 +253,10 @@ const MapComponent = ({ selectedDate, zoom }) => {
             positions={transformedCoords}
             className={`halls hall-${hall.name}`}
             pathOptions={{
-              color: fillColor,
+              color: borderColor,
               fillColor: fillColor,
               fillOpacity: opacity,
+              weight: 2,
             }}
           >
             <Tooltip
@@ -279,12 +285,26 @@ const MapComponent = ({ selectedDate, zoom }) => {
             ? event.event_entrance.includes(entrance.name)
             : false
         );
-        const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? `${event.event_color}` : "gray";
-        const opacity = event ? getPolygonOpacity(status) : 0.9;
+        const fillColor = selectedEventId
+          ? event && event.event_id === selectedEventId
+            ? `${event.event_color}`
+            : "gray"
+          : event
+          ? `${event.event_color}`
+          : "gray";
+        const borderColor = event ? `${event.event_color}` : "transparent";
+        const opacity = selectedEventId
+          ? event && event.event_id === selectedEventId
+            ? getEventStatus(event, selectedDate) === "runtime"
+              ? RUNTIME
+              : NOT_RUNTIME
+            : GREYED_OUT
+          : event && getEventStatus(event, selectedDate) === "runtime"
+          ? RUNTIME
+          : NOT_RUNTIME;
         const popupOffset = downwardsOverlays.includes(entrance.name)
-          ? [80, 60]
-          : [0, 60];
+          ? [0, 50]
+          : [0, 0];
 
         return (
           <Polygon
@@ -292,9 +312,10 @@ const MapComponent = ({ selectedDate, zoom }) => {
             positions={transformedCoords}
             className={`entrances entrance-${entrance.name}`}
             pathOptions={{
-              color: fillColor,
+              color: borderColor,
               fillColor: fillColor,
               fillOpacity: opacity,
+              weight: 2,
             }}
           >
             <Tooltip
@@ -325,12 +346,26 @@ const MapComponent = ({ selectedDate, zoom }) => {
                 .includes(parkingLot.name)
             : false
         );
-        const status = event ? getEventStatus(event, selectedDate) : "unknown";
-        const fillColor = event ? `${event.event_color}` : "gray";
-        const opacity = event ? getPolygonOpacity(status) : 0.9;
+        const fillColor = selectedEventId
+          ? event && event.event_id === selectedEventId
+            ? `${event.event_color}`
+            : "gray"
+          : event
+          ? `${event.event_color}`
+          : "gray";
+        const borderColor = event ? `${event.event_color}` : "transparent";
+        const opacity = selectedEventId
+          ? event && event.event_id === selectedEventId
+            ? getEventStatus(event, selectedDate) === "runtime"
+              ? RUNTIME
+              : NOT_RUNTIME
+            : GREYED_OUT
+          : event && getEventStatus(event, selectedDate) === "runtime"
+          ? RUNTIME
+          : NOT_RUNTIME;
         const popupOffset = downwardsOverlays.includes(parkingLot.name)
-          ? [60, 60]
-          : [0, 60];
+          ? [0, 80]
+          : [0, 0];
 
         return (
           <Polygon
@@ -338,9 +373,10 @@ const MapComponent = ({ selectedDate, zoom }) => {
             positions={transformedCoords}
             className={`parking-lots parking-lot-${parkingLot.name}`}
             pathOptions={{
-              color: fillColor,
+              color: borderColor,
               fillColor: fillColor,
               fillOpacity: opacity,
+              weight: 2,
             }}
           >
             <Tooltip
@@ -373,8 +409,10 @@ const MapComponent = ({ selectedDate, zoom }) => {
   );
 };
 
-MapComponent.propTypes = {
+LeafletMap.propTypes = {
   selectedDate: PropTypes.string.isRequired,
+  zoom: PropTypes.number.isRequired,
+  selectedEventId: PropTypes.number,
 };
 
-export default MapComponent;
+export default LeafletMap;

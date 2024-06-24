@@ -405,3 +405,9 @@
   overflow: hidden;
   position: relative;
 }
+
+.event-bar__label {
+  display: flex;
+  justify-content: center;
+}
+

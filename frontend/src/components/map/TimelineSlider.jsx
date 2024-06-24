@@ -27,7 +27,11 @@ const MONTHS = [
   "Dec",
 ];
 
-const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
+const TimelineSlider = ({
+  selectedDate,
+  setSelectedDate,
+  highlightEventId,
+}) => {
   const theme = useTheme();
   const [days, setDays] = useState([]);
   const [events, setEvents] = useState([]);
@@ -285,6 +289,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
+    const isGrayedOut = highlightEventId && highlightEventId !== event.event_id;
     const textColor = getContrastColor(event.event_color);
 
     return (
@@ -298,16 +303,18 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
           left: `${left}px`,
           width: `${width}px`,
           top: `${event.row * ROW_HEIGHT + 48}px`,
-          border: `1px solid ${event.event_color}`,
+          border: `1px solid ${
+            isGrayedOut ? event.event_color : event.event_color
+          }`,
         }}
       >
         <Box
           className={`event-bar ${additionalClass}`}
           sx={{
-            backgroundColor: event.event_color,
-            opacity: opacity,
+            backgroundColor: isGrayedOut ? "none" : event.event_color,
             height: "100%",
             position: "relative",
+            opacity: isGrayedOut ? 0.7 : opacity,
           }}
         >
           {labelText && (
@@ -318,9 +325,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
                 top: "0px",
                 left: 0,
                 fontSize: "0.75rem",
-                color: textColor,
+                color: isGrayedOut ? "#000000" : textColor,
                 whiteSpace: "nowrap",
                 zIndex: 1,
+                opacity: 1,
               }}
             >
               {labelText}
@@ -430,6 +438,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate }) => {
 TimelineSlider.propTypes = {
   selectedDate: PropTypes.string.isRequired,
   setSelectedDate: PropTypes.func.isRequired,
+  highlightEventId: PropTypes.number,
 };
 
 export default TimelineSlider;

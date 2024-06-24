@@ -20,7 +20,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
 import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
@@ -197,13 +197,13 @@ const Events = () => {
         <TextField
           variant="outlined"
           fullWidth
-          placeholder="Search events"
+          placeholder="Filter events by name"
           value={filter}
           onChange={handleFilterChange}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon />
+                <FilterAltIcon />
               </InputAdornment>
             ),
           }}
