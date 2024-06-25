@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 # Step 1: Load the dataset
@@ -170,8 +170,8 @@ def main(input_file, output_file):
 
 if __name__ == "__main__":
     # Specify the input and output file paths
-    input_file = "events_data.csv"
-    output_file = "events_data_seed.sql"
+    input_file = "filtered_events.csv"
+    output_file = "filtered_events_data_seed.sql"
 
     # Run the main function
     main(input_file, output_file)
