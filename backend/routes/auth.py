@@ -4,12 +4,15 @@ import re
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from extensions import db
-from models import User
+from models import User, UserLog
 from utils.helpers import log_user_activity
+import logging
 
 auth_bp = Blueprint('auth', __name__)
+logger = logging.getLogger(__name__)
 
 SECRET_KEY = 'XP&O%<w}?g,uqY[lM/s/kc=?wU2Mj$'
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -39,6 +42,7 @@ def register():
 
     return jsonify({"message": "User registered successfully"}), 201
 
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -65,6 +69,7 @@ def login():
 
     return jsonify({"token": token, "message": "Login successful"}), 200
 
+
 @auth_bp.route('/user', methods=['GET'])
 def get_user():
     token = request.headers.get('Authorization').split()[1]
@@ -83,6 +88,7 @@ def get_user():
         return jsonify({"message": "Invalid token"}), 401
 
     return jsonify({"username": user.username, "email": user.email}), 200
+
 
 @auth_bp.route('/user/password', methods=['PUT'])
 def update_password():
@@ -116,3 +122,30 @@ def update_password():
 
     db.session.commit()
     return jsonify({"message": "Password updated successfully"}), 200
+
+
+@auth_bp.route('/log', methods=['POST'])
+def log_activity():
+    data = request.get_json()
+    logger.debug(f"Received log data: {data}")
+
+    user_name = data.get('user_name')
+    email = data.get('email')
+    ip_address = data.get('ip_address')
+    session_id = data.get('session_id')
+    page_accessed = data.get('page_accessed')
+
+    logger.debug(f"Extracted data - user_name: {user_name}, email: {email}, ip_address: {ip_address}, session_id: {session_id}, page_accessed: {page_accessed}")
+
+    if not email:
+        logger.error("Email is missing")
+        return jsonify({"message": "Email is missing"}), 400
+
+    try:
+        log_user_activity(user_name, email, ip_address, session_id, page_accessed)
+        logger.info("Activity logged successfully")
+        return jsonify({"message": "Activity logged"}), 200
+
+    except Exception as e:
+        logger.error(f"Error logging activity: {e}")
+        return jsonify({"message": "Internal server error"}), 500

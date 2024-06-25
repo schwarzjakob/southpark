@@ -10,8 +10,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import { styled } from "@mui/material/styles";
 import logo from "../../assets/logo_white.svg";
 import useAuth from "../hooks/useAuth";
-import UserMenu from "./UserMenu"; // Import the new UserMenu component
-
+import UserMenu from "./UserMenu";
 const LogoContainer = styled(Link)({
   display: "flex",
   alignItems: "center",
@@ -32,13 +31,12 @@ function Header() {
   const currentPath = location.pathname;
   const isAuthenticated = useAuth();
   const [user] = useState({
-    name: "User Name", // Replace with actual user name
-    loginSince: "01.01.2024 12:00:00", // Replace with actual login time
+    name: "User Name",
   });
 
   const handleLogout = () => {
     localStorage.removeItem("auth");
-    window.location.reload(); // Reload to ensure all states and hooks are reset
+    window.location.reload();
   };
 
   const isPathSelected = (path) => {
@@ -68,6 +66,9 @@ function Header() {
             <br />
             Management System
           </Typography>
+          <Typography variant="h6" className="page-title-short">
+            PSMS
+          </Typography>
         </LogoContainer>
         <Grow />
         {isAuthenticated && user && (
@@ -79,7 +80,9 @@ function Header() {
               startIcon={<MapIcon />}
               className={`nav-button ${currentPath === "/" ? "selected" : ""}`}
             >
-              Map
+              <Typography variant="body1" className="nav-button-text">
+                Map
+              </Typography>
             </Button>
             <Button
               component={Link}
@@ -90,7 +93,9 @@ function Header() {
                 isPathSelected("/dashboard") ? "selected" : ""
               }`}
             >
-              Dashboard
+              <Typography variant="body1" className="nav-button-text">
+                Dashboard
+              </Typography>
             </Button>
             <Button
               component={Link}
@@ -103,7 +108,9 @@ function Header() {
                   : ""
               }`}
             >
-              Events
+              <Typography variant="body1" className="nav-button-text">
+                Events
+              </Typography>
             </Button>
             <Button
               component={Link}
@@ -117,7 +124,9 @@ function Header() {
                   : ""
               }`}
             >
-              Parking Spaces
+              <Typography variant="body1" className="nav-button-text">
+                Parking Spaces
+              </Typography>
             </Button>
             <Button
               component={Link}
@@ -128,7 +137,9 @@ function Header() {
                 isPathSelected("/team") ? "selected" : ""
               }`}
             >
-              Team
+              <Typography variant="body1" className="nav-button-text">
+                Teams
+              </Typography>
             </Button>
             <SearchAppBar />
             <UserMenu user={user} onLogout={handleLogout} />

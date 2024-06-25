@@ -24,7 +24,9 @@ const Login = () => {
     const fetchIp = async () => {
       try {
         const response = await axios.get("https://api.ipify.org?format=json");
+        console.log("IP address:", response.data.ip);
         setClientIp(response.data.ip);
+        sessionStorage.setItem("clientIp", response.data.ip);
       } catch (error) {
         console.error("Error fetching IP address:", error);
       }
@@ -40,10 +42,10 @@ const Login = () => {
       const response = await axios.post("/api/auth/login", {
         identifier: identifier.trim(),
         password,
-        ip_address: clientIp, // Send the IP address to the backend
+        ip_address: clientIp,
       });
       const { token } = response.data;
-      sessionStorage.setItem("token", token); // Save token to session storage
+      sessionStorage.setItem("token", token);
       localStorage.setItem("auth", "true");
       console.log("Login successful");
       window.dispatchEvent(new Event("authChange"));

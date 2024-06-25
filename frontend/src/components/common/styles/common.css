@@ -9,6 +9,24 @@
   color: var(--white) !important;
 }
 
+.page-title-short {
+  font-size: 1rem !important;
+  margin-right: 1rem !important;
+  color: var(--white) !important;
+}
+
+@media (max-width: 1201px) {
+  .page-title {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .page-title-short {
+    display: none;
+  }
+}
+
 h6.page-title a:hover {
   color: var(--white) !important;
 }
@@ -16,7 +34,25 @@ h6.page-title a:hover {
 .nav-buttons {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
+}
+
+.nav-button-text {
+  font-size: 0.875rem !important;
+}
+
+@media (max-width: 1100px) {
+  .nav-button-text {
+    display: none;
+  }
+
+  .nav-button .MuiButton-startIcon {
+    margin-right: 0 !important;
+  }
+
+  .nav-buttons {
+    gap: 0.5rem;
+  }
 }
 
 .nav-button {
@@ -267,12 +303,21 @@ h6.page-title a:hover {
   font-weight: bold !important;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 1100px) {
   .search-input .MuiInputBase-input {
     width: 8rem;
   }
   .search-input .MuiInputBase-input:focus {
-    width: 15rem;
+    width: 12rem;
+  }
+}
+
+@media (max-width: 1101px) {
+  .search-input .MuiInputBase-input {
+    width: 5rem;
+  }
+  .search-input .MuiInputBase-input:focus {
+    width: 8rem;
   }
 }
 

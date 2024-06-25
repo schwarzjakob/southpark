@@ -113,7 +113,7 @@ const Register = () => {
             fullWidth
           >
             <ArrowBackIcon />
-            Back{" "}
+            Back
           </Button>
         </form>
       </Box>

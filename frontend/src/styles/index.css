@@ -542,7 +542,8 @@ a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
 
 .login-submit,
 .register-submit,
-.register-link {
+.register-link,
+.account-submit {
   margin-top: 1rem !important;
 }
 
