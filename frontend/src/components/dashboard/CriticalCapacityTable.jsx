@@ -258,7 +258,7 @@ const MonthlyDemandTable = ({
                       variant="body1"
                       className="demandTable__itemText"
                     >
-                      {TABLE_LABEL} {LABEL_80TO100}{" "}
+                      {TABLE_LABEL} {LABEL_80TO100}
                       <InfoHoverComponent
                         direction="right"
                         infoText={LABEL_80TO100_INFO}

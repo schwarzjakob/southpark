@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
+import "./styles/auth.css";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");

@@ -37,14 +37,17 @@ const ANIMATION_DURATION = 100;
 const ANIMATION_EASING = "easeInOutQuad";
 const FONT_SIZE = 10;
 const COLOR_OCCUPIED = "#ff434375";
+const COLOR_OCCUPIED_EXT = "#a80000";
 const COLOR_FREE = "#6a91ce75";
+const COLOR_FREE_EXT = "#0050a0";
 
-const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
-  ParkingLotBarChart.propTypes = {
-    selectedDate: PropTypes.string.isRequired,
-    isPercentage: PropTypes.bool.isRequired,
-  };
+// Label Constants
+const LABEL_UTILIZED_CAPACITY_INT = "Utilized (int.)";
+const LABEL_AVAILABLE_CAPACITY_INT = "Available (int.)";
+const LABEL_UTILIZED_CAPACITY_EXT = "Utilized (ext.)";
+const LABEL_AVAILABLE_CAPACITY_EXT = "Available (ext.)";
 
+const OccupanciesBarChart = ({ selectedDate, isPercentage }) => {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [setError] = useState(null);
@@ -62,8 +65,6 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
 
         const parkingLotOccupancy = parkingLotOccupancyResponse.data;
         const parkingLots = parkingLotsResponse.data;
-        //DEBUG
-        //console.log(parkingLots);
 
         if (parkingLots) {
           const sortedParkingLots = [...parkingLots]
@@ -74,13 +75,10 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
             .sort((a, b) => {
               if (a.external === b.external) {
                 if (!a.external) {
-                  // If both are internal, sort by id
                   return a.id - b.id;
                 }
-                // If both are external, sort by name
                 return a.name.localeCompare(b.name);
               }
-              // Prioritize internal (false) over external (true)
               return a.external - b.external;
             });
 
@@ -115,13 +113,22 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
               }
             });
           }
+
           const datasets = [];
 
           if (!isPercentage) {
             datasets.push({
-              label: "Used Capacity",
-              backgroundColor: COLOR_OCCUPIED,
-              borderColor: COLOR_OCCUPIED,
+              label: LABEL_UTILIZED_CAPACITY_INT,
+              backgroundColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_OCCUPIED_EXT
+                  : COLOR_OCCUPIED;
+              },
+              borderColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_OCCUPIED_EXT
+                  : COLOR_OCCUPIED;
+              },
               borderWidth: 1,
               data: usedCapacityData,
               datalabels: {
@@ -148,9 +155,17 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
             });
 
             datasets.push({
-              label: "Free Capacity",
-              backgroundColor: COLOR_FREE,
-              borderColor: COLOR_FREE,
+              label: LABEL_AVAILABLE_CAPACITY_INT,
+              backgroundColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_FREE_EXT
+                  : COLOR_FREE;
+              },
+              borderColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_FREE_EXT
+                  : COLOR_FREE;
+              },
               borderWidth: 1,
               data: freeCapacityData,
               datalabels: {
@@ -169,11 +184,77 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
                 formatter: (value) => `${value.toFixed(0)}`,
               },
             });
+
+            if (parkingLots.some((lot) => lot.external)) {
+              datasets.push({
+                label: LABEL_UTILIZED_CAPACITY_EXT,
+                backgroundColor: COLOR_OCCUPIED_EXT,
+                borderColor: COLOR_OCCUPIED_EXT,
+                borderWidth: 1,
+                data: usedCapacityData.filter(
+                  (_, index) => sortedParkingLots[index].external
+                ),
+                datalabels: {
+                  anchor: "end",
+                  align: function (context) {
+                    const value = context.dataset.data[context.dataIndex];
+                    return value > 250 ? "start" : "end";
+                  },
+                  offset: function (context) {
+                    const value = context.dataset.data[context.dataIndex];
+                    return value > 250 ? 0 : 0;
+                  },
+                  color: "#000000",
+                  font: {
+                    size: FONT_SIZE,
+                  },
+                  display: function (context) {
+                    const usedValue = context.dataset.data[context.dataIndex];
+                    const freeValue = freeCapacityData[context.dataIndex];
+                    return usedValue >= freeValue;
+                  },
+                  formatter: (value) => value.toFixed(0),
+                },
+              });
+
+              datasets.push({
+                label: LABEL_AVAILABLE_CAPACITY_EXT,
+                backgroundColor: COLOR_FREE_EXT,
+                borderColor: COLOR_FREE_EXT,
+                borderWidth: 1,
+                data: freeCapacityData.filter(
+                  (_, index) => sortedParkingLots[index].external
+                ),
+                datalabels: {
+                  anchor: "end",
+                  align: "end",
+                  color: "#000000",
+                  offset: 0,
+                  font: {
+                    size: FONT_SIZE,
+                  },
+                  display: function (context) {
+                    const freeValue = context.dataset.data[context.dataIndex];
+                    const usedValue = usedCapacityData[context.dataIndex];
+                    return freeValue > usedValue;
+                  },
+                  formatter: (value) => `${value.toFixed(0)}`,
+                },
+              });
+            }
           } else {
             datasets.push({
-              label: "Used Capacity",
-              backgroundColor: COLOR_OCCUPIED,
-              borderColor: COLOR_OCCUPIED,
+              label: LABEL_UTILIZED_CAPACITY_INT,
+              backgroundColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_OCCUPIED_EXT
+                  : COLOR_OCCUPIED;
+              },
+              borderColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_OCCUPIED_EXT
+                  : COLOR_OCCUPIED;
+              },
               borderWidth: 1,
               data: usedCapacityData,
               datalabels: {
@@ -200,9 +281,17 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
             });
 
             datasets.push({
-              label: "Free Capacity",
-              backgroundColor: COLOR_FREE,
-              borderColor: COLOR_FREE,
+              label: LABEL_AVAILABLE_CAPACITY_INT,
+              backgroundColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_FREE_EXT
+                  : COLOR_FREE;
+              },
+              borderColor: function (context) {
+                return sortedParkingLots[context.dataIndex].external
+                  ? COLOR_FREE_EXT
+                  : COLOR_FREE;
+              },
               borderWidth: 1,
               data: freeCapacityData,
               datalabels: {
@@ -221,6 +310,64 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
                 formatter: (value) => `${value.toFixed(2)}%`,
               },
             });
+
+            if (parkingLots.some((lot) => lot.external)) {
+              datasets.push({
+                label: LABEL_UTILIZED_CAPACITY_EXT,
+                backgroundColor: COLOR_OCCUPIED_EXT,
+                borderColor: COLOR_OCCUPIED_EXT,
+                borderWidth: 1,
+                data: usedCapacityData.filter(
+                  (_, index) => sortedParkingLots[index].external
+                ),
+                datalabels: {
+                  anchor: "end",
+                  align: function (context) {
+                    const value = context.dataset.data[context.dataIndex];
+                    return value > 25 ? "start" : "end";
+                  },
+                  offset: function (context) {
+                    const value = context.dataset.data[context.dataIndex];
+                    return value > 25 ? 3 : 0;
+                  },
+                  color: "#000000",
+                  font: {
+                    size: FONT_SIZE,
+                  },
+                  display: function (context) {
+                    const usedValue = context.dataset.data[context.dataIndex];
+                    const freeValue = freeCapacityData[context.dataIndex];
+                    return usedValue >= freeValue;
+                  },
+                  formatter: (value) => `${value.toFixed(2)}%`,
+                },
+              });
+
+              datasets.push({
+                label: LABEL_AVAILABLE_CAPACITY_EXT,
+                backgroundColor: COLOR_FREE_EXT,
+                borderColor: COLOR_FREE_EXT,
+                borderWidth: 1,
+                data: freeCapacityData.filter(
+                  (_, index) => sortedParkingLots[index].external
+                ),
+                datalabels: {
+                  anchor: "end",
+                  align: "start",
+                  color: "#000000",
+                  offset: 0,
+                  font: {
+                    size: FONT_SIZE,
+                  },
+                  display: function (context) {
+                    const freeValue = context.dataset.data[context.dataIndex];
+                    const usedValue = usedCapacityData[context.dataIndex];
+                    return freeValue > usedValue;
+                  },
+                  formatter: (value) => `${value.toFixed(2)}%`,
+                },
+              });
+            }
           }
 
           setChartData({
@@ -363,4 +510,9 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
   );
 };
 
-export default ParkingLotBarChart;
+OccupanciesBarChart.propTypes = {
+  selectedDate: PropTypes.string.isRequired,
+  isPercentage: PropTypes.bool.isRequired,
+};
+
+export default OccupanciesBarChart;

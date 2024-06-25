@@ -239,9 +239,9 @@ const AddParkingSpaceCapacity = () => {
             </Box>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <Box className="input-container input-container__utalization">
+            <Box className="input-container ">
               <LocalParkingRoundedIcon className="input-container__icon" />
-              <InputLabel className="input-container__label-utilization">
+              <InputLabel className="input-label-background input-container__label-utilization">
                 Utilization Type
               </InputLabel>
               <Select

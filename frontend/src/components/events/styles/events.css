@@ -1,7 +1,7 @@
 /* Events */
 
 .event-box {
-  border-radius: 5px;
+  border-radius: 6px;
   padding: 4px 12px;
   margin: 2px;
   display: inline-block;
@@ -13,13 +13,17 @@
 }
 .header-icon {
   color: var(--color-pure-white);
-  margin-right: 5px;
+  margin-right: 6px;
 }
 
 .event-filter {
   background-color: var(--color-pure-white) !important;
 }
 /* Add Event */
+
+.table-header-title {
+  font-size: 1rem !important;
+}
 
 .addEvent-header {
   display: flex;
@@ -111,10 +115,14 @@
 .event-box {
   display: inline-block;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 .time-span-date {
   margin: auto;
   font-weight: bold;
+}
+
+.status-label {
+  margin-left: 0.5rem;
 }

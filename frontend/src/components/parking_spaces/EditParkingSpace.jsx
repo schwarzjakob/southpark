@@ -184,7 +184,7 @@ const EditParkingSpace = () => {
             <Box className="input-container">
               <PlaceRoundedIcon className="input-container__icon" />
               <FormControl fullWidth>
-                <InputLabel>Type</InputLabel>
+                <InputLabel className="input-label-background">Type</InputLabel>
                 <Select
                   value={parkingSpace.external.toString()}
                   onChange={handleSelectChange("external")}
@@ -199,7 +199,9 @@ const EditParkingSpace = () => {
             <Box className="input-container">
               <AddRoadRoundedIcon className="input-container__icon" />
               <FormControl fullWidth>
-                <InputLabel>Surface</InputLabel>
+                <InputLabel className="input-label-background">
+                  Surface
+                </InputLabel>
                 <Select
                   value={parkingSpace.surface_material}
                   onChange={handleSelectChange("surface_material")}
@@ -215,7 +217,9 @@ const EditParkingSpace = () => {
             <Box className="input-container">
               <AttachMoneyRoundedIcon className="input-container__icon" />
               <FormControl fullWidth>
-                <InputLabel>Pricing</InputLabel>
+                <InputLabel className="input-label-background">
+                  Pricing
+                </InputLabel>
                 <Select
                   value={parkingSpace.pricing}
                   onChange={handleSelectChange("pricing")}

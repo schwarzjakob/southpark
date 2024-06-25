@@ -117,7 +117,7 @@ h6.page-title a:hover {
 }
 
 .infoHover__Icon:hover {
-  color: var(--color-primary-500) !important;
+  color: var(--color-gray-100) !important;
 }
 
 .infoHover__Icon {

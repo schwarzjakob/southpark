@@ -19,7 +19,7 @@ const MapView = () => {
     location.state?.selectedDate || dayjs().format("YYYY-MM-DD");
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [events] = useState([]);
-  const [isPercentage, setIsPercentage] = useState(true);
+  const [isPercentage, setIsPercentage] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -150,9 +150,11 @@ const MapView = () => {
                 className="switch-container"
                 sx={{
                   display: "flex",
-                  justifyContent: "flex-end",
-                  fontSize: "0.8rem",
+                  justifyContent: "center",
                   alignItems: "center",
+                  alignContent: "center",
+                  gap: "0.8rem",
+                  fontSize: "0.5center",
                   padding: "0.3rem",
                   width: "100%",
                 }}
@@ -160,10 +162,9 @@ const MapView = () => {
                 <Typography
                   sx={{
                     fontSize: "0.8rem",
-                    marginRight: "0.5rem",
                   }}
                 >
-                  {isPercentage ? "Percentage" : "Absolute"}
+                  # Absolute
                 </Typography>
                 <Switch
                   checked={isPercentage}
@@ -171,6 +172,13 @@ const MapView = () => {
                   className="switch"
                   size="small"
                 />
+                <Typography
+                  sx={{
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  % Percentage
+                </Typography>
               </Box>
             </Box>
             <OccupanciesBarChart

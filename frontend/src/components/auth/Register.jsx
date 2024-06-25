@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import "./styles/auth.css";
 
 const Register = () => {
   const [username, setUserName] = useState("");

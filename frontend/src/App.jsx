@@ -20,6 +20,7 @@ import Events from "./components/events/Events.jsx";
 import AddEvent from "./components/events/AddEvent.jsx";
 import Event from "./components/events/Event.jsx";
 import EditEvent from "./components/events/EditEvent.jsx";
+import EventDemandAllocation from "./components/events/EventDemandAllocation.jsx";
 import ParkingSpaces from "./components/parking_spaces/ParkingSpaces.jsx";
 import ParkingSpace from "./components/parking_spaces/ParkingSpace.jsx";
 import AddParkingSpace from "./components/parking_spaces/AddParkingSpace.jsx";
@@ -120,6 +121,10 @@ function App() {
               <Route
                 path="/events/event/edit/:id"
                 element={<ProtectedRoute element={<LoggedEditEvent />} />}
+              />
+              <Route
+                path="/events/event/:id/allocate-parking-spaces"
+                element={<ProtectedRoute element={<EventDemandAllocation />} />}
               />
               <Route
                 path="/parking_spaces"

@@ -282,7 +282,7 @@ ul {
 /* form */
 
 .form-width {
-  max-width: 1000px !important;
+  max-width: 1200px !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -333,6 +333,13 @@ ul {
 .form-textarea {
   height: 7rem;
 }
+
+.input-label-background {
+  background-color: var(--color-pure-white);
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
 ::placeholder {
   font-family: inherit;
   color: var(--color-gray-400);
@@ -528,56 +535,4 @@ a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
 
 .page-transition-overlay.active {
   opacity: 1;
-}
-
-/*Login and Register Page*/
-
-.login {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  min-height: 50vh !important;
-}
-
-.login-submit,
-.register-submit,
-.register-link,
-.account-submit {
-  margin-top: 1rem !important;
-}
-
-.MuiAlert-standard {
-  margin: 1rem 0;
-}
-.register-link:hover,
-.back-button:hover {
-  background: var(--color-primary) !important;
-  color: var(--color-pure-white) !important;
-}
-
-.form-icon-heading {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-content: center;
-  gap: 10px;
-  margin-bottom: 2rem;
-}
-
-.form-icon-heading svg {
-  width: 30px !important;
-  height: 30px !important;
-}
-
-.form-icon-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-content: center;
-  gap: 10px;
-}
-
-.user-menu-item span {
-  color: var(--textColor) !important;
 }

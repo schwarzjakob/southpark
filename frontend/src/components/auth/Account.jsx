@@ -11,7 +11,7 @@ import axios from "axios";
 import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
 import AlternateEmailRoundedIcon from "@mui/icons-material/AlternateEmailRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
-
+import "./styles/auth.css";
 const Account = () => {
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");

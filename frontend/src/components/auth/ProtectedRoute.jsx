@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import useAuth from "../hooks/useAuth";
 import { Box } from "@mui/material";
+import "./styles/auth.css";
 
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = useAuth();

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -15,23 +16,23 @@ import {
   CircularProgress,
 } from "@mui/material";
 
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
+import LeafletMap from "../map/LeafletMap";
+import TimelineSlider from "../map/TimelineSlider";
+import EventDemandTable from "./EventDemandTable";
+
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
   PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
   ArrowCircleDownRounded as ArrowCircleDownRoundedIcon,
+  InsertInvitationRounded as InsertInvitationRoundedIcon,
+  EditRounded as EditRoundedIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
+  GarageRounded as GarageIcon,
 } from "@mui/icons-material";
-import { useParams, useNavigate } from "react-router-dom";
-import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
-import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 
-import EventDemandTable from "./EventDemandTable";
-import LeafletMap from "../map/LeafletMap";
-import TimelineSlider from "../map/TimelineSlider";
 import "../map/styles/mapView.css";
-
 import "./styles/events.css";
 
 const TITLE = "Event Details";
@@ -316,7 +317,7 @@ const Event = () => {
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
               events={events}
-              selectedtEventId={parseInt(id)}
+              selectedEventId={parseInt(id)}
             />
           </Box>
 
@@ -352,16 +353,27 @@ const Event = () => {
       </Paper>
 
       <EventDemandTable eventId={id} />
-
       <Box display="flex" justifyContent="space-between" mt={2}>
+        <Box display="flex" justifyContent="space-between">
+          <Button
+            className="back-button"
+            variant="outlined"
+            color="primary"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => handleNavigate(`/events/`)}
+          >
+            Back
+          </Button>
+        </Box>
         <Button
-          className="back-button"
-          variant="outlined"
+          variant="contained"
           color="primary"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => handleNavigate(`/events/`)}
+          onClick={() =>
+            navigate(`/events/event/${id}/allocate-parking-spaces`)
+          }
         >
-          Back
+          <GarageIcon />
+          Allocate Parking Spaces
         </Button>
       </Box>
     </Box>

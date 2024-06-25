@@ -31,47 +31,16 @@ const UserMenu = ({ onLogout }) => {
     }
   }, []);
 
-  const validateAndFetchUser = useCallback(async () => {
+  useEffect(() => {
     const storedUsername = sessionStorage.getItem("username");
     const storedEmail = sessionStorage.getItem("email");
 
     if (storedUsername && storedEmail) {
-      try {
-        const token = sessionStorage.getItem("token");
-        const response = await axios.get("/api/auth/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const userData = response.data;
-
-        if (
-          userData.username !== storedUsername ||
-          userData.email !== storedEmail
-        ) {
-          setUser(userData);
-          sessionStorage.setItem("username", userData.username);
-          sessionStorage.setItem("email", userData.email);
-        } else {
-          setUser({ username: storedUsername, email: storedEmail });
-        }
-      } catch (error) {
-        console.error("Error validating user data", error);
-      }
+      setUser({ username: storedUsername, email: storedEmail });
     } else {
-      await fetchUser();
+      fetchUser();
     }
   }, [fetchUser]);
-
-  useEffect(() => {
-    validateAndFetchUser();
-
-    const interval = setInterval(() => {
-      validateAndFetchUser();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [validateAndFetchUser]);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);

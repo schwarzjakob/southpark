@@ -16,6 +16,8 @@ const DateRangePicker = ({
   enabledPresets = [],
   start,
   end,
+  placeholderStart = "Start Date",
+  placeholderEnd = "End Date",
   width100 = false,
 }) => {
   DateRangePicker.propTypes = {
@@ -24,6 +26,8 @@ const DateRangePicker = ({
     enabledPresets: PropTypes.arrayOf(PropTypes.string),
     start: PropTypes.string,
     end: PropTypes.string,
+    placeholderStart: PropTypes.string,
+    placeholderEnd: PropTypes.string,
     width100: PropTypes.bool,
   };
 
@@ -142,6 +146,7 @@ const DateRangePicker = ({
           },
         }}
         separator={<ArrowRightAltIcon />}
+        placeholder={[placeholderStart, placeholderEnd]}
       />
     </Box>
   );

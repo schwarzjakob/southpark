@@ -15,7 +15,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TableSortLabel,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
@@ -29,6 +28,7 @@ import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRou
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import dayjs from "dayjs";
+import InfoHover from "../common/InfoHover";
 import DateRangePicker from "../controls/DateRangePicker";
 import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/events.css";
@@ -38,7 +38,7 @@ const TITLE = "Add Event";
 const AddEvent = () => {
   const [event, setEvent] = useState({
     name: "",
-    color: "#ffffff",
+    color: "#6a91ce",
     assembly_start_date: "",
     assembly_end_date: "",
     runtime_start_date: "",
@@ -342,7 +342,7 @@ const AddEvent = () => {
             <Box className="input-container">
               <InsertInvitationRoundedIcon className="input-container__icon" />
               <TextField
-                label="Name"
+                label="Event Title"
                 name="name"
                 value={event.name}
                 onChange={handleChange}
@@ -375,9 +375,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Assembly</TableSortLabel>
-                          </Typography>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Assembly Phase
+                          </Typography>{" "}
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on the date range to select the assembly start and end dates."
+                          />
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -386,9 +393,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Runtime</TableSortLabel>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Runtime Phase
                           </Typography>
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on the date range to select the runtime start and end dates."
+                          />
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -397,9 +411,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Disassembly</TableSortLabel>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Disassembly Phase
                           </Typography>
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on the date range to select the disassembly start and end dates."
+                          />
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -472,9 +493,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Halls</TableSortLabel>
-                          </Typography>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Halls
+                          </Typography>{" "}
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on a hall to toggle it."
+                          />
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -496,8 +524,15 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Entrances</TableSortLabel>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Entrances
+                            <InfoHover
+                              direction="right"
+                              infoText="Click on an entrance to toggle it."
+                            />
                           </Typography>
                         </Box>
                       </TableCell>

@@ -11,6 +11,7 @@ import {
 } from "react-leaflet";
 import dayjs from "dayjs";
 import axios from "axios";
+import MapLegendComponent from "./MapLegend.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 
 const downwardsOverlays = [
@@ -223,6 +224,11 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
+      {/* Rendering Legend */}
+      <MapLegendComponent
+        events={filteredEvents}
+        selectedDate={selectedDate}
+      />{" "}
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
