@@ -20,6 +20,8 @@ import AddParkingSpace from "./components/parking_spaces/AddParkingSpace.jsx";
 import EditParkingSpace from "./components/parking_spaces/EditParkingSpace.jsx";
 import EditCapacity from "./components/parking_spaces/EditCapacity.jsx";
 import AddCapacity from "./components/parking_spaces/AddCapacity.jsx";
+import Login from "./components/auth/Login";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
   const [isMobile, setIsMobile] = useState(false);
@@ -68,37 +70,56 @@ function App() {
           <Header />
           <div className="grid-main">
             <Routes>
-              {/* Map Route */}
-              <Route path="/" element={<Map />} />
-
-              {/* Dashboard Route */}
-              <Route path="/dashboard" element={<Dashboard />} />
-
-              {/* Events Routes */}
-              <Route path="/events" element={<Events />} />
-              <Route path="/event/add" element={<AddEvent />} />
-              <Route path="/events/event/:id" element={<Event />} />
-              <Route path="/events/event/edit/:id" element={<EditEvent />} />
-
-              {/* Parking Spaces Routes */}
-              <Route path="/parking_spaces" element={<ParkingSpaces />} />
-              <Route path="/parking_space/:id" element={<ParkingSpace />} />
-              <Route path="/parking_space/add" element={<AddParkingSpace />} />
+              <Route path="/" element={<ProtectedRoute element={<Map />} />} />
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/dashboard"
+                element={<ProtectedRoute element={<Dashboard />} />}
+              />
+              <Route
+                path="/events"
+                element={<ProtectedRoute element={<Events />} />}
+              />
+              <Route
+                path="/event/add"
+                element={<ProtectedRoute element={<AddEvent />} />}
+              />
+              <Route
+                path="/events/event/:id"
+                element={<ProtectedRoute element={<Event />} />}
+              />
+              <Route
+                path="/events/event/edit/:id"
+                element={<ProtectedRoute element={<EditEvent />} />}
+              />
+              <Route
+                path="/parking_spaces"
+                element={<ProtectedRoute element={<ParkingSpaces />} />}
+              />
+              <Route
+                path="/parking_space/:id"
+                element={<ProtectedRoute element={<ParkingSpace />} />}
+              />
+              <Route
+                path="/parking_space/add"
+                element={<ProtectedRoute element={<AddParkingSpace />} />}
+              />
               <Route
                 path="/parking_space/edit/:id"
-                element={<EditParkingSpace />}
+                element={<ProtectedRoute element={<EditParkingSpace />} />}
               />
               <Route
                 path="/parking_space/capacity/edit"
-                element={<EditCapacity />}
+                element={<ProtectedRoute element={<EditCapacity />} />}
               />
               <Route
                 path="/parking_space/capacity/add"
-                element={<AddCapacity />}
+                element={<ProtectedRoute element={<AddCapacity />} />}
               />
-
-              {/* Team Route */}
-              <Route path="/team" element={<Team />} />
+              <Route
+                path="/team"
+                element={<ProtectedRoute element={<Team />} />}
+              />
             </Routes>
           </div>
           <Footer />

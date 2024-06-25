@@ -280,6 +280,7 @@ ul {
 }
 
 /* form */
+
 .form-width {
   max-width: 1000px !important;
   margin-left: auto !important;
@@ -447,9 +448,8 @@ table tfoot td:last-child {
 
 /* Mui Styling */
 
-.MuiInputLabel-root {
+.MuiInputBase-input:not(.search-input input) {
   background-color: var(--color-pure-white) !important;
-  padding: 0 0.2rem !important;
 }
 
 .MuiDataGrid-columnHeader {
@@ -528,4 +528,15 @@ a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
 
 .page-transition-overlay.active {
   opacity: 1;
+}
+
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh !important;
+}
+
+.login-submit {
+  margin-top: 1rem !important;
 }
