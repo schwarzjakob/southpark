@@ -275,3 +275,7 @@ h6.page-title a:hover {
     width: 15rem;
   }
 }
+
+.results-name {
+  overflow-wrap: anywhere;
+}

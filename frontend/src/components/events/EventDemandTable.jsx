@@ -303,7 +303,7 @@ const EventDemandTable = ({ eventId }) => {
               float: "right",
             }}
           >
-            <EditIcon className="addIcon" />
+            <EditIcon className="icon__edit-event" />
             Edit Demands
           </Button>
         )}

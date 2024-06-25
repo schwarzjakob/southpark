@@ -86,8 +86,6 @@ const Event = () => {
         setLoading(false);
       }
     };
-    console.log(id);
-    console.log(typeof id);
     fetchEvent();
   }, [id]);
 
@@ -142,7 +140,7 @@ const Event = () => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     return diffDays;
   };
 
@@ -192,7 +190,7 @@ const Event = () => {
             {error}
           </Typography>
         )}
-        <Box padding="16px">
+        <Box paddingBottom="1.5rem">
           <Box
             className="event-box"
             style={{
@@ -203,7 +201,7 @@ const Event = () => {
             {event.name}
           </Box>
         </Box>
-        <Box padding="16px">
+        <Box paddingBottom="1.5rem">
           <TableContainer className="events-container" component={Paper}>
             <Table className="parkingSpaces-table">
               <TableHead className="parkingSpaces-table__header">
@@ -318,7 +316,7 @@ const Event = () => {
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
               events={events}
-              highlightEventId={parseInt(id)}
+              selectedtEventId={parseInt(id)}
             />
           </Box>
 

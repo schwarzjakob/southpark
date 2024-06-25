@@ -123,7 +123,9 @@ function SearchAppBar() {
                       <EventIcon />
                     </Box>
                     <Box>
-                      <Typography variant="body1">{result.name}</Typography>
+                      <Typography className="results-name" variant="body1">
+                        {result.name}
+                      </Typography>
                       <Typography variant="body2">
                         {new Date(
                           result.assembly_start_date
@@ -159,7 +161,9 @@ function SearchAppBar() {
                     >
                       <GarageIcon />
                     </Box>
-                    <Typography variant="body1">{result.name}</Typography>
+                    <Typography className="results-name" variant="body1">
+                      {result.name}
+                    </Typography>
                   </Box>
                 </Paper>
               ))}

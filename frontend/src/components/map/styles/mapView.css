@@ -411,3 +411,7 @@
   justify-content: center;
 }
 
+.timeline-year.selected,
+.timeline-months.selected {
+  border-radius: 3px;
+}

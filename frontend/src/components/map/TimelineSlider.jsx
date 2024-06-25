@@ -27,11 +27,7 @@ const MONTHS = [
   "Dec",
 ];
 
-const TimelineSlider = ({
-  selectedDate,
-  setSelectedDate,
-  highlightEventId,
-}) => {
+const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
   const theme = useTheme();
   const [days, setDays] = useState([]);
   const [events, setEvents] = useState([]);
@@ -171,29 +167,28 @@ const TimelineSlider = ({
   };
 
   const renderMonths = () => {
-    return MONTHS.map((month, index) => (
-      <Typography
-        key={month}
-        variant="body2"
-        onClick={() => handleMonthClick(index)}
-        sx={{
-          marginX: 0.5,
-          padding: "0 0.5rem",
-          backgroundColor:
-            dayjs(selectedDate).format("MMM") === month
-              ? "var(--color-primary)"
-              : "normal",
-          fontWeight: dayjs(selectedDate).format("MMM") === month ? "bold" : "",
-          color:
-            dayjs(selectedDate).format("MMM") === month
-              ? "var(--color-pure-white)"
-              : "inherit",
-          cursor: "pointer",
-        }}
-      >
-        {month}
-      </Typography>
-    ));
+    const selectedMonth = dayjs(selectedDate).month();
+    return MONTHS.map((month, index) => {
+      const isSelected = index === selectedMonth;
+      return (
+        <Typography
+          key={month}
+          variant="body2"
+          className={`timeline-months ${isSelected ? "selected" : ""}`}
+          onClick={() => handleMonthClick(index)}
+          sx={{
+            marginX: 0.5,
+            padding: "0 0.5rem",
+            backgroundColor: isSelected ? "var(--color-primary)" : "normal",
+            fontWeight: isSelected ? "bold" : "normal",
+            color: isSelected ? "var(--color-pure-white)" : "inherit",
+            cursor: "pointer",
+          }}
+        >
+          {month}
+        </Typography>
+      );
+    });
   };
 
   const renderEvents = (day) => {
@@ -289,7 +284,7 @@ const TimelineSlider = ({
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
-    const isGrayedOut = highlightEventId && highlightEventId !== event.event_id;
+    const isGrayedOut = selectedEventId && selectedEventId !== event.event_id;
     const textColor = getContrastColor(event.event_color);
 
     return (
@@ -350,26 +345,30 @@ const TimelineSlider = ({
 
   return (
     <Box className="timeline-wrapper">
-      <Box className="timeline-arrows-container">
-        <IconButton onClick={handleLeftClick} className="arrow-button left">
-          <ArrowBackIosIcon />
-        </IconButton>
-        <IconButton onClick={handleRightClick} className="arrow-button right">
-          <ArrowForwardIosIcon />
-        </IconButton>
-      </Box>
+      {!isNaN(selectedEventId) ? (
+        <Box className="timeline-arrows-container">
+          <IconButton onClick={handleLeftClick} className="arrow-button left">
+            <ArrowBackIosIcon />
+          </IconButton>
+          <IconButton onClick={handleRightClick} className="arrow-button right">
+            <ArrowForwardIosIcon />
+          </IconButton>
+        </Box>
+      ) : null}
       <Box
         className="timeline-container"
         sx={{ height: `${eventRows.length * ROW_HEIGHT + OFFSET}px` }}
       >
-        <Box
-          className="timeline-slider years"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-        >
-          {renderYears()}
-        </Box>
+        {!isNaN(selectedEventId) ? (
+          <Box
+            className="timeline-slider years"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            {renderYears()}
+          </Box>
+        ) : null}
         <Box
           className="timeline-slider months"
           display="flex"
@@ -380,53 +379,57 @@ const TimelineSlider = ({
         </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box position="relative" sx={{ flexGrow: 1 }}>
-            <Box
-              className="timeline-slider days"
-              sx={{
-                display: "flex",
-                bgcolor: theme.palette.background.paper,
-                height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
-                position: "absolute",
-                left: -BUFFER * 45 - 30,
-                transition: "left 0.3s ease-in-out",
-              }}
-            >
-              {days.map((day) => (
-                <Box
-                  key={day + selectedDate}
-                  className={`timeline-date ${
-                    day === selectedDate ? "selected" : ""
-                  }`}
-                  onClick={() => handleDayClick(day)}
-                  sx={{
-                    width: "45px",
-                    borderLeft:
-                      dayjs(day).day() === 1 ? "1px solid black" : "none",
-                    backgroundColor:
-                      day % 2 === 0
-                        ? "var(--color-gray-100)"
-                        : "var(--color-gray-200)",
-                    cursor: "pointer",
-                  }}
-                >
-                  <Typography className="timeline-date__DD">
-                    {dayjs(day).format("DD")}
-                  </Typography>
-                  <Typography className="timeline-date__ddd">
-                    {dayjs(day).format("ddd")}
-                  </Typography>
+            <Box position="relative" sx={{ flexGrow: 1 }}>
+              <Box
+                className="timeline-slider days"
+                sx={{
+                  display: "flex",
+                  bgcolor: theme.palette.background.paper,
+                  height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
+                  position: "absolute",
+                  left: `calc(-${BUFFER * 45 + 30}px - ${
+                    selectedEventId ? "135px" : "45px"
+                  })`,
+                  transition: "left 0.3s ease-in-out",
+                }}
+              >
+                {days.map((day) => (
                   <Box
-                    className="event-bars"
+                    key={day + selectedDate}
+                    className={`timeline-date ${
+                      day === selectedDate ? "selected" : ""
+                    }`}
+                    onClick={() => handleDayClick(day)}
                     sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      pointerEvents: "none",
+                      width: "45px",
+                      borderLeft:
+                        dayjs(day).day() === 1 ? "1px solid black" : "none",
+                      backgroundColor:
+                        day % 2 === 0
+                          ? "var(--color-gray-100)"
+                          : "var(--color-gray-200)",
+                      cursor: "pointer",
                     }}
                   >
-                    {renderEvents(day)}
+                    <Typography className="timeline-date__DD">
+                      {dayjs(day).format("DD")}
+                    </Typography>
+                    <Typography className="timeline-date__ddd">
+                      {dayjs(day).format("ddd")}
+                    </Typography>
+                    <Box
+                      className="event-bars"
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      {renderEvents(day)}
+                    </Box>
                   </Box>
-                </Box>
-              ))}
+                ))}
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -438,7 +441,7 @@ const TimelineSlider = ({
 TimelineSlider.propTypes = {
   selectedDate: PropTypes.string.isRequired,
   setSelectedDate: PropTypes.func.isRequired,
-  highlightEventId: PropTypes.number,
+  selectedEventId: PropTypes.number,
 };
 
 export default TimelineSlider;
