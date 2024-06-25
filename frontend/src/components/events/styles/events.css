@@ -16,6 +16,9 @@
   margin-right: 5px;
 }
 
+.event-filter {
+  background-color: var(--color-pure-white) !important;
+}
 /* Add Event */
 
 .addEvent-header {

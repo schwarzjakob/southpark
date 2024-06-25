@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
+import theme from "./styles/muiCustomTheme";
 import "./components/common/styles/common.css";
 
-import theme from "./styles/muiCustomTheme";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register.jsx";
+import Account from "./components/auth/Account.jsx";
 import MobileWarning from "./components/common/MobileWarning.jsx";
 import Header from "./components/common/Header.jsx";
 import Footer from "./components/common/Footer.jsx";
@@ -20,8 +24,6 @@ import AddParkingSpace from "./components/parking_spaces/AddParkingSpace.jsx";
 import EditParkingSpace from "./components/parking_spaces/EditParkingSpace.jsx";
 import EditCapacity from "./components/parking_spaces/EditCapacity.jsx";
 import AddCapacity from "./components/parking_spaces/AddCapacity.jsx";
-import Login from "./components/auth/Login";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
   const [isMobile, setIsMobile] = useState(false);
@@ -70,8 +72,13 @@ function App() {
           <Header />
           <div className="grid-main">
             <Routes>
-              <Route path="/" element={<ProtectedRoute element={<Map />} />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/account"
+                element={<ProtectedRoute element={<Account />} />}
+              />{" "}
+              <Route path="/" element={<ProtectedRoute element={<Map />} />} />
               <Route
                 path="/dashboard"
                 element={<ProtectedRoute element={<Dashboard />} />}

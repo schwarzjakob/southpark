@@ -196,6 +196,7 @@ const Events = () => {
       <Box>
         <TextField
           variant="outlined"
+          className="event-filter"
           fullWidth
           placeholder="Filter events by name"
           value={filter}

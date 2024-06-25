@@ -2,15 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null); // Initially null to indicate loading state
-  const [isFirstLogin, setIsFirstLogin] = useState(true); // Flag to handle first login redirection
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const auth = localStorage.getItem("auth");
-    console.log("Auth state from localStorage:", auth);
-    if (auth === "true") {
+    const token = localStorage.getItem("auth");
+    console.log("Auth state from localStorage:", token);
+    if (token) {
       setIsAuthenticated(true);
       console.log("User is authenticated");
     } else {
@@ -21,13 +20,16 @@ const useAuth = () => {
 
   useEffect(() => {
     if (isAuthenticated === false) {
-      navigate("/login");
-    } else if (isAuthenticated === true && isFirstLogin) {
-      console.log("User is authenticated, redirecting to /");
-      setIsFirstLogin(false); // Reset the flag after the first redirection
-      navigate("/");
+      const currentPath = location.pathname;
+      if (currentPath !== "/login" && currentPath !== "/register") {
+        navigate("/login", { state: { from: location } });
+      }
+    } else if (isAuthenticated === true) {
+      if (location.pathname === "/login" || location.pathname === "/register") {
+        navigate("/", { replace: true });
+      }
     }
-  }, [isAuthenticated, isFirstLogin, navigate, location.pathname]);
+  }, [isAuthenticated, navigate, location]);
 
   return isAuthenticated;
 };

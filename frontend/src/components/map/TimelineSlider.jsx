@@ -345,7 +345,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
 
   return (
     <Box className="timeline-wrapper">
-      {!isNaN(selectedEventId) ? (
+      {typeof selectedEventId === "undefined" ? (
         <Box className="timeline-arrows-container">
           <IconButton onClick={handleLeftClick} className="arrow-button left">
             <ArrowBackIosIcon />
@@ -359,7 +359,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
         className="timeline-container"
         sx={{ height: `${eventRows.length * ROW_HEIGHT + OFFSET}px` }}
       >
-        {!isNaN(selectedEventId) ? (
+        {typeof selectedEventId === "undefined" ? (
           <Box
             className="timeline-slider years"
             display="flex"

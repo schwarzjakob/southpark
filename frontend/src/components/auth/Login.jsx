@@ -1,22 +1,45 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { TextField, Button, Container, Typography, Box } from "@mui/material";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  Box,
+  Alert,
+} from "@mui/material";
+import axios from "axios";
+import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 
 const Login = () => {
-  const [username, setUserName] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState(null);
+  const [severity, setSeverity] = useState("success");
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Login attempt with:", { username, password });
-    if (username === "admin" && password === "123") {
+    console.log("Login attempt with:", { identifier, password });
+    try {
+      const response = await axios.post("/api/auth/login", {
+        identifier: identifier.trim(),
+        password,
+      });
+      const { token } = response.data;
+      sessionStorage.setItem("token", token); // Save token to session storage
       localStorage.setItem("auth", "true");
-      console.log("Login successful, redirecting to /");
+      console.log("Login successful");
       window.dispatchEvent(new Event("authChange"));
-      navigate("/");
-    } else {
-      alert("Invalid credentials");
+      setMessage("Login Successful");
+      setSeverity("success");
+
+      const initialPath = location.state?.from?.pathname || "/";
+      navigate(initialPath, { replace: true });
+    } catch (error) {
+      setMessage(error.response.data.message || "Invalid credentials");
+      setSeverity("error");
       console.log("Invalid credentials");
     }
   };
@@ -24,18 +47,23 @@ const Login = () => {
   return (
     <Container maxWidth="sm" className="login">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>
-        <Typography variant="h4" gutterBottom>
-          Login
-        </Typography>
+        <Box className="form-icon-heading">
+          <LoginRoundedIcon />
+          <Typography variant="h4" gutterBottom>
+            Login
+          </Typography>
+        </Box>
+
+        {message && <Alert severity={severity}>{message}</Alert>}
         <form onSubmit={handleSubmit}>
           <TextField
-            label="User Name"
+            label="Username or Email"
             variant="outlined"
             fullWidth
             margin="normal"
-            value={username}
-            onChange={(e) => setUserName(e.target.value)}
-            autoComplete="username"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            autoComplete="username email"
           />
           <TextField
             label="Password"
@@ -55,6 +83,16 @@ const Login = () => {
             fullWidth
           >
             Login
+          </Button>
+          <Button
+            component={RouterLink}
+            className="register-link"
+            to="/register"
+            variant="outlined"
+            color="primary"
+            fullWidth
+          >
+            Sign up
           </Button>
         </form>
       </Box>

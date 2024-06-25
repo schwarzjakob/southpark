@@ -1,16 +1,31 @@
-import { Navigate } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
+import { Navigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import useAuth from "../hooks/useAuth";
+import { Box } from "@mui/material";
 
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = useAuth();
-  console.log("Protected route, isAuthenticated:", isAuthenticated);
+  const location = useLocation();
 
   if (isAuthenticated === null) {
-    return <div>Loading...</div>;
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
-  return isAuthenticated ? element : <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return element;
 };
 
 ProtectedRoute.propTypes = {

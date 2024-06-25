@@ -1,11 +1,43 @@
-import { useState } from "react";
-import { IconButton, Menu, MenuItem } from "@mui/material";
+import { useState, useEffect } from "react";
+import { IconButton, Menu, MenuItem, Typography, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
+import AlternateEmailRoundedIcon from "@mui/icons-material/AlternateEmailRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import axios from "axios";
 
-const UserMenu = ({ user, onLogout }) => {
+const UserMenu = ({ onLogout }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [user, setUser] = useState({ username: "", email: "" });
   const open = Boolean(anchorEl);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      const fetchUser = async () => {
+        try {
+          const token = sessionStorage.getItem("token");
+          const response = await axios.get("/api/auth/user", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          const userData = response.data;
+          setUser(userData);
+          sessionStorage.setItem("user", JSON.stringify(userData));
+        } catch (error) {
+          console.error("Error fetching user data", error);
+        }
+      };
+      fetchUser();
+    }
+  }, []);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -13,6 +45,12 @@ const UserMenu = ({ user, onLogout }) => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.clear();
+    onLogout();
+    navigate("/login");
   };
 
   return (
@@ -31,7 +69,7 @@ const UserMenu = ({ user, onLogout }) => {
         id="menu-appbar"
         anchorEl={anchorEl}
         anchorOrigin={{
-          vertical: "top",
+          vertical: "bottom",
           horizontal: "right",
         }}
         keepMounted
@@ -39,13 +77,45 @@ const UserMenu = ({ user, onLogout }) => {
           vertical: "top",
           horizontal: "right",
         }}
+        PaperProps={{
+          style: {
+            marginTop: "0px",
+          },
+        }}
         open={open}
         onClose={handleClose}
       >
-        <MenuItem disabled>{user.name}</MenuItem>
-        <MenuItem disabled>Login since: {user.loginSince}</MenuItem>
-        <MenuItem onClick={onLogout} color="secondary">
-          Logout
+        <MenuItem disabled>
+          <Box display="flex" alignItems="center">
+            <AccountCircleRoundedIcon />
+            <Typography variant="body1" ml={1}>
+              {user.username}
+            </Typography>
+          </Box>
+        </MenuItem>
+        <MenuItem disabled>
+          <Box display="flex" alignItems="center">
+            <AlternateEmailRoundedIcon />
+            <Typography variant="body1" ml={1}>
+              {user.email}
+            </Typography>
+          </Box>
+        </MenuItem>
+        <MenuItem onClick={() => navigate("/account")}>
+          <Box display="flex" alignItems="center">
+            <ManageAccountsRoundedIcon />
+            <Typography variant="body1" ml={1}>
+              Manage Account
+            </Typography>
+          </Box>
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <Box display="flex" alignItems="center">
+            <LogoutRoundedIcon />
+            <Typography variant="body1" ml={1}>
+              Logout
+            </Typography>
+          </Box>
         </MenuItem>
       </Menu>
     </>
@@ -53,10 +123,6 @@ const UserMenu = ({ user, onLogout }) => {
 };
 
 UserMenu.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    loginSince: PropTypes.string.isRequired,
-  }).isRequired,
   onLogout: PropTypes.func.isRequired,
 };
 

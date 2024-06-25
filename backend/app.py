@@ -16,12 +16,14 @@ def create_app():
     migrate.init_app(app, db)
 
     # Register blueprints
+    from routes.auth import auth_bp
     from routes.events import events_bp
     from routes.dashboard import dashboard_bp
     from routes.map import map_bp
     from routes.parking import parking_bp
     from routes.data import data_bp
 
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(events_bp, url_prefix='/events')
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
     app.register_blueprint(map_bp, url_prefix='/map')
