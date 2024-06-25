@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import {
   TextField,
@@ -16,8 +16,22 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
+  const [clientIp, setClientIp] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const fetchIp = async () => {
+      try {
+        const response = await axios.get("https://api.ipify.org?format=json");
+        setClientIp(response.data.ip);
+      } catch (error) {
+        console.error("Error fetching IP address:", error);
+      }
+    };
+
+    fetchIp();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -26,6 +40,7 @@ const Login = () => {
       const response = await axios.post("/api/auth/login", {
         identifier: identifier.trim(),
         password,
+        ip_address: clientIp, // Send the IP address to the backend
       });
       const { token } = response.data;
       sessionStorage.setItem("token", token); // Save token to session storage

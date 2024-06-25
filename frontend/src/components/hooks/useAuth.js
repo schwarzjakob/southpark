@@ -8,13 +8,10 @@ const useAuth = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("auth");
-    console.log("Auth state from localStorage:", token);
     if (token) {
       setIsAuthenticated(true);
-      console.log("User is authenticated");
     } else {
       setIsAuthenticated(false);
-      console.log("User is not authenticated");
     }
   }, []);
 

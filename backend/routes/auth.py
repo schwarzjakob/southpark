@@ -5,10 +5,11 @@ from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from extensions import db
 from models import User
+from utils.helpers import log_user_activity
 
 auth_bp = Blueprint('auth', __name__)
 
-SECRET_KEY = 'XP&O%<w}?g,uqY[lM/s/kc=?wU2Mj$' 
+SECRET_KEY = 'XP&O%<w}?g,uqY[lM/s/kc=?wU2Mj$'
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -38,12 +39,12 @@ def register():
 
     return jsonify({"message": "User registered successfully"}), 201
 
-
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     identifier = data.get('identifier')  # This can be either username or email
     password = data.get('password')
+    ip_address = data.get('ip_address')  # Get the IP address from the request body
 
     user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
 
@@ -55,16 +56,19 @@ def login():
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }, SECRET_KEY, algorithm='HS256')
 
+    session_id = token  # Using the token as the session ID for simplicity
+    log_user_activity(user.username, user.email, ip_address, session_id, "/login")
+
     # Save the token in the database
     user.token = token
     db.session.commit()
 
     return jsonify({"token": token, "message": "Login successful"}), 200
 
-
 @auth_bp.route('/user', methods=['GET'])
 def get_user():
     token = request.headers.get('Authorization').split()[1]
+
     if not token:
         return jsonify({"message": "Token is missing!"}), 403
 
@@ -80,10 +84,10 @@ def get_user():
 
     return jsonify({"username": user.username, "email": user.email}), 200
 
-
 @auth_bp.route('/user/password', methods=['PUT'])
 def update_password():
     token = request.headers.get('Authorization').split()[1]
+
     if not token:
         return jsonify({"message": "Token is missing!"}), 403
 

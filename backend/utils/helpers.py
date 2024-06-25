@@ -2,7 +2,8 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import text
 from extensions import db
-
+from models import UserLog
+import requests
 
 def get_data(query, params=None):
     try:
@@ -29,3 +30,34 @@ def calculate_date_range(start_date, end_date):
         date_array.append(current_date.strftime("%Y-%m-%d"))
         current_date += pd.DateOffset(days=1)
     return date_array
+
+
+def log_user_activity(user_name, email, ip_address, session_id, page_accessed):
+    location = get_location_from_ip(ip_address)
+    if not location.strip(", "):  
+        location = "Unknown"
+    user_log = UserLog(
+        user_name=user_name,
+        email=email,
+        ip_address=ip_address,
+        session_id=session_id,
+        location=location,
+        page_accessed=page_accessed
+    )
+    db.session.add(user_log)
+    db.session.commit()
+
+
+def get_location_from_ip(ip_address):
+    try:
+        response = requests.get(f"https://ipinfo.io/{ip_address}/json")
+        if response.status_code == 200:
+            data = response.json()
+            city = data.get("city", "")
+            region = data.get("region", "")
+            country = data.get("country", "")
+            if city or region or country:
+                return f"{city}, {region}, {country}".strip(", ")
+    except Exception as e:
+        print(f"Error fetching location: {e}")
+    return "Unknown"
