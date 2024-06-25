@@ -42,10 +42,17 @@ def phase_too_long(row):
 df_filtered = df[df.apply(phases_linked, axis=1)]
 df_filtered = df_filtered[~df_filtered.apply(phase_too_long, axis=1)]
 
+# Find filtered-out event IDs
+filtered_out_ids = df[~df.index.isin(df_filtered.index)]["id"]
+
 # Save both original and filtered dataframes to CSV
 df.to_csv("original_events.csv", sep=";", index=False)
 df_filtered.to_csv("filtered_events.csv", sep=";", index=False)
+filtered_out_ids.to_csv(
+    "filtered_out_event_ids.csv", sep=";", index=False, header=["id"]
+)
 
 print(f"Original data: {len(df)} events")
 print(f"Filtered data: {len(df_filtered)} events")
+print(f"Filtered out event IDs: {len(filtered_out_ids)}")
 print("Data saved to 'original_events.csv' and 'filtered_events.csv'.")
