@@ -147,7 +147,7 @@ const MapView = () => {
                 </Typography>
               </Box>
               <Box
-                className="switch-container"
+                className="switch-container switch-container-bar-chart"
                 sx={{
                   display: "flex",
                   justifyContent: "center",

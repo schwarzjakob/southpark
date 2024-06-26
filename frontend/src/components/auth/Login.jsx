@@ -25,11 +25,10 @@ const Login = () => {
     const fetchIp = async () => {
       try {
         const response = await axios.get("https://api.ipify.org?format=json");
-        console.log("IP address:", response.data.ip);
         setClientIp(response.data.ip);
         sessionStorage.setItem("clientIp", response.data.ip);
       } catch (error) {
-        console.error("Error fetching IP address:", error);
+        console.log("Failed to get client IP");
       }
     };
 
@@ -38,7 +37,6 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Login attempt with:", { identifier, password });
     try {
       const response = await axios.post("/api/auth/login", {
         identifier: identifier.trim(),

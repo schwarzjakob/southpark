@@ -29,8 +29,8 @@ import {
   EditRounded as EditRoundedIcon,
   ArrowBack as ArrowBackIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
-  GarageRounded as GarageIcon,
 } from "@mui/icons-material";
+import AddLinkIcon from "@mui/icons-material/AddLink";
 
 import "../map/styles/mapView.css";
 import "./styles/events.css";
@@ -368,11 +368,11 @@ const Event = () => {
         <Button
           variant="contained"
           color="primary"
+          startIcon={<AddLinkIcon />}
           onClick={() =>
             navigate(`/events/event/${id}/allocate-parking-spaces`)
           }
         >
-          <GarageIcon />
           Allocate Parking Spaces
         </Button>
       </Box>
