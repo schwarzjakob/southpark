@@ -13,10 +13,17 @@ logger = logging.getLogger(__name__)
 
 SECRET_KEY = 'XP&O%<w}?g,uqY[lM/s/kc=?wU2Mj$'
 
+# Predefined access tokens for demonstration purposes
+ACCESS_TOKENS = {"MMT"}
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
+    access_token = data.get('access_token')
+
+    if not access_token or access_token not in ACCESS_TOKENS:
+        return jsonify({"message": "Invalid or missing access token"}), 403
+
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
@@ -41,8 +48,6 @@ def register():
     db.session.commit()
 
     return jsonify({"message": "User registered successfully"}), 201
-
-
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()

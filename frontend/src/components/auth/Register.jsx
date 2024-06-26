@@ -18,6 +18,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [accessToken, setAccessToken] = useState("");
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const Register = () => {
         username,
         email,
         password,
+        access_token: accessToken,
       });
       setMessage(response.data.message);
       setSeverity("success");
@@ -95,6 +97,15 @@ const Register = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
+          />
+          <TextField
+            label="Access Token"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={accessToken}
+            onChange={(e) => setAccessToken(e.target.value)}
+            autoComplete="access-token"
           />
           <Button
             className="register-submit"
