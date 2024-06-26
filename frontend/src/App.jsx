@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./styles/muiCustomTheme";
 import "./components/common/styles/common.css";
@@ -47,7 +47,6 @@ const LoggedTeam = LoggerHOC(Team);
 
 function App() {
   const [isMobile, setIsMobile] = useState(false);
-  const location = useLocation();
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,24 +60,6 @@ function App() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  useEffect(() => {
-    const overlay = document.querySelector(".page-transition-overlay");
-
-    const handleRouteChange = () => {
-      overlay.classList.add("active");
-
-      setTimeout(() => {
-        overlay.classList.remove("active");
-      }, 500);
-    };
-
-    handleRouteChange();
-
-    return () => {
-      window.removeEventListener("beforeunload", handleRouteChange);
-    };
-  }, [location]);
 
   if (isMobile) {
     return <MobileWarning />;
