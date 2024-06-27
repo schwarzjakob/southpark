@@ -37,9 +37,10 @@ import "./styles/events.css";
 
 const TITLE = "Event Demands";
 
-const EventDemandTable = ({ eventId }) => {
+const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   EventDemandTable.propTypes = {
     eventId: PropTypes.string.isRequired,
+    setIsEditingDemands: PropTypes.func.isRequired,
   };
 
   const [demands, setDemands] = useState([]);
@@ -106,6 +107,7 @@ const EventDemandTable = ({ eventId }) => {
       await axios.put(`/api/events/demands/${eventId}`, editedDemands);
       setDemands(editedDemands);
       setEditMode(false);
+      setIsEditingDemands(false);
       await fetchAllocations();
     } catch (error) {
       console.error("Error saving demands data:", error);
@@ -115,6 +117,7 @@ const EventDemandTable = ({ eventId }) => {
   const handleCancel = () => {
     setEditedDemands(demands);
     setEditMode(false);
+    setIsEditingDemands(false);
   };
 
   const sortedDemands = demands.sort((a, b) => {
@@ -217,7 +220,7 @@ const EventDemandTable = ({ eventId }) => {
       case "allocated":
         return (
           <Box className="status-label">
-            <Typography className="status-label" ariant="body2">
+            <Typography className="status-label" variant="body2">
               Demand Fully allocated
             </Typography>
           </Box>
@@ -300,7 +303,10 @@ const EventDemandTable = ({ eventId }) => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => setEditMode(true)}
+            onClick={() => {
+              setEditMode(true);
+              setIsEditingDemands(true);
+            }}
             style={{
               marginBottom: "1rem",
               float: "right",
@@ -464,6 +470,7 @@ const EventDemandTable = ({ eventId }) => {
                         <TableCell>
                           {editMode ? (
                             <TextField
+                              className="input__demand"
                               value={
                                 editedDemands.find((d) => d.id === demand.id)
                                   .car_demand
@@ -484,6 +491,7 @@ const EventDemandTable = ({ eventId }) => {
                         <TableCell>
                           {editMode ? (
                             <TextField
+                              className="input__demand"
                               value={
                                 editedDemands.find((d) => d.id === demand.id)
                                   .bus_demand
@@ -503,6 +511,7 @@ const EventDemandTable = ({ eventId }) => {
                         <TableCell>
                           {editMode ? (
                             <TextField
+                              className="input__demand"
                               value={
                                 editedDemands.find((d) => d.id === demand.id)
                                   .truck_demand

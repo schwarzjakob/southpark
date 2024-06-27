@@ -126,3 +126,20 @@
 .status-label {
   margin-left: 0.5rem;
 }
+
+.input__demand input {
+  padding: 5px 10px !important;
+}
+
+/* Event Parking Space Allocation */
+
+.phase-divider {
+  padding: 0.5rem !important;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  background-color: var(--color-primary);
+  align-items: center;
+  border-radius: 5px;
+  color: white;
+}

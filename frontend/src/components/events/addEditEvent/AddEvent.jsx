@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import {
   Box,
@@ -16,7 +16,7 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
@@ -28,14 +28,14 @@ import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRou
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import dayjs from "dayjs";
-import InfoHover from "../common/InfoHover";
-import DateRangePicker from "../controls/DateRangePicker";
-import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
-import "./styles/events.css";
+import InfoHover from "../../common/InfoHover.jsx";
+import DateRangePicker from "../../controls/DateRangePicker.jsx";
+import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
+import "../styles/events.css";
 
-const TITLE = "Edit Event";
+const TITLE = "Add Event";
 
-const EditEvent = () => {
+const AddEvent = () => {
   const [event, setEvent] = useState({
     name: "",
     color: "#6a91ce",
@@ -48,8 +48,8 @@ const EditEvent = () => {
     halls: [],
     entrances: [],
   });
-  const [originalEvent, setOriginalEvent] = useState(null);
-  const [error, setError] = useState("");
+  const [originalEvent] = useState({ ...event });
+  const [error] = useState("");
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
@@ -57,22 +57,6 @@ const EditEvent = () => {
   });
 
   const navigate = useNavigate();
-  const { id } = useParams();
-
-  useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        const response = await axios.get(`/api/events/event/${id}`);
-        setEvent(response.data);
-        setOriginalEvent(response.data);
-      } catch (error) {
-        console.error("Error fetching event data:", error);
-        setError("Error fetching event data.");
-      }
-    };
-
-    fetchEvent();
-  }, [id]);
 
   const hasUnsavedChanges = () => {
     return JSON.stringify(event) !== JSON.stringify(originalEvent);
@@ -208,18 +192,31 @@ const EditEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`/api/events/event/${id}`, event);
+      const eventData = {
+        name: event.name,
+        assembly_start_date: event.assembly_start_date,
+        assembly_end_date: event.assembly_end_date,
+        runtime_start_date: event.runtime_start_date,
+        runtime_end_date: event.runtime_end_date,
+        disassembly_start_date: event.disassembly_start_date,
+        disassembly_end_date: event.disassembly_end_date,
+        color: event.color,
+        halls: event.halls, // Ensure these are included
+        entrances: event.entrances, // Ensure these are included
+      };
+      const response = await axios.post("/api/events/event", eventData);
+      const event_id = response.data.id;
       setFeedback({
         open: true,
-        message: "Event updated successfully.",
+        message: "Event added successfully.",
         severity: "success",
       });
-      navigate(`/events/event/${id}`);
+      navigate(`/events/event/${event_id}`);
     } catch (error) {
-      console.error("Error updating event:", error);
+      console.error("Error adding event:", error);
       setFeedback({
         open: true,
-        message: "Error updating event.",
+        message: "Error adding event.",
         severity: "error",
       });
     }
@@ -317,18 +314,9 @@ const EditEvent = () => {
     ));
   };
 
-  if (!event) {
-    return (
-      <Box className="form-width">
-        <Typography>Loading...</Typography>
-      </Box>
-    );
-  }
-
   const breadcrumbLinks = [
     { label: "Events", path: "/events" },
-    { label: event.name, path: `/events/event/${id}` },
-    { label: "Edit Event", path: `/events/event/edit/${id}` },
+    { label: "Add Event", path: "/events/add" },
   ];
 
   return (
@@ -561,7 +549,7 @@ const EditEvent = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => handleNavigate(`/events/event/${id}`)}
+              onClick={() => handleNavigate("/events")}
             >
               Back
             </Button>
@@ -593,4 +581,4 @@ const EditEvent = () => {
   );
 };
 
-export default EditEvent;
+export default AddEvent;

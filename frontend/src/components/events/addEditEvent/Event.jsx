@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -16,11 +16,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 
-import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
-import LeafletMap from "../map/LeafletMap";
-import TimelineSlider from "../map/TimelineSlider";
-import EventDemandTable from "./EventDemandTable";
-
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
   PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
@@ -32,8 +27,13 @@ import {
 } from "@mui/icons-material";
 import AddLinkIcon from "@mui/icons-material/AddLink";
 
-import "../map/styles/mapView.css";
-import "./styles/events.css";
+import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
+import LeafletMap from "../../map/LeafletMap.jsx";
+import TimelineSlider from "../../map/TimelineSlider.jsx";
+import EventDemandTable from "../EventDemandTable.jsx";
+
+import "../../map/styles/mapView.css";
+import "../styles/events.css";
 
 const TITLE = "Event Details";
 
@@ -48,6 +48,7 @@ const Event = () => {
 
   const initialDate = "2023-01-02";
   const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [isEditingDemands, setIsEditingDemands] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -90,9 +91,24 @@ const Event = () => {
     fetchEvent();
   }, [id]);
 
-  const hasUnsavedChanges = () => {
+  const hasUnsavedChanges = useCallback(() => {
     return JSON.stringify(event) !== JSON.stringify(originalEvent);
-  };
+  }, [event, originalEvent]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = ""; // Chrome requires returnValue to be set
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
 
   const handleNavigate = (path) => {
     if (
@@ -110,7 +126,7 @@ const Event = () => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear().toString().slice(2); // Last two digits of the year
+    const year = date.getFullYear().toString().slice(2);
     return `${day}.${month}.${year}`;
   };
 
@@ -352,7 +368,10 @@ const Event = () => {
         </Box>
       </Paper>
 
-      <EventDemandTable eventId={id} />
+      <EventDemandTable
+        eventId={id}
+        setIsEditingDemands={setIsEditingDemands}
+      />
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Box display="flex" justifyContent="space-between">
           <Button
@@ -365,16 +384,18 @@ const Event = () => {
             Back
           </Button>
         </Box>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddLinkIcon />}
-          onClick={() =>
-            navigate(`/events/event/${id}/allocate-parking-spaces`)
-          }
-        >
-          Allocate Parking Spaces
-        </Button>
+        {!isEditingDemands && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddLinkIcon />}
+            onClick={() =>
+              navigate(`/events/event/${id}/allocate-parking-spaces`)
+            }
+          >
+            Allocate Parking Spaces
+          </Button>
+        )}
       </Box>
     </Box>
   );
