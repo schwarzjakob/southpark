@@ -25,7 +25,7 @@ import {
   ArrowBack as ArrowBackIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
 } from "@mui/icons-material";
-import AddLinkIcon from "@mui/icons-material/AddLink";
+import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
 import LeafletMap from "../../map/LeafletMap.jsx";
@@ -388,7 +388,7 @@ const Event = () => {
           <Button
             variant="contained"
             color="primary"
-            startIcon={<AddLinkIcon />}
+            startIcon={<AccountTreeRoundedIcon />}
             onClick={() =>
               navigate(`/events/event/${id}/allocate-parking-spaces`)
             }

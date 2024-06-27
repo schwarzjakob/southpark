@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
   Box,
@@ -15,6 +15,17 @@ import {
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+import DirectionsCarFilledRoundedIcon from "@mui/icons-material/DirectionsCarFilledRounded";
+import AirportShuttleRoundedIcon from "@mui/icons-material/AirportShuttleRounded";
+import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
+import HelpCenterRoundedIcon from "@mui/icons-material/HelpCenterRounded";
+import GarageIcon from "@mui/icons-material/GarageRounded";
+import CloseIcon from "@mui/icons-material/Close";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+
 import axios from "axios";
 
 const AddAllocationPopup = ({
@@ -22,6 +33,7 @@ const AddAllocationPopup = ({
   onClose,
   phase,
   totalDemands,
+  allocatedDemands,
   startDate,
   endDate,
 }) => {
@@ -39,13 +51,7 @@ const AddAllocationPopup = ({
   });
   const [showError, setShowError] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      fetchParkingLotCapacities();
-    }
-  }, [open]);
-
-  const fetchParkingLotCapacities = async () => {
+  const fetchParkingLotCapacities = useCallback(async () => {
     try {
       const response = await axios.get(`/api/events/parking_lot_capacities`, {
         params: { start_date: startDate, end_date: endDate },
@@ -143,7 +149,27 @@ const AddAllocationPopup = ({
     } catch (error) {
       console.error("Error fetching parking lot capacities:", error);
     }
-  };
+  }, [
+    startDate,
+    endDate,
+    phase,
+    totalDemands.cars,
+    totalDemands.buses,
+    totalDemands.trucks,
+  ]);
+
+  useEffect(() => {
+    if (open) {
+      fetchParkingLotCapacities();
+      document.body.style.overflow = "hidden"; // Prevent scrolling
+    } else {
+      document.body.style.overflow = "unset"; // Allow scrolling
+    }
+
+    return () => {
+      document.body.style.overflow = "unset"; // Ensure scrolling is reset when component unmounts
+    };
+  }, [open, fetchParkingLotCapacities]);
 
   const handleParkingLotChange = (event) => {
     const selectedLot = parkingLots.find(
@@ -200,72 +226,120 @@ const AddAllocationPopup = ({
     return `${day}.${month}.${year}`;
   };
 
+  const calculateDays = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  };
+
+  const getPhaseIcon = () => {
+    switch (phase) {
+      case "assembly":
+        return <ArrowCircleUpRoundedIcon />;
+      case "runtime":
+        return <PlayCircleFilledRoundedIcon />;
+      case "disassembly":
+        return <ArrowCircleDownRoundedIcon />;
+      default:
+        return <AccountTreeRoundedIcon />;
+    }
+  };
+
+  const days = calculateDays(startDate, endDate);
+
+  const notAllocatedCars = totalDemands.cars - allocatedDemands.cars;
+  const notAllocatedBuses = totalDemands.buses - allocatedDemands.buses;
+  const notAllocatedTrucks = totalDemands.trucks - allocatedDemands.trucks;
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <Box p={3} className="add-allocation-popup">
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5">
-            <AccountTreeRoundedIcon /> Add Allocation
-          </Typography>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          className="popup-header"
+        >
+          {" "}
+          <Box display="flex" gap="1rem" alignItems="center">
+            {getPhaseIcon()}
+            <Typography
+              className="popup-title"
+              variant="h6"
+              gutterBottom
+              display="flex"
+              alignContent="center"
+            >
+              Add {phase.charAt(0).toUpperCase() + phase.slice(1)} Allocation
+            </Typography>
+          </Box>
           <IconButton onClick={onClose}>
             <CloseRoundedIcon />
           </IconButton>
         </Box>
         <Divider />
-        <Typography variant="h6" gutterBottom>
-          Phase: {phase}
+        <Typography variant="body1" gutterBottom className="popup-date">
+          {formatDate(startDate)} - {formatDate(endDate)} ({days}{" "}
+          {days === 1 ? "Day" : "Days"})
         </Typography>
-        <Typography variant="body1" gutterBottom>
-          Period: {formatDate(startDate)} - {formatDate(endDate)}
-        </Typography>
-        <Typography variant="h6" gutterBottom>
-          Demand to be allocated:
-        </Typography>
-        <Grid container>
+
+        <Grid container className="popup-allocation-header">
           <Grid item xs={3}>
-            <Typography>
-              <strong>Cars</strong>
-            </Typography>
+            <Box className="icon-text">{""}</Box>
           </Grid>
           <Grid item xs={3}>
-            <Typography>
-              <strong>Buses</strong>
-            </Typography>
+            <Box className="icon-text">
+              <DirectionsCarFilledRoundedIcon className="icon-small" />
+              <Typography>Cars</Typography>
+            </Box>
           </Grid>
           <Grid item xs={3}>
-            <Typography>
-              <strong>Trucks</strong>
-            </Typography>
+            <Box className="icon-text">
+              <AirportShuttleRoundedIcon className="icon-small" />
+              <Typography>Buses</Typography>
+            </Box>
           </Grid>
           <Grid item xs={3}>
-            <Typography>
-              <strong>Total</strong>
-            </Typography>
-          </Grid>
-        </Grid>
-        <Grid container>
-          <Grid item xs={3}>
-            <Typography>{totalDemands.cars}</Typography>
-          </Grid>
-          <Grid item xs={3}>
-            <Typography>{totalDemands.buses}</Typography>
-          </Grid>
-          <Grid item xs={3}>
-            <Typography>{totalDemands.trucks}</Typography>
-          </Grid>
-          <Grid item xs={3}>
-            <Typography>
-              {totalDemands.cars +
-                totalDemands.buses * 3 +
-                totalDemands.trucks * 4}
-            </Typography>
+            <Box className="icon-text">
+              <LocalShippingRoundedIcon className="icon-small" />
+              <Typography>Trucks</Typography>
+            </Box>
           </Grid>
         </Grid>
         <Divider />
+
+        <Grid container className="assignment-container not-allocated">
+          <Grid item xs={3} className="demand-item">
+            <Box className="icon-text-row">
+              <HelpCenterRoundedIcon className="icon-small" />
+              <Typography>Not Allocated</Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={3} className="demand-item">
+            <Typography>{notAllocatedCars}</Typography>
+          </Grid>
+          <Grid item xs={3} className="demand-item">
+            <Typography>{notAllocatedBuses}</Typography>
+          </Grid>
+          <Grid item xs={3} className="demand-item">
+            <Typography>{notAllocatedTrucks}</Typography>
+          </Grid>
+        </Grid>
+        <Divider />
+
         <Box mt={2}>
-          <Typography variant="h6" gutterBottom>
-            Select Parking Lot
-          </Typography>
+          <Box display="flex" gap="0.5rem" alignItems="center" className="">
+            <GarageIcon />
+            <Typography
+              gutterBottom
+              variant="h6"
+              display="flex"
+              alignContent="center"
+              margin
+            >
+              Available Parking Spaces
+            </Typography>
+          </Box>
           <Select
             fullWidth
             value={selectedParkingLot}
@@ -273,35 +347,26 @@ const AddAllocationPopup = ({
           >
             {parkingLots.map((lot) => (
               <MenuItem key={lot.id} value={lot.id} disabled={lot.disabled}>
-                {lot.name}
+                {`${lot.name} (Free: ${lot.free_capacity}, Utilized: ${lot.used_capacity})`}
               </MenuItem>
             ))}
           </Select>
         </Box>
         <Box mt={2}>
-          <Typography variant="h6" gutterBottom>
-            Limits
-          </Typography>
-          <Grid container>
-            <Grid item xs={4}>
-              <Typography>Cars</Typography>
-              <Typography>{limits.cars}</Typography>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography>Buses</Typography>
-              <Typography>{limits.buses}</Typography>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography>Trucks</Typography>
-              <Typography>{limits.trucks}</Typography>
-            </Grid>
-          </Grid>
-        </Box>
-        <Box mt={2}>
           <Grid container spacing={2}>
             <Grid item xs={4}>
-              <Typography>Cars</Typography>
+              <Box
+                display="flex"
+                alignItems="center"
+                className="popup-icon-label"
+              >
+                <DirectionsCarFilledRoundedIcon
+                  style={{ marginRight: "8px" }}
+                />
+                <Typography>Cars</Typography>
+              </Box>
               <TextField
+                label="= Car Units"
                 type="number"
                 fullWidth
                 value={capacities.cars}
@@ -314,13 +379,25 @@ const AddAllocationPopup = ({
                     ),
                   })
                 }
-                inputProps={{ min: 0, max: limits.cars }}
+                inputProps={{ min: 0, max: limits.cars, step: 10 }}
                 disabled={limits.cars === 0}
               />
+              <Typography variant="caption">
+                {parkingLots.find((lot) => lot.id === selectedParkingLot)?.name}
+                : Limit: {limits.cars}
+              </Typography>
             </Grid>
             <Grid item xs={4}>
-              <Typography>Buses</Typography>
+              <Box
+                display="flex"
+                alignItems="center"
+                className="popup-icon-label"
+              >
+                <AirportShuttleRoundedIcon style={{ marginRight: "8px" }} />
+                <Typography>Buses</Typography>
+              </Box>
               <TextField
+                label="= 3x Car Units"
                 type="number"
                 fullWidth
                 value={capacities.buses}
@@ -333,13 +410,25 @@ const AddAllocationPopup = ({
                     ),
                   })
                 }
-                inputProps={{ min: 0, max: limits.buses }}
+                inputProps={{ min: 0, max: limits.buses, step: 10 }}
                 disabled={limits.buses === 0}
               />
+              <Typography variant="caption">
+                {parkingLots.find((lot) => lot.id === selectedParkingLot)?.name}
+                : Limit: {limits.buses}
+              </Typography>
             </Grid>
             <Grid item xs={4}>
-              <Typography>Trucks</Typography>
+              <Box
+                display="flex"
+                alignItems="center"
+                className="popup-icon-label"
+              >
+                <LocalShippingRoundedIcon style={{ marginRight: "8px" }} />
+                <Typography>Trucks</Typography>
+              </Box>
               <TextField
+                label="= 4x Car Units"
                 type="number"
                 fullWidth
                 value={capacities.trucks}
@@ -352,9 +441,13 @@ const AddAllocationPopup = ({
                     ),
                   })
                 }
-                inputProps={{ min: 0, max: limits.trucks }}
+                inputProps={{ min: 0, max: limits.trucks, step: 10 }}
                 disabled={limits.trucks === 0}
               />
+              <Typography variant="caption">
+                {parkingLots.find((lot) => lot.id === selectedParkingLot)?.name}
+                : Limit: {limits.trucks}
+              </Typography>
             </Grid>
           </Grid>
         </Box>
@@ -367,11 +460,19 @@ const AddAllocationPopup = ({
           <Button
             onClick={onClose}
             color="secondary"
+            className="popup-btn-close"
+            startIcon={<CloseIcon />}
             style={{ marginRight: "10px" }}
           >
             Cancel
           </Button>
-          <Button variant="contained" color="primary" onClick={handleSave}>
+          <Button
+            startIcon={<SaveRoundedIcon />}
+            variant="contained"
+            className="popup-btn"
+            color="primary"
+            onClick={handleSave}
+          >
             Save
           </Button>
         </Box>
@@ -385,8 +486,9 @@ AddAllocationPopup.propTypes = {
   onClose: PropTypes.func.isRequired,
   phase: PropTypes.string.isRequired,
   totalDemands: PropTypes.object.isRequired,
-  startDate: PropTypes.string.isRequired,
-  endDate: PropTypes.string.isRequired,
+  allocatedDemands: PropTypes.object.isRequired,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
 };
 
 export default AddAllocationPopup;

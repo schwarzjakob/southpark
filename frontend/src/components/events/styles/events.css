@@ -133,14 +133,17 @@
 
 /* Event Parking Space Allocation */
 
+.allocateParkingSpace-paper {
+  padding: 1rem !important;
+}
 .phase-divider {
+  margin-left: 1rem;
   display: flex;
   flex-direction: row !important;
   flex-wrap: wrap;
   padding: 0.5rem !important;
   display: flex;
   flex-direction: row;
-  gap: 1rem;
   background-color: var(--color-primary);
   align-items: center;
   border-radius: 5px;
@@ -155,13 +158,17 @@
   box-sizing: border-box;
 }
 
+.phase-heading {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .phase-divider-text {
   display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
-.phase-divider,
 .allocation-container,
 .allocation-container .recommendation-container {
   padding: 1rem !important ;
@@ -171,10 +178,123 @@
   padding-left: 1.5rem !important;
 }
 
-.phase-divider {
-  margin-left: 1rem;
-}
 .allocateParkingSpace-paper {
   margin-top: 1rem !important;
   padding: 1rem !important;
+}
+
+.allocation-row-2nd {
+  background-color: var(--color-gray-100);
+}
+
+.icon-text p,
+.icon-text-row p {
+  font-size: 0.8rem !important;
+}
+
+.icon-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: var(--textColor);
+}
+
+.icon-text-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--textColor);
+}
+
+.icon-small {
+  width: 1.4rem !important;
+  color: var(--textColor);
+}
+
+.small-icon-button {
+  width: 1rem !important;
+}
+
+.assignment-container {
+  padding: 0 0.5rem !important;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.assignment-item,
+.demand-item {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.assignment-item.parking-space {
+  padding: 0 !important;
+  background-color: var(--color-primary);
+  border-radius: 5px;
+  color: var(--color-pure-white);
+}
+
+.demand-item:first-child {
+  justify-content: flex-start !important;
+}
+
+.assignment-container.allocated {
+  margin-top: 7px;
+}
+
+.assignment-container.not-allocated {
+  margin-top: 2px;
+  margin-bottom: 3px;
+}
+
+.apply-allocation-button,
+.add-allocation-button {
+  background-color: var(--color-pure-white) !important;
+  color: var(--textColor) !important;
+}
+
+.apply-allocation-button:hover,
+.add-allocation-button:hover {
+  background-color: var(--color-gray-100) !important;
+}
+
+.btn-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Pop up */
+.popup-title {
+  margin-bottom: 0 !important;
+}
+
+.popup-allocation-header {
+  margin-top: 2rem;
+}
+.popup-date {
+  padding-top: 0.5rem;
+}
+
+.add-allocation-popup {
+  color: var(--textColor);
+}
+
+.popup-icon-label {
+  margin: 0.5rem 0;
+}
+
+.popup-btn-close {
+  color: var(--textColor) !important;
+}
+
+.popup-btn-close:hover {
+  background-color: var(--color-gray-100) !important;
+  color: var(--textColor) !important;
+}
+
+.no-scroll {
+  overflow: hidden;
 }

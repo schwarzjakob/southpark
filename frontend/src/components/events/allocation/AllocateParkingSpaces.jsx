@@ -8,6 +8,7 @@ import {
   Paper,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import Demand from "./Demand.jsx";
@@ -16,12 +17,16 @@ import Recommendation from "./Recommendation";
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
 import "../styles/events.css";
 import AddAllocationPopup from "./AddAllocationPopup";
-import AddLinkIcon from "@mui/icons-material/AddLink";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 import AssistantRoundedIcon from "@mui/icons-material/AssistantRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 
 const AllocateParkingSpace = () => {
   const { id } = useParams();
@@ -36,9 +41,16 @@ const AllocateParkingSpace = () => {
     trucks: 0,
     total: 0,
   });
+  const [allocatedDemands, setAllocatedDemands] = useState({
+    cars: 0,
+    buses: 0,
+    trucks: 0,
+    total: 0,
+  });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
   const navigate = useNavigate();
 
   const fetchDemands = useCallback(async () => {
@@ -137,6 +149,13 @@ const AllocateParkingSpace = () => {
 
   const saveAllocations = async () => {
     const allocations = JSON.parse(sessionStorage.getItem("allocations"));
+    if (!allocations) {
+      setSnackbarMessage("No allocations to save");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
     const formattedAllocations = [];
     const phases = [
       {
@@ -188,6 +207,7 @@ const AllocateParkingSpace = () => {
       if (response.status === 201) {
         setSnackbarMessage("Allocations saved successfully");
         setSnackbarSeverity("success");
+        setUnsavedChanges(false);
       } else {
         setSnackbarMessage(response.data.error || "Failed to save allocations");
         setSnackbarSeverity("error");
@@ -235,21 +255,52 @@ const AllocateParkingSpace = () => {
     };
   }, [fetchAllocations, event, storeAllocationsInSession]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (unsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [unsavedChanges]);
+
+  const handleNavigation = (path) => {
+    if (unsavedChanges) {
+      const confirmLeave = window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      );
+      if (!confirmLeave) return;
+    }
+    navigate(path);
+  };
+
   const phases = [
     {
       name: "assembly",
       start_date: event?.assembly_start_date,
       end_date: event?.assembly_end_date,
+      icon: ArrowCircleUpRoundedIcon,
+      addButtonText: "Add Assembly Allocation",
     },
     {
       name: "runtime",
       start_date: event?.runtime_start_date,
       end_date: event?.runtime_end_date,
+      icon: PlayCircleFilledRoundedIcon,
+      addButtonText: "Add Runtime Allocation",
     },
     {
       name: "disassembly",
       start_date: event?.disassembly_start_date,
       end_date: event?.disassembly_end_date,
+      icon: ArrowCircleDownRoundedIcon,
+      addButtonText: "Add Disassembly Allocation",
     },
   ];
 
@@ -280,62 +331,56 @@ const AllocateParkingSpace = () => {
     },
   ];
 
-  const handleNavigate = (path) => {
-    navigate(path);
+  const calculateAllocatedDemands = (phase) => {
+    const allocations = JSON.parse(sessionStorage.getItem("allocations"));
+    if (!allocations) return { cars: 0, buses: 0, trucks: 0, total: 0 };
+
+    const phaseAllocations = allocations[phase];
+    const allocated = { cars: 0, buses: 0, trucks: 0 };
+
+    if (phaseAllocations) {
+      Object.values(phaseAllocations).forEach((alloc) => {
+        allocated.cars += alloc.cars;
+        allocated.buses += alloc.buses;
+        allocated.trucks += alloc.trucks;
+      });
+    }
+
+    return allocated;
   };
 
   const handleAddAllocationClick = (phase) => {
     setSelectedPhase(phase);
     const phaseDemands = getDemandsPerPhase(phase);
-    const phaseAllocations = JSON.parse(sessionStorage.getItem("allocations"))[
-      phase
-    ];
-    const allocated = { cars: 0, buses: 0, trucks: 0 };
-
-    Object.values(phaseAllocations).forEach((alloc) => {
-      allocated.cars += alloc.cars;
-      allocated.buses += alloc.buses;
-      allocated.trucks += alloc.trucks;
-    });
+    const allocated = calculateAllocatedDemands(phase);
 
     const totalDemands = {
-      cars:
-        phaseDemands.reduce((sum, demand) => sum + demand.car_demand, 0) -
-        allocated.cars,
-      buses:
-        phaseDemands.reduce((sum, demand) => sum + demand.bus_demand, 0) -
-        allocated.buses,
-      trucks:
-        phaseDemands.reduce((sum, demand) => sum + demand.truck_demand, 0) -
-        allocated.trucks,
-      total:
-        phaseDemands.reduce((sum, demand) => sum + demand.demand, 0) -
-        (allocated.cars + allocated.buses * 3 + allocated.trucks * 4),
+      cars: phaseDemands.reduce((sum, demand) => sum + demand.car_demand, 0),
+      buses: phaseDemands.reduce((sum, demand) => sum + demand.bus_demand, 0),
+      trucks: phaseDemands.reduce(
+        (sum, demand) => sum + demand.truck_demand,
+        0
+      ),
+      total: phaseDemands.reduce((sum, demand) => sum + demand.demand, 0),
     };
 
     setTotalDemands(totalDemands);
+    setAllocatedDemands(allocated);
     setPopupOpen(true);
-  };
-
-  const handlePopupClose = () => {
-    setPopupOpen(false);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
+    setUnsavedChanges(true);
   };
 
   return (
     <Box className="allocateParkingSpace-container">
       <CustomBreadcrumbs
         links={breadcrumbLinks}
-        onClick={(link) => handleNavigate(link.path)}
+        onClick={(link) => handleNavigation(link.path)}
       />
       <Paper className="allocateParkingSpace-paper">
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Box className="iconHeadline__container">
-              <AddLinkIcon />
+              <AccountTreeRoundedIcon />
               <Typography variant="h4" gutterBottom>
                 Allocate Parking Spaces
               </Typography>
@@ -369,45 +414,80 @@ const AllocateParkingSpace = () => {
           {phases.map((phase) => {
             const phaseDemands = getDemandsPerPhase(phase.name);
             const days = calculateDays(phase.start_date, phase.end_date);
+
             return (
               <React.Fragment key={phase.name}>
-                <Grid item xs={12} className="phase-divider">
-                  <Box className="phase-divider-text">
-                    <Box className="phase-title ">
-                      <Typography variant="h6">
-                        {phase.name.charAt(0).toUpperCase() +
-                          phase.name.slice(1)}
-                      </Typography>
+                <Grid container className="phase-divider">
+                  <Grid
+                    item
+                    xs={4}
+                    className="phase-divider-text"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Box className="phase-heading">
+                      <Box
+                        className="phase-title"
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <phase.icon style={{ marginRight: "0.5rem" }} />
+                        <Typography variant="h6">
+                          {phase.name.charAt(0).toUpperCase() +
+                            phase.name.slice(1)}
+                        </Typography>
+                      </Box>
+                      <Box className="phase-dates" style={{ flexGrow: 1 }}>
+                        <Typography variant="body1">
+                          {formatDate(phase.start_date)} -{" "}
+                          {formatDate(phase.end_date)}
+                        </Typography>
+                      </Box>
+                      <Box className="phase-days">
+                        <Typography variant="body1">
+                          ({days} {days === 1 ? "Day" : "Days"})
+                        </Typography>
+                      </Box>
                     </Box>
-                    <Box className="phase-dates">
-                      <Typography variant="body1">
-                        {formatDate(phase.start_date)} -{" "}
-                        {formatDate(phase.end_date)}
-                      </Typography>
-                    </Box>
-                    <Box className="phase-days">
-                      <Typography variant="body1">
-                        ({days} {days === 1 ? "Day" : "Days"})
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box mt={2} className="allocation-add-button">
+                  </Grid>
+                  <Grid item xs={4} display="flex" className="btn-container">
                     <Button
+                      className="add-allocation-button"
                       variant="contained"
                       color="secondary"
                       startIcon={<AddRoundedIcon />}
                       onClick={() => handleAddAllocationClick(phase.name)}
                     >
-                      Add Allocation
+                      {phase.addButtonText}
                     </Button>
-                  </Box>
+                  </Grid>
+                  <Grid item xs={4} display="flex" className="btn-container">
+                    <Button
+                      className="apply-allocation-button"
+                      variant="contained"
+                      color="secondary"
+                      startIcon={<ArrowBackIosNewRoundedIcon />}
+                    >
+                      Apply Recommendations
+                    </Button>
+                  </Grid>
                 </Grid>
-                {isDataLoaded && (
-                  <Demand phase={phase.name} data={phaseDemands} />
+                {isDataLoaded ? (
+                  <>
+                    <Demand phase={phase.name} data={phaseDemands} />
+                    <Allocation phase={phase.name} />
+                    <Recommendation phase={phase.name} data={phaseDemands} />
+                  </>
+                ) : (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    height="200px"
+                  >
+                    <CircularProgress />
+                  </Box>
                 )}
-                {isDataLoaded && <Allocation phase={phase.name} />}
-                <Recommendation phase={phase.name} data={phaseDemands} />
               </React.Fragment>
             );
           })}
@@ -415,40 +495,40 @@ const AllocateParkingSpace = () => {
       </Paper>
       <AddAllocationPopup
         open={popupOpen}
-        onClose={handlePopupClose}
+        onClose={() => setPopupOpen(false)}
         phase={selectedPhase}
         totalDemands={totalDemands}
+        allocatedDemands={allocatedDemands}
         startDate={phases.find((p) => p.name === selectedPhase)?.start_date}
         endDate={phases.find((p) => p.name === selectedPhase)?.end_date}
       />
       <Box display="flex" justifyContent="space-between" mt={2}>
-        <Box display="flex" justifyContent="space-between">
-          <Button
-            className="back-button"
-            variant="outlined"
-            color="primary"
-            startIcon={<ArrowBackIosNewRoundedIcon />}
-            onClick={() => navigate(`/events/event/${event.id}`)}
-          >
-            Back
-          </Button>
-          <Button
-            className="save-button"
-            variant="contained"
-            color="primary"
-            onClick={saveAllocations}
-          >
-            Save
-          </Button>
-        </Box>
+        <Button
+          className="back-button"
+          variant="outlined"
+          color="primary"
+          startIcon={<ArrowBackRoundedIcon />}
+          onClick={() => handleNavigation(`/events/event/${event.id}`)}
+        >
+          Back
+        </Button>
+        <Button
+          className="save-button"
+          variant="contained"
+          color="primary"
+          startIcon={<SaveRoundedIcon />}
+          onClick={saveAllocations}
+        >
+          Save
+        </Button>
       </Box>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={() => setSnackbarOpen(false)}
       >
         <Alert
-          onClose={handleSnackbarClose}
+          onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           sx={{ width: "100%" }}
         >

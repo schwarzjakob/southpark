@@ -1,12 +1,38 @@
 import { useState, useEffect } from "react";
-import { Grid, Typography, Box } from "@mui/material";
+import { Grid, Typography, Box, Divider } from "@mui/material";
 import PropTypes from "prop-types";
+import { styled } from "@mui/system";
+import NumbersRoundedIcon from "@mui/icons-material/NumbersRounded";
+import CheckBoxRoundedIcon from "@mui/icons-material/CheckBoxRounded";
+import HelpCenterRoundedIcon from "@mui/icons-material/HelpCenterRounded";
+import DirectionsCarFilledRoundedIcon from "@mui/icons-material/DirectionsCarFilledRounded";
+import AirportShuttleRoundedIcon from "@mui/icons-material/AirportShuttleRounded";
+import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
+import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
 
 const COLORS = {
   green: "#d0f0c0",
   orange: "#fceabb",
   red: "#fcd7d4",
 };
+
+const DoubleDivider = styled(Box)(({ theme }) => ({
+  position: "relative",
+  "&::before, &::after": {
+    content: '""',
+    position: "absolute",
+    left: 0,
+    right: 0,
+    height: "1px",
+    backgroundColor: theme.palette.divider,
+  },
+  "&::before": {
+    top: "-1px",
+  },
+  "&::after": {
+    top: "1px",
+  },
+}));
 
 const Demand = ({ phase, data }) => {
   Demand.propTypes = {
@@ -46,14 +72,6 @@ const Demand = ({ phase, data }) => {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [phase]);
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
 
   const maxDemand = {
     car_demand: Math.max(...data.map((d) => d.car_demand), 0),
@@ -97,119 +115,151 @@ const Demand = ({ phase, data }) => {
     totalMaxDemand
   );
 
+  const notAllocatedCars = maxDemand.car_demand - totalAllocatedCars;
+  const notAllocatedBuses = maxDemand.bus_demand - totalAllocatedBuses;
+  const notAllocatedTrucks = maxDemand.truck_demand - totalAllocatedTrucks;
+  const notAllocatedTotal =
+    maxDemand.car_demand -
+    totalAllocatedCars +
+    (maxDemand.bus_demand - totalAllocatedBuses) * 3 +
+    (maxDemand.truck_demand - totalAllocatedTrucks) * 4;
+
   return (
     <Grid className="allocation-container" item xs={4}>
       <Box>
-        <Grid container>
+        <Grid container className="allocation-header">
           <Grid item xs={3}>
-            <Typography>
-              <strong>Date</strong>
-            </Typography>
+            <Box className="icon-text">{""}</Box>
           </Grid>
           <Grid item xs={2}>
-            <Typography>
-              <strong>Cars</strong>
-            </Typography>
+            <Box className="icon-text">
+              <DirectionsCarFilledRoundedIcon className="icon-small" />
+              <Typography>Cars</Typography>
+            </Box>
           </Grid>
           <Grid item xs={2}>
-            <Typography>
-              <strong>Buses</strong>
-            </Typography>
+            <Box className="icon-text">
+              <AirportShuttleRoundedIcon className="icon-small" />
+              <Typography>Buses</Typography>
+            </Box>
           </Grid>
           <Grid item xs={2}>
-            <Typography>
-              <strong>Trucks</strong>
-            </Typography>
+            <Box className="icon-text">
+              <LocalShippingRoundedIcon className="icon-small" />
+              <Typography>Trucks</Typography>
+            </Box>
           </Grid>
           <Grid item xs={2}>
-            <Typography>
-              <strong>Total</strong>
-            </Typography>
+            <Box className="icon-text">
+              <FunctionsRoundedIcon className="icon-small" />
+              <Typography>Total</Typography>
+            </Box>
           </Grid>
         </Grid>
-        {data.map((demand, index) => (
-          <Grid container key={index}>
-            <Grid item xs={3}>
-              <Typography>{formatDate(demand.date)}</Typography>
-            </Grid>
-            <Grid item xs={2}>
-              <Typography>{demand.car_demand}</Typography>
-            </Grid>
-            <Grid item xs={2}>
-              <Typography>{demand.bus_demand}</Typography>
-            </Grid>
-            <Grid item xs={2}>
-              <Typography>{demand.truck_demand}</Typography>
-            </Grid>
-            <Grid item xs={2}>
-              <Typography>
-                {demand.car_demand +
-                  demand.bus_demand * 3 +
-                  demand.truck_demand * 4}
-              </Typography>
-            </Grid>
+        <Grid container className="assignment-container">
+          <Grid item xs={4} className="demand-item">
+            <Box className="icon-text-row">
+              <NumbersRoundedIcon className="icon-small" />
+              <Typography>Max. Daily</Typography>
+            </Box>
           </Grid>
-        ))}
-        <Grid container>
-          <Grid item xs={3}>
-            <Typography>
-              <strong>Max. / Day</strong>
-            </Typography>
+          <Grid item xs={2} className="demand-item">
+            <Typography>{maxDemand.car_demand}</Typography>
           </Grid>
-          <Grid item xs={2}>
-            <Typography>
-              <strong>{maxDemand.car_demand}</strong>
-            </Typography>
+          <Grid item xs={2} className="demand-item">
+            <Typography>{maxDemand.bus_demand}</Typography>
           </Grid>
-          <Grid item xs={2}>
-            <Typography>
-              <strong>{maxDemand.bus_demand}</strong>
-            </Typography>
+          <Grid item xs={2} className="demand-item">
+            <Typography>{maxDemand.truck_demand}</Typography>
           </Grid>
-          <Grid item xs={2}>
-            <Typography>
-              <strong>{maxDemand.truck_demand}</strong>
-            </Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Typography>
-              <strong>
-                {maxDemand.car_demand +
-                  maxDemand.bus_demand * 3 +
-                  maxDemand.truck_demand * 4}
-              </strong>
-            </Typography>
+          <Grid item xs={2} className="demand-item">
+            <Typography>{totalMaxDemand}</Typography>
           </Grid>
         </Grid>
-        <Grid container>
-          <Grid item xs={3}>
-            <Typography>
-              <strong>∑ Allocated</strong>
-            </Typography>
-          </Grid>
-          <Grid item xs={2} style={{ backgroundColor: carBackgroundColor }}>
-            <Typography>
-              <strong>{totalAllocatedCars}</strong>
-            </Typography>
-          </Grid>
-          <Grid item xs={2} style={{ backgroundColor: busBackgroundColor }}>
-            <Typography>
-              <strong>{totalAllocatedBuses}</strong>
-            </Typography>
-          </Grid>
-          <Grid item xs={2} style={{ backgroundColor: truckBackgroundColor }}>
-            <Typography>
-              <strong>{totalAllocatedTrucks}</strong>
-            </Typography>
+        <Divider />
+        <Grid container className="assignment-container not-allocated">
+          <Grid item xs={4} className="demand-item">
+            <Box className="icon-text-row">
+              <HelpCenterRoundedIcon className="icon-small" />
+              <Typography>Not Allocated</Typography>
+            </Box>
           </Grid>
           <Grid
             item
             xs={2}
+            className="demand-item"
+            style={{ backgroundColor: carBackgroundColor }}
+          >
+            {" "}
+            <Typography>{notAllocatedCars}</Typography>
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            className="demand-item"
+            style={{ backgroundColor: carBackgroundColor }}
+          >
+            {" "}
+            <Typography>{notAllocatedBuses}</Typography>
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            className="demand-item"
+            style={{ backgroundColor: carBackgroundColor }}
+          >
+            {" "}
+            <Typography>{notAllocatedTrucks}</Typography>
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            className="demand-item"
+            style={{ backgroundColor: carBackgroundColor }}
+          >
+            {" "}
+            <Typography>{notAllocatedTotal}</Typography>
+          </Grid>
+        </Grid>
+        <DoubleDivider />
+        <Grid container className="assignment-container allocated">
+          <Grid item xs={4} className="demand-item">
+            <Box className="icon-text-row">
+              <CheckBoxRoundedIcon className="icon-small" />
+              <Typography>Allocated</Typography>
+            </Box>
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            className="demand-item"
+            style={{ backgroundColor: carBackgroundColor }}
+          >
+            <Typography fontWeight="bold">{totalAllocatedCars}</Typography>
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            className="demand-item"
+            style={{ backgroundColor: busBackgroundColor }}
+          >
+            <Typography fontWeight="bold">{totalAllocatedBuses}</Typography>
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            className="demand-item"
+            style={{ backgroundColor: truckBackgroundColor }}
+          >
+            <Typography fontWeight="bold">{totalAllocatedTrucks}</Typography>
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            className="demand-item"
             style={{ backgroundColor: totalDemandBackgroundColor }}
           >
-            <Typography>
-              <strong>{totalAllocatedDemand}</strong>
-            </Typography>
+            <Typography fontWeight="bold">{totalAllocatedDemand}</Typography>
           </Grid>
         </Grid>
       </Box>

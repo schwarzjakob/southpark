@@ -201,8 +201,8 @@ const AddEvent = () => {
         disassembly_start_date: event.disassembly_start_date,
         disassembly_end_date: event.disassembly_end_date,
         color: event.color,
-        halls: event.halls, // Ensure these are included
-        entrances: event.entrances, // Ensure these are included
+        halls: event.halls, 
+        entrances: event.entrances, 
       };
       const response = await axios.post("/api/events/event", eventData);
       const event_id = response.data.id;
