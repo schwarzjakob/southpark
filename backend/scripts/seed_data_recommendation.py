@@ -289,6 +289,7 @@ def read_event_data_from_csv(filename):
                 'id': int(row['id']),
                 'name': row['name'],
                 'entrance': row['entrance'],  # Do not capitalize here, handle it in mapping
+                'hall_id': list(map(int, row['hall_id'].split(','))),  # Parse hall_id as list of ints
                 'assembly_start_date': datetime.strptime(row['assembly_start_date'], '%Y-%m-%d').date(),
                 'assembly_end_date': datetime.strptime(row['assembly_end_date'], '%Y-%m-%d').date(),
                 'runtime_start_date': datetime.strptime(row['runtime_start_date'], '%Y-%m-%d').date(),
@@ -312,7 +313,7 @@ def read_event_data_from_csv(filename):
 def write_recommendations_to_csv(recommendations, errors, filename):
     try:
         with open(filename, 'w', newline='') as csvfile:
-            fieldnames = ['event_id', 'event_name', 'phase', 'vehicle_type', 'parking_lot_id', 'assigned_capacity']
+            fieldnames = ['event_id', 'event_name', 'phase', 'phase_start_date', 'phase_end_date', 'vehicle_type', 'parking_lot_id', 'assigned_capacity']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
 
@@ -321,18 +322,23 @@ def write_recommendations_to_csv(recommendations, errors, filename):
                 event_name = recommendation['event_name']
 
                 for phase, phase_data in recommendation['recommendations'].items():
+                    phase_start_date = phase_data.get('phase_start_date')
+                    phase_end_date = phase_data.get('phase_end_date')
                     for vehicle_type, parking_data in phase_data.items():
-                        for parking_lot in parking_data:
-                            assigned_capacity = parking_lot[f'{vehicle_type}_capacity']
-                            if assigned_capacity > 0:  # Only write if assigned capacity is greater than 0
-                                writer.writerow({
-                                    'event_id': event_id,
-                                    'event_name': event_name,
-                                    'phase': phase,
-                                    'vehicle_type': vehicle_type,
-                                    'parking_lot_id': parking_lot['parking_lot_id'],
-                                    'assigned_capacity': assigned_capacity
-                                })
+                        if vehicle_type not in ['phase_start_date', 'phase_end_date']:  # Skip these keys
+                            for parking_lot in parking_data:
+                                assigned_capacity = parking_lot[f'{vehicle_type}_capacity']
+                                if assigned_capacity > 0:  # Only write if assigned capacity is greater than 0
+                                    writer.writerow({
+                                        'event_id': event_id,
+                                        'event_name': event_name,
+                                        'phase': phase,
+                                        'phase_start_date': phase_start_date,
+                                        'phase_end_date': phase_end_date,
+                                        'vehicle_type': vehicle_type,
+                                        'parking_lot_id': parking_lot['parking_lot_id'],
+                                        'assigned_capacity': assigned_capacity
+                                    })
 
             # Writing errors section to the CSV
             if errors:
@@ -368,6 +374,7 @@ def recommendation_engine(event_data):
             event_name = event['name']
             entrance_name = event['entrance']
             entrance_id = get_entrance_id(entrance_name)
+            hall_id = event['hall_id']
             print(f"Processing event {event_id}: {event_name}")
 
             # Initialize phase recommendations for the current event
@@ -392,9 +399,28 @@ def recommendation_engine(event_data):
                     })
                     continue
 
-                phase_recommendations['recommendations'][phase] = {}
+                phase_recommendations['recommendations'][phase] = {
+                    'phase_start_date': phase_start_date,
+                    'phase_end_date': phase_end_date
+                }
 
                 if car_demand > 0:
+                    if any(hall_id in [1, 2, 3, 7, 8, 9, 13, 14, 15] for hall_id in hall_id):
+                        # Check capacity for parking lot ID 20
+                        lot_id_20_capacity = check_parking_capacity(20, phase_start_date, phase_end_date)
+                        if lot_id_20_capacity >= car_demand:
+                            # Assign parking lot 20 if it has enough capacity
+                            phase_recommendations['recommendations'][phase]['cars'] = [{
+                                'parking_lot_id': 20,
+                                'cars_capacity': car_demand,
+                                'busses_capacity': 0,
+                                'trucks_capacity': 0,
+                                'distance_to_entrance': distances.get(entrance_id, {}).get(20, float('inf'))
+                            }]
+                            assignments[20] = assignments.get(20, {})
+                            assignments[20][(phase_start_date, phase_end_date)] = (
+                                    lot_id_20_capacity - car_demand)
+                            continue
                     lots = get_parking_lots(event_id, phase, phase_start_date, phase_end_date)
                     car_assignments = assign_parking(lots, car_demand, 0, 0, phase_start_date, phase_end_date,
                                                      assignments, entrance_id)
@@ -448,13 +474,13 @@ def recommendation_engine(event_data):
 def main():
     try:
         # Read event data from CSV
-        event_data = read_event_data_from_csv('..\..\southpark\database\seed\events_data.csv')
+        event_data = read_event_data_from_csv('demand_csv_file.csv')
 
         # Run recommendation engine
         recommendations, errors = recommendation_engine(event_data)
 
         # Write recommendations and errors to CSV for verification
-        write_recommendations_to_csv(recommendations, errors, 'recommendations.csv')
+        write_recommendations_to_csv(recommendations, errors, 'NEWrecommendations.csv')
 
         print("Recommendations and errors written to recommendations.csv for verification.")
 
