@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Box, Typography, Grid, Button } from "@mui/material";
+import { Box, Typography, Grid, Button, Paper } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import Demand from "./Demand.jsx";
 import Allocation from "./Allocation";
@@ -208,83 +208,84 @@ const AllocateParkingSpace = () => {
         links={breadcrumbLinks}
         onClick={(link) => handleNavigate(link.path)}
       />
+      <Paper className="allocateParkingSpace-paper">
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Box className="iconHeadline__container">
+              <AddLinkIcon />
+              <Typography variant="h4" gutterBottom>
+                Allocate Parking Spaces
+              </Typography>
+            </Box>
+          </Grid>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Box className="iconHeadline__container">
-            <AddLinkIcon />
-            <Typography variant="h4" gutterBottom>
-              Allocate Parking Spaces
-            </Typography>
-          </Box>
+          <Grid item xs={4}>
+            <Box className="iconHeadline__container">
+              <NumbersIcon />
+              <Typography variant="h6" gutterBottom>
+                Demand
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={4}>
+            <Box className="iconHeadline__container">
+              <AccountTreeRoundedIcon />
+              <Typography variant="h6" gutterBottom>
+                Allocation
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={4}>
+            <Box className="iconHeadline__container">
+              <AssistantRoundedIcon />
+              <Typography variant="h6" gutterBottom>
+                Recommendation
+              </Typography>
+            </Box>
+          </Grid>
+          {phases.map((phase) => {
+            const phaseDemands = getDemandsPerPhase(phase.name);
+            const days = calculateDays(phase.start_date, phase.end_date);
+            return (
+              <React.Fragment key={phase.name}>
+                <Grid item xs={12} className="phase-divider">
+                  <Box className="phase-title">
+                    <Typography variant="h6">
+                      {phase.name.charAt(0).toUpperCase() + phase.name.slice(1)}
+                    </Typography>
+                  </Box>
+                  <Box className="phase-dates">
+                    <Typography variant="body1">
+                      {formatDate(phase.start_date)} -{" "}
+                      {formatDate(phase.end_date)}
+                    </Typography>
+                  </Box>
+                  <Box className="phase-days">
+                    <Typography variant="body1">
+                      ({days} {days === 1 ? "Day" : "Days"})
+                    </Typography>
+                  </Box>
+                  <Box mt={2} className="allocation-add-button">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<AddRoundedIcon />}
+                      onClick={() => handleAddAllocationClick(phase.name)}
+                    >
+                      Add Allocation
+                    </Button>
+                  </Box>
+                </Grid>
+                {isDataLoaded && (
+                  <Demand phase={phase.name} data={phaseDemands} />
+                )}
+                {isDataLoaded && <Allocation phase={phase.name} />}
+                <Recommendation phase={phase.name} data={phaseDemands} />
+              </React.Fragment>
+            );
+          })}
         </Grid>
-
-        <Grid item xs={4}>
-          <Box className="iconHeadline__container">
-            <NumbersIcon />
-            <Typography variant="h6" gutterBottom>
-              Demand
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={4}>
-          <Box className="iconHeadline__container">
-            <AccountTreeRoundedIcon />
-            <Typography variant="h6" gutterBottom>
-              Allocation
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={4}>
-          <Box className="iconHeadline__container">
-            <AssistantRoundedIcon />
-            <Typography variant="h6" gutterBottom>
-              Recommendation
-            </Typography>
-          </Box>
-        </Grid>
-        {phases.map((phase) => {
-          const phaseDemands = getDemandsPerPhase(phase.name);
-          const days = calculateDays(phase.start_date, phase.end_date);
-          return (
-            <React.Fragment key={phase.name}>
-              <Grid item xs={12} className="phase-divider">
-                <Box className="phase-title">
-                  <Typography variant="h6">
-                    {phase.name.charAt(0).toUpperCase() + phase.name.slice(1)}
-                  </Typography>
-                </Box>
-                <Box className="phase-dates">
-                  <Typography variant="body1">
-                    {formatDate(phase.start_date)} -{" "}
-                    {formatDate(phase.end_date)}
-                  </Typography>
-                </Box>
-                <Box className="phase-days">
-                  <Typography variant="body1">
-                    ({days} {days === 1 ? "Day" : "Days"})
-                  </Typography>
-                </Box>
-                <Box mt={2} className="allocation-add-button">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddRoundedIcon />}
-                    onClick={() => handleAddAllocationClick(phase.name)}
-                  >
-                    Add Allocation
-                  </Button>
-                </Box>
-              </Grid>
-              {isDataLoaded && (
-                <Demand phase={phase.name} data={phaseDemands} />
-              )}
-              {isDataLoaded && <Allocation phase={phase.name} />}
-              <Recommendation phase={phase.name} data={phaseDemands} />
-            </React.Fragment>
-          );
-        })}
-      </Grid>
+      </Paper>
       <AddAllocationPopup
         open={popupOpen}
         onClose={handlePopupClose}

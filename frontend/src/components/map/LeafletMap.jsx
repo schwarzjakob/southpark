@@ -213,11 +213,13 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
       center={[48.1375, 11.702]}
       zoom={zoom}
       scrollWheelZoom={false}
-      zoomControl={false}
+      zoomControl={true}
       dragging={false}
-      touchZoom={false}
-      doubleClickZoom={false}
+      touchZoom={true}
+      doubleClickZoom={true}
       keyboard={false}
+      zoomSnap={0.3}
+      zoomDelta={0.3}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -228,7 +230,8 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
       <MapLegendComponent
         events={filteredEvents}
         selectedDate={selectedDate}
-      />{" "}
+      />
+       
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);

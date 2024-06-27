@@ -1,38 +1,15 @@
 # backend
-alembic==1.13.2
-blinker==1.8.2
-certifi==2024.6.2
-cffi==1.16.0
-charset-normalizer==3.3.2
-click==8.1.7
-cryptography==42.0.8
 Flask==3.0.3
-Flask-Cors==4.0.1
-Flask-Migrate==4.0.0
-Flask-SQLAlchemy==3.0.3
-idna==3.7
-itsdangerous==2.2.0
-Jinja2==3.1.4
-jwt==1.3.1
-Mako==1.3.5
-MarkupSafe==2.1.5
-numpy==2.0.0
+flask-cors==4.0.1
 pandas==2.2.2
-pip==24.1
-psycopg2-binary==2.9.9
-PuLP==2.8.0
-pycparser==2.22
-python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
-pytz==2024.1
-requests==2.32.3
-six==1.16.0
+psycopg2-binary==2.9.9
 SQLAlchemy==2.0.30
-typing_extensions==4.12.2
-tzdata==2024.1
-urllib3==2.2.2
-Werkzeug==3.0.3
+Flask-SQLAlchemy==3.0.3
+Flask-Migrate==4.0.0
+werkzeug==3.0.3
 pyjwt==2.8.0
+requests==2.32.3
 
 # allocation_algorithm
 PuLP==2.8.0

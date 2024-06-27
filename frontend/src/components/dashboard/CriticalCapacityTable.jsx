@@ -251,6 +251,7 @@ const MonthlyDemandTable = ({
                       variant="h6"
                       style={{ fontWeight: "bold" }}
                       className="demandTable__itemHeader"
+                      fontSize="1rem"
                     >
                       {LABEL_80TO100_TITLE}
                     </Typography>

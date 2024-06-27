@@ -221,7 +221,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
         return (
           <Box className="status-label">
             <Typography className="status-label" variant="body2">
-              Demand Fully allocated
+               Fully allocated
             </Typography>
           </Box>
         );
