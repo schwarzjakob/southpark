@@ -134,6 +134,9 @@
 /* Event Parking Space Allocation */
 
 .phase-divider {
+  display: flex;
+  flex-direction: row !important;
+  flex-wrap: wrap;
   padding: 0.5rem !important;
   display: flex;
   flex-direction: row;
@@ -142,4 +145,36 @@
   align-items: center;
   border-radius: 5px;
   color: white;
+}
+
+.phase-divider-text,
+.allocation-add-button,
+.recommendation-add-button {
+  margin: 0 !important;
+  flex: 1 1 30%;
+  box-sizing: border-box;
+}
+
+.phase-divider-text {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.phase-divider,
+.allocation-container,
+.allocation-container .recommendation-container {
+  padding: 1rem !important ;
+}
+
+.allocation-container {
+  padding-left: 1.5rem !important;
+}
+
+.phase-divider {
+  margin-left: 1rem;
+}
+.allocateParkingSpace-paper {
+  margin-top: 1rem !important;
+  padding: 1rem !important;
 }

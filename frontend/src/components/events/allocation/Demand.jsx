@@ -40,7 +40,7 @@ const Demand = ({ phase, data }) => {
     };
 
     window.addEventListener("storage", handleStorageChange);
-    handleStorageChange(); 
+    handleStorageChange();
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
@@ -98,7 +98,7 @@ const Demand = ({ phase, data }) => {
   );
 
   return (
-    <Grid item xs={4}>
+    <Grid className="allocation-container" item xs={4}>
       <Box>
         <Grid container>
           <Grid item xs={3}>

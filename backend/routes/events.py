@@ -474,7 +474,6 @@ def update_event_demands(event_id):
         logger.error(e)
         return jsonify({"error": str(e)}), 500
 
-
 @events_bp.route("/parking_lot_capacities", methods=["GET"])
 def get_parking_lot_capacities():
     try:
@@ -565,6 +564,16 @@ def allocate_demands():
         if not allocations:
             return jsonify({"error": "No allocations provided"}), 400
 
+        # Get event ID from the first allocation (assuming all allocations have the same event ID)
+        event_id = allocations[0]["event_id"]
+
+        # Delete existing allocations for the entire event
+        delete_event_query = text("""
+        DELETE FROM public.parking_lot_allocation
+        WHERE event_id = :event_id
+        """)
+        db.session.execute(delete_event_query, {"event_id": event_id})
+
         for allocation in allocations:
             # Check parking lot capacity
             capacity_query = text("""
@@ -590,17 +599,6 @@ def allocate_demands():
                 return jsonify({"error": f"Insufficient capacity for parking lot {allocation['parking_lot_id']} on {allocation['date']}. Free capacity: {free_capacity}, Required: {allocated_capacity}"}), 400
 
         for allocation in allocations:
-            # Delete existing allocations for the event on the same date
-            delete_query = text("""
-            DELETE FROM public.parking_lot_allocation
-            WHERE event_id = :event_id AND parking_lot_id = :parking_lot_id AND date = :date
-            """)
-            db.session.execute(delete_query, {
-                "event_id": allocation["event_id"],
-                "parking_lot_id": allocation["parking_lot_id"],
-                "date": allocation["date"]
-            })
-
             # Insert new allocation
             insert_query = text("""
             INSERT INTO public.parking_lot_allocation (
@@ -622,4 +620,5 @@ def allocate_demands():
         return jsonify({"message": "Allocations saved successfully"}), 201
     except Exception as e:
         logger.error(e)
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500
