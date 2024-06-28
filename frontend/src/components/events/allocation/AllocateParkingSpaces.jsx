@@ -412,21 +412,21 @@ const AllocateParkingSpaces = () => {
       start_date: event?.assembly_start_date,
       end_date: event?.assembly_end_date,
       icon: ArrowCircleUpRoundedIcon,
-      addButtonText: "Add Assembly Allocation",
+      addButtonText: "Add Allocation",
     },
     {
       name: "runtime",
       start_date: event?.runtime_start_date,
       end_date: event?.runtime_end_date,
       icon: PlayCircleFilledRoundedIcon,
-      addButtonText: "Add Runtime Allocation",
+      addButtonText: "Add Allocation",
     },
     {
       name: "disassembly",
       start_date: event?.disassembly_start_date,
       end_date: event?.disassembly_end_date,
       icon: ArrowCircleDownRoundedIcon,
-      addButtonText: "Add Disassembly Allocation",
+      addButtonText: "Add Allocation",
     },
   ];
 
