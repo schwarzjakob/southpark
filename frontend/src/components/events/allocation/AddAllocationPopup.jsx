@@ -208,6 +208,7 @@ const AddAllocationPopup = ({
     storedAllocations[phase][newAllocation.parking_lot_name] = newAllocation;
     sessionStorage.setItem("allocations", JSON.stringify(storedAllocations));
     window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new Event("allocations-updated"));
     onClose();
   };
 

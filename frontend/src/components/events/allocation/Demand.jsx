@@ -45,7 +45,6 @@ const Demand = ({ phase, data }) => {
     buses: 0,
     trucks: 0,
   });
-
   useEffect(() => {
     const handleStorageChange = () => {
       const storedAllocations = JSON.parse(
@@ -65,10 +64,12 @@ const Demand = ({ phase, data }) => {
       }
     };
 
+    window.addEventListener("allocations-updated", handleStorageChange);
     window.addEventListener("storage", handleStorageChange);
     handleStorageChange();
 
     return () => {
+      window.removeEventListener("allocations-updated", handleStorageChange);
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [phase]);
@@ -175,13 +176,13 @@ const Demand = ({ phase, data }) => {
           <Grid item xs={2}>
             <Box className="icon-text">
               <AirportShuttleRoundedIcon className="icon-small" />
-              <Typography>Buses</Typography>
+              <Typography>Buses (3)</Typography>
             </Box>
           </Grid>
           <Grid item xs={2}>
             <Box className="icon-text">
               <LocalShippingRoundedIcon className="icon-small" />
-              <Typography>Trucks</Typography>
+              <Typography>Trucks (4)</Typography>
             </Box>
           </Grid>
           <Grid item xs={2}>

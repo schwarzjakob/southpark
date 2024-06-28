@@ -81,13 +81,13 @@ const Allocation = ({ phase }) => {
           <Grid item xs={2}>
             <Box className="icon-text">
               <AirportShuttleRoundedIcon className="icon-small" />
-              <Typography>Buses</Typography>
+              <Typography>Buses (3)</Typography>
             </Box>
           </Grid>
           <Grid item xs={2}>
             <Box className="icon-text">
               <LocalShippingRoundedIcon className="icon-small" />
-              <Typography>Trucks</Typography>
+              <Typography>Truck (4)</Typography>
             </Box>
           </Grid>
           <Grid item xs={2}>

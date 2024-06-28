@@ -28,6 +28,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 
 const AllocateParkingSpaces = () => {
   const { id } = useParams();
@@ -35,6 +36,7 @@ const AllocateParkingSpaces = () => {
   const [event, setEvent] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
+  const [initialAllocations, setInitialAllocations] = useState(null);
   const [selectedPhase, setSelectedPhase] = useState("");
   const [, setTotalDemands] = useState({
     cars: 0,
@@ -51,6 +53,7 @@ const AllocateParkingSpaces = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [isSaving, setIsSaving] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const [transformedRecommendationData, setTransformedRecommendationData] =
     useState(null);
@@ -100,7 +103,6 @@ const AllocateParkingSpaces = () => {
     },
     [event]
   );
-
   const storeAllocationsInSession = useCallback(
     (allocations) => {
       if (!event) return;
@@ -139,6 +141,7 @@ const AllocateParkingSpaces = () => {
         );
       });
       sessionStorage.setItem("allocations", JSON.stringify(groupedAllocations));
+      window.dispatchEvent(new Event("allocations-updated")); 
     },
     [event, getStatus]
   );
@@ -153,13 +156,26 @@ const AllocateParkingSpaces = () => {
       } else {
         const allocations = response.data;
         storeAllocationsInSession(allocations);
+        setInitialAllocations(allocations);
         setIsDataLoaded(true);
       }
     } catch (error) {
       console.error("Error fetching allocations data:", error);
     }
   }, [id, event, storeAllocationsInSession]);
+
+  const resetAllocations = () => {
+    if (initialAllocations) {
+      storeAllocationsInSession(initialAllocations);
+      window.dispatchEvent(new Event("allocations-updated"));
+      setSnackbarMessage("Allocations reset to initial values currently saved");
+      setSnackbarSeverity("info");
+      setSnackbarOpen(true);
+    }
+  };
+
   const saveAllocations = async () => {
+    setIsSaving(true);
     const allocations = JSON.parse(sessionStorage.getItem("allocations"));
     const formattedAllocations = [];
     const phases = [
@@ -224,6 +240,7 @@ const AllocateParkingSpaces = () => {
       );
       setSnackbarSeverity("error");
     } finally {
+      setIsSaving(false); // Set spinner to inactive
       setSnackbarOpen(true);
       setTimeout(() => {
         window.location.reload();
@@ -475,6 +492,23 @@ const AllocateParkingSpaces = () => {
     return allocated;
   };
 
+  useEffect(() => {
+    const handleAllocationsUpdated = () => {
+      fetchDemands(); // Re-fetch demands whenever allocations are updated
+    };
+
+    window.addEventListener("allocations-updated", handleAllocationsUpdated);
+    window.addEventListener("storage", handleAllocationsUpdated);
+
+    return () => {
+      window.removeEventListener(
+        "allocations-updated",
+        handleAllocationsUpdated
+      );
+      window.removeEventListener("storage", handleAllocationsUpdated);
+    };
+  }, [fetchDemands]);
+
   const handleAddAllocationClick = (phase) => {
     setSelectedPhase(phase);
     const phaseDemands = getDemandsPerPhase(phase);
@@ -696,13 +730,25 @@ const AllocateParkingSpaces = () => {
           Back
         </Button>
         <Button
+          className="reset-button"
+          variant="contained"
+          color="secondary"
+          onClick={resetAllocations}
+          startIcon={<RotateLeftIcon />}
+        >
+          Reset
+        </Button>
+        <Button
           className="save-button"
           variant="contained"
           color="primary"
-          startIcon={<SaveRoundedIcon />}
+          startIcon={
+            isSaving ? <CircularProgress size={20} /> : <SaveRoundedIcon />
+          }
           onClick={saveAllocations}
+          disabled={isSaving}
         >
-          Save Allocations
+          {isSaving ? "Saving..." : "Save Allocations"}
         </Button>
       </Box>
       <Snackbar
