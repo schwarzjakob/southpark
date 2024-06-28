@@ -124,6 +124,45 @@ const Demand = ({ phase, data }) => {
     (maxDemand.bus_demand - totalAllocatedBuses) * 3 +
     (maxDemand.truck_demand - totalAllocatedTrucks) * 4;
 
+  const [, setPhases] = useState([]);
+
+  const savePhase = (phase, totalAllocatedDemand, totalMaxDemand) => {
+    console.log(
+      "phase",
+      phase,
+      "totalAllocatedDemand",
+      totalAllocatedDemand,
+      "totalMaxDemand",
+      totalMaxDemand
+    );
+    const state = totalAllocatedDemand === totalMaxDemand;
+
+    const storedPhases = JSON.parse(sessionStorage.getItem("fullyAllocated")) || [];
+    const updatedPhases = storedPhases.filter((p) => p.phase !== phase);
+    updatedPhases.push({ phase, state });
+
+    setPhases(updatedPhases);
+    sessionStorage.setItem("fullyAllocated", JSON.stringify(updatedPhases));
+  };
+
+  useEffect(() => {
+    const handlePhaseStorageChange = (e) => {
+      if (e.key === "fullyAllocated") {
+        setPhases(JSON.parse(e.newValue) || []);
+      }
+    };
+
+    window.addEventListener("storage", handlePhaseStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handlePhaseStorageChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    savePhase(phase, totalAllocatedDemand, totalMaxDemand);
+  }, [phase, totalAllocatedDemand, totalMaxDemand]);
+
   return (
     <Grid className="allocation-container" item xs={4}>
       <Box>
