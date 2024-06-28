@@ -560,12 +560,10 @@ def allocate_demands():
     try:
         data = request.json
         allocations = data.get("allocations", [])
+        event_id = data.get("event_id")
 
-        if not allocations:
-            return jsonify({"error": "No allocations provided"}), 400
-
-        # Get event ID from the first allocation (assuming all allocations have the same event ID)
-        event_id = allocations[0]["event_id"]
+        if not event_id:
+            return jsonify({"error": "Event ID must be provided"}), 400
 
         # Delete existing allocations for the entire event
         delete_event_query = text("""
@@ -573,6 +571,10 @@ def allocate_demands():
         WHERE event_id = :event_id
         """)
         db.session.execute(delete_event_query, {"event_id": event_id})
+
+        if not allocations:
+            db.session.commit()
+            return jsonify({"message": "All existing allocations deleted successfully"}), 200
 
         for allocation in allocations:
             # Check parking lot capacity

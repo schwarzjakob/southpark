@@ -145,23 +145,20 @@ const AllocateParkingSpaces = () => {
     if (!event) return;
     try {
       const response = await axios.get(`/api/events/allocations/${id}`);
-      const allocations = response.data;
-      storeAllocationsInSession(allocations);
-      setIsDataLoaded(true);
+      if (response.status === 204) {
+        storeAllocationsInSession([]);
+        setIsDataLoaded(true);
+      } else {
+        const allocations = response.data;
+        storeAllocationsInSession(allocations);
+        setIsDataLoaded(true);
+      }
     } catch (error) {
       console.error("Error fetching allocations data:", error);
     }
   }, [id, event, storeAllocationsInSession]);
-
   const saveAllocations = async () => {
     const allocations = JSON.parse(sessionStorage.getItem("allocations"));
-    if (!allocations) {
-      setSnackbarMessage("No allocations to save");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-      return;
-    }
-
     const formattedAllocations = [];
     const phases = [
       {
@@ -203,14 +200,15 @@ const AllocateParkingSpaces = () => {
 
     console.log(
       "Sending to API:",
-      JSON.stringify({ allocations: formattedAllocations })
+      JSON.stringify({ allocations: formattedAllocations, event_id: id })
     );
 
     try {
       const response = await axios.post("/api/events/allocate_demands", {
         allocations: formattedAllocations,
+        event_id: id,
       });
-      if (response.status === 201) {
+      if (response.status === 200 || response.status === 201) {
         setSnackbarMessage("Allocations saved successfully");
         setSnackbarSeverity("success");
         setUnsavedChanges(false);
@@ -231,10 +229,103 @@ const AllocateParkingSpaces = () => {
     }
   };
 
+  const fetchRecommendations = useCallback(async () => {
+    try {
+      // Fetch recommendations data
+      const recommendationResponse = await axios.post(
+        `/api/recommendation/engine`,
+        { id: id },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const recommendationData = recommendationResponse.data;
+
+      // Fetch parking lot names
+      const parkingSpacesResponse = await axios.get("/api/parking/spaces");
+      const parkingSpacesData = parkingSpacesResponse.data;
+
+      // Create a mapping of parking lot IDs to names
+      const parkingLotMap = {};
+      parkingSpacesData.forEach((parkingSpace) => {
+        parkingLotMap[parkingSpace.id] = parkingSpace.name;
+      });
+
+      // Function to transform the data
+      const transformData = (data) => {
+        const result = {};
+
+        const processData = (type) => {
+          data[type].busses.forEach((bus) => {
+            const lotName = parkingLotMap[bus.parking_lot_id];
+            if (!result[type][lotName]) {
+              result[type][lotName] = {
+                cars: 0,
+                buses: 0,
+                trucks: 0,
+                allocation_id: 0, // This field needs a unique allocation ID, handle as per requirement
+                parking_lot_id: bus.parking_lot_id,
+                parking_lot_name: lotName,
+              };
+            }
+            result[type][lotName].buses += bus.capacity;
+          });
+
+          data[type].cars.forEach((car) => {
+            const lotName = parkingLotMap[car.parking_lot_id];
+            if (!result[type][lotName]) {
+              result[type][lotName] = {
+                cars: 0,
+                buses: 0,
+                trucks: 0,
+                allocation_id: 0, // This field needs a unique allocation ID, handle as per requirement
+                parking_lot_id: car.parking_lot_id,
+                parking_lot_name: lotName,
+              };
+            }
+            result[type][lotName].cars += car.capacity;
+          });
+
+          data[type].trucks.forEach((truck) => {
+            const lotName = parkingLotMap[truck.parking_lot_id];
+            if (!result[type][lotName]) {
+              result[type][lotName] = {
+                cars: 0,
+                buses: 0,
+                trucks: 0,
+                allocation_id: 0, // This field needs a unique allocation ID, handle as per requirement
+                parking_lot_id: truck.parking_lot_id,
+                parking_lot_name: lotName,
+              };
+            }
+            result[type][lotName].trucks += truck.capacity;
+          });
+        };
+
+        result.assembly = {};
+        result.runtime = {};
+        result.disassembly = {};
+
+        processData("assembly");
+        processData("runtime");
+        processData("disassembly");
+
+        return result;
+      };
+
+      const transformedData = transformData(recommendationData);
+
+      // Log the transformed data
+      console.log(transformedData);
+    } catch (error) {
+      console.error("Error fetching allocations:", error);
+    }
+  }, [id]);
+
   useEffect(() => {
+    fetchRecommendations();
     fetchDemands();
     fetchEventDetails();
-  }, [fetchDemands, fetchEventDetails]);
+  }, [fetchDemands, fetchEventDetails, fetchRecommendations]);
 
   useEffect(() => {
     if (event) {
@@ -522,7 +613,7 @@ const AllocateParkingSpaces = () => {
                   <>
                     <Demand phase={phase.name} data={phaseDemands} />
                     <Allocation phase={phase.name} />
-                    <Recommendation phase={phase.name} data={phaseDemands} />
+                    <Recommendation phase={phase.name} eventId={event.id} />
                   </>
                 ) : (
                   <Box
