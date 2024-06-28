@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Grid, Typography, Box, IconButton, Divider } from "@mui/material";
 import PropTypes from "prop-types";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
@@ -20,35 +20,33 @@ const Allocation = ({ phase }) => {
     if (storedAllocations && storedAllocations[phase]) {
       delete storedAllocations[phase][parkingSpace];
       sessionStorage.setItem("allocations", JSON.stringify(storedAllocations));
+
       setAllocations(Object.entries(storedAllocations[phase]));
       window.dispatchEvent(new Event("storage"));
     }
   };
 
+  const loadAllocations = useCallback(() => {
+    const storedAllocations = JSON.parse(sessionStorage.getItem("allocations"));
+    if (storedAllocations && storedAllocations[phase]) {
+      setAllocations(Object.entries(storedAllocations[phase]));
+    } else {
+      setAllocations([]);
+    }
+  }, [phase]);
+
   useEffect(() => {
     const handleStorageChange = () => {
-      const storedAllocations = JSON.parse(
-        sessionStorage.getItem("allocations")
-      );
-      if (storedAllocations && storedAllocations[phase]) {
-        setAllocations(Object.entries(storedAllocations[phase]));
-      }
+      loadAllocations();
     };
 
     window.addEventListener("storage", handleStorageChange);
-    handleStorageChange();
+    loadAllocations();
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, [phase]);
-
-  useEffect(() => {
-    const storedAllocations = JSON.parse(sessionStorage.getItem("allocations"));
-    if (storedAllocations && storedAllocations[phase]) {
-      setAllocations(Object.entries(storedAllocations[phase]));
-    }
-  }, [phase]);
+  }, [loadAllocations]);
 
   const totalAllocations = allocations.reduce(
     (acc, [, data]) => {
@@ -103,7 +101,7 @@ const Allocation = ({ phase }) => {
           <Grid
             container
             key={index}
-            className={` assignment-container allocation-row ${
+            className={`assignment-container allocation-row ${
               index % 2 === 1 ? "allocation-row-2nd" : ""
             }`}
           >
