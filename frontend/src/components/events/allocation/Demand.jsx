@@ -162,7 +162,7 @@ const Demand = ({ phase, data }) => {
     <Grid className="allocation-container" item xs={4}>
       <Box>
         <Grid container className="allocation-header">
-          <Grid item xs={3}>
+          <Grid item xs={4}>
             <Box className="icon-text">{""}</Box>
           </Grid>
           <Grid item xs={2}>

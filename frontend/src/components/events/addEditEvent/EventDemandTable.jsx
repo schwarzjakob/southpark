@@ -14,7 +14,6 @@ import {
   Button,
   TextField,
   Alert,
-  
 } from "@mui/material";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
@@ -34,7 +33,6 @@ import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
 
 import PropTypes from "prop-types";
-import "./styles/events.css";
 
 const TITLE = "Event Demands";
 

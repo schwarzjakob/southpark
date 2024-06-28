@@ -36,7 +36,7 @@ const AllocateParkingSpaces = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState("");
-  const [totalDemands, setTotalDemands] = useState({
+  const [, setTotalDemands] = useState({
     cars: 0,
     buses: 0,
     trucks: 0,
@@ -543,7 +543,7 @@ const AllocateParkingSpaces = () => {
         open={popupOpen}
         onClose={() => setPopupOpen(false)}
         phase={selectedPhase}
-        totalDemands={totalDemands}
+        data={getDemandsPerPhase(selectedPhase)}
         allocatedDemands={allocatedDemands}
         startDate={phases.find((p) => p.name === selectedPhase)?.start_date}
         endDate={phases.find((p) => p.name === selectedPhase)?.end_date}

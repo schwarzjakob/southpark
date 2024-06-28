@@ -32,11 +32,13 @@ const AddAllocationPopup = ({
   open,
   onClose,
   phase,
-  totalDemands,
+  data,
   allocatedDemands,
   startDate,
   endDate,
 }) => {
+  console.log(data);
+  console.log(allocatedDemands);
   const [parkingLots, setParkingLots] = useState([]);
   const [selectedParkingLot, setSelectedParkingLot] = useState("");
   const [capacities, setCapacities] = useState({
@@ -50,6 +52,16 @@ const AddAllocationPopup = ({
     trucks: 0,
   });
   const [showError, setShowError] = useState(false);
+
+  const maxDemand = {
+    car_demand: Math.max(...data.map((d) => d.car_demand), 0),
+    bus_demand: Math.max(...data.map((d) => d.bus_demand), 0),
+    truck_demand: Math.max(...data.map((d) => d.truck_demand), 0),
+  };
+
+  const notAllocatedCars = maxDemand.car_demand - allocatedDemands.cars;
+  const notAllocatedBuses = maxDemand.bus_demand - allocatedDemands.buses;
+  const notAllocatedTrucks = maxDemand.truck_demand - allocatedDemands.trucks;
 
   const fetchParkingLotCapacities = useCallback(async () => {
     try {
@@ -135,9 +147,9 @@ const AddAllocationPopup = ({
         if (firstAvailableLot) {
           setSelectedParkingLot(firstAvailableLot.id);
           setCapacities({
-            cars: Math.min(firstAvailableLot.cars, totalDemands.cars),
-            buses: Math.min(firstAvailableLot.buses, totalDemands.buses),
-            trucks: Math.min(firstAvailableLot.trucks, totalDemands.trucks),
+            cars: Math.min(firstAvailableLot.cars, notAllocatedCars),
+            buses: Math.min(firstAvailableLot.buses, notAllocatedBuses),
+            trucks: Math.min(firstAvailableLot.trucks, notAllocatedTrucks),
           });
           setLimits({
             cars: lotLimits[firstAvailableLot.id].cars,
@@ -153,9 +165,9 @@ const AddAllocationPopup = ({
     startDate,
     endDate,
     phase,
-    totalDemands.cars,
-    totalDemands.buses,
-    totalDemands.trucks,
+    notAllocatedCars,
+    notAllocatedBuses,
+    notAllocatedTrucks,
   ]);
 
   useEffect(() => {
@@ -177,9 +189,9 @@ const AddAllocationPopup = ({
     );
     setSelectedParkingLot(event.target.value);
     setCapacities({
-      cars: Math.min(selectedLot.cars, totalDemands.cars),
-      buses: Math.min(selectedLot.buses, totalDemands.buses),
-      trucks: Math.min(selectedLot.trucks, totalDemands.trucks),
+      cars: Math.min(selectedLot.cars, notAllocatedCars),
+      buses: Math.min(selectedLot.buses, notAllocatedBuses),
+      trucks: Math.min(selectedLot.trucks, notAllocatedTrucks),
     });
     setLimits({
       cars: selectedLot.cars,
@@ -247,10 +259,6 @@ const AddAllocationPopup = ({
 
   const days = calculateDays(startDate, endDate);
 
-  const notAllocatedCars = totalDemands.cars - allocatedDemands.cars;
-  const notAllocatedBuses = totalDemands.buses - allocatedDemands.buses;
-  const notAllocatedTrucks = totalDemands.trucks - allocatedDemands.trucks;
-
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <Box p={3} className="add-allocation-popup">
@@ -260,7 +268,6 @@ const AddAllocationPopup = ({
           alignItems="center"
           className="popup-header"
         >
-          {" "}
           <Box display="flex" gap="1rem" alignItems="center">
             {getPhaseIcon()}
             <Typography
@@ -485,7 +492,7 @@ AddAllocationPopup.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   phase: PropTypes.string.isRequired,
-  totalDemands: PropTypes.object.isRequired,
+  data: PropTypes.array.isRequired,
   allocatedDemands: PropTypes.object.isRequired,
   startDate: PropTypes.string,
   endDate: PropTypes.string,

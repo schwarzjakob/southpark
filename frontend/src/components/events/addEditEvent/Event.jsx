@@ -30,7 +30,7 @@ import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
 import LeafletMap from "../../map/LeafletMap.jsx";
 import TimelineSlider from "../../map/TimelineSlider.jsx";
-import EventDemandTable from "../EventDemandTable.jsx";
+import EventDemandTable from "./EventDemandTable.jsx";
 
 import "../../map/styles/mapView.css";
 import "../styles/events.css";
