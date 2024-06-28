@@ -1,62 +1,47 @@
-import { useState, useEffect } from "react";
-import { Grid, Typography, Box, IconButton, Divider } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Box,
+  Divider,
+  CircularProgress,
+} from "@mui/material";
 import PropTypes from "prop-types";
-import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import DirectionsCarFilledRoundedIcon from "@mui/icons-material/DirectionsCarFilledRounded";
 import AirportShuttleRoundedIcon from "@mui/icons-material/AirportShuttleRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 
-const Recommendation = ({ phase }) => {
+const Recommendation = ({ data, phase }) => {
   Recommendation.propTypes = {
-    phase: PropTypes.string.isRequired,
+    data: PropTypes.object,
+    phase: PropTypes.string,
   };
 
-  const [allocations, setAllocations] = useState([]);
+  if (!data || !data[phase]) {
+    return (
+      <Grid item xs={4}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="200px"
+        >
+          <CircularProgress />
+        </Box>
+      </Grid>
+    );
+  }
 
-  const handleDelete = (parkingSpace) => {
-    const storedAllocations = JSON.parse(sessionStorage.getItem("allocations"));
-    if (storedAllocations && storedAllocations[phase]) {
-      delete storedAllocations[phase][parkingSpace];
-      sessionStorage.setItem("allocations", JSON.stringify(storedAllocations));
-      setAllocations(Object.entries(storedAllocations[phase]));
-      window.dispatchEvent(new Event("storage"));
-    }
-  };
-
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const storedAllocations = JSON.parse(
-        sessionStorage.getItem("allocations")
-      );
-      if (storedAllocations && storedAllocations[phase]) {
-        setAllocations(Object.entries(storedAllocations[phase]));
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    handleStorageChange();
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [phase]);
-
-  useEffect(() => {
-    const storedAllocations = JSON.parse(sessionStorage.getItem("allocations"));
-    if (storedAllocations && storedAllocations[phase]) {
-      setAllocations(Object.entries(storedAllocations[phase]));
-    }
-  }, [phase]);
+  const allocations = Object.entries(data[phase]);
 
   const totalAllocations = allocations.reduce(
-    (acc, [, data]) => {
-      acc.cars += data.cars;
-      acc.buses += data.buses;
-      acc.trucks += data.trucks;
-      acc.carUnits += data.cars + data.buses * 3 + data.trucks * 4;
+    (acc, [, allocation]) => {
+      acc.cars += allocation.cars;
+      acc.buses += allocation.buses;
+      acc.trucks += allocation.trucks;
+      acc.carUnits +=
+        allocation.cars + allocation.buses * 3 + allocation.trucks * 4;
       return acc;
     },
     { cars: 0, buses: 0, trucks: 0, carUnits: 0 }
@@ -66,7 +51,7 @@ const Recommendation = ({ phase }) => {
     <Grid item xs={4} className="allocation-container">
       <Box>
         <Grid container className="allocation-header">
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <Box className="icon-text">
               <GarageIcon className="icon-small" />
               <Typography>Parking</Typography>
@@ -90,54 +75,43 @@ const Recommendation = ({ phase }) => {
               <Typography>Trucks</Typography>
             </Box>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <Box className="icon-text">
               <FunctionsRoundedIcon className="icon-small" />
               <Typography>Car Units</Typography>
             </Box>
           </Grid>
-          <Grid item xs={2}>
-            {""}
-          </Grid>
         </Grid>
-        {allocations.map(([parkingSpace, data], index) => (
+        {allocations.map(([parkingLot, allocation], index) => (
           <Grid
             container
             key={index}
-            className={` assignment-container allocation-row ${
+            className={`assignment-container allocation-row ${
               index % 2 === 1 ? "allocation-row-2nd" : ""
             }`}
           >
-            <Grid item xs={2} className="assignment-item parking-space">
-              <Typography>{parkingSpace}</Typography>
+            <Grid item xs={3} className="assignment-item parking-space">
+              <Typography>{parkingLot}</Typography>
             </Grid>
             <Grid item xs={2} className="assignment-item">
-              <Typography>{data.cars}</Typography>
+              <Typography>{allocation.cars}</Typography>
             </Grid>
             <Grid item xs={2} className="assignment-item">
-              <Typography>{data.buses}</Typography>
+              <Typography>{allocation.buses}</Typography>
             </Grid>
             <Grid item xs={2} className="assignment-item">
-              <Typography>{data.trucks}</Typography>
+              <Typography>{allocation.trucks}</Typography>
             </Grid>
-            <Grid item xs={2} className="assignment-item">
+            <Grid item xs={3} className="assignment-item">
               <Typography>
-                {data.cars + data.buses * 3 + data.trucks * 4}
+                {allocation.cars + allocation.buses * 3 + allocation.trucks * 4}
               </Typography>
-            </Grid>
-            <Grid item xs={2} className="assignment-item">
-              <IconButton
-                onClick={() => handleDelete(parkingSpace)}
-                className="small-icon-button"
-              >
-                <DeleteForeverRoundedIcon />
-              </IconButton>
             </Grid>
           </Grid>
         ))}
         <Divider />
         <Grid container className="assignment-container">
-          <Grid item xs={2} className="assignment-item">
+          <Grid item xs={3} className="assignment-item">
             <Typography>
               <strong>∑</strong>
             </Typography>
@@ -157,13 +131,10 @@ const Recommendation = ({ phase }) => {
               <strong>{totalAllocations.trucks}</strong>
             </Typography>
           </Grid>
-          <Grid item xs={2} className="assignment-item">
+          <Grid item xs={3} className="assignment-item">
             <Typography>
               <strong>{totalAllocations.carUnits}</strong>
             </Typography>
-          </Grid>
-          <Grid item xs={2} className="assignment-item">
-            <Typography> </Typography>
           </Grid>
         </Grid>
       </Box>

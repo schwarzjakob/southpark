@@ -22,7 +22,7 @@ const Allocation = ({ phase }) => {
       sessionStorage.setItem("allocations", JSON.stringify(storedAllocations));
 
       setAllocations(Object.entries(storedAllocations[phase]));
-      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event("allocations-updated"));
     }
   };
 
@@ -36,15 +36,18 @@ const Allocation = ({ phase }) => {
   }, [phase]);
 
   useEffect(() => {
-    const handleStorageChange = () => {
+    const handleAllocationsUpdated = () => {
       loadAllocations();
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("allocations-updated", handleAllocationsUpdated);
     loadAllocations();
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(
+        "allocations-updated",
+        handleAllocationsUpdated
+      );
     };
   }, [loadAllocations]);
 

@@ -513,4 +513,5 @@ a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
   justify-content: center;
   align-items: center;
   height: 100%;
+  width: 100%;
 }

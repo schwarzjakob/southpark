@@ -52,6 +52,8 @@ const AllocateParkingSpaces = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const [transformedRecommendationData, setTransformedRecommendationData] =
+    useState(null);
   const [buttonStates, setButtonStates] = useState({
     assembly: false,
     runtime: false,
@@ -231,7 +233,6 @@ const AllocateParkingSpaces = () => {
 
   const fetchRecommendations = useCallback(async () => {
     try {
-      // Fetch recommendations data
       const recommendationResponse = await axios.post(
         `/api/recommendation/engine`,
         { id: id },
@@ -239,18 +240,14 @@ const AllocateParkingSpaces = () => {
       );
 
       const recommendationData = recommendationResponse.data;
-
-      // Fetch parking lot names
       const parkingSpacesResponse = await axios.get("/api/parking/spaces");
       const parkingSpacesData = parkingSpacesResponse.data;
 
-      // Create a mapping of parking lot IDs to names
       const parkingLotMap = {};
       parkingSpacesData.forEach((parkingSpace) => {
         parkingLotMap[parkingSpace.id] = parkingSpace.name;
       });
 
-      // Function to transform the data
       const transformData = (data) => {
         const result = {};
         const processData = (type) => {
@@ -318,8 +315,8 @@ const AllocateParkingSpaces = () => {
       };
 
       const transformedData = transformData(recommendationData);
+      setTransformedRecommendationData(transformedData);
 
-      // Log the transformed data
       console.log("Recommendation:", transformedData);
     } catch (error) {
       console.error("Error fetching allocations:", error);
@@ -500,6 +497,41 @@ const AllocateParkingSpaces = () => {
     window.dispatchEvent(new Event("popup-opened"));
     console.log("popup-opened");
   };
+  const applyRecommendations = (phase) => {
+    if (
+      !transformedRecommendationData ||
+      !transformedRecommendationData[phase]
+    ) {
+      setSnackbarMessage("No recommendations available for this phase");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    const currentAllocations =
+      JSON.parse(sessionStorage.getItem("allocations")) || {};
+
+    // Remove existing allocations for the selected phase
+    currentAllocations[phase] = {};
+
+    // Add new recommendations for the selected phase
+    currentAllocations[phase] = transformedRecommendationData[phase];
+
+    // Update session storage
+    sessionStorage.setItem("allocations", JSON.stringify(currentAllocations));
+
+    // Dispatch a custom event to notify components
+    window.dispatchEvent(new Event("allocations-updated"));
+
+    setSnackbarMessage(`Recommendations applied for ${phase} phase`);
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+  };
+
+  const handleApplyRecommendationsClick = (phase) => {
+    applyRecommendations(phase);
+    setUnsavedChanges(true);
+  };
 
   return (
     <Box className="allocateParkingSpace-container">
@@ -611,6 +643,9 @@ const AllocateParkingSpaces = () => {
                       variant="contained"
                       color="secondary"
                       startIcon={<ArrowBackIosNewRoundedIcon />}
+                      onClick={() =>
+                        handleApplyRecommendationsClick(phase.name)
+                      }
                     >
                       Apply Recommendations
                     </Button>
@@ -620,7 +655,10 @@ const AllocateParkingSpaces = () => {
                   <>
                     <Demand phase={phase.name} data={phaseDemands} />
                     <Allocation phase={phase.name} />
-                    <Recommendation phase={phase.name} eventId={event.id} />
+                    <Recommendation
+                      data={transformedRecommendationData}
+                      phase={phase.name}
+                    />
                   </>
                 ) : (
                   <Box
@@ -628,6 +666,7 @@ const AllocateParkingSpaces = () => {
                     justifyContent="center"
                     alignItems="center"
                     height="200px"
+                    width="100%"
                   >
                     <CircularProgress />
                   </Box>
