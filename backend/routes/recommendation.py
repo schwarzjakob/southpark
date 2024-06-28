@@ -1,4 +1,5 @@
 
+
 import pandas as pd
 import requests
 from datetime import datetime
@@ -121,23 +122,33 @@ data = """
 5,20,739
 """
 
+# Define the list of west halls for parking house hard assignment
+west_halls = [1, 2, 3, 7, 8, 9, 13, 14, 15]
+
+# Split the raw data string into lines and then into individual values
 lines = data.strip().split("\n")
 values = [line.split(",") for line in lines]
+
+# Create a DataFrame from the values
 distances_df = pd.DataFrame(values, columns=["entrance_id", "parking_lot_id", "distance"])
+# Convert the columns to the appropriate data types
 distances_df["entrance_id"] = distances_df["entrance_id"].astype(int)
 distances_df["parking_lot_id"] = distances_df["parking_lot_id"].astype(int)
 distances_df["distance"] = distances_df["distance"].astype(int)
 
+# Define URLs for the capacity services
 TOTAL_CAPACITY_URL = "http://localhost:5000/dashboard/total_capacity"
 PARKING_CAPACITIES_URL = "http://localhost:5000/parking/capacities/{}"
 PARKING_SPACES_URL = "http://localhost:5000/parking/spaces"
 
+# Function to get total parking capacity for a given date range
 def get_total_capacity(start_date, end_date):
     try:
         response = requests.get(TOTAL_CAPACITY_URL, params={'start_date': start_date, 'end_date': end_date})
-        response.raise_for_status()
-        capacities = response.json()
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        capacities = response.json()  # Parse the JSON response
         if isinstance(capacities, list):
+            # Find the minimum capacity from the list of capacities
             min_capacity = min(capacity.get("total_capacity", 0) for capacity in capacities)
             return int(min_capacity)
         return 0
@@ -146,12 +157,14 @@ def get_total_capacity(start_date, end_date):
     except (KeyError, ValueError) as e:
         return f"Error parsing total capacity response: {str(e)}"
 
+# Function to check parking capacity for a specific lot and date range
 def check_parking_capacity(parking_lot_id, start_date, end_date):
     try:
         response = requests.get(PARKING_CAPACITIES_URL.format(parking_lot_id), params={'start_date': start_date, 'end_date': end_date})
-        response.raise_for_status()
-        capacities = response.json()
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        capacities = response.json()  # Parse the JSON response
         if isinstance(capacities, list) and capacities:
+            # Get the free capacity from the first item in the list
             first_item = capacities[0]
             free_capacity = first_item.get('capacity', 0)
             return int(free_capacity) if isinstance(free_capacity, (int, float, str)) else 0
@@ -161,6 +174,7 @@ def check_parking_capacity(parking_lot_id, start_date, end_date):
     except (KeyError, ValueError) as e:
         return f"Error parsing parking capacity response: {str(e)}"
 
+# Function to get a list of parking lots with optional filters
 def get_parking_lots(material=None, service_level=None):
     try:
         params = {}
@@ -169,8 +183,8 @@ def get_parking_lots(material=None, service_level=None):
         if service_level:
             params['service_level'] = service_level
         response = requests.get(PARKING_SPACES_URL, params=params)
-        response.raise_for_status()
-        parking_lots = response.json()
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        parking_lots = response.json()  # Parse the JSON response
         if isinstance(parking_lots, list) and all(isinstance(lot, dict) and 'id' in lot for lot in parking_lots):
             return parking_lots
         else:
@@ -178,102 +192,178 @@ def get_parking_lots(material=None, service_level=None):
     except requests.exceptions.RequestException as e:
         return f"Error fetching parking lots: {str(e)}"
 
-def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date):
+# Function to get the average distance between the halls and the parking lot
+def get_average_distance(hall_ids, parking_lot_id):
+    distances = []
+    for hall_id in hall_ids:
+        distance = distances_df[(distances_df['entrance_id'] == hall_id) & (distances_df['parking_lot_id'] == parking_lot_id)]
+        if not distance.empty:
+            distances.append(distance.iloc[0]['distance'])
+    if distances:
+        return sum(distances) / len(distances)
+    else:
+        return float('inf')
+
+# Function to assign parking spaces based on demand and available lots
+def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, hall_ids):
     print(f"Assigning parking for {car_demand} cars, {bus_demand} busses, {truck_demand} trucks in {phase} phase")
     assigned_lots = {'cars': [], 'busses': [], 'trucks': []}
     remaining_demand = {'cars': car_demand, 'busses': bus_demand, 'trucks': truck_demand}
     
-    for lot in lots:
-        min_free_capacity = check_min_parking_capacity(lot['id'], start_date, end_date)
+    # Determine if any halls in the event belong to west halls
+    prioritize_20 = any(hall in west_halls for hall in hall_ids)
+    
+    # Calculate average distances for all lots
+    lots_with_distances = [
+        (lot, get_average_distance(hall_ids, lot['id'])) for lot in lots
+    ]
+    
+    # Sort the lots by distance and by ID if prioritize_20 is True
+    if prioritize_20:
+        lots_sorted = sorted(lots_with_distances, key=lambda x: (x[0]['id'] != 20, x[1], x[0]['id']))
+    else:
+        lots_sorted = sorted(lots_with_distances, key=lambda x: (x[1], x[0]['id']))
+
+    for lot, _ in lots_sorted:
+        # Check min capacity for cars, busses, and trucks for the given parking lot
+        min_free_capacity, truck_limit, bus_limit = check_min_parking_capacity(lot['id'], start_date, end_date)
         min_free_capacity = int(min_free_capacity) if isinstance(min_free_capacity, (int, float, str)) else 0
-        
+        truck_limit = int(truck_limit) if isinstance(truck_limit, (int, float, str)) else 0
+        bus_limit = int(bus_limit) if isinstance(bus_limit, (int, float, str)) else 0
+
         while min_free_capacity > 0 and (remaining_demand['cars'] > 0 or remaining_demand['busses'] > 0 or remaining_demand['trucks'] > 0):
+            # Check if the lot can store cars
             if remaining_demand['cars'] > 0 and min_free_capacity >= 1:
                 allocated_capacity = min(min_free_capacity, remaining_demand['cars'])
                 assigned_lots['cars'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
                 remaining_demand['cars'] -= allocated_capacity
                 min_free_capacity -= allocated_capacity
-            
-            elif remaining_demand['busses'] > 0 and min_free_capacity >= 3:
-                allocated_capacity = min(min_free_capacity // 3, remaining_demand['busses'])
+
+            # Check if the lot can store busses and respect bus_limit
+            elif remaining_demand['busses'] > 0 and min_free_capacity >= 3 and bus_limit > 0:
+                allocated_capacity = min(min_free_capacity // 3, remaining_demand['busses'], bus_limit)
                 assigned_lots['busses'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
                 remaining_demand['busses'] -= allocated_capacity
                 min_free_capacity -= allocated_capacity * 3
-            
-            elif remaining_demand['trucks'] > 0 and min_free_capacity >= 4:
-                allocated_capacity = min(min_free_capacity // 4, remaining_demand['trucks'])
+                bus_limit -= allocated_capacity
+
+            # Check if the lot can store trucks and respect truck_limit
+            elif remaining_demand['trucks'] > 0 and min_free_capacity >= 4 and truck_limit > 0:
+                allocated_capacity = min(min_free_capacity // 4, remaining_demand['trucks'], truck_limit)
                 assigned_lots['trucks'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
                 remaining_demand['trucks'] -= allocated_capacity
                 min_free_capacity -= allocated_capacity * 4
-            
+                truck_limit -= allocated_capacity
+
             else:
                 break
-        
+
         if all(demand == 0 for demand in remaining_demand.values()):
             break
-    
-    if any(demand > 0 for demand in remaining_demand.values()):
-        print(f"Error: Not enough capacity to fulfill {phase} demand")
-        return f"Error: Not enough capacity to fulfill {phase} demand"
-    
+
     for lot in assigned_lots['busses']:
         lot['capacity'] *= 3
     for lot in assigned_lots['trucks']:
         lot['capacity'] *= 4
 
     print(f"Assigned lots: {assigned_lots}")
-    return assigned_lots
+    return assigned_lots, remaining_demand
 
+
+# Function to check minimum parking capacity for a specific lot and date range
+def check_min_parking_capacity(parking_lot_id, start_date, end_date):
+    try:
+        print(f"Checking minimum parking capacity for lot {parking_lot_id} from {start_date} to {end_date}")
+        response = requests.get(PARKING_CAPACITIES_URL.format(parking_lot_id), params={'start_date': start_date, 'end_date': end_date})
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        capacities = response.json()  # Parse the JSON response
+        print(f"Capacities for lot {parking_lot_id}: {capacities}")
+        if isinstance(capacities, list) and capacities:
+            min_capacity = min(capacity.get('capacity', 0) for capacity in capacities)
+            truck_limit = min(capacity.get('truck_limit', 0) for capacity in capacities)
+            bus_limit = min(capacity.get('bus_limit', 0) for capacity in capacities)
+            print(f"Minimum capacity: {min_capacity}, Truck limit: {truck_limit}, Bus limit: {bus_limit}")
+            return min_capacity, truck_limit, bus_limit
+        return 0, 0, 0
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching parking capacity: {str(e)}")
+        return 0, 0, 0
+    except (KeyError, ValueError) as e:
+        print(f"Error parsing parking capacity response: {str(e)}")
+        return 0, 0, 0
+
+# Main Function of the recommendation engine
 def recommendation_engine(event):
     recommendations = {}
     phases = ['assembly', 'runtime', 'disassembly']
     for phase in phases:
         print(f"Processing phase: {phase}")
-        start_date = event[f'{phase}_start_date']
-        end_date = event[f'{phase}_end_date']
-        car_demand = int(event[f'{phase}_demand_cars'])
-        bus_demand = int(event[f'{phase}_demand_busses'])
-        truck_demand = int(event[f'{phase}_demand_trucks'])
-        total_capacity = get_total_capacity(start_date, end_date)
-        print(f"Total capacity for {phase} phase: {total_capacity}")
-        if isinstance(total_capacity, str):
-            print(f"Error: Total capacity returned as string: {total_capacity}")
-            return f"Error: Total capacity returned as string: {total_capacity}"
-        if (car_demand + bus_demand * 3 + truck_demand * 4) > total_capacity:
-            print(f"Error: Demand for {phase} phase exceeds total capacity")
-            return f"Error: Demand for {phase} phase exceeds total capacity"
-        
-        suitable_lots = get_parking_lots()
-        phase_recommendations = assign_parking(suitable_lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date)
-        
-        if isinstance(phase_recommendations, str):
-            return phase_recommendations
-        
-        recommendations[phase] = phase_recommendations
-    
+        try:
+            start_date = event[f'{phase}_start_date']
+            end_date = event[f'{phase}_end_date']
+            car_demand = int(event[f'{phase}_demand_cars'])
+            bus_demand = int(event[f'{phase}_demand_busses'])
+            truck_demand = int(event[f'{phase}_demand_trucks'])
+            total_capacity = get_total_capacity(start_date, end_date)
+            print(f"Total capacity for {phase} phase: {total_capacity}")
+            if isinstance(total_capacity, str):
+                print(f"Error: Total capacity returned as string: {total_capacity}")
+                return f"Error: Total capacity returned as string: {total_capacity}"
+
+            phase_recommendations = {'cars': [], 'busses': [], 'trucks': []}
+            status_message = "ok"
+
+            if car_demand > 0:
+                hall_ids_set = set(event['hall_ids'])
+                if check_parking_capacity(20, start_date, end_date) >= car_demand:
+                    if check_parking_capacity(20, start_date, end_date) >= car_demand:
+                        assigned_cars, remaining_cars = assign_parking([{'id': 20}], car_demand, 0, 0, phase, start_date, end_date, event['hall_ids'])
+                        phase_recommendations['cars'] = assigned_cars['cars']
+                    else:
+                        suitable_lots = get_parking_lots(service_level='high')
+                        assigned_cars, remaining_cars = assign_parking(suitable_lots, car_demand, 0, 0, phase, start_date, end_date, event['hall_ids'])
+                        phase_recommendations['cars'] = assigned_cars['cars']
+                else:
+                    suitable_lots = get_parking_lots()
+                    assigned_cars, remaining_cars = assign_parking(suitable_lots, car_demand, 0, 0, phase, start_date, end_date, event['hall_ids'])
+                    phase_recommendations['cars'] = assigned_cars['cars']
+
+                if remaining_cars['cars'] > 0:
+                    status_message = f"Allocated within capacities, but missing capacities for {remaining_cars['cars']} car units"
+
+            if truck_demand > 0:
+                if check_parking_capacity(5, start_date, end_date) >= truck_demand:
+                    assigned_trucks, remaining_trucks = assign_parking([{'id': 5}], 0, 0, truck_demand, phase, start_date, end_date, event['hall_ids'])
+                    phase_recommendations['trucks'] = assigned_trucks['trucks']
+                else:
+                    remaining_truck_demand = truck_demand - check_parking_capacity(5, start_date, end_date)
+                    assigned_trucks, remaining_trucks = assign_parking([{'id': 5}], 0, 0, truck_demand - remaining_truck_demand, phase, start_date, end_date, event['hall_ids'])
+                    phase_recommendations['trucks'] = assigned_trucks['trucks']
+                    if remaining_truck_demand > 0:
+                        suitable_lots = get_parking_lots()
+                        additional_trucks, remaining_trucks = assign_parking(suitable_lots, 0, 0, remaining_truck_demand, phase, start_date, end_date, event['hall_ids'])
+                        phase_recommendations['trucks'].extend(additional_trucks['trucks'])
+
+                if remaining_trucks['trucks'] > 0:
+                    status_message = f"Allocated within capacities, but missing capacities for {remaining_trucks['trucks']} truck units"
+
+            suitable_lots = get_parking_lots()
+            assigned_all, remaining_all = assign_parking(suitable_lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, event['hall_ids'])
+            phase_recommendations.update(assigned_all)
+
+            if isinstance(phase_recommendations, str):
+                return phase_recommendations
+
+            recommendations[phase] = phase_recommendations
+            recommendations[phase]['status'] = status_message
+        except Exception as e:
+            logger.error(f"Error generating recommendations for phase {phase}: {str(e)}")
+            recommendations[phase] = {"status": "Error generating recommendations, please try again later"}
+
     print(f"Recommendations: {recommendations}")
     return recommendations
 
-def check_min_parking_capacity(parking_lot_id, start_date, end_date):
-    try:
-        print(f"Checking minimum parking capacity for lot {parking_lot_id} from {start_date} to {end_date}")
-        response = requests.get(PARKING_CAPACITIES_URL.format(parking_lot_id), params={'start_date': start_date, 'end_date': end_date})
-        response.raise_for_status()
-        capacities = response.json()
-        print(f"Capacities for lot {parking_lot_id}: {capacities}")
-        if isinstance(capacities, list) and capacities:
-            min_capacity = min(capacity.get('capacity', 0) for capacity in capacities)
-            print(f"Minimum capacity: {min_capacity}")
-            return int(min_capacity) if isinstance(min_capacity, (int, float, str)) else 0
-        return 0
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching parking capacity: {str(e)}")
-        return f"Error fetching parking capacity: {str(e)}"
-    except (KeyError, ValueError) as e:
-        print(f"Error parsing parking capacity response: {str(e)}")
-        return f"Error parsing parking capacity response: {str(e)}"
-
-
+# Function to adjust recommendations for bus and truck capacities
 def adjust_recommendations(recommendations):
     def adjust_capacity(vehicles, divisor):
         for vehicle in vehicles:
@@ -286,6 +376,7 @@ def adjust_recommendations(recommendations):
             adjust_capacity(recommendations[phase]['trucks'], 4)
     return recommendations
 
+# Flask route to get recommendations
 @recommendation_bp.route("/engine", methods=["POST"])
 def get_recommendations():
     try:
