@@ -253,52 +253,57 @@ const AllocateParkingSpaces = () => {
       // Function to transform the data
       const transformData = (data) => {
         const result = {};
-
         const processData = (type) => {
-          data[type].busses.forEach((bus) => {
-            const lotName = parkingLotMap[bus.parking_lot_id];
-            if (!result[type][lotName]) {
-              result[type][lotName] = {
-                cars: 0,
-                buses: 0,
-                trucks: 0,
-                allocation_id: 0, // This field needs a unique allocation ID, handle as per requirement
-                parking_lot_id: bus.parking_lot_id,
-                parking_lot_name: lotName,
-              };
-            }
-            result[type][lotName].buses += bus.capacity;
-          });
+          if (data[type]?.busses) {
+            data[type].busses.forEach((bus) => {
+              const lotName = parkingLotMap[bus.parking_lot_id];
+              if (!result[type][lotName]) {
+                result[type][lotName] = {
+                  cars: 0,
+                  buses: 0,
+                  trucks: 0,
+                  allocation_id: 0,
+                  parking_lot_id: bus.parking_lot_id,
+                  parking_lot_name: lotName,
+                };
+              }
+              result[type][lotName].buses += bus.capacity;
+            });
+          }
 
-          data[type].cars.forEach((car) => {
-            const lotName = parkingLotMap[car.parking_lot_id];
-            if (!result[type][lotName]) {
-              result[type][lotName] = {
-                cars: 0,
-                buses: 0,
-                trucks: 0,
-                allocation_id: 0, // This field needs a unique allocation ID, handle as per requirement
-                parking_lot_id: car.parking_lot_id,
-                parking_lot_name: lotName,
-              };
-            }
-            result[type][lotName].cars += car.capacity;
-          });
+          if (data[type]?.cars) {
+            data[type].cars.forEach((car) => {
+              const lotName = parkingLotMap[car.parking_lot_id];
+              if (!result[type][lotName]) {
+                result[type][lotName] = {
+                  cars: 0,
+                  buses: 0,
+                  trucks: 0,
+                  allocation_id: 0,
+                  parking_lot_id: car.parking_lot_id,
+                  parking_lot_name: lotName,
+                };
+              }
+              result[type][lotName].cars += car.capacity;
+            });
+          }
 
-          data[type].trucks.forEach((truck) => {
-            const lotName = parkingLotMap[truck.parking_lot_id];
-            if (!result[type][lotName]) {
-              result[type][lotName] = {
-                cars: 0,
-                buses: 0,
-                trucks: 0,
-                allocation_id: 0, // This field needs a unique allocation ID, handle as per requirement
-                parking_lot_id: truck.parking_lot_id,
-                parking_lot_name: lotName,
-              };
-            }
-            result[type][lotName].trucks += truck.capacity;
-          });
+          if (data[type]?.trucks) {
+            data[type].trucks.forEach((truck) => {
+              const lotName = parkingLotMap[truck.parking_lot_id];
+              if (!result[type][lotName]) {
+                result[type][lotName] = {
+                  cars: 0,
+                  buses: 0,
+                  trucks: 0,
+                  allocation_id: 0,
+                  parking_lot_id: truck.parking_lot_id,
+                  parking_lot_name: lotName,
+                };
+              }
+              result[type][lotName].trucks += truck.capacity;
+            });
+          }
         };
 
         result.assembly = {};
@@ -315,7 +320,7 @@ const AllocateParkingSpaces = () => {
       const transformedData = transformData(recommendationData);
 
       // Log the transformed data
-      console.log(transformedData);
+      console.log("Recommendation:", transformedData);
     } catch (error) {
       console.error("Error fetching allocations:", error);
     }
@@ -492,6 +497,8 @@ const AllocateParkingSpaces = () => {
     setAllocatedDemands(allocated);
     setPopupOpen(true);
     setUnsavedChanges(true);
+    window.dispatchEvent(new Event("popup-opened"));
+    console.log("popup-opened");
   };
 
   return (
