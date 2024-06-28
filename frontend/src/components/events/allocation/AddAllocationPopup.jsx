@@ -37,8 +37,6 @@ const AddAllocationPopup = ({
   startDate,
   endDate,
 }) => {
-  console.log(data);
-  console.log(allocatedDemands);
   const [parkingLots, setParkingLots] = useState([]);
   const [selectedParkingLot, setSelectedParkingLot] = useState("");
   const [capacities, setCapacities] = useState({
@@ -72,13 +70,6 @@ const AddAllocationPopup = ({
 
       const lotMap = {};
       const lotLimits = {};
-      const storedAllocations =
-        JSON.parse(sessionStorage.getItem("allocations")) || {};
-
-      const alreadyAssigned = new Set();
-      Object.values(storedAllocations[phase] || {}).forEach((allocation) => {
-        alreadyAssigned.add(allocation.parking_lot_id);
-      });
 
       parkingLotData.forEach((lot) => {
         if (!lotMap[lot.parking_lot_id]) {
@@ -89,7 +80,6 @@ const AddAllocationPopup = ({
             cars: lot.capacity - lot.used_capacity,
             buses: lot.bus_limit - lot.used_buses,
             trucks: lot.truck_limit - lot.used_trucks,
-            disabled: alreadyAssigned.has(lot.parking_lot_id),
           };
           lotLimits[lot.parking_lot_id] = {
             cars: lot.capacity - lot.used_capacity,
@@ -133,30 +123,23 @@ const AddAllocationPopup = ({
       const availableParkingLots = Object.entries(lotMap).map(([id, lot]) => ({
         id,
         ...lot,
-        name: alreadyAssigned.has(parseInt(id))
-          ? `[Selected] ${lot.name}`
-          : lot.name,
       }));
 
       setParkingLots(availableParkingLots);
 
       if (availableParkingLots.length > 0) {
-        const firstAvailableLot = availableParkingLots.find(
-          (lot) => !lot.disabled
-        );
-        if (firstAvailableLot) {
-          setSelectedParkingLot(firstAvailableLot.id);
-          setCapacities({
-            cars: Math.min(firstAvailableLot.cars, notAllocatedCars),
-            buses: Math.min(firstAvailableLot.buses, notAllocatedBuses),
-            trucks: Math.min(firstAvailableLot.trucks, notAllocatedTrucks),
-          });
-          setLimits({
-            cars: lotLimits[firstAvailableLot.id].cars,
-            buses: lotLimits[firstAvailableLot.id].buses,
-            trucks: lotLimits[firstAvailableLot.id].trucks,
-          });
-        }
+        const firstAvailableLot = availableParkingLots[0];
+        setSelectedParkingLot(firstAvailableLot.id);
+        setCapacities({
+          cars: Math.min(firstAvailableLot.cars, notAllocatedCars),
+          buses: Math.min(firstAvailableLot.buses, notAllocatedBuses),
+          trucks: Math.min(firstAvailableLot.trucks, notAllocatedTrucks),
+        });
+        setLimits({
+          cars: lotLimits[firstAvailableLot.id].cars,
+          buses: lotLimits[firstAvailableLot.id].buses,
+          trucks: lotLimits[firstAvailableLot.id].trucks,
+        });
       }
     } catch (error) {
       console.error("Error fetching parking lot capacities:", error);
@@ -164,7 +147,6 @@ const AddAllocationPopup = ({
   }, [
     startDate,
     endDate,
-    phase,
     notAllocatedCars,
     notAllocatedBuses,
     notAllocatedTrucks,
@@ -216,9 +198,8 @@ const AddAllocationPopup = ({
       cars: capacities.cars,
       buses: capacities.buses,
       trucks: capacities.trucks,
-      parking_lot_name: parkingLots
-        .find((lot) => lot.id === selectedParkingLot)
-        .name.replace("[Selected] ", ""),
+      parking_lot_name: parkingLots.find((lot) => lot.id === selectedParkingLot)
+        .name,
       parking_lot_id: selectedParkingLot,
     };
     if (!storedAllocations[phase]) {
@@ -353,7 +334,7 @@ const AddAllocationPopup = ({
             onChange={handleParkingLotChange}
           >
             {parkingLots.map((lot) => (
-              <MenuItem key={lot.id} value={lot.id} disabled={lot.disabled}>
+              <MenuItem key={lot.id} value={lot.id}>
                 {`${lot.name} (Free: ${lot.free_capacity}, Utilized: ${lot.used_capacity})`}
               </MenuItem>
             ))}
