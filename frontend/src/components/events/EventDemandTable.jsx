@@ -14,6 +14,7 @@ import {
   Button,
   TextField,
   Alert,
+  
 } from "@mui/material";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
@@ -94,21 +95,13 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   };
 
   const handleSave = async () => {
-    const fetchAllocations = async () => {
-      try {
-        const response = await axios.get(`/api/events/allocations/${eventId}`);
-        setAllocations(response.data);
-      } catch (error) {
-        console.error("Error fetching allocations data:", error);
-      }
-    };
-
     try {
       await axios.put(`/api/events/demands/${eventId}`, editedDemands);
       setDemands(editedDemands);
       setEditMode(false);
       setIsEditingDemands(false);
       await fetchAllocations();
+      updateStatuses(); // Update statuses after saving demands
     } catch (error) {
       console.error("Error saving demands data:", error);
     }
@@ -118,6 +111,33 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     setEditedDemands(demands);
     setEditMode(false);
     setIsEditingDemands(false);
+  };
+
+  const fetchAllocations = async () => {
+    try {
+      const response = await axios.get(`/api/events/allocations/${eventId}`);
+      setAllocations(response.data);
+    } catch (error) {
+      console.error("Error fetching allocations data:", error);
+    }
+  };
+
+  const updateStatuses = () => {
+    const updatedDemands = demands.map((demand) => {
+      const totalDemand =
+        demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
+      const allocation = allocations.find(
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
+      );
+      let status = "not_allocated";
+      if (allocation) {
+        const ratio = allocation.allocated_capacity / totalDemand;
+        if (ratio === 1) status = "allocated";
+        else if (ratio > 0) status = "partially_allocated";
+      }
+      return { ...demand, status };
+    });
+    setDemands(updatedDemands);
   };
 
   const sortedDemands = demands.sort((a, b) => {
@@ -221,7 +241,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
         return (
           <Box className="status-label">
             <Typography className="status-label" variant="body2">
-               Fully allocated
+              Fully allocated
             </Typography>
           </Box>
         );

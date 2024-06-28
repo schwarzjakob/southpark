@@ -9,6 +9,7 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import Demand from "./Demand.jsx";
@@ -28,7 +29,7 @@ import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 
-const AllocateParkingSpace = () => {
+const AllocateParkingSpaces = () => {
   const { id } = useParams();
   const [demands, setDemands] = useState([]);
   const [event, setEvent] = useState(null);
@@ -51,6 +52,11 @@ const AllocateParkingSpace = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const [buttonStates, setButtonStates] = useState({
+    assembly: false,
+    runtime: false,
+    disassembly: false,
+  });
   const navigate = useNavigate();
 
   const fetchDemands = useCallback(async () => {
@@ -270,6 +276,33 @@ const AllocateParkingSpace = () => {
     };
   }, [unsavedChanges]);
 
+  useEffect(() => {
+    const handleEvent = () => {
+      const fullyAllocatedData = JSON.parse(
+        sessionStorage.getItem("fullyAllocated")
+      );
+      if (fullyAllocatedData) {
+        const newButtonStates = {
+          assembly: false,
+          runtime: false,
+          disassembly: false,
+        };
+        fullyAllocatedData.forEach((item) => {
+          newButtonStates[item.phase] = item.state;
+        });
+        setButtonStates(newButtonStates);
+      }
+    };
+
+    window.addEventListener("storage", handleEvent);
+
+    handleEvent();
+
+    return () => {
+      window.removeEventListener("storage", handleEvent);
+    };
+  }, []);
+
   const handleNavigation = (path) => {
     if (unsavedChanges) {
       const confirmLeave = window.confirm(
@@ -451,15 +484,28 @@ const AllocateParkingSpace = () => {
                     </Box>
                   </Grid>
                   <Grid item xs={4} display="flex" className="btn-container">
-                    <Button
-                      className="add-allocation-button"
-                      variant="contained"
-                      color="secondary"
-                      startIcon={<AddRoundedIcon />}
-                      onClick={() => handleAddAllocationClick(phase.name)}
+                    <Tooltip
+                      title={
+                        buttonStates[phase.name]
+                          ? "Fully allocated, cannot add more allocations."
+                          : ""
+                      }
                     >
-                      {phase.addButtonText}
-                    </Button>
+                      <span>
+                        <Button
+                          className={`add-allocation-button ${
+                            buttonStates[phase.name] ? "deactivated" : ""
+                          }`}
+                          variant="contained"
+                          color="secondary"
+                          startIcon={<AddRoundedIcon />}
+                          onClick={() => handleAddAllocationClick(phase.name)}
+                          disabled={buttonStates[phase.name]}
+                        >
+                          {phase.addButtonText}
+                        </Button>
+                      </span>
+                    </Tooltip>
                   </Grid>
                   <Grid item xs={4} display="flex" className="btn-container">
                     <Button
@@ -519,7 +565,7 @@ const AllocateParkingSpace = () => {
           startIcon={<SaveRoundedIcon />}
           onClick={saveAllocations}
         >
-          Save
+          Save Allocations
         </Button>
       </Box>
       <Snackbar
@@ -539,4 +585,4 @@ const AllocateParkingSpace = () => {
   );
 };
 
-export default AllocateParkingSpace;
+export default AllocateParkingSpaces;

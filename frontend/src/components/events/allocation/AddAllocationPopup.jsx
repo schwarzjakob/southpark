@@ -24,7 +24,7 @@ import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import HelpCenterRoundedIcon from "@mui/icons-material/HelpCenterRounded";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import CloseIcon from "@mui/icons-material/Close";
-import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
 import axios from "axios";
 
@@ -467,13 +467,13 @@ const AddAllocationPopup = ({
             Cancel
           </Button>
           <Button
-            startIcon={<SaveRoundedIcon />}
+            startIcon={<AddRoundedIcon />}
             variant="contained"
             className="popup-btn"
             color="primary"
             onClick={handleSave}
           >
-            Save
+            Add
           </Button>
         </Box>
       </Box>

@@ -127,22 +127,17 @@ const Demand = ({ phase, data }) => {
   const [, setPhases] = useState([]);
 
   const savePhase = (phase, totalAllocatedDemand, totalMaxDemand) => {
-    console.log(
-      "phase",
-      phase,
-      "totalAllocatedDemand",
-      totalAllocatedDemand,
-      "totalMaxDemand",
-      totalMaxDemand
-    );
     const state = totalAllocatedDemand === totalMaxDemand;
 
-    const storedPhases = JSON.parse(sessionStorage.getItem("fullyAllocated")) || [];
+    const storedPhases =
+      JSON.parse(sessionStorage.getItem("fullyAllocated")) || [];
     const updatedPhases = storedPhases.filter((p) => p.phase !== phase);
     updatedPhases.push({ phase, state });
 
-    setPhases(updatedPhases);
     sessionStorage.setItem("fullyAllocated", JSON.stringify(updatedPhases));
+
+    const storageEvent = new Event("storage");
+    window.dispatchEvent(storageEvent);
   };
 
   useEffect(() => {

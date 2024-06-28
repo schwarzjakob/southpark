@@ -298,3 +298,8 @@
 .no-scroll {
   overflow: hidden;
 }
+
+.add-allocation-button.deactivated {
+  background-color: var(--color-gray-200) !important;
+  color: var(--textColor) !important;
+}
