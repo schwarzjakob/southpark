@@ -14,6 +14,7 @@ import {
   Button,
   TextField,
   Alert,
+  Divider,
 } from "@mui/material";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
@@ -32,14 +33,15 @@ import CircleIcon from "@mui/icons-material/Circle";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
 
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import "../styles/events.css";
 
 const TITLE = "Event Demands";
 
-const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
+const EventDemandTable = ({ eventId }) => {
   EventDemandTable.propTypes = {
     eventId: PropTypes.string.isRequired,
-    setIsEditingDemands: PropTypes.func.isRequired,
   };
 
   const [demands, setDemands] = useState([]);
@@ -49,6 +51,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const [notification, setNotification] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [editedDemands, setEditedDemands] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDemands = async () => {
@@ -93,13 +96,20 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   };
 
   const handleSave = async () => {
+    const fetchAllocations = async () => {
+      try {
+        const response = await axios.get(`/api/events/allocations/${eventId}`);
+        setAllocations(response.data);
+      } catch (error) {
+        console.error("Error fetching allocations data:", error);
+      }
+    };
+
     try {
       await axios.put(`/api/events/demands/${eventId}`, editedDemands);
       setDemands(editedDemands);
       setEditMode(false);
-      setIsEditingDemands(false);
-      await fetchAllocations();
-      updateStatuses(); // Update statuses after saving demands
+      await fetchAllocations(); // Fetch updated allocations after saving
     } catch (error) {
       console.error("Error saving demands data:", error);
     }
@@ -108,34 +118,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const handleCancel = () => {
     setEditedDemands(demands);
     setEditMode(false);
-    setIsEditingDemands(false);
-  };
-
-  const fetchAllocations = async () => {
-    try {
-      const response = await axios.get(`/api/events/allocations/${eventId}`);
-      setAllocations(response.data);
-    } catch (error) {
-      console.error("Error fetching allocations data:", error);
-    }
-  };
-
-  const updateStatuses = () => {
-    const updatedDemands = demands.map((demand) => {
-      const totalDemand =
-        demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
-      const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
-      );
-      let status = "not_allocated";
-      if (allocation) {
-        const ratio = allocation.allocated_capacity / totalDemand;
-        if (ratio === 1) status = "allocated";
-        else if (ratio > 0) status = "partially_allocated";
-      }
-      return { ...demand, status };
-    });
-    setDemands(updatedDemands);
   };
 
   const sortedDemands = demands.sort((a, b) => {
@@ -238,25 +220,19 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       case "allocated":
         return (
           <Box className="status-label">
-            <Typography className="status-label" variant="body2">
-              Fully allocated
-            </Typography>
+            <Typography variant="body2">Demand Fully allocated</Typography>
           </Box>
         );
       case "partially_allocated":
         return (
           <Box className="status-label">
-            <Typography className="status-label" variant="body2">
-              Partly allocated
-            </Typography>
+            <Typography variant="body2">Partly allocated</Typography>
           </Box>
         );
       case "not_allocated":
         return (
           <Box className="status-label">
-            <Typography className="status-label" variant="body2">
-              Not allocated
-            </Typography>
+            <Typography variant="body2">Not allocated</Typography>
           </Box>
         );
       default:
@@ -321,16 +297,13 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => {
-              setEditMode(true);
-              setIsEditingDemands(true);
-            }}
+            onClick={() => setEditMode(true)}
             style={{
               marginBottom: "1rem",
               float: "right",
             }}
           >
-            <EditIcon className="icon__edit-event" />
+            <EditIcon className="addIcon" />
             Edit Demands
           </Button>
         )}
@@ -367,36 +340,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     direction={orderBy === "car_demand" ? order : "asc"}
                     onClick={() => handleRequestSort("car_demand")}
                   >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Car Demand
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Car Units)
-                      </Box>
-                    </Box>
-                  </TableSortLabel>
-                </Box>
-              </TableCell>
-              <TableCell>
-                <Box className="header-icon-container">
-                  <AirportShuttleRoundedIcon
-                    fontSize="small"
-                    className="header-icon"
-                  />
-                  <TableSortLabel
-                    active={orderBy === "bus_demand"}
-                    direction={orderBy === "bus_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("bus_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Bus Capacity
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 3x Car Units)
-                      </Box>
-                    </Box>{" "}
+                    Car Demand
                   </TableSortLabel>
                 </Box>
               </TableCell>
@@ -411,14 +355,22 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     direction={orderBy === "truck_demand" ? order : "asc"}
                     onClick={() => handleRequestSort("truck_demand")}
                   >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Truck Capacity
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 4x Car Units)
-                      </Box>
-                    </Box>
+                    Truck Demand
+                  </TableSortLabel>
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box className="header-icon-container">
+                  <AirportShuttleRoundedIcon
+                    fontSize="small"
+                    className="header-icon"
+                  />
+                  <TableSortLabel
+                    active={orderBy === "bus_demand"}
+                    direction={orderBy === "bus_demand" ? order : "asc"}
+                    onClick={() => handleRequestSort("bus_demand")}
+                  >
+                    Bus Demand
                   </TableSortLabel>
                 </Box>
               </TableCell>
@@ -433,14 +385,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     direction={orderBy === "demand" ? order : "asc"}
                     onClick={() => handleRequestSort("demand")}
                   >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated / Total
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Total Car Units)
-                      </Box>
-                    </Box>{" "}
+                    Allocated Total
                   </TableSortLabel>
                 </Box>
               </TableCell>
@@ -462,10 +407,11 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {["assembly", "runtime", "disassembly"].map((phase) => (
+            {["assembly", "runtime", "disassembly"].map((phase, index) => (
               <React.Fragment key={phase}>
                 {groupedDemands[phase]?.length > 0 && (
                   <>
+                    {index !== 0 && <Divider />}
                     <TableRow>
                       <TableCell
                         colSpan={7}
@@ -488,7 +434,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                         <TableCell>
                           {editMode ? (
                             <TextField
-                              className="input__demand"
                               value={
                                 editedDemands.find((d) => d.id === demand.id)
                                   .car_demand
@@ -505,31 +450,9 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                             demand.car_demand
                           )}
                         </TableCell>
-
                         <TableCell>
                           {editMode ? (
                             <TextField
-                              className="input__demand"
-                              value={
-                                editedDemands.find((d) => d.id === demand.id)
-                                  .bus_demand
-                              }
-                              onChange={(e) =>
-                                handleEditChange(
-                                  demand.id,
-                                  "bus_demand",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          ) : (
-                            demand.bus_demand
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {editMode ? (
-                            <TextField
-                              className="input__demand"
                               value={
                                 editedDemands.find((d) => d.id === demand.id)
                                   .truck_demand
@@ -546,6 +469,25 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                             demand.truck_demand
                           )}
                         </TableCell>
+                        <TableCell>
+                          {editMode ? (
+                            <TextField
+                              value={
+                                editedDemands.find((d) => d.id === demand.id)
+                                  .bus_demand
+                              }
+                              onChange={(e) =>
+                                handleEditChange(
+                                  demand.id,
+                                  "bus_demand",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          ) : (
+                            demand.bus_demand
+                          )}
+                        </TableCell>
                         <TableCell>{getAllocatedTotal(demand.date)}</TableCell>
                         <TableCell>
                           <Box display="flex" alignItems="center">
@@ -559,7 +501,22 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                         </TableCell>
                       </TableRow>
                     ))}
-                    <></>
+                    <TableRow>
+                      <TableCell colSpan={7} align="right">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() =>
+                            navigate(
+                              `/events/event/${eventId}/allocate-parking/${phase}`
+                            )
+                          }
+                          style={{ margin: "1rem 0" }}
+                        >
+                          Allocate Parking Spaces
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   </>
                 )}
               </React.Fragment>
