@@ -80,6 +80,7 @@ const Demand = ({ phase, data }) => {
   };
 
   const getBackgroundColor = (totalAllocated, maxDemand) => {
+    if (maxDemand === 0) return "transparent";
     const percentage = (totalAllocated / maxDemand) * 100;
     if (percentage >= 100) return COLORS.green;
     if (percentage >= 80) return COLORS.orange;
@@ -224,34 +225,30 @@ const Demand = ({ phase, data }) => {
             className="demand-item"
             style={{ backgroundColor: carBackgroundColor }}
           >
-            {" "}
             <Typography>{notAllocatedCars}</Typography>
           </Grid>
           <Grid
             item
             xs={2}
             className="demand-item"
-            style={{ backgroundColor: carBackgroundColor }}
+            style={{ backgroundColor: busBackgroundColor }}
           >
-            {" "}
             <Typography>{notAllocatedBuses}</Typography>
           </Grid>
           <Grid
             item
             xs={2}
             className="demand-item"
-            style={{ backgroundColor: carBackgroundColor }}
+            style={{ backgroundColor: truckBackgroundColor }}
           >
-            {" "}
             <Typography>{notAllocatedTrucks}</Typography>
           </Grid>
           <Grid
             item
             xs={2}
             className="demand-item"
-            style={{ backgroundColor: carBackgroundColor }}
+            style={{ backgroundColor: totalDemandBackgroundColor }}
           >
-            {" "}
             <Typography>{notAllocatedTotal}</Typography>
           </Grid>
         </Grid>
