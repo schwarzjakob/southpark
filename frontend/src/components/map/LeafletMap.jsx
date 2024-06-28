@@ -160,7 +160,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
           <p>Allocated Halls: {event.halls}</p>
           <p>Allocated Parking Lots: {parkingLots}</p>
           <div className="details-link_container">
-            <a href={`/event/${event.event_id}`}>
+            <a href={`/events/event/${event.event_id}`}>
               <LinkRoundedIcon />
               {event.event_name} Details
             </a>
@@ -175,7 +175,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
           <p>Entrance: {entrances}</p>
           <p>Associated Halls: {event.halls}</p>
           <div className="details-link_container">
-            <a href={`/event/${event.event_id}`}>
+            <a href={`/events/event/${event.event_id}`}>
               <LinkRoundedIcon />
               {event.event_name} Details
             </a>
@@ -227,11 +227,8 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
       />
       <SetZoomLevel zoom={15.5} />
       {/* Rendering Legend */}
-      <MapLegendComponent
-        events={filteredEvents}
-        selectedDate={selectedDate}
-      />
-       
+      <MapLegendComponent events={filteredEvents} selectedDate={selectedDate} />
+
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
