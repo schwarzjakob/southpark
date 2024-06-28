@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
 
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, CircularProgress } from "@mui/material";
 import PropTypes from "prop-types";
 import "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
@@ -320,7 +320,17 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box
+        className="circular-loading_container"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100%"
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
