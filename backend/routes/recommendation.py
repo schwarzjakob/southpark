@@ -1,3 +1,216 @@
+"""
+Messe München Parking Lot Recommendation Engine
+
+
+Introduction:
+This script is designed to recommend optimal parking lot assignments for events based on the demand for car, bus, and truck parking spaces. The recommendation system takes into account various factors such as the proximity of parking lots to event halls, the capacity of each parking lot, and specific requirements like prioritizing certain parking lots for events involving specific halls.
+
+Key Features:
+1. Data Initialization: Load and process data regarding distances between entrances and parking lots.
+2. Parking Lot Information: Fetch detailed information about available parking lots from the database.
+3. Distance Calculation: Compute average distances from parking lots to event halls.
+4. Capacity Calculation: Fetch and compute the free capacities and limits for cars, buses, and trucks in each parking lot.
+5. Parking Assignment: Assign parking lots to meet the demand for cars, buses, and trucks based on their capacities and distances.
+6. Prioritization: Prioritize certain parking lots if specific halls are involved in the event.
+
+This script is organized into several sections, each handling a specific aspect of the recommendation process. Logging is used throughout the script to facilitate debugging and to provide insights into the recommendation process.
+
+Credits: Timon Tirtey (LMU), Sven Tiefenthaler (LMU)
+
+# Steps:
+
+1. Import necessary libraries and modules
+   - Import pandas as pd
+   - Import requests
+   - Import datetime and timedelta from datetime
+   - Import Blueprint, request, jsonify from flask
+   - Import db from extensions
+   - Import text from sqlalchemy
+   - Import logging
+
+2. Setup logging configuration
+   - Set logging level to INFO
+   - Create a logger object
+
+3. Create a Flask Blueprint for the recommendation route
+   - recommendation_bp = Blueprint("recommendation", __name__)
+
+4. Define distances data and create a DataFrame from the values
+   - Split the raw data string into lines and then into individual values
+   - Create a DataFrame from the values
+   - Convert the columns to the appropriate data types
+
+2. Fetch parking lots based on material and service level
+    a) Define the get_parking_lots function
+    b) Construct the SQL query with optional conditions for material and service level
+        - if material:
+            - conditions.append("surface_material = :material")
+            - params["material"] = material
+        - if service_level:
+            - conditions.append("pricing = :service_level")
+            - params["service_level"] = service_level
+    c) Execute the query and fetch results
+    d) Return the list of parking lots
+        - return parking_lot_list
+
+3. Calculate average distance for a parking lot from given hall IDs
+    a) Define the get_average_distance function
+    b) Fetch distances from the distances DataFrame
+        - distances = distances_df[(distances_df['entrance_id'].isin(hall_ids)) & (distances_df['parking_lot_id'] == parking_lot_id)]
+    c) Calculate and return the average distance
+        - if not distances.empty:
+            - average_distance = distances['distance'].mean()
+        - else:
+            - average_distance = float('inf')
+        - return average_distance
+
+4. Fetch parking capacities for given parking lot IDs, start and end dates, excluding allocations for a specific event
+    a) Define the fetch_parking_capacities function
+    b) Construct and execute the SQL query to fetch capacities
+    c) Fetch results and convert to a dictionary
+        - capacities = {row[0]: row[1:] for row in result}
+    d) Return the capacities
+        - return capacities
+
+5. Prepare capacity data for the given lots, start and end dates, and event ID
+    a) Define the prepare_capacity_data function
+    b) Fetch parking lot IDs from the lots
+        - parking_lot_ids = [lot['id'] for lot in lots]
+    c) Fetch capacities for the given parking lot IDs, start and end dates, and event ID
+    d) Create a DataFrame from the capacity data
+        - capacity_data = []
+        - for lot in lots:
+            - if lot['id'] in capacities:
+                - min_free_capacity, min_truck_units, min_bus_units = capacities[lot['id']]
+                - capacity_data.append({
+                    "parking_lot_id": lot['id'],
+                    "remaining_free_capacity": min_free_capacity,
+                    "bus_limit": min_bus_units,
+                    "truck_limit": min_truck_units,
+                    "prio_weighting": 0  # Placeholder for priority weighting
+                })
+        - capacity_df = pd.DataFrame(capacity_data)
+    e) Return the capacity DataFrame
+        - return capacity_df
+
+6. Calculate priority based on distances and remaining capacity
+    a) Define the calculate_priority function
+    b) Calculate the average distance for each parking lot
+        - df['average_distance'] = df['parking_lot_id'].apply(lambda lot_id: get_average_distance(hall_ids, lot_id))
+    c) Calculate the priority weighting as a combination of average distance and inverse of remaining capacity
+        - df['prio_weighting'] = df.apply(lambda row: row['average_distance'] + (1000 / (row['remaining_free_capacity'] + 1)), axis=1)
+    d) Return the updated DataFrame
+        - return df
+
+7. Assign parking based on demand, phase, dates, hall IDs, and event ID
+    a) Define the assign_parking function
+    b) Initialize assigned lots and remaining demand dictionaries
+        - assigned_lots = {'cars': [], 'buses': [], 'trucks': []}
+        - remaining_demand = {'cars': car_demand, 'buses': bus_demand, 'trucks': truck_demand}
+    c) Determine if any halls belong to west halls
+        - prioritize_20 = any(hall in west_halls for hall in hall_ids)
+    d) Calculate average distances and sort lots based on distance and priority
+        - lots_with_distances = [(lot, get_average_distance(hall_ids, lot['id'])) for lot in lots]
+        - if prioritize_20:
+            - lots_sorted = sorted(lots_with_distances, key=lambda x: (x[0]['id'] != 20, x[1], x[0]['id']))
+        - else:
+            - lots_sorted = sorted(lots_with_distances, key=lambda x: (x[1], x[0]['id']))
+    e) Prepare capacity data and calculate priority
+        - capacity_df = prepare_capacity_data([lot[0] for lot in lots_sorted], start_date, end_date, event_id)
+        - capacity_df = calculate_priority(capacity_df, hall_ids)
+    f) Iterate over sorted lots and allocate parking based on remaining capacity and demand
+        - for lot, _ in lots_sorted:
+            - lot_capacity = capacity_df[capacity_df['parking_lot_id'] == lot['id']]
+            - if lot_capacity.empty:
+                - continue
+            - remaining_free_capacity = lot_capacity.iloc[0]['remaining_free_capacity']
+            - bus_limit = lot_capacity.iloc[0]['bus_limit']
+            - truck_limit = lot_capacity.iloc[0]['truck_limit']
+            - while remaining_free_capacity > 0 and (remaining_demand['cars'] > 0 or remaining_demand['buses'] > 0 or remaining_demand['trucks'] > 0):
+                - if remaining_demand['cars'] > 0 and remaining_free_capacity > 0:
+                    - allocated_capacity = min(remaining_free_capacity, remaining_demand['cars'])
+                    - assigned_lots['cars'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
+                    - remaining_demand['cars'] -= allocated_capacity
+                    - remaining_free_capacity -= allocated_capacity
+                - elif remaining_demand['buses'] > 0 and remaining_free_capacity >= 3 and bus_limit > 0:
+                    - allocated_capacity = min(remaining_free_capacity // 3, remaining_demand['buses'], bus_limit)
+                    - assigned_lots['buses'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
+                    - remaining_demand['buses'] -= allocated_capacity
+                    - remaining_free_capacity -= allocated_capacity * 3
+                    - bus_limit -= allocated_capacity
+                - elif remaining_demand['trucks'] > 0 and remaining_free_capacity >= 4 and truck_limit > 0:
+                    - allocated_capacity = min(remaining_free_capacity // 4, remaining_demand['trucks'], truck_limit)
+                    - assigned_lots['trucks'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
+                    - remaining_demand['trucks'] -= allocated_capacity
+                    - remaining_free_capacity -= allocated_capacity * 4
+                    - truck_limit -= allocated_capacity
+                - else:
+                    - break
+            - if all(demand == 0 for demand in remaining_demand.values()):
+                - break
+        - for lot in assigned_lots['buses']:
+            - lot['capacity'] *= 3
+        - for lot in assigned_lots['trucks']:
+            - lot['capacity'] *= 4
+    g) Return assigned lots and remaining demand
+        - return assigned_lots, remaining_demand
+
+8. Generate recommendations for each phase of the event
+    a) Define the recommendation_engine function
+    b) Iterate over each phase and extract phase data
+        - for phase in phases:
+            - start_date = event[f'{phase}_start_date']
+            - end_date = event[f'{phase}_end_date']
+            - car_demand = int(event[f'{phase}_demand_cars'])
+            - bus_demand = int(event[f'{phase}_demand_buses'])
+            - truck_demand = int(event[f'{phase}_demand_trucks'])
+    c) Fetch suitable parking lots and assign parking
+        - if car_demand > 0:
+            - suitable_lots = get_parking_lots(service_level='high')
+            - assigned_cars, remaining_cars = assign_parking(suitable_lots, car_demand, 0, 0, phase, start_date, end_date, event['hall_ids'], event['id'])
+            - phase_recommendations['cars'] = assigned_cars['cars']
+            - if remaining_cars['cars'] > 0:
+                - status_message = f"Allocated within capacities, but missing capacities for {remaining_cars['cars']} car units"
+        - if truck_demand > 0:
+            - suitable_lots = get_parking_lots()
+            - assigned_trucks, remaining_trucks = assign_parking(suitable_lots, 0, 0, truck_demand, phase, start_date, end_date, event['hall_ids'], event['id'])
+            - phase_recommendations['trucks'] = assigned_trucks['trucks']
+            - if remaining_trucks['trucks'] > 0:
+                - status_message = f"Allocated within capacities, but missing capacities for {remaining_trucks['trucks']} truck units"
+    d) Update recommendations with assigned lots and status messages
+        - recommendations[phase] = phase_recommendations
+        - recommendations[phase]['status'] = status_message
+    e) Return recommendations
+        - return recommendations
+
+9. Adjust capacities in recommendations for buses and trucks
+    a) Define the adjust_recommendations function
+    b) Adjust capacities by dividing by 3 for buses and 4 for trucks
+        - def adjust_capacity(vehicles, divisor):
+            - for vehicle in vehicles:
+                - vehicle['capacity'] = round(vehicle['capacity'] / divisor)
+        - for phase in ['assembly', 'disassembly', 'runtime']:
+            - if 'buses' in recommendations[phase]:
+                - adjust_capacity(recommendations[phase]['buses'], 3)
+            - if 'trucks' in recommendations[phase]:
+                - adjust_capacity(recommendations[phase]['trucks'], 4)
+    c) Return adjusted recommendations
+        - return recommendations
+
+10. Create a Flask route to get recommendations
+    a) Define the get_recommendations route
+    b) Extract event ID from the request
+        - event_id = request.json.get("id")
+    c) Fetch event and entrance data from the database
+        - event = db.session.execute(text(event_query), {"event_id": event_id}).fetchone()
+        - entrance = db.session.execute(text(entrance_query), {"event_id": event_id}).fetchone()
+    d) Generate and adjust recommendations
+        - recommendations = recommendation_engine(event_data)
+        - recommendations_adjusted = adjust_recommendations(recommendations)
+    e) Return recommendations as a JSON response
+        - return jsonify(recommendations_adjusted), 200
+"""
+
 import pandas as pd
 import requests
 from datetime import datetime, timedelta
