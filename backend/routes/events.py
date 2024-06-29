@@ -468,6 +468,23 @@ def edit_event(id):
                 delete_demands_query, {"event_id": id, "dates": tuple(dates_to_remove)}
             )
 
+        # Update visitor demands for changed phases
+        for date in new_dates - dates_to_add:
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            if date_obj < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):
+                new_status = "assembly"
+            elif date_obj <= datetime.strptime(data["runtime_end_date"], "%Y-%m-%d"):
+                new_status = "runtime"
+            else:
+                new_status = "disassembly"
+            update_demand_query = text(
+                "UPDATE visitor_demand SET status = :status WHERE event_id = :event_id AND date = :date"
+            )
+            db.session.execute(
+                update_demand_query,
+                {"event_id": id, "date": date, "status": new_status},
+            )
+
         # Add visitor demands for new dates
         for date in dates_to_add:
             date_obj = datetime.strptime(date, "%Y-%m-%d")
