@@ -141,6 +141,18 @@ def update_password():
     if new_password != confirm_new_password:
         return jsonify({"message": "New passwords do not match"}), 400
 
+    if len(new_password) < 8:
+        return jsonify({"message": "Password must be at least 8 characters long"}), 400
+
+    if len(re.findall(r"\d", new_password)) < 1:
+        return jsonify({"message": "Password must contain at least 1 digit"}), 400
+
+    if len(re.findall(r"\W", new_password)) < 1:
+        return (
+            jsonify({"message": "Password must contain at least 1 special character"}),
+            400,
+        )
+
     user.password_hash = generate_password_hash(new_password, method="pbkdf2:sha256")
 
     db.session.commit()

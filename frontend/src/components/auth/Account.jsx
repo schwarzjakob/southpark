@@ -6,12 +6,18 @@ import {
   Typography,
   Box,
   Alert,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import axios from "axios";
 import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
 import AlternateEmailRoundedIcon from "@mui/icons-material/AlternateEmailRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import "./styles/auth.css";
+
 const Account = () => {
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,6 +26,25 @@ const Account = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
+
+  const passwordRules = [
+    {
+      rule: "Passwords match",
+      test: (pwd) =>
+        pwd.length > 0 &&
+        confirmNewPassword.length > 0 &&
+        pwd === confirmNewPassword,
+    },
+    { rule: "At least 8 characters", test: (pwd) => pwd.length >= 8 },
+    { rule: "At least 1 digit", test: (pwd) => /\d/.test(pwd) },
+    { rule: "At least 1 special character", test: (pwd) => /\W/.test(pwd) },
+  ];
+
+  const checkPasswordRules = (pwd) =>
+    passwordRules.map((rule) => ({
+      rule: rule.rule,
+      passed: rule.test(pwd),
+    }));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +69,21 @@ const Account = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (newPassword !== confirmNewPassword) {
+      setMessage("Passwords do not match");
+      setSeverity("error");
+      return;
+    }
+
+    const passwordStatus = checkPasswordRules(newPassword);
+    const failedRule = passwordStatus.find((rule) => !rule.passed);
+
+    if (failedRule) {
+      setMessage(`Password must ${failedRule.rule.toLowerCase()}`);
+      setSeverity("error");
+      return;
+    }
+
     try {
       const token = sessionStorage.getItem("token");
       const response = await axios.put(
@@ -58,7 +98,7 @@ const Account = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       setMessage(response.data.message);
       setSeverity("success");
@@ -72,6 +112,8 @@ const Account = () => {
     }
   };
 
+  const passwordStatus = checkPasswordRules(newPassword);
+
   return (
     <Container maxWidth="sm" className="account">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>
@@ -83,12 +125,12 @@ const Account = () => {
         </Box>
         <Box className="form-icon-row">
           <AccountCircleRoundedIcon />
-          <Typography variant="body1 ">User Name: {username}</Typography>
+          <Typography variant="body1">User Name: {username}</Typography>
         </Box>
 
         <Box className="form-icon-row">
           <AlternateEmailRoundedIcon />
-          <Typography variant="body1 ">E-Mail: {email}</Typography>
+          <Typography variant="body1">E-Mail: {email}</Typography>
         </Box>
         {message && <Alert severity={severity}>{message}</Alert>}
 
@@ -102,6 +144,7 @@ const Account = () => {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             autoComplete="current-password"
+            required
           />
           <TextField
             label="New Password"
@@ -112,6 +155,7 @@ const Account = () => {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="new-password"
+            required
           />
           <TextField
             label="Confirm New Password"
@@ -122,7 +166,20 @@ const Account = () => {
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
             autoComplete="new-password"
+            required
           />
+          <List>
+            {passwordStatus.map(({ rule, passed }) => (
+              <ListItem key={rule} sx={{ padding: "0px 16px", margin: "0px" }}>
+                <ListItemText primary={rule} />
+                {passed ? (
+                  <CheckCircleIcon color="success" />
+                ) : (
+                  <CancelIcon color="error" />
+                )}
+              </ListItem>
+            ))}
+          </List>
           <Button
             className="account-submit"
             type="submit"
