@@ -182,8 +182,9 @@ def get_average_distance(hall_ids, parking_lot_id):
     logger.info(f"Average distance for parking lot {parking_lot_id} and halls {hall_ids}: {average_distance}")
     return average_distance
 
-def fetch_parking_capacities(parking_lot_ids, start_date, end_date):
-    logger.info(f"Fetching capacities for parking lots from {start_date} to {end_date}")
+
+def fetch_parking_capacities(parking_lot_ids, start_date, end_date, event_id):
+    logger.info(f"Fetching capacities for parking lots from {start_date} to {end_date}, excluding allocations for event_id {event_id}")
     query = f"""
     WITH date_series AS (
         SELECT generate_series('{start_date}'::date, '{end_date}'::date, '1 day'::interval) AS date
@@ -192,14 +193,14 @@ def fetch_parking_capacities(parking_lot_ids, start_date, end_date):
         SELECT
             ds.date,
             pc.parking_lot_id,
-            pc.capacity - COALESCE(SUM(pa.allocated_capacity), 0) AS free_capacity,
+            pc.capacity - COALESCE(SUM(pa.allocated_capacity) FILTER (WHERE pa.event_id != {event_id}), 0) AS free_capacity,
             LEAST(
-                (pc.capacity - COALESCE(SUM(pa.allocated_capacity), 0)) / 4,
-                pc.truck_limit - COALESCE(SUM(pa.allocated_trucks), 0)
+                (pc.capacity - COALESCE(SUM(pa.allocated_capacity) FILTER (WHERE pa.event_id != {event_id}), 0)) / 4,
+                pc.truck_limit - COALESCE(SUM(pa.allocated_trucks) FILTER (WHERE pa.event_id != {event_id}), 0)
             ) AS available_truck_units,
             LEAST(
-                (pc.capacity - COALESCE(SUM(pa.allocated_capacity), 0)) / 3,
-                pc.bus_limit - COALESCE(SUM(pa.allocated_buses), 0)
+                (pc.capacity - COALESCE(SUM(pa.allocated_capacity) FILTER (WHERE pa.event_id != {event_id}), 0)) / 3,
+                pc.bus_limit - COALESCE(SUM(pa.allocated_buses) FILTER (WHERE pa.event_id != {event_id}), 0)
             ) AS available_bus_units
         FROM
             date_series ds
@@ -239,10 +240,10 @@ def fetch_parking_capacities(parking_lot_ids, start_date, end_date):
     logger.info(f"Fetched capacities: {capacities}")
     return capacities
 
-def prepare_capacity_data(lots, start_date, end_date):
-    logger.info(f"Preparing capacity data for lots from {start_date} to {end_date}")
+def prepare_capacity_data(lots, start_date, end_date, event_id):
+    logger.info(f"Preparing capacity data for lots from {start_date} to {end_date} for event_id {event_id}")
     parking_lot_ids = [lot['id'] for lot in lots]
-    capacities = fetch_parking_capacities(parking_lot_ids, start_date, end_date)
+    capacities = fetch_parking_capacities(parking_lot_ids, start_date, end_date, event_id)
     capacity_data = []
     for lot in lots:
         if lot['id'] in capacities:
@@ -257,7 +258,6 @@ def prepare_capacity_data(lots, start_date, end_date):
     capacity_df = pd.DataFrame(capacity_data)
     logger.info(f"Capacity DataFrame:\n{capacity_df}")
     return capacity_df
-
 def calculate_priority(df, hall_ids):
     df['average_distance'] = df['parking_lot_id'].apply(lambda lot_id: get_average_distance(hall_ids, lot_id))
     
@@ -267,7 +267,7 @@ def calculate_priority(df, hall_ids):
     logger.info(f"Priority calculated DataFrame:\n{df}")
     return df
 
-def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, hall_ids):
+def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, hall_ids, event_id):
     print(f"Assigning parking for {car_demand} cars, {bus_demand} buses, {truck_demand} trucks in {phase} phase")
     logger.info(f"Starting assignment for phase: {phase}")
     assigned_lots = {'cars': [], 'buses': [], 'trucks': []}
@@ -286,7 +286,7 @@ def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date
         lots_sorted = sorted(lots_with_distances, key=lambda x: (x[1], x[0]['id']))
 
     # Prepare capacity data
-    capacity_df = prepare_capacity_data([lot[0] for lot in lots_sorted], start_date, end_date)
+    capacity_df = prepare_capacity_data([lot[0] for lot in lots_sorted], start_date, end_date, event_id)
     
     # Calculate priority based on distances and remaining capacity
     capacity_df = calculate_priority(capacity_df, hall_ids)
@@ -332,6 +332,7 @@ def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date
     print(f"Assigned lots: {assigned_lots}")
     return assigned_lots, remaining_demand
 
+
 def recommendation_engine(event):
     recommendations = {}
     phases = ['assembly', 'runtime', 'disassembly']
@@ -354,7 +355,7 @@ def recommendation_engine(event):
                 if isinstance(suitable_lots, str):
                     logger.error(f"Error fetching parking lots: {suitable_lots}")
                     return f"Error fetching parking lots: {suitable_lots}"
-                assigned_cars, remaining_cars = assign_parking(suitable_lots, car_demand, 0, 0, phase, start_date, end_date, event['hall_ids'])
+                assigned_cars, remaining_cars = assign_parking(suitable_lots, car_demand, 0, 0, phase, start_date, end_date, event['hall_ids'], event['id'])
                 phase_recommendations['cars'] = assigned_cars['cars']
 
                 if remaining_cars['cars'] > 0:
@@ -362,14 +363,14 @@ def recommendation_engine(event):
 
             if truck_demand > 0:
                 remaining_truck_demand = truck_demand
-                assigned_trucks, remaining_trucks = assign_parking([{'id': 5}], 0, 0, truck_demand, phase, start_date, end_date, event['hall_ids'])
+                assigned_trucks, remaining_trucks = assign_parking([{'id': 5}], 0, 0, truck_demand, phase, start_date, end_date, event['hall_ids'], event['id'])
                 phase_recommendations['trucks'] = assigned_trucks['trucks']
                 if remaining_truck_demand > 0:
                     suitable_lots = get_parking_lots()
                     if isinstance(suitable_lots, str):
                         logger.error(f"Error fetching parking lots: {suitable_lots}")
                         return f"Error fetching parking lots: {suitable_lots}"
-                    additional_trucks, remaining_trucks = assign_parking(suitable_lots, 0, 0, remaining_truck_demand, phase, start_date, end_date, event['hall_ids'])
+                    additional_trucks, remaining_trucks = assign_parking(suitable_lots, 0, 0, remaining_truck_demand, phase, start_date, end_date, event['hall_ids'], event['id'])
                     phase_recommendations['trucks'].extend(additional_trucks['trucks'])
 
                 if remaining_trucks['trucks'] > 0:
@@ -379,7 +380,7 @@ def recommendation_engine(event):
             if isinstance(suitable_lots, str):
                 logger.error(f"Error fetching parking lots: {suitable_lots}")
                 return f"Error fetching parking lots: {suitable_lots}"
-            assigned_all, remaining_all = assign_parking(suitable_lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, event['hall_ids'])
+            assigned_all, remaining_all = assign_parking(suitable_lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, event['hall_ids'], event['id'])
             phase_recommendations.update(assigned_all)
 
             if isinstance(phase_recommendations, str):
@@ -393,6 +394,7 @@ def recommendation_engine(event):
 
     logger.info(f"Recommendations: {recommendations}")
     return recommendations
+
 
 def adjust_recommendations(recommendations):
     def adjust_capacity(vehicles, divisor):
