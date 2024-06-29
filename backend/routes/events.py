@@ -361,6 +361,50 @@ def edit_event(id):
 
         logger.debug(f"Data after date conversion: {data}")
 
+        # Get the original event dates from the database
+        original_event = get_data(
+            """
+            SELECT assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date
+            FROM public.event
+            WHERE id = :id
+            """,
+            {"id": id},
+        ).to_dict(orient="records")[0]
+
+        logger.debug(f"Original event dates: {original_event}")
+
+        # Calculate the difference in days
+        def date_range(start_date, end_date):
+            return set(
+                pd.date_range(start=start_date, end=end_date).strftime("%Y-%m-%d")
+            )
+
+        original_dates = (
+            date_range(
+                original_event["assembly_start_date"],
+                original_event["assembly_end_date"],
+            )
+            | date_range(
+                original_event["runtime_start_date"], original_event["runtime_end_date"]
+            )
+            | date_range(
+                original_event["disassembly_start_date"],
+                original_event["disassembly_end_date"],
+            )
+        )
+
+        new_dates = (
+            date_range(data["assembly_start_date"], data["assembly_end_date"])
+            | date_range(data["runtime_start_date"], data["runtime_end_date"])
+            | date_range(data["disassembly_start_date"], data["disassembly_end_date"])
+        )
+
+        dates_to_remove = original_dates - new_dates
+        dates_to_add = new_dates - original_dates
+
+        logger.debug(f"Dates to remove: {dates_to_remove}")
+        logger.debug(f"Dates to add: {dates_to_add}")
+
         # Update the event details
         update_event_query = text(
             """
@@ -415,22 +459,21 @@ def edit_event(id):
                 insert_entrances_query, {"event_id": id, "entrance_name": entrance_name}
             )
 
-        # Delete existing visitor demands
-        delete_demands_query = text(
-            "DELETE FROM visitor_demand WHERE event_id = :event_id"
-        )
-        db.session.execute(delete_demands_query, {"event_id": id})
+        # Delete visitor demands only for removed dates
+        if dates_to_remove:
+            delete_demands_query = text(
+                "DELETE FROM visitor_demand WHERE event_id = :event_id AND date IN :dates"
+            )
+            db.session.execute(
+                delete_demands_query, {"event_id": id, "dates": tuple(dates_to_remove)}
+            )
 
-        # Reinitialize visitor demand with zero values for each day within the event period
-        current_date = datetime.strptime(data["assembly_start_date"], "%Y-%m-%d")
-        end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
-        logger.debug(f"Reinitializing visitor demand from {current_date} to {end_date}")
-        while current_date <= end_date:
-            if current_date < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):
+        # Add visitor demands for new dates
+        for date in dates_to_add:
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            if date_obj < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):
                 status = "assembly"
-            elif current_date <= datetime.strptime(
-                data["runtime_end_date"], "%Y-%m-%d"
-            ):
+            elif date_obj <= datetime.strptime(data["runtime_end_date"], "%Y-%m-%d"):
                 status = "runtime"
             else:
                 status = "disassembly"
@@ -442,11 +485,10 @@ def edit_event(id):
                 text(demand_query),
                 {
                     "event_id": id,
-                    "date": current_date.strftime("%Y-%m-%d"),
+                    "date": date,
                     "status": status,
                 },
             )
-            current_date += timedelta(days=1)
 
         db.session.commit()
         return jsonify({"message": "Event updated successfully"}), 200
