@@ -28,7 +28,6 @@ const Account = () => {
   const [severity, setSeverity] = useState("success");
   const [passwordStatus, setPasswordStatus] = useState([]);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
-  const [currentPasswordValid, setCurrentPasswordValid] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,30 +81,34 @@ const Account = () => {
     { rule: "At least 8 characters", test: (pwd) => pwd.length >= 8 },
     { rule: "At least 1 digit", test: (pwd) => /\d/.test(pwd) },
     { rule: "At least 1 special character", test: (pwd) => /\W/.test(pwd) },
+    {
+      rule: "Current Password Valid",
+      test: async () => await validateCurrentPassword(currentPassword),
+    },
   ];
 
-  const checkPasswordRules = (pwd) =>
-    passwordRules.map((rule) => ({
-      rule: rule.rule,
-      passed: rule.test(pwd),
-    }));
+  const checkPasswordRules = async (pwd) => {
+    const results = await Promise.all(
+      passwordRules.map(async (rule) => ({
+        rule: rule.rule,
+        passed: await rule.test(pwd),
+      })),
+    );
+    return results;
+  };
 
   useEffect(() => {
     const validateFields = async () => {
-      const allPassed = checkPasswordRules(newPassword).every((r) => r.passed);
-      setPasswordStatus(checkPasswordRules(newPassword));
-      const isCurrentPasswordValid = await validateCurrentPassword(
-        currentPassword,
-      );
-      setCurrentPasswordValid(isCurrentPasswordValid);
+      const allRules = await checkPasswordRules(newPassword);
+      setPasswordStatus(allRules);
+      const allPassed = allRules.every((r) => r.passed);
       setAllFieldsFilled(
         username &&
           email &&
           currentPassword &&
           newPassword &&
           confirmNewPassword &&
-          allPassed &&
-          isCurrentPasswordValid,
+          allPassed,
       );
     };
 
@@ -121,7 +124,10 @@ const Account = () => {
       return;
     }
 
-    if (!currentPasswordValid) {
+    const isCurrentPasswordValid = await validateCurrentPassword(
+      currentPassword,
+    );
+    if (!isCurrentPasswordValid) {
       setMessage("Current password is incorrect");
       setSeverity("error");
       return;
@@ -195,7 +201,6 @@ const Account = () => {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="off"
-            required
           />
           <TextField
             label="Confirm New Password"
@@ -218,17 +223,6 @@ const Account = () => {
                 )}
               </ListItem>
             ))}
-            <ListItem
-              sx={{ padding: "0px 16px", margin: "0px" }}
-              key="Current Password Valid"
-            >
-              <ListItemText primary="Current Password Valid" />
-              {currentPasswordValid ? (
-                <CheckCircleIcon color="success" />
-              ) : (
-                <CancelIcon color="error" />
-              )}
-            </ListItem>
           </List>
           <Button
             className="account-submit"
@@ -236,7 +230,7 @@ const Account = () => {
             variant="contained"
             color="primary"
             fullWidth
-            disabled={!allFieldsFilled}
+            // disabled={!allFieldsFilled}
           >
             Update
           </Button>
