@@ -422,15 +422,27 @@ def get_event_demands(event_id):
         return jsonify({"error": str(e)}), 500
 
 
-@events_bp.route("/allocations/<int:event_id>", methods=["GET"])
-def get_event_allocations(event_id):
+@events_bp.route("/allocations/<int:eventid>", methods=["GET"])
+def get_event_allocations(eventid):
     try:
         query = """
-            SELECT date, allocated_cars, allocated_trucks, allocated_buses, allocated_capacity
-            FROM public.parking_lot_allocation
-            WHERE event_id = :event_id
+            SELECT 
+                pa.id AS allocation_id,
+                pa.date, 
+                pa.allocated_cars, 
+                pa.allocated_trucks, 
+                pa.allocated_buses, 
+                pa.allocated_capacity,
+                pl.id AS parking_lot_id,
+                pl.name AS parking_lot_name
+            FROM 
+                public.parking_lot_allocation pa
+            JOIN 
+                public.parking_lot pl ON pa.parking_lot_id = pl.id
+            WHERE 
+                pa.event_id = :event_id
         """
-        allocations = get_data(query, {"event_id": event_id}).to_dict(orient="records")
+        allocations = get_data(query, {"event_id": eventid}).to_dict(orient="records")
         if not allocations:
             return jsonify([]), 204
         return jsonify(allocations), 200
@@ -460,4 +472,164 @@ def update_event_demands(event_id):
         return jsonify({"message": "Demands updated successfully"}), 200
     except Exception as e:
         logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+@events_bp.route("/parking_lot_capacities", methods=["GET"])
+def get_parking_lot_capacities():
+    try:
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+
+        if not start_date or not end_date:
+            return jsonify({"error": "start_date and end_date are required"}), 400
+
+        query = text("""
+        WITH capacity_per_date AS (
+            SELECT
+                pc.parking_lot_id,
+                pc.capacity,
+                pc.truck_limit,
+                pc.bus_limit,
+                generate_series(pc.valid_from, pc.valid_to, '1 day'::interval) AS date
+            FROM
+                public.parking_lot_capacity pc
+        ),
+        allocations AS (
+            SELECT
+                pa.date,
+                pa.parking_lot_id,
+                pa.event_id,
+                pa.allocated_capacity,
+                pa.allocated_cars,
+                pa.allocated_trucks,
+                pa.allocated_buses
+            FROM
+                public.parking_lot_allocation pa
+        ),
+        combined AS (
+            SELECT
+                cpd.date,
+                cpd.parking_lot_id,
+                cpd.capacity,
+                cpd.truck_limit,
+                cpd.bus_limit,
+                COALESCE(SUM(a.allocated_capacity), 0) AS used_capacity,
+                COALESCE(SUM(a.allocated_cars), 0) AS used_cars,
+                COALESCE(SUM(a.allocated_trucks), 0) AS used_trucks,
+                COALESCE(SUM(a.allocated_buses), 0) AS used_buses
+            FROM
+                capacity_per_date cpd
+            LEFT JOIN
+                allocations a ON cpd.parking_lot_id = a.parking_lot_id AND cpd.date = a.date
+            WHERE
+                cpd.date BETWEEN :start_date AND :end_date
+            GROUP BY
+                cpd.date, cpd.parking_lot_id, cpd.capacity, cpd.truck_limit, cpd.bus_limit
+        )
+        SELECT
+            c.date,
+            c.parking_lot_id,
+            pl.name AS parking_lot_name,
+            c.capacity,
+            c.truck_limit,
+            c.bus_limit,
+            c.used_capacity,
+            c.used_cars,
+            c.used_trucks,
+            c.used_buses,
+            c.capacity - c.used_capacity AS free_capacity
+        FROM
+            combined c
+        JOIN
+            public.parking_lot pl ON c.parking_lot_id = pl.id
+        ORDER BY
+            c.date, pl.name;
+        """)
+
+        df = pd.read_sql_query(query, db.engine, params={"start_date": start_date, "end_date": end_date})
+        parking_lot_capacities = df.to_dict(orient="records")
+
+        return jsonify(parking_lot_capacities), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/allocate_demands", methods=["POST"])
+def allocate_demands():
+    try:
+        data = request.json
+        allocations = data.get("allocations", [])
+        event_id = data.get("event_id")
+
+        if not event_id:
+            return jsonify({"error": "Event ID must be provided"}), 400
+
+        # Delete existing allocations for the entire event
+        delete_event_query = text("""
+        DELETE FROM public.parking_lot_allocation
+        WHERE event_id = :event_id
+        """)
+        db.session.execute(delete_event_query, {"event_id": event_id})
+
+        if not allocations:
+            db.session.commit()
+            return jsonify({"message": "All existing allocations deleted successfully"}), 200
+
+        for allocation in allocations:
+            # Check parking lot capacity
+            capacity_query = text("""
+            SELECT capacity - COALESCE(SUM(allocated_capacity), 0) AS free_capacity
+            FROM public.parking_lot_capacity pc
+            LEFT JOIN public.parking_lot_allocation pa ON pc.parking_lot_id = pa.parking_lot_id AND pa.date = :date
+            WHERE pc.parking_lot_id = :parking_lot_id AND :date BETWEEN pc.valid_from AND pc.valid_to
+            GROUP BY pc.capacity
+            """)
+            result = db.session.execute(capacity_query, {
+                "parking_lot_id": allocation["parking_lot_id"],
+                "date": allocation["date"]
+            }).fetchone()
+
+            if result is not None:
+                free_capacity = result[0]  # Accessing the first element of the result tuple
+            else:
+                free_capacity = 0
+
+            allocated_capacity = allocation["allocated_cars"] + 4 * allocation["allocated_trucks"] + 3 * allocation["allocated_buses"]
+
+            if free_capacity < allocated_capacity:
+                # Fetch the parking lot name corresponding to allocation['parking_lot_id']
+                parking_lot_name_query = text("""
+                SELECT name FROM public.parking_lot WHERE id = :parking_lot_id
+                """)
+                parking_lot_name_result = db.session.execute(parking_lot_name_query, {"parking_lot_id": allocation["parking_lot_id"]}).fetchone()
+                parking_lot_name = parking_lot_name_result[0] if parking_lot_name_result else "Unknown Parking Lot"
+
+                return jsonify({
+                    "error": f"Insufficient capacity for parking lot '{parking_lot_name}' on {allocation['date']}. Free capacity: {free_capacity}, Required: {allocated_capacity}"
+                }), 400
+            
+        for allocation in allocations:
+            # Insert new allocation
+            insert_query = text("""
+            INSERT INTO public.parking_lot_allocation (
+                event_id, parking_lot_id, date, allocated_cars, allocated_trucks, allocated_buses
+            ) VALUES (
+                :event_id, :parking_lot_id, :date, :allocated_cars, :allocated_trucks, :allocated_buses
+            )
+            """)
+            db.session.execute(insert_query, {
+                "event_id": allocation["event_id"],
+                "parking_lot_id": allocation["parking_lot_id"],
+                "date": allocation["date"],
+                "allocated_cars": allocation["allocated_cars"],
+                "allocated_trucks": allocation["allocated_trucks"],
+                "allocated_buses": allocation["allocated_buses"]
+            })
+
+        db.session.commit()
+        return jsonify({"message": "Allocations saved successfully"}), 201
+    except Exception as e:
+        logger.error(e)
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500

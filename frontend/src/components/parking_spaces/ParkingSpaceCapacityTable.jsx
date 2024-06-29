@@ -95,7 +95,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
           </Typography>
         </Box>
         <Link
-          to={`/capacity/add?parkinglotId=${parkingLotId}`}
+          to={`/parking_space/capacity/add?parkinglotId=${parkingLotId}`}
           style={{ textDecoration: "none" }}
         >
           <Button
@@ -252,7 +252,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                   hover
                   onClick={() =>
                     navigate(
-                      `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
+                      `/parking_space/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
                     )
                   }
                   style={{ cursor: "pointer" }}
@@ -272,7 +272,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(
-                          `/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
+                          `/parking_space/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
                         );
                       }}
                       edge="start"

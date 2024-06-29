@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Paper, Grid, Typography, Box } from "@mui/material";
+import { Paper, Grid, Typography, Box, CircularProgress } from "@mui/material";
 import axios from "axios";
-import LoadingAnimation from "../common/LoadingAnimation.jsx";
+import dayjs from "dayjs";
+
 import InfoTextComponent from "../common/InfoText.jsx";
 import CapacityUtilization from "./CapacityUtilizationBarChart.jsx";
 import CriticalCapacityTable from "./CriticalCapacityTable.jsx";
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
-import dayjs from "dayjs";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+
+import "./styles/dashboard.css";
 
 const TITLE = "Dashboard";
 
@@ -67,7 +69,9 @@ const Dashboard = () => {
         alignItems="center"
         height="100vh"
       >
-        <LoadingAnimation />
+        <Box className="circular-loading_container">
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
@@ -75,7 +79,7 @@ const Dashboard = () => {
   return (
     <div>
       <Box className="iconHeadline__container">
-        <DashboardRoundedIcon />
+        <BarChartRoundedIcon />
         <Typography variant="h4" gutterBottom>
           {TITLE}
         </Typography>

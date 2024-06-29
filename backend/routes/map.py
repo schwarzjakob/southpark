@@ -161,3 +161,4 @@ def get_parking_lot_occupancy(date):
         # Log the exception and return an error response
         logger.error("Failed to fetch parking lot occupancy data", exc_info=True)
         return jsonify({"error": str(e)}), 500
+

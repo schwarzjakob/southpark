@@ -10,11 +10,6 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -23,18 +18,18 @@ import {
   AirportShuttleRounded as AirportShuttleRoundedIcon,
   LocalShippingRounded as LocalShippingRoundedIcon,
   DateRangeRounded as DateRangeRoundedIcon,
-  EditRounded as EditRoundedIcon,
-  DeleteForeverRounded as DeleteForeverRoundedIcon,
   SaveRounded as SaveRoundedIcon,
 } from "@mui/icons-material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBackRounded";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import dayjs from "dayjs";
 import DateRangePicker from "../controls/DateRangePicker";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/parkingSpaces.css";
 
-const TITLE = "Edit Capacity";
+const TITLE = "Add Capacity";
 
-const EditParkingSpaceCapacity = () => {
+const AddParkingSpaceCapacity = () => {
   const [capacity, setCapacity] = useState({
     capacity: 0,
     utilization_type: "parking",
@@ -48,45 +43,14 @@ const EditParkingSpaceCapacity = () => {
     external: false,
   });
   const [error, setError] = useState("");
-  const [open, setOpen] = useState(false);
+  const [originalCapacity] = useState(null);
   const [existingCapacities, setExistingCapacities] = useState([]);
   const navigate = useNavigate();
-
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const parkingLotId = searchParams.get("parkinglotId");
-  const capacityId = searchParams.get("capacityId");
 
   useEffect(() => {
-    const fetchCapacity = async () => {
-      try {
-        const response = await axios.get(
-          `/api/parking/capacities/${parkingLotId}`
-        );
-        setExistingCapacities(response.data);
-        const capacityData = response.data.find(
-          (item) => item.id === parseInt(capacityId)
-        );
-        if (capacityData) {
-          setCapacity({
-            ...capacityData,
-            utilization_type: capacityData.utilization_type || "parking",
-            valid_from: capacityData.valid_from
-              ? dayjs(capacityData.valid_from)
-              : null,
-            valid_to: capacityData.valid_to
-              ? dayjs(capacityData.valid_to)
-              : null,
-          });
-        } else {
-          setError("Capacity not found.");
-        }
-      } catch (error) {
-        console.error("Error fetching capacity data:", error);
-        setError("Error fetching capacity data.");
-      }
-    };
-
     const fetchParkingLot = async () => {
       try {
         const response = await axios.get(`/api/parking/space/${parkingLotId}`);
@@ -97,9 +61,25 @@ const EditParkingSpaceCapacity = () => {
       }
     };
 
-    fetchCapacity();
+    const fetchCapacities = async () => {
+      try {
+        const response = await axios.get(
+          `/api/parking/capacities/${parkingLotId}`
+        );
+        if (Array.isArray(response.data)) {
+          setExistingCapacities(response.data);
+        } else {
+          setExistingCapacities([]);
+        }
+      } catch (error) {
+        console.error("Error fetching existing capacities:", error);
+        setError("Error fetching existing capacities.");
+      }
+    };
+
     fetchParkingLot();
-  }, [parkingLotId, capacityId]);
+    fetchCapacities();
+  }, [parkingLotId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -118,21 +98,50 @@ const EditParkingSpaceCapacity = () => {
   };
 
   const checkForOverlaps = () => {
-    const currentFrom = capacity.valid_from;
-    const currentTo = capacity.valid_to;
+    const currentFrom = dayjs(capacity.valid_from);
+    const currentTo = dayjs(capacity.valid_to);
+
+    if (!Array.isArray(existingCapacities)) {
+      console.error("existingCapacities is not an array:", existingCapacities);
+      setError("Internal error: existing capacities data is not valid.");
+      return [];
+    }
 
     const overlappingCapacities = existingCapacities.filter(
       (cap) =>
-        cap.id !== parseInt(capacityId) &&
-        ((currentFrom >= dayjs(cap.valid_from) &&
-          currentFrom <= dayjs(cap.valid_to)) ||
-          (currentTo >= dayjs(cap.valid_from) &&
-            currentTo <= dayjs(cap.valid_to)) ||
-          (currentFrom <= dayjs(cap.valid_from) &&
-            currentTo >= dayjs(cap.valid_to)))
+        currentFrom.isBetween(
+          dayjs(cap.valid_from),
+          dayjs(cap.valid_to),
+          null,
+          "[]"
+        ) ||
+        currentTo.isBetween(
+          dayjs(cap.valid_from),
+          dayjs(cap.valid_to),
+          null,
+          "[]"
+        ) ||
+        (currentFrom.isBefore(dayjs(cap.valid_from)) &&
+          currentTo.isAfter(dayjs(cap.valid_to)))
     );
 
     return overlappingCapacities;
+  };
+
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(capacity) !== JSON.stringify(originalCapacity);
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
   };
 
   const handleSubmit = async (e) => {
@@ -141,20 +150,16 @@ const EditParkingSpaceCapacity = () => {
     const overlappingCapacities = checkForOverlaps();
 
     if (overlappingCapacities.length > 0) {
-      const errorMessage = `The selected time range overlaps with the following capacities:<br> ${overlappingCapacities
+      const errorMessage = `The selected time range overlaps with the following capacities: ${overlappingCapacities
         .map(
           (cap) =>
-            `<a href="/capacity/edit/?capacityId=${
-              cap.id
-            }&parkinglotId=${parkingLotId}" target="_blank">${dayjs(
-              cap.valid_from
-            ).format("DD/MM/YYYY")} - ${dayjs(cap.valid_to).format(
-              "DD/MM/YYYY"
-            )}</a><br>`
+            `${dayjs(cap.valid_from).format("DD/MM/YYYY")} - ${dayjs(
+              cap.valid_to
+            ).format("DD/MM/YYYY")}`
         )
         .join(
           ", "
-        )}. Please choose a different time range or edit the conflicting capacities first. <br>`;
+        )}. Please choose a different time range or edit the conflicting capacities first.`;
       setError(errorMessage);
       return;
     }
@@ -173,54 +178,46 @@ const EditParkingSpaceCapacity = () => {
       : null;
 
     try {
-      await axios.put(`/api/parking/capacities//${capacityId}`, {
+      await axios.post(`/api/parking/capacities/${parkingLotId}`, {
         ...capacity,
         valid_from: updatedValidFrom,
         valid_to: updatedValidTo,
       });
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.error) {
-        setError(error.response.data.error);
-      } else {
-        setError("Error updating capacity.");
-      }
+      console.error("Error adding capacity:", error);
+      const errorMessage =
+        error.response?.data?.error || "Error adding capacity.";
+      setError(errorMessage);
     }
   };
 
-  const handleDelete = async () => {
-    try {
-      await axios.delete(`/api/parking/capacities/${capacityId}`);
-      navigate(`/parking_space/${parkingLotId}`);
-    } catch (error) {
-      console.error("Error deleting capacity:", error);
-      setError("Error deleting capacity.");
-    }
-  };
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const breadcrumbLinks = [
+    { label: "Parking Spaces", path: "/parking_spaces" },
+    { label: parkingLot.name, path: `/parking_space/${parkingLotId}` },
+    {
+      label: `Add Capacity`,
+      path: `/parking_space/${parkingLotId}/add_capacity`,
+    },
+  ];
 
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
-          <EditRoundedIcon />
+          <AddBoxIcon />
           <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>
         {error && (
-          <Typography
-            color="error"
-            variant="body1"
-            dangerouslySetInnerHTML={{ __html: error }}
-          />
+          <Typography color="error" variant="body1">
+            {error}
+          </Typography>
         )}
         <Box mb={2} display="flex" gap="10px" alignItems="center">
           <Typography variant="h6" className="parking-lot-box">
@@ -242,9 +239,9 @@ const EditParkingSpaceCapacity = () => {
             </Box>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <Box className="input-container input-container__utalization">
+            <Box className="input-container ">
               <LocalParkingRoundedIcon className="input-container__icon" />
-              <InputLabel className="input-container__label-utilization">
+              <InputLabel className="input-label-background input-container__label-utilization">
                 Utilization Type
               </InputLabel>
               <Select
@@ -296,7 +293,7 @@ const EditParkingSpaceCapacity = () => {
             <Box className="input-container">
               <LocalShippingRoundedIcon className="input-container__icon" />
               <TextField
-                label="Truck Limit (= 4x Car Units)"
+                label="Truck Limit  (= 4x Car Units)"
                 name="truck_limit"
                 type="number"
                 value={capacity.truck_limit}
@@ -314,17 +311,9 @@ const EditParkingSpaceCapacity = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(`/parking_space/${parkingLotId}`)}
+              onClick={() => handleNavigate(`/parking_space/${parkingLotId}`)}
             >
               Back
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleClickOpen}
-              startIcon={<DeleteForeverRoundedIcon />}
-            >
-              Delete
             </Button>
             <Button
               type="submit"
@@ -337,29 +326,8 @@ const EditParkingSpaceCapacity = () => {
           </Box>
         </form>
       </Paper>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{"Confirm Delete"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this capacity?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleDelete} color="secondary" autoFocus>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
 
-export default EditParkingSpaceCapacity;
+export default AddParkingSpaceCapacity;

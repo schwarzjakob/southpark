@@ -1,7 +1,7 @@
 /* Events */
 
 .event-box {
-  border-radius: 5px;
+  border-radius: 6px;
   padding: 4px 12px;
   margin: 2px;
   display: inline-block;
@@ -13,16 +13,17 @@
 }
 .header-icon {
   color: var(--color-pure-white);
-  margin-right: 5px;
+  margin-right: 6px;
 }
 
+.event-filter {
+  background-color: var(--color-pure-white) !important;
+}
 /* Add Event */
 
-/* .event-form-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
+.table-header-title {
+  font-size: 1rem !important;
+}
 
 .addEvent-header {
   display: flex;
@@ -64,7 +65,7 @@
 
 /* Event demands */
 .eventDemandTable-container {
-  background-color: #f5f5f5; /* or any other grey background color */
+  background-color: #f5f5f5;
 }
 
 .eventDemandTable-title {
@@ -87,4 +88,219 @@
 .edit-demand-button,
 .delete-demand-button {
   margin-right: 0.5rem;
+}
+
+.time-span-icon {
+  color: var(--color-gray-400);
+  width: 16px !important;
+}
+
+.time-span-container {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+}
+
+.time-span-days {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  padding: 0.3rem;
+  margin: 0 !important;
+  border-radius: 3px;
+}
+
+.event-box {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+.time-span-date {
+  margin: auto;
+  font-weight: bold;
+}
+
+.status-label {
+  margin-left: 0.5rem;
+}
+
+.input__demand input {
+  padding: 5px 10px !important;
+}
+
+/* Event Parking Space Allocation */
+
+.allocateParkingSpace-paper {
+  padding: 1rem !important;
+}
+.phase-divider {
+  margin-left: 1rem;
+  display: flex;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  padding: 0.5rem !important;
+  display: flex;
+  flex-direction: row;
+  background-color: var(--color-primary);
+  align-items: center;
+  border-radius: 5px;
+  color: white;
+}
+
+.phase-divider-text,
+.allocation-add-button,
+.recommendation-add-button {
+  margin: 0 !important;
+  flex: 1 1 30%;
+  box-sizing: border-box;
+}
+
+.phase-heading {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.phase-divider-text {
+  display: flex;
+  align-items: center;
+}
+
+.allocation-container,
+.allocation-container .recommendation-container {
+  padding: 1rem !important ;
+}
+
+.allocation-container {
+  padding-left: 1.5rem !important;
+}
+
+.allocateParkingSpace-paper {
+  margin-top: 1rem !important;
+  padding: 1rem !important;
+}
+
+.allocation-row-2nd {
+  background-color: var(--color-gray-100);
+}
+
+.icon-text p,
+.icon-text-row p {
+  font-size: 0.8rem !important;
+}
+
+.icon-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: var(--textColor);
+}
+
+.icon-text-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--textColor);
+}
+
+.icon-small {
+  width: 1.4rem !important;
+  color: var(--textColor);
+}
+
+.small-icon-button {
+  width: 1rem !important;
+}
+
+.assignment-container {
+  padding: 0 0.5rem !important;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: 40px;
+}
+
+.assignment-item,
+.demand-item {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.assignment-item.parking-space {
+  padding: 0 !important;
+  background-color: var(--color-primary);
+  border-radius: 5px;
+  color: var(--color-pure-white);
+}
+
+.demand-item:first-child {
+  justify-content: flex-start !important;
+}
+
+.assignment-container.allocated {
+  margin-top: 7px;
+}
+
+.assignment-container.not-allocated {
+  margin-top: 2px;
+  margin-bottom: 3px;
+}
+
+.apply-allocation-button,
+.add-allocation-button {
+  background-color: var(--color-pure-white) !important;
+  color: var(--textColor) !important;
+}
+
+.apply-allocation-button:hover,
+.add-allocation-button:hover {
+  background-color: var(--color-gray-100) !important;
+}
+
+.btn-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Pop up */
+.popup-title {
+  margin-bottom: 0 !important;
+}
+
+.popup-allocation-header {
+  margin-top: 2rem;
+}
+.popup-date {
+  padding-top: 0.5rem;
+}
+
+.add-allocation-popup {
+  color: var(--textColor);
+}
+
+.popup-icon-label {
+  margin: 0.5rem 0;
+}
+
+.popup-btn-close {
+  color: var(--textColor) !important;
+}
+
+.popup-btn-close:hover {
+  background-color: var(--color-gray-100) !important;
+  color: var(--textColor) !important;
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+.add-allocation-button.deactivated {
+  background-color: var(--color-gray-200) !important;
+  color: var(--textColor) !important;
 }

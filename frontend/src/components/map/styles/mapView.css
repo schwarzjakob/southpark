@@ -6,7 +6,7 @@
   overflow: hidden;
 }
 
-/* Popup Styling */
+/* Map Popup Styling */
 .leaflet-popup-content-wrapper {
   background: var(--color-pure-white);
   color: var(--textColor);
@@ -28,12 +28,15 @@
 
 .leaflet-popup-content {
   margin: 1rem 0.5rem;
-  max-width: 250px; /* Adjust as needed */
+  max-width: 250px;
   line-height: 1;
 }
 
-.cap {
+.cap h4 {
   text-transform: capitalize;
+  word-break: break-all;
+  font-size: 1rem !important;
+  font-weight: bold;
 }
 
 .cap p {
@@ -52,14 +55,127 @@
 .tags-halls,
 .tags-entrances,
 .tags-parking-lots {
-  padding: 3px 3px; /* Adjust the padding values as needed */
-  font-size: 10px; /* Optional: Adjust the font size if necessary */
-  line-height: 1; /* Optional: Adjust the line height if necessary */
+  padding: 3px 3px;
+  font-size: 10px;
+  line-height: 1;
 }
 .tags-entrances {
   white-space: pre-wrap;
   text-align: center;
   font-size: 8px;
+}
+
+.leaflet-top {
+  right: 0 !important;
+  top: 0 !important;
+  left: 95% !important;
+}
+
+/* Map Legend */
+.legend {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: white;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  z-index: 1000;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  transition: all 0.3s ease-in-out;
+}
+
+.legend-color {
+  width: 26px;
+  height: 26px;
+  margin-right: 10px;
+  padding: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  transition: color 0.3s ease-in-out;
+}
+
+.legend-runtime,
+.legend-assembly,
+.legend-disassembly {
+  color: var(--textColor);
+  transition: color 0.3s ease-in-out;
+}
+
+.legend-icons {
+  display: flex;
+  margin-top: 10px;
+}
+
+.legend-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  transition: color 0.3s ease-in-out;
+}
+
+.legend-icon svg {
+  margin-right: 5px;
+  transition: fill 0.3s ease-in-out;
+}
+
+/* Bar Chart */
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 1rem;
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+  padding: 0 0.5rem;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.switch-container-bar-chart {
+  border-bottom: 1px solid var(--color-gray-150);
+}
+
+.no-data {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  top: 6px;
+  right: 6px;
 }
 
 /* Timeline Component */
@@ -86,6 +202,7 @@
   border: none !important;
   cursor: pointer;
 }
+
 .timeline-slider p,
 .timeline-date {
   cursor: pointer;
@@ -115,6 +232,7 @@
   padding: 3px 0 !important;
   margin: 0 !important;
   width: 45px !important;
+  transition: background-color 0.3s ease-in-out;
 }
 
 .timeline-date p {
@@ -171,6 +289,7 @@
 
 .timeline-cell.selected {
   background-color: var(--color-primary);
+  transition: background-color 0.3s ease-in-out;
 }
 
 .arrow-button {
@@ -207,7 +326,7 @@
 }
 
 .arrow-button.right {
-  right: 55px;
+  right: 40px;
 }
 
 .timeline-arrows-container {
@@ -255,6 +374,10 @@
   background-color: var(--color-gray-100) !important;
 }
 
+.timeline-date:nth-child(2n + 1):not(.selected) {
+  background-color: var(--color-gray-200) !important;
+}
+
 .status-assembly {
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -274,7 +397,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  /* padding-top: 0.1rem; */
+  word-break: break-all;
 }
 
 .details-link_container svg {
@@ -283,98 +406,27 @@
   margin-right: 5px;
 }
 
-/* Bar Chart */
-.chart-container {
+.timeline-slider.days {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 0 1rem;
+  transition: transform 0.5s ease-in-out;
 }
 
-.chart-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  height: 100%;
-  padding: 0 0.5rem;
+.timeline-slider-container {
+  overflow: hidden;
+  position: relative;
 }
 
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  border-bottom: 1px solid var(--color-gray-150);
-  flex-direction: column;
-}
-
-.no-data {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-.leaflet-container a.leaflet-popup-close-button {
-  top: 6px;
-  right: 6px;
-}
-
-/* Map Legend */
-.legend {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: white;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  font-family: Arial, sans-serif;
-  font-size: 12px; /* Made the font smaller */
-  z-index: 1000;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.legend-color {
-  width: 26px; /* Increased size to account for padding */
-  height: 26px; /* Increased size to account for padding */
-  margin-right: 10px;
-  padding: 3px; /* Added padding */
+.event-bar__label {
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
-.legend-text {
-  display: flex;
-  flex-direction: column;
+.timeline-year.selected,
+.timeline-months.selected {
+  border-radius: 3px;
 }
 
-.legend-runtime,
-.legend-assembly,
-.legend-disassembly {
-  color: var(--textColor); /* Set font color */
-}
-
-.legend-icons {
-  display: flex;
-  margin-top: 10px;
-}
-
-.legend-icon {
-  display: flex;
-  align-items: center;
-  margin-right: 10px;
-}
-.legend-icon svg {
-  margin-right: 5px;
+.tags-parking-lots {
+  background-color: var(--color-primary) !important;
+  color: var(--color-pure-white) !important;
 }

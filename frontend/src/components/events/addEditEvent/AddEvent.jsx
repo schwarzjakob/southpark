@@ -15,7 +15,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TableSortLabel,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
@@ -29,15 +28,17 @@ import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRou
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import dayjs from "dayjs";
-import DateRangePicker from "../controls/DateRangePicker";
-import "./styles/events.css";
+import InfoHover from "../../common/InfoHover.jsx";
+import DateRangePicker from "../../controls/DateRangePicker.jsx";
+import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
+import "../styles/events.css";
 
 const TITLE = "Add Event";
 
 const AddEvent = () => {
   const [event, setEvent] = useState({
     name: "",
-    color: "#ffffff",
+    color: "#6a91ce",
     assembly_start_date: "",
     assembly_end_date: "",
     runtime_start_date: "",
@@ -47,7 +48,8 @@ const AddEvent = () => {
     halls: [],
     entrances: [],
   });
-  const [error, setError] = useState("");
+  const [originalEvent] = useState({ ...event });
+  const [error] = useState("");
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
@@ -55,6 +57,22 @@ const AddEvent = () => {
   });
 
   const navigate = useNavigate();
+
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(event) !== JSON.stringify(originalEvent);
+  };
+
+  const handleNavigate = (path) => {
+    if (
+      hasUnsavedChanges() &&
+      !window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      )
+    ) {
+      return;
+    }
+    navigate(path);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -183,8 +201,8 @@ const AddEvent = () => {
         disassembly_start_date: event.disassembly_start_date,
         disassembly_end_date: event.disassembly_end_date,
         color: event.color,
-        halls: event.halls, // Ensure these are included
-        entrances: event.entrances, // Ensure these are included
+        halls: event.halls, 
+        entrances: event.entrances, 
       };
       const response = await axios.post("/api/events/event", eventData);
       const event_id = response.data.id;
@@ -257,7 +275,7 @@ const AddEvent = () => {
             }}
           >
             {hall}
-          </TableCell>,
+          </TableCell>
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
@@ -296,12 +314,21 @@ const AddEvent = () => {
     ));
   };
 
+  const breadcrumbLinks = [
+    { label: "Events", path: "/events" },
+    { label: "Add Event", path: "/events/add" },
+  ];
+
   return (
     <Box className="form-width">
+      <CustomBreadcrumbs
+        links={breadcrumbLinks}
+        onClick={(link) => handleNavigate(link.path)}
+      />
       <Paper className="form-container">
         <Box className="iconHeadline__container">
           <EditRoundedIcon />
-          <Typography variant="h4" gutterBottom >
+          <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>
@@ -315,7 +342,7 @@ const AddEvent = () => {
             <Box className="input-container">
               <InsertInvitationRoundedIcon className="input-container__icon" />
               <TextField
-                label="Name"
+                label="Event Title"
                 name="name"
                 value={event.name}
                 onChange={handleChange}
@@ -348,9 +375,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Assembly</TableSortLabel>
-                          </Typography>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Assembly Phase
+                          </Typography>{" "}
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on the date range to select the assembly start and end dates."
+                          />
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -359,9 +393,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Runtime</TableSortLabel>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Runtime Phase
                           </Typography>
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on the date range to select the runtime start and end dates."
+                          />
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -370,9 +411,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Disassembly</TableSortLabel>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Disassembly Phase
                           </Typography>
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on the date range to select the disassembly start and end dates."
+                          />
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -445,9 +493,16 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Halls</TableSortLabel>
-                          </Typography>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Halls
+                          </Typography>{" "}
+                          <InfoHover
+                            direction="right"
+                            infoText="Click on a hall to toggle it."
+                          />
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -469,8 +524,15 @@ const AddEvent = () => {
                             fontSize="small"
                             className="header-icon"
                           />
-                          <Typography variant="h6">
-                            <TableSortLabel>Entrances</TableSortLabel>
+                          <Typography
+                            variant="h6"
+                            className="table-header-title"
+                          >
+                            Entrances
+                            <InfoHover
+                              direction="right"
+                              infoText="Click on an entrance to toggle it."
+                            />
                           </Typography>
                         </Box>
                       </TableCell>
@@ -487,7 +549,7 @@ const AddEvent = () => {
               variant="outlined"
               color="primary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(-1)}
+              onClick={() => handleNavigate("/events")}
             >
               Back
             </Button>

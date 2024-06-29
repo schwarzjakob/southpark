@@ -15,11 +15,12 @@ import {
   Box,
   TextField,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
 import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
 import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
@@ -71,6 +72,7 @@ const Events = () => {
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("name");
   const [filter, setFilter] = useState("");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,6 +97,8 @@ const Events = () => {
         setEvents(eventsWithStatus);
       } catch (error) {
         console.error("Error fetching events data", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -192,213 +196,229 @@ const Events = () => {
       <Box>
         <TextField
           variant="outlined"
+          className="event-filter"
           fullWidth
-          placeholder="Search events"
+          placeholder="Filter events by name"
           value={filter}
           onChange={handleFilterChange}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon />
+                <FilterAltIcon />
               </InputAdornment>
             ),
           }}
           style={{ marginBottom: "1rem" }}
         />
       </Box>
-      <Box>
-        <TableContainer className="events-container" component={Paper}>
-          <Table className="events-table">
-            <TableHead className="events-table__header">
-              <TableRow>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <InsertInvitationRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "name"}
-                      direction={orderBy === "name" ? order : "asc"}
-                      onClick={() => handleRequestSort("name")}
-                    >
-                      Event
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <DoorSlidingRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "entrance"}
-                      direction={orderBy === "entrance" ? order : "asc"}
-                      onClick={() => handleRequestSort("entrance")}
-                    >
-                      Entrance
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <OtherHousesRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "halls"}
-                      direction={orderBy === "halls" ? order : "asc"}
-                      onClick={() => handleRequestSort("halls")}
-                    >
-                      Halls
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <ArrowCircleUpRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "assembly"}
-                      direction={orderBy === "assembly" ? order : "asc"}
-                      onClick={() => handleRequestSort("assembly")}
-                    >
-                      Assembly
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <PlayCircleFilledRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "runtime"}
-                      direction={orderBy === "runtime" ? order : "asc"}
-                      onClick={() => handleRequestSort("runtime")}
-                    >
-                      Runtime
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <ArrowCircleDownRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "disassembly"}
-                      direction={orderBy === "disassembly" ? order : "asc"}
-                      onClick={() => handleRequestSort("disassembly")}
-                    >
-                      Disassembly
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <AssessmentRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "status"}
-                      direction={orderBy === "status" ? order : "asc"}
-                      onClick={() => handleRequestSort("status")}
-                    >
-                      Capacity Status
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <p></p>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedEvents.map((event) => (
-                <TableRow
-                  key={event.id}
-                  onClick={() => navigate(`/events/event/${event.id}`)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <TableCell className="event-name">
-                    <Box
-                      className="event-box"
-                      style={{
-                        backgroundColor: event.color,
-                        color: getContrastingTextColor(event.color),
-                        wordWrap: "break-word",
-                        maxWidth: "200px",
-                      }}
-                    >
-                      {event.name}
-                    </Box>
-                  </TableCell>
-                  <TableCell className="entrances">
-                    {event.entrances.join(", ")}
-                  </TableCell>
-                  <TableCell className="halls">
-                    {Object.entries(groupHallsByLetter(event.halls)).map(
-                      ([letter, halls]) => (
-                        <Box key={letter}>{halls.join(", ")}</Box>
-                      )
-                    )}
-                  </TableCell>
-                  <TableCell className="assembly">
-                    {`${new Date(
-                      event.assembly_start_date
-                    ).toLocaleDateString()} - ${new Date(
-                      event.assembly_end_date
-                    ).toLocaleDateString()}`}
-                  </TableCell>
-                  <TableCell className="runtime">
-                    {`${new Date(
-                      event.runtime_start_date
-                    ).toLocaleDateString()} - ${new Date(
-                      event.runtime_end_date
-                    ).toLocaleDateString()}`}
-                  </TableCell>
-                  <TableCell className="disassembly">
-                    {`${new Date(
-                      event.disassembly_start_date
-                    ).toLocaleDateString()} - ${new Date(
-                      event.disassembly_end_date
-                    ).toLocaleDateString()}`}
-                  </TableCell>
-                  <TableCell className="status">
-                    <Box
-                      className="status-box"
-                      display="flex"
-                      alignItems="center"
-                    >
-                      {getStatusCircle(event.status)}
-                      <Typography variant="body2" style={{ marginLeft: "8px" }}>
-                        {getStatusText(event.status)}
-                      </Typography>
+      {loading ? (
+        <Box
+          className="circular-loading_container"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="100%"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box>
+          <TableContainer className="events-container" component={Paper}>
+            <Table className="events-table">
+              <TableHead className="events-table__header">
+                <TableRow>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <InsertInvitationRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "name"}
+                        direction={orderBy === "name" ? order : "asc"}
+                        onClick={() => handleRequestSort("name")}
+                      >
+                        Event
+                      </TableSortLabel>
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <IconButton
-                      onClick={() => navigate(`/events/event/${event.id}`)}
-                      edge="start"
-                      size="small"
-                    >
-                      <ArrowForwardIosRoundedIcon fontSize="small" />
-                    </IconButton>
+                    <Box className="header-icon-container">
+                      <DoorSlidingRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "entrance"}
+                        direction={orderBy === "entrance" ? order : "asc"}
+                        onClick={() => handleRequestSort("entrance")}
+                      >
+                        Entrance
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <OtherHousesRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "halls"}
+                        direction={orderBy === "halls" ? order : "asc"}
+                        onClick={() => handleRequestSort("halls")}
+                      >
+                        Halls
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <ArrowCircleUpRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "assembly"}
+                        direction={orderBy === "assembly" ? order : "asc"}
+                        onClick={() => handleRequestSort("assembly")}
+                      >
+                        Assembly
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <PlayCircleFilledRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "runtime"}
+                        direction={orderBy === "runtime" ? order : "asc"}
+                        onClick={() => handleRequestSort("runtime")}
+                      >
+                        Runtime
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <ArrowCircleDownRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "disassembly"}
+                        direction={orderBy === "disassembly" ? order : "asc"}
+                        onClick={() => handleRequestSort("disassembly")}
+                      >
+                        Disassembly
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container">
+                      <AssessmentRoundedIcon
+                        fontSize="small"
+                        className="header-icon"
+                      />
+                      <TableSortLabel
+                        active={orderBy === "status"}
+                        direction={orderBy === "status" ? order : "asc"}
+                        onClick={() => handleRequestSort("status")}
+                      >
+                        Capacity Status
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <p></p>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+              </TableHead>
+              <TableBody>
+                {sortedEvents.map((event) => (
+                  <TableRow
+                    key={event.id}
+                    onClick={() => navigate(`/events/event/${event.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <TableCell className="event-name">
+                      <Box
+                        className="event-box"
+                        style={{
+                          backgroundColor: event.color,
+                          color: getContrastingTextColor(event.color),
+                          wordWrap: "break-word",
+                          maxWidth: "200px",
+                        }}
+                      >
+                        {event.name}
+                      </Box>
+                    </TableCell>
+                    <TableCell className="entrances">
+                      {event.entrances.join(", ")}
+                    </TableCell>
+                    <TableCell className="halls">
+                      {Object.entries(groupHallsByLetter(event.halls)).map(
+                        ([letter, halls]) => (
+                          <Box key={letter}>{halls.join(", ")}</Box>
+                        )
+                      )}
+                    </TableCell>
+                    <TableCell className="assembly">
+                      {`${new Date(
+                        event.assembly_start_date
+                      ).toLocaleDateString()} - ${new Date(
+                        event.assembly_end_date
+                      ).toLocaleDateString()}`}
+                    </TableCell>
+                    <TableCell className="runtime">
+                      {`${new Date(
+                        event.runtime_start_date
+                      ).toLocaleDateString()} - ${new Date(
+                        event.runtime_end_date
+                      ).toLocaleDateString()}`}
+                    </TableCell>
+                    <TableCell className="disassembly">
+                      {`${new Date(
+                        event.disassembly_start_date
+                      ).toLocaleDateString()} - ${new Date(
+                        event.disassembly_end_date
+                      ).toLocaleDateString()}`}
+                    </TableCell>
+                    <TableCell className="status">
+                      <Box
+                        className="status-box"
+                        display="flex"
+                        alignItems="center"
+                      >
+                        {getStatusCircle(event.status)}
+                        <Typography
+                          variant="body2"
+                          style={{ marginLeft: "8px" }}
+                        >
+                          {getStatusText(event.status)}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
+                        onClick={() => navigate(`/events/event/${event.id}`)}
+                        edge="start"
+                        size="small"
+                      >
+                        <ArrowForwardIosRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
     </Box>
   );
 };
