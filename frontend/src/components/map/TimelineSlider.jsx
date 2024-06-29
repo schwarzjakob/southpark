@@ -40,7 +40,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
         const today = dayjs(centerDate);
         const halfNumberOfDays = Math.floor(numberOfDays / 2);
         return Array.from({ length: numberOfDays }, (_, i) =>
-          today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD")
+          today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD"),
         );
       };
       setDays(generateDays(selectedDate, calculateNumberOfDays() + BUFFER * 2));
@@ -55,7 +55,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
+          `/api/map/events_timeline/${selectedDate}`,
         );
         const eventsData = Array.isArray(data) ? data : [];
         setEvents(eventsData);
@@ -63,10 +63,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
         const rows = [];
         eventsData.forEach((event) => {
           const eventStart = dayjs(event.assembly_start_date).format(
-            "YYYY-MM-DD"
+            "YYYY-MM-DD",
           );
           const eventEnd = dayjs(event.disassembly_end_date).format(
-            "YYYY-MM-DD"
+            "YYYY-MM-DD",
           );
           let assigned = false;
           for (let i = 0; i < rows.length; i++) {
@@ -76,7 +76,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
                   dayjs(eventStart).isBetween(e.start, e.end, "day", "[]") ||
                   dayjs(eventEnd).isBetween(e.start, e.end, "day", "[]") ||
                   dayjs(e.start).isBetween(eventStart, eventEnd, "day", "[]") ||
-                  dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]")
+                  dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]"),
               )
             ) {
               rows[i].push({ start: eventStart, end: eventEnd, event });
@@ -105,7 +105,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     const newDate = dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD"))
+      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD")),
     );
   }, [selectedDate, setSelectedDate]);
 
@@ -113,7 +113,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     const newDate = dayjs(selectedDate).add(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD"))
+      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD")),
     );
   }, [selectedDate, setSelectedDate]);
 
@@ -199,7 +199,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
           dayjs(event.assembly_start_date).startOf("day"),
           dayjs(event.disassembly_end_date).endOf("day"),
           "day",
-          "[]"
+          "[]",
         )
       ) {
         uniqueEvents[event.event_id] = event;
@@ -208,7 +208,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     const dayEvents = Object.values(uniqueEvents);
     const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
     const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
-      dayEvents.find((event) => event.row === index)
+      dayEvents.find((event) => event.row === index),
     );
     filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
 
@@ -251,10 +251,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
         const phaseStart = dayjs(phase.startDate);
         const phaseEnd = dayjs(phase.endDate);
         const startIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseStart, "day")
+          dayjs(d).isSame(phaseStart, "day"),
         );
         const endIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseEnd, "day")
+          dayjs(d).isSame(phaseEnd, "day"),
         );
         if (startIndex === -1 || endIndex === -1) return null;
         const labelText =
@@ -267,7 +267,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
           endIndex,
           phase.opacity,
           labelText,
-          phase.className
+          phase.className,
         );
       });
       return phaseSegments;
@@ -280,7 +280,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     endIndex,
     opacity,
     labelText,
-    additionalClass = ""
+    additionalClass = "",
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
@@ -391,6 +391,26 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
                     selectedEventId ? "135px" : "45px"
                   })`,
                   transition: "left 0.3s ease-in-out",
+                  "@media (min-width: 1500px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "335px" : "105px"
+                    })`,
+                  },
+                  "@media (min-width: 2000px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "735px" : "105px"
+                    })`,
+                  },
+                  "@media (min-width: 2500px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "935px" : "105px"
+                    })`,
+                  },
+                  "@media (min-width: 3000px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "1135px" : "105px"
+                    })`,
+                  },
                 }}
               >
                 {days.map((day) => (
