@@ -27,6 +27,7 @@ const Account = () => {
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
   const [passwordStatus, setPasswordStatus] = useState([]);
+  const [currentPasswordValid, setCurrentPasswordValid] = useState(false);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
 
   useEffect(() => {
@@ -54,9 +55,13 @@ const Account = () => {
   const validateCurrentPassword = async (password) => {
     try {
       const token = sessionStorage.getItem("token");
-      const response = await axios.post(
-        "/api/auth/validate-password",
-        { password },
+      const response = await axios.put(
+        "/api/auth/user/password",
+        {
+          current_password: password,
+          new_password: password, // Temporarily use current password for new_password to avoid changing it
+          confirm_new_password: password,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -64,12 +69,22 @@ const Account = () => {
           },
         },
       );
-      return response.data.valid;
+      return response.status === 200;
     } catch (error) {
       return false;
     }
   };
 
+  const handleCurrentPasswordBlur = async () => {
+    const isValid = await validateCurrentPassword(currentPassword);
+    setCurrentPasswordValid(isValid);
+    if (!isValid) {
+      setMessage("Current password is incorrect");
+      setSeverity("error");
+    } else {
+      setMessage(null);
+    }
+  };
   const passwordRules = [
     {
       rule: "New Passwords match",
@@ -81,10 +96,6 @@ const Account = () => {
     { rule: "At least 8 characters", test: (pwd) => pwd.length >= 8 },
     { rule: "At least 1 digit", test: (pwd) => /\d/.test(pwd) },
     { rule: "At least 1 special character", test: (pwd) => /\W/.test(pwd) },
-    {
-      rule: "Current Password Valid",
-      test: async () => await validateCurrentPassword(currentPassword),
-    },
   ];
 
   const checkPasswordRules = async (pwd) => {
@@ -117,21 +128,6 @@ const Account = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (newPassword !== confirmNewPassword) {
-      setMessage("New passwords do not match");
-      setSeverity("error");
-      return;
-    }
-
-    const isCurrentPasswordValid = await validateCurrentPassword(
-      currentPassword,
-    );
-    if (!isCurrentPasswordValid) {
-      setMessage("Current password is incorrect");
-      setSeverity("error");
-      return;
-    }
 
     try {
       const token = sessionStorage.getItem("token");
@@ -190,7 +186,9 @@ const Account = () => {
             margin="normal"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
+            onBlur={handleCurrentPasswordBlur}
             autoComplete="off"
+            required
           />
           <TextField
             label="New Password"
@@ -201,6 +199,7 @@ const Account = () => {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="off"
+            required
           />
           <TextField
             label="Confirm New Password"
@@ -211,6 +210,7 @@ const Account = () => {
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
             autoComplete="off"
+            required
           />
           <List>
             {passwordStatus.map(({ rule, passed }) => (
@@ -230,7 +230,7 @@ const Account = () => {
             variant="contained"
             color="primary"
             fullWidth
-            // disabled={!allFieldsFilled}
+            disabled={!allFieldsFilled}
           >
             Update
           </Button>
