@@ -185,16 +185,27 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
     }
   };
 
-  const filteredEvents = events.filter(
-    (event) =>
-      dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
-      dayjs(selectedDate).isBetween(
-        event.assembly_start_date,
-        event.disassembly_end_date,
-        null,
-        "[]"
-      ) ||
-      dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
+  const removeDuplicateEvents = (events) => {
+    const seen = new Set();
+    return events.filter((event) => {
+      const isDuplicate = seen.has(event.event_name);
+      seen.add(event.event_name);
+      return !isDuplicate;
+    });
+  };
+
+  const uniqueFilteredEvents = removeDuplicateEvents(
+    events.filter(
+      (event) =>
+        dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
+        dayjs(selectedDate).isBetween(
+          event.assembly_start_date,
+          event.disassembly_end_date,
+          null,
+          "[]"
+        ) ||
+        dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
+    )
   );
 
   const SetZoomLevel = ({ zoom }) => {
@@ -227,12 +238,15 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
       />
       <SetZoomLevel zoom={15.5} />
       {/* Rendering Legend */}
-      <MapLegendComponent events={filteredEvents} selectedDate={selectedDate} />
+      <MapLegendComponent
+        events={uniqueFilteredEvents}
+        selectedDate={selectedDate}
+      />
 
       {/* Rendering halls */}
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
-        const event = filteredEvents.find((event) =>
+        const event = uniqueFilteredEvents.find((event) =>
           event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
         const fillColor = selectedEventId
@@ -286,7 +300,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
       {/* Rendering entrances */}
       {entrances.map((entrance) => {
         const transformedCoords = transformCoordinates(entrance.coordinates);
-        const event = filteredEvents.find((event) =>
+        const event = uniqueFilteredEvents.find((event) =>
           event.event_entrance
             ? event.event_entrance.includes(entrance.name)
             : false
@@ -345,7 +359,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
       {/* Rendering parking lots */}
       {parkingLots.map((parkingLot) => {
         const transformedCoords = transformCoordinates(parkingLot.coordinates);
-        const event = filteredEvents.find((event) =>
+        const event = uniqueFilteredEvents.find((event) =>
           event[`${getEventStatus(event, selectedDate)}_parking_lots`]
             ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
                 .split(", ")
