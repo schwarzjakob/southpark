@@ -322,7 +322,44 @@ def add_event():
 def edit_event(id):
     try:
         data = request.json
+        logger.debug(f"Received data for event update: {data}")
         data["id"] = id
+
+        # Convert date strings from the request to the correct format
+        date_fields = [
+            "assembly_start_date",
+            "assembly_end_date",
+            "runtime_start_date",
+            "runtime_end_date",
+            "disassembly_start_date",
+            "disassembly_end_date",
+        ]
+
+        for field in date_fields:
+            if field in data:
+                try:
+                    # Attempt to parse date in original format
+                    parsed_date = datetime.strptime(
+                        data[field], "%a, %d %b %Y %H:%M:%S %Z"
+                    )
+                    data[field] = parsed_date.strftime("%Y-%m-%d")
+                except ValueError as ve:
+                    # Log error and original date
+                    logger.debug(f"Failed to parse date {data[field]} with error: {ve}")
+                    try:
+                        # Attempt to parse date in expected format
+                        parsed_date = datetime.strptime(data[field], "%Y-%m-%d")
+                        data[field] = parsed_date.strftime("%Y-%m-%d")
+                    except ValueError as ve2:
+                        logger.error(
+                            f"Failed to parse date {data[field]} in both formats with error: {ve2}"
+                        )
+                        return (
+                            jsonify({"error": f"Failed to parse date {data[field]}"}),
+                            400,
+                        )
+
+        logger.debug(f"Data after date conversion: {data}")
 
         # Update the event details
         update_event_query = text(
@@ -377,6 +414,39 @@ def edit_event(id):
             db.session.execute(
                 insert_entrances_query, {"event_id": id, "entrance_name": entrance_name}
             )
+
+        # Delete existing visitor demands
+        delete_demands_query = text(
+            "DELETE FROM visitor_demand WHERE event_id = :event_id"
+        )
+        db.session.execute(delete_demands_query, {"event_id": id})
+
+        # Reinitialize visitor demand with zero values for each day within the event period
+        current_date = datetime.strptime(data["assembly_start_date"], "%Y-%m-%d")
+        end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
+        logger.debug(f"Reinitializing visitor demand from {current_date} to {end_date}")
+        while current_date <= end_date:
+            if current_date < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):
+                status = "assembly"
+            elif current_date <= datetime.strptime(
+                data["runtime_end_date"], "%Y-%m-%d"
+            ):
+                status = "runtime"
+            else:
+                status = "disassembly"
+            demand_query = """
+                INSERT INTO visitor_demand (event_id, date, car_demand, truck_demand, bus_demand, status)
+                VALUES (:event_id, :date, 0, 0, 0, :status)
+            """
+            db.session.execute(
+                text(demand_query),
+                {
+                    "event_id": id,
+                    "date": current_date.strftime("%Y-%m-%d"),
+                    "status": status,
+                },
+            )
+            current_date += timedelta(days=1)
 
         db.session.commit()
         return jsonify({"message": "Event updated successfully"}), 200
@@ -474,6 +544,7 @@ def update_event_demands(event_id):
         logger.error(e)
         return jsonify({"error": str(e)}), 500
 
+
 @events_bp.route("/parking_lot_capacities", methods=["GET"])
 def get_parking_lot_capacities():
     try:
@@ -483,7 +554,8 @@ def get_parking_lot_capacities():
         if not start_date or not end_date:
             return jsonify({"error": "start_date and end_date are required"}), 400
 
-        query = text("""
+        query = text(
+            """
         WITH capacity_per_date AS (
             SELECT
                 pc.parking_lot_id,
@@ -544,9 +616,12 @@ def get_parking_lot_capacities():
             public.parking_lot pl ON c.parking_lot_id = pl.id
         ORDER BY
             c.date, pl.name;
-        """)
+        """
+        )
 
-        df = pd.read_sql_query(query, db.engine, params={"start_date": start_date, "end_date": end_date})
+        df = pd.read_sql_query(
+            query, db.engine, params={"start_date": start_date, "end_date": end_date}
+        )
         parking_lot_capacities = df.to_dict(orient="records")
 
         return jsonify(parking_lot_capacities), 200
@@ -566,66 +641,101 @@ def allocate_demands():
             return jsonify({"error": "Event ID must be provided"}), 400
 
         # Delete existing allocations for the entire event
-        delete_event_query = text("""
+        delete_event_query = text(
+            """
         DELETE FROM public.parking_lot_allocation
         WHERE event_id = :event_id
-        """)
+        """
+        )
         db.session.execute(delete_event_query, {"event_id": event_id})
 
         if not allocations:
             db.session.commit()
-            return jsonify({"message": "All existing allocations deleted successfully"}), 200
+            return (
+                jsonify({"message": "All existing allocations deleted successfully"}),
+                200,
+            )
 
         for allocation in allocations:
             # Check parking lot capacity
-            capacity_query = text("""
+            capacity_query = text(
+                """
             SELECT capacity - COALESCE(SUM(allocated_capacity), 0) AS free_capacity
             FROM public.parking_lot_capacity pc
             LEFT JOIN public.parking_lot_allocation pa ON pc.parking_lot_id = pa.parking_lot_id AND pa.date = :date
             WHERE pc.parking_lot_id = :parking_lot_id AND :date BETWEEN pc.valid_from AND pc.valid_to
             GROUP BY pc.capacity
-            """)
-            result = db.session.execute(capacity_query, {
-                "parking_lot_id": allocation["parking_lot_id"],
-                "date": allocation["date"]
-            }).fetchone()
+            """
+            )
+            result = db.session.execute(
+                capacity_query,
+                {
+                    "parking_lot_id": allocation["parking_lot_id"],
+                    "date": allocation["date"],
+                },
+            ).fetchone()
 
             if result is not None:
-                free_capacity = result[0]  # Accessing the first element of the result tuple
+                free_capacity = result[
+                    0
+                ]  # Accessing the first element of the result tuple
             else:
                 free_capacity = 0
 
-            allocated_capacity = allocation["allocated_cars"] + 4 * allocation["allocated_trucks"] + 3 * allocation["allocated_buses"]
+            allocated_capacity = (
+                allocation["allocated_cars"]
+                + 4 * allocation["allocated_trucks"]
+                + 3 * allocation["allocated_buses"]
+            )
 
             if free_capacity < allocated_capacity:
                 # Fetch the parking lot name corresponding to allocation['parking_lot_id']
-                parking_lot_name_query = text("""
+                parking_lot_name_query = text(
+                    """
                 SELECT name FROM public.parking_lot WHERE id = :parking_lot_id
-                """)
-                parking_lot_name_result = db.session.execute(parking_lot_name_query, {"parking_lot_id": allocation["parking_lot_id"]}).fetchone()
-                parking_lot_name = parking_lot_name_result[0] if parking_lot_name_result else "Unknown Parking Lot"
+                """
+                )
+                parking_lot_name_result = db.session.execute(
+                    parking_lot_name_query,
+                    {"parking_lot_id": allocation["parking_lot_id"]},
+                ).fetchone()
+                parking_lot_name = (
+                    parking_lot_name_result[0]
+                    if parking_lot_name_result
+                    else "Unknown Parking Lot"
+                )
 
-                return jsonify({
-                    "error": f"Insufficient capacity for parking lot '{parking_lot_name}' on {allocation['date']}. Free capacity: {free_capacity}, Required: {allocated_capacity}"
-                }), 400
-            
+                return (
+                    jsonify(
+                        {
+                            "error": f"Insufficient capacity for parking lot '{parking_lot_name}' on {allocation['date']}. Free capacity: {free_capacity}, Required: {allocated_capacity}"
+                        }
+                    ),
+                    400,
+                )
+
         for allocation in allocations:
             # Insert new allocation
-            insert_query = text("""
+            insert_query = text(
+                """
             INSERT INTO public.parking_lot_allocation (
                 event_id, parking_lot_id, date, allocated_cars, allocated_trucks, allocated_buses
             ) VALUES (
                 :event_id, :parking_lot_id, :date, :allocated_cars, :allocated_trucks, :allocated_buses
             )
-            """)
-            db.session.execute(insert_query, {
-                "event_id": allocation["event_id"],
-                "parking_lot_id": allocation["parking_lot_id"],
-                "date": allocation["date"],
-                "allocated_cars": allocation["allocated_cars"],
-                "allocated_trucks": allocation["allocated_trucks"],
-                "allocated_buses": allocation["allocated_buses"]
-            })
+            """
+            )
+            db.session.execute(
+                insert_query,
+                {
+                    "event_id": allocation["event_id"],
+                    "parking_lot_id": allocation["parking_lot_id"],
+                    "date": allocation["date"],
+                    "allocated_cars": allocation["allocated_cars"],
+                    "allocated_trucks": allocation["allocated_trucks"],
+                    "allocated_buses": allocation["allocated_buses"],
+                },
+            )
 
         db.session.commit()
         return jsonify({"message": "Allocations saved successfully"}), 201
