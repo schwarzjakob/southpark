@@ -391,6 +391,26 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
                     selectedEventId ? "135px" : "45px"
                   })`,
                   transition: "left 0.3s ease-in-out",
+                  "@media (min-width: 1500px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "335px" : "105px"
+                    })`,
+                  },
+                  "@media (min-width: 2000px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "735px" : "105px"
+                    })`,
+                  },
+                  "@media (min-width: 2500px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "935px" : "105px"
+                    })`,
+                  },
+                  "@media (min-width: 3000px)": {
+                    left: `calc(-${BUFFER * 45 + 30}px - ${
+                      selectedEventId ? "1135px" : "105px"
+                    })`,
+                  },
                 }}
               >
                 {days.map((day) => (
