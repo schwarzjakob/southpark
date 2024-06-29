@@ -7,10 +7,15 @@ import {
   Typography,
   Box,
   Alert,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import axios from "axios";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import "./styles/auth.css";
 
 const Register = () => {
@@ -22,6 +27,23 @@ const Register = () => {
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
   const navigate = useNavigate();
+
+  const passwordRules = [
+    {
+      rule: "Passwords match",
+      test: (pwd) =>
+        pwd.length > 0 && confirmPassword.length > 0 && pwd === confirmPassword,
+    },
+    { rule: "At least 8 characters", test: (pwd) => pwd.length >= 8 },
+    { rule: "At least 1 digit", test: (pwd) => /\d/.test(pwd) },
+    { rule: "At least 1 special character", test: (pwd) => /\W/.test(pwd) },
+  ];
+
+  const checkPasswordRules = (pwd) =>
+    passwordRules.map((rule) => ({
+      rule: rule.rule,
+      passed: rule.test(pwd),
+    }));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -48,6 +70,8 @@ const Register = () => {
     }
   };
 
+  const passwordStatus = checkPasswordRules(password);
+
   return (
     <Container maxWidth="sm" className="register">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>
@@ -67,6 +91,7 @@ const Register = () => {
             value={username}
             onChange={(e) => setUserName(e.target.value)}
             autoComplete="username"
+            required={true}
           />
           <TextField
             label="Email"
@@ -77,6 +102,7 @@ const Register = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
+            required={true}
           />
           <TextField
             label="Password"
@@ -87,6 +113,7 @@ const Register = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
+            required={true}
           />
           <TextField
             label="Confirm Password"
@@ -97,7 +124,20 @@ const Register = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
+            required={true}
           />
+          <List>
+            {passwordStatus.map(({ rule, passed }) => (
+              <ListItem key={rule} sx={{ padding: "0px 16px", margin: "0px" }}>
+                <ListItemText primary={rule} />
+                {passed ? (
+                  <CheckCircleIcon color="success" />
+                ) : (
+                  <CancelIcon color="error" />
+                )}
+              </ListItem>
+            ))}
+          </List>
           <TextField
             label="Access Token"
             variant="outlined"
