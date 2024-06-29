@@ -66,7 +66,7 @@ const AddEvent = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       )
     ) {
       return;
@@ -92,11 +92,7 @@ const AddEvent = () => {
 
     if (phase === "assembly") {
       const runtimeStartDate = dates[1] ? dayjs(dates[1]).add(1, "day") : null;
-      if (
-        runtimeStartDate &&
-        (!event.runtime_start_date ||
-          runtimeStartDate.isAfter(dayjs(event.runtime_start_date)))
-      ) {
+      if (runtimeStartDate) {
         updatedEvent.runtime_start_date = runtimeStartDate.format("YYYY-MM-DD");
         if (
           !event.runtime_end_date ||
@@ -104,15 +100,19 @@ const AddEvent = () => {
         ) {
           updatedEvent.runtime_end_date = runtimeStartDate.format("YYYY-MM-DD");
         }
-        const disassemblyStartDate = runtimeStartDate.add(1, "day");
+        const disassemblyStartDate = dayjs(updatedEvent.runtime_end_date).add(
+          1,
+          "day",
+        );
         updatedEvent.disassembly_start_date =
           disassemblyStartDate.format("YYYY-MM-DD");
         if (
           !event.disassembly_end_date ||
           disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
         ) {
-          updatedEvent.disassembly_end_date =
-            disassemblyStartDate.format("YYYY-MM-DD");
+          updatedEvent.disassembly_end_date = disassemblyStartDate
+            .add(2, "day")
+            .format("YYYY-MM-DD");
         }
       }
     }
@@ -125,34 +125,28 @@ const AddEvent = () => {
         ? dayjs(dates[1]).add(1, "day")
         : null;
 
-      if (
-        assemblyEndDate &&
-        (!event.assembly_end_date ||
-          assemblyEndDate.isBefore(dayjs(event.assembly_end_date)))
-      ) {
+      if (assemblyEndDate) {
         updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
         if (
           !event.assembly_start_date ||
           assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
         ) {
-          updatedEvent.assembly_start_date =
-            assemblyEndDate.format("YYYY-MM-DD");
+          updatedEvent.assembly_start_date = assemblyEndDate
+            .subtract(2, "day")
+            .format("YYYY-MM-DD");
         }
       }
 
-      if (
-        disassemblyStartDate &&
-        (!event.disassembly_start_date ||
-          disassemblyStartDate.isAfter(dayjs(event.disassembly_start_date)))
-      ) {
+      if (disassemblyStartDate) {
         updatedEvent.disassembly_start_date =
           disassemblyStartDate.format("YYYY-MM-DD");
         if (
           !event.disassembly_end_date ||
           disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
         ) {
-          updatedEvent.disassembly_end_date =
-            disassemblyStartDate.format("YYYY-MM-DD");
+          updatedEvent.disassembly_end_date = disassemblyStartDate
+            .add(2, "day")
+            .format("YYYY-MM-DD");
         }
       }
     }
@@ -162,17 +156,15 @@ const AddEvent = () => {
         ? dayjs(dates[0]).subtract(1, "day")
         : null;
 
-      if (
-        runtimeEndDate &&
-        (!event.runtime_end_date ||
-          runtimeEndDate.isBefore(dayjs(event.runtime_end_date)))
-      ) {
+      if (runtimeEndDate) {
         updatedEvent.runtime_end_date = runtimeEndDate.format("YYYY-MM-DD");
         if (
           !event.runtime_start_date ||
           runtimeEndDate.isBefore(dayjs(event.runtime_start_date))
         ) {
-          updatedEvent.runtime_start_date = runtimeEndDate.format("YYYY-MM-DD");
+          updatedEvent.runtime_start_date = runtimeEndDate
+            .subtract(2, "day")
+            .format("YYYY-MM-DD");
         }
         const assemblyEndDate = runtimeEndDate.subtract(1, "day");
         updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
@@ -180,8 +172,9 @@ const AddEvent = () => {
           !event.assembly_start_date ||
           assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
         ) {
-          updatedEvent.assembly_start_date =
-            assemblyEndDate.format("YYYY-MM-DD");
+          updatedEvent.assembly_start_date = assemblyEndDate
+            .subtract(2, "day")
+            .format("YYYY-MM-DD");
         }
       }
     }
@@ -201,8 +194,8 @@ const AddEvent = () => {
         disassembly_start_date: event.disassembly_start_date,
         disassembly_end_date: event.disassembly_end_date,
         color: event.color,
-        halls: event.halls, 
-        entrances: event.entrances, 
+        halls: event.halls,
+        entrances: event.entrances,
       };
       const response = await axios.post("/api/events/event", eventData);
       const event_id = response.data.id;
@@ -275,7 +268,7 @@ const AddEvent = () => {
             }}
           >
             {hall}
-          </TableCell>
+          </TableCell>,
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
