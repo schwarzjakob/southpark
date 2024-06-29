@@ -17,7 +17,7 @@ import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import "./styles/auth.css";
-import "./styles/auth.css";
+
 const Account = () => {
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
@@ -166,12 +166,12 @@ const Account = () => {
         </Box>
         <Box className="form-icon-row">
           <AccountCircleRoundedIcon />
-          <Typography variant="body1 ">User Name: {username}</Typography>
+          <Typography variant="body1">User Name: {username}</Typography>
         </Box>
 
         <Box className="form-icon-row">
           <AlternateEmailRoundedIcon />
-          <Typography variant="body1 ">E-Mail: {email}</Typography>
+          <Typography variant="body1">E-Mail: {email}</Typography>
         </Box>
         {message && <Alert severity={severity}>{message}</Alert>}
 
@@ -195,6 +195,7 @@ const Account = () => {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="off"
+            required
           />
           <TextField
             label="Confirm New Password"
@@ -235,7 +236,7 @@ const Account = () => {
             variant="contained"
             color="primary"
             fullWidth
-            // disabled={!allFieldsFilled}
+            disabled={!allFieldsFilled}
           >
             Update
           </Button>
