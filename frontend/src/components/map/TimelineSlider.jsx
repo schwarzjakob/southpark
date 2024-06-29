@@ -387,9 +387,8 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
                   bgcolor: theme.palette.background.paper,
                   height: `${eventRows.length * ROW_HEIGHT + OFFSET}px`,
                   position: "absolute",
-                  left: `calc(-${BUFFER * 45 + 30}px - ${
-                    selectedEventId ? "135px" : "45px"
-                  })`,
+                  left: "50%",
+                  transform: `translateX(calc(-50% - 22.5px))`,
                   transition: "left 0.3s ease-in-out",
                 }}
               >
