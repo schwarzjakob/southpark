@@ -155,13 +155,13 @@ const AddAllocationPopup = ({
   useEffect(() => {
     if (open) {
       fetchParkingLotCapacities();
-      document.body.style.overflow = "hidden"; // Prevent scrolling
+      document.body.style.overflow = "hidden"; 
     } else {
-      document.body.style.overflow = "unset"; // Allow scrolling
+      document.body.style.overflow = "unset"; 
     }
 
     return () => {
-      document.body.style.overflow = "unset"; // Ensure scrolling is reset when component unmounts
+      document.body.style.overflow = "unset";
     };
   }, [open, fetchParkingLotCapacities]);
 

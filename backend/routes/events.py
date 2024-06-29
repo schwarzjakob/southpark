@@ -598,8 +598,17 @@ def allocate_demands():
             allocated_capacity = allocation["allocated_cars"] + 4 * allocation["allocated_trucks"] + 3 * allocation["allocated_buses"]
 
             if free_capacity < allocated_capacity:
-                return jsonify({"error": f"Insufficient capacity for parking lot {allocation['parking_lot_id']} on {allocation['date']}. Free capacity: {free_capacity}, Required: {allocated_capacity}"}), 400
+                # Fetch the parking lot name corresponding to allocation['parking_lot_id']
+                parking_lot_name_query = text("""
+                SELECT name FROM public.parking_lot WHERE id = :parking_lot_id
+                """)
+                parking_lot_name_result = db.session.execute(parking_lot_name_query, {"parking_lot_id": allocation["parking_lot_id"]}).fetchone()
+                parking_lot_name = parking_lot_name_result[0] if parking_lot_name_result else "Unknown Parking Lot"
 
+                return jsonify({
+                    "error": f"Insufficient capacity for parking lot '{parking_lot_name}' on {allocation['date']}. Free capacity: {free_capacity}, Required: {allocated_capacity}"
+                }), 400
+            
         for allocation in allocations:
             # Insert new allocation
             insert_query = text("""

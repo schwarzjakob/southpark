@@ -240,7 +240,7 @@ const AllocateParkingSpaces = () => {
       );
       setSnackbarSeverity("error");
     } finally {
-      setIsSaving(false); // Set spinner to inactive
+      setIsSaving(false); 
       setSnackbarOpen(true);
       setTimeout(() => {
         window.location.reload();
@@ -268,8 +268,8 @@ const AllocateParkingSpaces = () => {
       const transformData = (data) => {
         const result = {};
         const processData = (type) => {
-          if (data[type]?.busses) {
-            data[type].busses.forEach((bus) => {
+          if (data[type]?.buses) {
+            data[type].buses.forEach((bus) => {
               const lotName = parkingLotMap[bus.parking_lot_id];
               if (!result[type][lotName]) {
                 result[type][lotName] = {
@@ -494,7 +494,7 @@ const AllocateParkingSpaces = () => {
 
   useEffect(() => {
     const handleAllocationsUpdated = () => {
-      fetchDemands(); // Re-fetch demands whenever allocations are updated
+      fetchDemands(); 
     };
 
     window.addEventListener("allocations-updated", handleAllocationsUpdated);
@@ -545,16 +545,12 @@ const AllocateParkingSpaces = () => {
     const currentAllocations =
       JSON.parse(sessionStorage.getItem("allocations")) || {};
 
-    // Remove existing allocations for the selected phase
     currentAllocations[phase] = {};
 
-    // Add new recommendations for the selected phase
     currentAllocations[phase] = transformedRecommendationData[phase];
 
-    // Update session storage
     sessionStorage.setItem("allocations", JSON.stringify(currentAllocations));
 
-    // Dispatch a custom event to notify components
     window.dispatchEvent(new Event("allocations-updated"));
 
     setSnackbarMessage(`Recommendations applied for ${phase} phase`);
