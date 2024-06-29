@@ -1,12 +1,13 @@
-import jwt
 import datetime
+import logging
 import re
-from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
+
+import jwt
 from extensions import db
+from flask import Blueprint, jsonify, request
 from models import User, UserLog
 from utils.helpers import log_user_activity
-import logging
+from werkzeug.security import check_password_hash, generate_password_hash
 
 auth_bp = Blueprint("auth", __name__)
 logger = logging.getLogger(__name__)
@@ -140,6 +141,18 @@ def update_password():
 
     if new_password != confirm_new_password:
         return jsonify({"message": "New passwords do not match"}), 400
+
+    if len(new_password) < 8:
+        return jsonify({"message": "Password must be at least 8 characters long"}), 400
+
+    if len(re.findall(r"\d", new_password)) < 1:
+        return jsonify({"message": "Password must contain at least 1 digit"}), 400
+
+    if len(re.findall(r"\W", new_password)) < 1:
+        return (
+            jsonify({"message": "Password must contain at least 1 special character"}),
+            400,
+        )
 
     user.password_hash = generate_password_hash(new_password, method="pbkdf2:sha256")
 
