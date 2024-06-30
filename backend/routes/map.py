@@ -131,14 +131,13 @@ def get_parking_lot_occupancy(date):
         # Define the query to fetch occupancy data
         query_occupancy = f"""
         SELECT
-            vd.date,
-            vd.parking_lot_name,
-            vd.occupied_capacity AS occupancy,
-            vd.free_capacity,
-            truck_limit,
-            bus_limit
-        FROM view_schema.view_daily_parking_lot_capacity_and_occupation vd
-        WHERE vd.date = '{date}'
+            pa.date,
+            pl.name AS parking_lot_name,
+            SUM(pa.allocated_capacity) AS occupancy
+        FROM public.parking_lot_allocation pa
+        JOIN public.parking_lot pl ON pa.parking_lot_id = pl.id
+        WHERE pa.date = '{date}'
+        GROUP BY pa.date, pl.name
         """
 
         logger.info(f"Executing query: {query_occupancy}")
@@ -161,4 +160,3 @@ def get_parking_lot_occupancy(date):
         # Log the exception and return an error response
         logger.error("Failed to fetch parking lot occupancy data", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
