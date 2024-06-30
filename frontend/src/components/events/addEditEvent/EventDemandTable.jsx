@@ -209,27 +209,33 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
     if (!Array.isArray(allocations)) return `0/${demandTotal}`;
 
-    const allocation = allocations.find(
+    const allocationsForDate = allocations.filter(
       (alloc) => formatDate(alloc.date) === formatDate(demandDate),
     );
 
-    return allocation
-      ? `${allocation.allocated_capacity}/${demandTotal}`
-      : `0/${demandTotal}`;
+    const totalAllocated = allocationsForDate.reduce(
+      (acc, alloc) => acc + alloc.allocated_capacity,
+      0,
+    );
+
+    return `${totalAllocated}/${demandTotal}`;
   };
 
   const calculateStatus = (demandDate, demandTotal) => {
     if (!Array.isArray(allocations)) return "not_allocated";
 
-    const allocation = allocations.find(
+    const allocationsForDate = allocations.filter(
       (alloc) => formatDate(alloc.date) === formatDate(demandDate),
     );
 
-    if (!demandTotal) return "no_demands";
-    if (!allocation) return "not_allocated";
+    const totalAllocated = allocationsForDate.reduce(
+      (acc, alloc) => acc + alloc.allocated_capacity,
+      0,
+    );
 
-    const ratio = allocation.allocated_capacity / demandTotal;
-    if (ratio === 0) return "not_allocated";
+    const ratio = totalAllocated / demandTotal;
+    if (!demandTotal) return "no_demands";
+    if (totalAllocated === 0) return "not_allocated";
     if (ratio === 1) return "allocated";
     return "partially_allocated";
   };
@@ -400,7 +406,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                   >
                     <Box className="header-icon-container__label">
                       <Box className="header-icon-container__label-title">
-                        Bus Capacity
+                        Bus Demand
                       </Box>
                       <Box className="header-icon-container__label-unit">
                         (= 3x Car Units)
@@ -422,7 +428,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                   >
                     <Box className="header-icon-container__label">
                       <Box className="header-icon-container__label-title">
-                        Truck Capacity
+                        Truck Demand
                       </Box>
                       <Box className="header-icon-container__label-unit">
                         (= 4x Car Units)
