@@ -14,6 +14,11 @@ import {
   Button,
   TextField,
   Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
@@ -49,6 +54,8 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const [notification, setNotification] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [editedDemands, setEditedDemands] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [datesToDelete, setDatesToDelete] = useState([]);
 
   useEffect(() => {
     const fetchDemands = async () => {
@@ -56,6 +63,8 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
         const response = await axios.get(`/api/events/demands/${eventId}`);
         if (response.status === 204) {
           setNotification("No demands found for this event.");
+          setDemands([]);
+          setEditedDemands([]);
         } else {
           setDemands(response.data);
           setEditedDemands(response.data);
@@ -87,22 +96,65 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const handleEditChange = (id, field, value) => {
     setEditedDemands((prevEditedDemands) =>
       prevEditedDemands.map((demand) =>
-        demand.id === id ? { ...demand, [field]: Number(value) } : demand
-      )
+        demand.id === id ? { ...demand, [field]: Number(value) } : demand,
+      ),
     );
   };
 
   const handleSave = async () => {
+    const modifiedDates = editedDemands
+      .filter((demand, index) => {
+        const originalDemand = demands[index] || {};
+        return (
+          demand.car_demand !== originalDemand.car_demand ||
+          demand.truck_demand !== originalDemand.truck_demand ||
+          demand.bus_demand !== originalDemand.bus_demand
+        );
+      })
+      .map((demand) => demand.date);
+
+    const allocationsToDelete = Array.isArray(allocations)
+      ? allocations.filter((allocation) =>
+          modifiedDates.includes(allocation.date),
+        )
+      : [];
+
+    if (allocationsToDelete.length > 0) {
+      setDatesToDelete(modifiedDates);
+      setOpenDialog(true);
+    } else {
+      await saveDemands();
+    }
+  };
+
+  const saveDemands = async () => {
     try {
       await axios.put(`/api/events/demands/${eventId}`, editedDemands);
-      setDemands(editedDemands);
       setEditMode(false);
       setIsEditingDemands(false);
-      await fetchAllocations();
+      setDemands(editedDemands);
       updateStatuses(); // Update statuses after saving demands
+      await fetchAllocations();
+      await fetchDemands();
     } catch (error) {
       console.error("Error saving demands data:", error);
     }
+  };
+
+  const handleConfirmSave = async () => {
+    try {
+      await axios.delete(`/api/events/allocations`, {
+        data: { event_id: eventId, dates: datesToDelete },
+      });
+      await saveDemands();
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error deleting allocations:", error);
+    }
+  };
+
+  const handleCancelSave = () => {
+    setOpenDialog(false);
   };
 
   const handleCancel = () => {
@@ -120,12 +172,28 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     }
   };
 
+  const fetchDemands = async () => {
+    try {
+      const response = await axios.get(`/api/events/demands/${eventId}`);
+      if (response.status === 204) {
+        setNotification("No demands found for this event.");
+        setDemands([]);
+        setEditedDemands([]);
+      } else {
+        setDemands(response.data);
+        setEditedDemands(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching demands data:", error);
+    }
+  };
+
   const updateStatuses = () => {
     const updatedDemands = demands.map((demand) => {
       const totalDemand =
         demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
       const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date),
       );
       let status = "not_allocated";
       if (allocation) {
@@ -200,7 +268,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const getAllocatedTotal = (demandDate) => {
     const demand = editedDemands.find(
-      (d) => formatDate(d.date) === formatDate(demandDate)
+      (d) => formatDate(d.date) === formatDate(demandDate),
     );
     if (!demand) return `0/0`;
 
@@ -209,32 +277,47 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
     if (!Array.isArray(allocations)) return `0/${demandTotal}`;
 
-    const allocation = allocations.find(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate)
+    const allocationsForDate = allocations.filter(
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
     );
 
-    return allocation
-      ? `${allocation.allocated_capacity}/${demandTotal}`
-      : `0/${demandTotal}`;
+    const totalAllocated = allocationsForDate.reduce(
+      (acc, alloc) => acc + alloc.allocated_capacity,
+      0,
+    );
+
+    return `${totalAllocated}/${demandTotal}`;
   };
 
   const calculateStatus = (demandDate, demandTotal) => {
     if (!Array.isArray(allocations)) return "not_allocated";
 
-    const allocation = allocations.find(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate)
+    const allocationsForDate = allocations.filter(
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
     );
 
-    if (!allocation) return "not_allocated";
+    const totalAllocated = allocationsForDate.reduce(
+      (acc, alloc) => acc + alloc.allocated_capacity,
+      0,
+    );
 
-    const ratio = allocation.allocated_capacity / demandTotal;
-    if (ratio === 0) return "not_allocated";
+    const ratio = totalAllocated / demandTotal;
+    if (!demandTotal) return "no_demands";
+    if (totalAllocated === 0) return "not_allocated";
     if (ratio === 1) return "allocated";
     return "partially_allocated";
   };
 
   const getStatusLabel = (status) => {
     switch (status) {
+      case "no_demands":
+        return (
+          <Box className="status-label">
+            <Typography className="status-label" variant="body2">
+              No demands
+            </Typography>
+          </Box>
+        );
       case "allocated":
         return (
           <Box className="status-label">
@@ -391,7 +474,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                   >
                     <Box className="header-icon-container__label">
                       <Box className="header-icon-container__label-title">
-                        Bus Capacity
+                        Bus Demand
                       </Box>
                       <Box className="header-icon-container__label-unit">
                         (= 3x Car Units)
@@ -413,7 +496,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                   >
                     <Box className="header-icon-container__label">
                       <Box className="header-icon-container__label-title">
-                        Truck Capacity
+                        Truck Demand
                       </Box>
                       <Box className="header-icon-container__label-unit">
                         (= 4x Car Units)
@@ -497,7 +580,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "car_demand",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -518,7 +601,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "bus_demand",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -538,7 +621,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "truck_demand",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -550,10 +633,10 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                         <TableCell>
                           <Box display="flex" alignItems="center">
                             {getStatusCircle(
-                              calculateStatus(demand.date, demand.demand)
+                              calculateStatus(demand.date, demand.demand),
                             )}
                             {getStatusLabel(
-                              calculateStatus(demand.date, demand.demand)
+                              calculateStatus(demand.date, demand.demand),
                             )}
                           </Box>
                         </TableCell>
@@ -567,6 +650,29 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCancelSave}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Confirm Save"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Saving the changes will delete existing allocations for the
+            respective dates. Do you want to proceed?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelSave} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmSave} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

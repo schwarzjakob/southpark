@@ -15,6 +15,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
@@ -55,6 +60,8 @@ const EditEvent = () => {
     message: "",
     severity: "info",
   });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitCallback, setSubmitCallback] = useState(null);
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -82,7 +89,7 @@ const EditEvent = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       )
     ) {
       return;
@@ -108,27 +115,19 @@ const EditEvent = () => {
 
     if (phase === "assembly") {
       const runtimeStartDate = dates[1] ? dayjs(dates[1]).add(1, "day") : null;
-      if (
-        runtimeStartDate &&
-        (!event.runtime_start_date ||
-          runtimeStartDate.isAfter(dayjs(event.runtime_start_date)))
-      ) {
+      if (runtimeStartDate) {
         updatedEvent.runtime_start_date = runtimeStartDate.format("YYYY-MM-DD");
-        if (
-          !event.runtime_end_date ||
-          runtimeStartDate.isAfter(dayjs(event.runtime_end_date))
-        ) {
+        if (dayjs(event.runtime_end_date).isBefore(runtimeStartDate)) {
           updatedEvent.runtime_end_date = runtimeStartDate.format("YYYY-MM-DD");
-        }
-        const disassemblyStartDate = runtimeStartDate.add(1, "day");
-        updatedEvent.disassembly_start_date =
-          disassemblyStartDate.format("YYYY-MM-DD");
-        if (
-          !event.disassembly_end_date ||
-          disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
-        ) {
-          updatedEvent.disassembly_end_date =
+          const disassemblyStartDate = runtimeStartDate.add(1, "day");
+          updatedEvent.disassembly_start_date =
             disassemblyStartDate.format("YYYY-MM-DD");
+          if (
+            dayjs(event.disassembly_end_date).isBefore(disassemblyStartDate)
+          ) {
+            updatedEvent.disassembly_end_date =
+              disassemblyStartDate.format("YYYY-MM-DD");
+          }
         }
       }
     }
@@ -137,38 +136,24 @@ const EditEvent = () => {
       const assemblyEndDate = dates[0]
         ? dayjs(dates[0]).subtract(1, "day")
         : null;
+      if (assemblyEndDate) {
+        updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
+        if (dayjs(event.assembly_start_date).isAfter(assemblyEndDate)) {
+          updatedEvent.assembly_start_date = assemblyEndDate
+            .subtract(1, "day")
+            .format("YYYY-MM-DD");
+        }
+      }
       const disassemblyStartDate = dates[1]
         ? dayjs(dates[1]).add(1, "day")
         : null;
-
-      if (
-        assemblyEndDate &&
-        (!event.assembly_end_date ||
-          assemblyEndDate.isBefore(dayjs(event.assembly_end_date)))
-      ) {
-        updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
-        if (
-          !event.assembly_start_date ||
-          assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
-        ) {
-          updatedEvent.assembly_start_date =
-            assemblyEndDate.format("YYYY-MM-DD");
-        }
-      }
-
-      if (
-        disassemblyStartDate &&
-        (!event.disassembly_start_date ||
-          disassemblyStartDate.isAfter(dayjs(event.disassembly_start_date)))
-      ) {
+      if (disassemblyStartDate) {
         updatedEvent.disassembly_start_date =
           disassemblyStartDate.format("YYYY-MM-DD");
-        if (
-          !event.disassembly_end_date ||
-          disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
-        ) {
-          updatedEvent.disassembly_end_date =
-            disassemblyStartDate.format("YYYY-MM-DD");
+        if (dayjs(event.disassembly_end_date).isBefore(disassemblyStartDate)) {
+          updatedEvent.disassembly_end_date = disassemblyStartDate
+            .add(1, "day")
+            .format("YYYY-MM-DD");
         }
       }
     }
@@ -177,27 +162,16 @@ const EditEvent = () => {
       const runtimeEndDate = dates[0]
         ? dayjs(dates[0]).subtract(1, "day")
         : null;
-
-      if (
-        runtimeEndDate &&
-        (!event.runtime_end_date ||
-          runtimeEndDate.isBefore(dayjs(event.runtime_end_date)))
-      ) {
+      if (runtimeEndDate) {
         updatedEvent.runtime_end_date = runtimeEndDate.format("YYYY-MM-DD");
-        if (
-          !event.runtime_start_date ||
-          runtimeEndDate.isBefore(dayjs(event.runtime_start_date))
-        ) {
+        if (dayjs(event.runtime_start_date).isAfter(runtimeEndDate)) {
           updatedEvent.runtime_start_date = runtimeEndDate.format("YYYY-MM-DD");
-        }
-        const assemblyEndDate = runtimeEndDate.subtract(1, "day");
-        updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
-        if (
-          !event.assembly_start_date ||
-          assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
-        ) {
-          updatedEvent.assembly_start_date =
-            assemblyEndDate.format("YYYY-MM-DD");
+          const assemblyEndDate = runtimeEndDate.subtract(1, "day");
+          updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
+          if (dayjs(event.assembly_start_date).isAfter(assemblyEndDate)) {
+            updatedEvent.assembly_start_date =
+              assemblyEndDate.format("YYYY-MM-DD");
+          }
         }
       }
     }
@@ -207,21 +181,85 @@ const EditEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.put(`/api/events/event/${id}`, event);
-      setFeedback({
-        open: true,
-        message: "Event updated successfully.",
-        severity: "success",
+
+    // Determine if any dates moved between phases
+    const dateChangedPhases = (originalDate, newDate) => {
+      if (!originalDate || !newDate) return false;
+
+      const phases = [
+        {
+          start: originalEvent.assembly_start_date,
+          end: originalEvent.assembly_end_date,
+        },
+        {
+          start: originalEvent.runtime_start_date,
+          end: originalEvent.runtime_end_date,
+        },
+        {
+          start: originalEvent.disassembly_start_date,
+          end: originalEvent.disassembly_end_date,
+        },
+      ];
+
+      const originalPhase = phases.findIndex(
+        (phase) => originalDate >= phase.start && originalDate <= phase.end,
+      );
+      const newPhase = phases.findIndex(
+        (phase) => newDate >= phase.start && newDate <= phase.end,
+      );
+
+      return originalPhase !== newPhase;
+    };
+
+    const phaseDatesChanged = [
+      ["assembly_start_date", "assembly_end_date"],
+      ["runtime_start_date", "runtime_end_date"],
+      ["disassembly_start_date", "disassembly_end_date"],
+    ].some(([startKey, endKey]) => {
+      return (
+        dateChangedPhases(originalEvent[startKey], event[startKey]) ||
+        dateChangedPhases(originalEvent[endKey], event[endKey])
+      );
+    });
+
+    if (phaseDatesChanged) {
+      setDialogOpen(true);
+      setSubmitCallback(() => async () => {
+        try {
+          await axios.put(`/api/events/event/${id}`, event);
+          setFeedback({
+            open: true,
+            message:
+              "Event updated successfully. Please review demands and allocations.",
+            severity: "success",
+          });
+          navigate(`/events/event/${id}`);
+        } catch (error) {
+          console.error("Error updating event:", error);
+          setFeedback({
+            open: true,
+            message: "Error updating event.",
+            severity: "error",
+          });
+        }
       });
-      navigate(`/events/event/${id}`);
-    } catch (error) {
-      console.error("Error updating event:", error);
-      setFeedback({
-        open: true,
-        message: "Error updating event.",
-        severity: "error",
-      });
+    } else {
+      try {
+        await axios.put(`/api/events/event/${id}`, event);
+        setFeedback({
+          open: true,
+          message: "Event updated successfully.",
+          severity: "success",
+        });
+        navigate(`/events/event/${id}`);
+      } catch (error) {
+        console.error("Error updating event:", error);
+        setFeedback({
+          open: true,
+          message: "Error updating event.",
+          severity: "error",
+        });
+      }
     }
   };
 
@@ -278,7 +316,7 @@ const EditEvent = () => {
             }}
           >
             {hall}
-          </TableCell>
+          </TableCell>,
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
@@ -359,6 +397,7 @@ const EditEvent = () => {
                 value={event.name}
                 onChange={handleChange}
                 fullWidth
+                required={true}
               />
             </Box>
           </FormControl>
@@ -576,6 +615,33 @@ const EditEvent = () => {
           </Box>
         </form>
       </Paper>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>Phase Dates Changed</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Phase dates have changed. Please review demands and allocations!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            className="popup-btn-close"
+            onClick={() => setDialogOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="popup-btn"
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setDialogOpen(false);
+              if (submitCallback) submitCallback();
+            }}
+          >
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={feedback.open}
         autoHideDuration={6000}
