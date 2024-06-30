@@ -665,10 +665,20 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelSave} color="primary">
+          <Button
+            className="popup-btn-close"
+            onClick={handleCancelSave}
+            color="primary"
+          >
             Cancel
           </Button>
-          <Button onClick={handleConfirmSave} color="primary" autoFocus>
+          <Button
+            className="popup-btn"
+            variant="contained"
+            color="primary"
+            onClick={handleConfirmSave}
+            autoFocus
+          >
             Confirm
           </Button>
         </DialogActions>

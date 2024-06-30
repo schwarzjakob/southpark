@@ -27,6 +27,7 @@ import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
+import GarageIcon from "@mui/icons-material/GarageRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 
@@ -116,7 +117,7 @@ const Events = () => {
   };
 
   const filteredEvents = events.filter((event) =>
-    event.name.toLowerCase().includes(filter.toLowerCase())
+    event.name.toLowerCase().includes(filter.toLowerCase()),
   );
 
   const sortedEvents = filteredEvents.sort((a, b) => {
@@ -148,7 +149,26 @@ const Events = () => {
       return order === "asc"
         ? a.status.localeCompare(b.status)
         : b.status.localeCompare(a.status);
+    } else if (orderBy === "allocatedParkingLots") {
+      return order === "asc"
+        ? a.allocatedParkingLots
+            .map((pl) => pl.parking_lot_name)
+            .join(", ")
+            .localeCompare(
+              b.allocatedParkingLots
+                .map((pl) => pl.parking_lot_name)
+                .join(", "),
+            )
+        : b.allocatedParkingLots
+            .map((pl) => pl.parking_lot_name)
+            .join(", ")
+            .localeCompare(
+              a.allocatedParkingLots
+                .map((pl) => pl.parking_lot_name)
+                .join(", "),
+            );
     }
+
     return 0;
   });
 
@@ -333,6 +353,23 @@ const Events = () => {
                     </Box>
                   </TableCell>
                   <TableCell>
+                    <Box className="header-icon-container">
+                      <GarageIcon fontSize="small" className="header-icon" />
+                      <TableSortLabel
+                        active={orderBy === "allocatedParkingLots"}
+                        direction={
+                          orderBy === "allocatedParkingLots" ? order : "asc"
+                        }
+                        onClick={() =>
+                          handleRequestSort("allocatedParkingLots")
+                        }
+                      >
+                        Allocated Parking Lots
+                      </TableSortLabel>
+                    </Box>
+                  </TableCell>
+
+                  <TableCell>
                     <p></p>
                   </TableCell>
                 </TableRow>
@@ -364,28 +401,28 @@ const Events = () => {
                       {Object.entries(groupHallsByLetter(event.halls)).map(
                         ([letter, halls]) => (
                           <Box key={letter}>{halls.join(", ")}</Box>
-                        )
+                        ),
                       )}
                     </TableCell>
                     <TableCell className="assembly">
                       {`${new Date(
-                        event.assembly_start_date
+                        event.assembly_start_date,
                       ).toLocaleDateString()} - ${new Date(
-                        event.assembly_end_date
+                        event.assembly_end_date,
                       ).toLocaleDateString()}`}
                     </TableCell>
                     <TableCell className="runtime">
                       {`${new Date(
-                        event.runtime_start_date
+                        event.runtime_start_date,
                       ).toLocaleDateString()} - ${new Date(
-                        event.runtime_end_date
+                        event.runtime_end_date,
                       ).toLocaleDateString()}`}
                     </TableCell>
                     <TableCell className="disassembly">
                       {`${new Date(
-                        event.disassembly_start_date
+                        event.disassembly_start_date,
                       ).toLocaleDateString()} - ${new Date(
-                        event.disassembly_end_date
+                        event.disassembly_end_date,
                       ).toLocaleDateString()}`}
                     </TableCell>
                     <TableCell className="status">
@@ -402,6 +439,10 @@ const Events = () => {
                           {getStatusText(event.status)}
                         </Typography>
                       </Box>
+                    </TableCell>
+                    <TableCell className="allocated-parking-lots">
+                      {event.allocatedParkingLots &&
+                        event.allocatedParkingLots.join(", ")}
                     </TableCell>
                     <TableCell>
                       <IconButton

@@ -27,17 +27,34 @@ def get_events():
             FROM visitor_demand vd
             GROUP BY vd.event_id, vd.status
         """
+        query_parking_lots = """
+            SELECT pa.event_id, pl.id AS parking_lot_id, pl.name AS parking_lot_name
+            FROM public.parking_lot_allocation pa
+            JOIN public.parking_lot pl ON pa.parking_lot_id = pl.id
+            GROUP BY pa.event_id, pl.id, pl.name
+        """
 
         events = get_data(query_events).to_dict(orient="records")
         demands = get_data(query_demands).to_dict(orient="records")
+        parking_lots = get_data(query_parking_lots).to_dict(orient="records")
 
         event_map = {event["id"]: event for event in events}
+
         for demand in demands:
             event_id = demand["event_id"]
             if event_id in event_map:
                 event_map[event_id][f"{demand['status']}_demand"] = demand[
                     "total_demand"
                 ]
+
+        for parking_lot in parking_lots:
+            event_id = parking_lot["event_id"]
+            if event_id in event_map:
+                if "allocatedParkingLots" not in event_map[event_id]:
+                    event_map[event_id]["allocatedParkingLots"] = []
+                event_map[event_id]["allocatedParkingLots"].append(
+                    parking_lot["parking_lot_name"]
+                )
 
         # Add status to each event
         for event in event_map.values():
@@ -197,9 +214,9 @@ def get_event_status():
         events_status = df.to_dict(orient="records")
 
         # Print the table for debugging
-        logger.info("Event Status Table:")
-        for row in events_status:
-            logger.info(row)
+        # logger.info("Event Status Table:")
+        # for row in events_status:
+        #     logger.info(row)
 
         return jsonify(events_status), 200
     except Exception as e:
