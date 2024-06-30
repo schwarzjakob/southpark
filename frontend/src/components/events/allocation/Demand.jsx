@@ -48,7 +48,7 @@ const Demand = ({ phase, data }) => {
   useEffect(() => {
     const handleStorageChange = () => {
       const storedAllocations = JSON.parse(
-        sessionStorage.getItem("allocations")
+        sessionStorage.getItem("allocations"),
       );
       if (storedAllocations && storedAllocations[phase]) {
         const phaseAllocations = Object.values(storedAllocations[phase]).reduce(
@@ -58,7 +58,7 @@ const Demand = ({ phase, data }) => {
             acc.trucks += alloc.trucks;
             return acc;
           },
-          { cars: 0, buses: 0, trucks: 0 }
+          { cars: 0, buses: 0, trucks: 0 },
         );
         setAllocations(phaseAllocations);
       }
@@ -102,19 +102,19 @@ const Demand = ({ phase, data }) => {
 
   const carBackgroundColor = getBackgroundColor(
     totalAllocatedCars,
-    maxDemand.car_demand
+    maxDemand.car_demand,
   );
   const busBackgroundColor = getBackgroundColor(
     totalAllocatedBuses,
-    maxDemand.bus_demand
+    maxDemand.bus_demand,
   );
   const truckBackgroundColor = getBackgroundColor(
     totalAllocatedTrucks,
-    maxDemand.truck_demand
+    maxDemand.truck_demand,
   );
   const totalDemandBackgroundColor = getBackgroundColor(
     totalAllocatedDemand,
-    totalMaxDemand
+    totalMaxDemand,
   );
 
   const notAllocatedCars = maxDemand.car_demand - totalAllocatedCars;
@@ -196,7 +196,9 @@ const Demand = ({ phase, data }) => {
           <Grid item xs={4} className="demand-item">
             <Box className="icon-text-row">
               <NumbersRoundedIcon className="icon-small" />
-              <Typography>Max. Daily</Typography>
+              <Typography>
+                Max. Daily <br></br>Phase Demand
+              </Typography>
             </Box>
           </Grid>
           <Grid item xs={2} className="demand-item">
