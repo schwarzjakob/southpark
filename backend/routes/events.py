@@ -220,6 +220,66 @@ def get_event_status():
         return jsonify({"error": str(e)}), 500
 
 
+@events_bp.route("/occupied_halls", methods=["GET"])
+def get_occupied_halls():
+    try:
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+
+        if not start_date or not end_date:
+            return jsonify({"error": "start_date and end_date are required"}), 400
+
+        query = text(
+            """
+            SELECT DISTINCT h.name
+            FROM public.hall h
+            JOIN public.hall_occupation ho ON h.id = ho.hall_id
+            WHERE ho.date BETWEEN :start_date AND :end_date
+        """
+        )
+
+        occupied_halls = db.session.execute(
+            query, {"start_date": start_date, "end_date": end_date}
+        ).fetchall()
+        occupied_halls = [row[0] for row in occupied_halls]
+
+        return jsonify(occupied_halls), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/occupied_halls/<int:event_id>", methods=["GET"])
+def get_occupied_halls_without_event(event_id):
+    try:
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+
+        if not start_date or not end_date:
+            return jsonify({"error": "start_date and end_date are required"}), 400
+
+        query = text(
+            """
+            SELECT DISTINCT h.name
+            FROM public.hall h
+            JOIN public.hall_occupation ho ON h.id = ho.hall_id
+            WHERE ho.date BETWEEN :start_date AND :end_date
+            AND ho.event_id != :event_id
+            """
+        )
+
+        occupied_halls = db.session.execute(
+            query,
+            {"start_date": start_date, "end_date": end_date, "event_id": event_id},
+        ).fetchall()
+        occupied_halls = [row[0] for row in occupied_halls]
+
+        return jsonify(occupied_halls), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
 @events_bp.route("/event", methods=["POST"])
 def add_event():
     try:

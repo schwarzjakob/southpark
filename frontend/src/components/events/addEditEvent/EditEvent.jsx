@@ -62,6 +62,7 @@ const EditEvent = () => {
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitCallback, setSubmitCallback] = useState(null);
+  const [occupiedHalls, setOccupiedHalls] = useState([]);
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -72,6 +73,11 @@ const EditEvent = () => {
         const response = await axios.get(`/api/events/event/${id}`);
         setEvent(response.data);
         setOriginalEvent(response.data);
+        fetchOccupiedHalls(
+          id,
+          response.data.assembly_start_date,
+          response.data.disassembly_end_date
+        );
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
@@ -81,6 +87,25 @@ const EditEvent = () => {
     fetchEvent();
   }, [id]);
 
+  const fetchOccupiedHalls = async (eventId, startDate, endDate) => {
+    if (!startDate || !endDate) return;
+
+    try {
+      const response = await axios.get(
+        `/api/events/occupied_halls/${eventId}`,
+        {
+          params: {
+            start_date: startDate,
+            end_date: endDate,
+          },
+        }
+      );
+      setOccupiedHalls(response.data);
+    } catch (error) {
+      console.error("Error fetching occupied halls:", error);
+    }
+  };
+
   const hasUnsavedChanges = () => {
     return JSON.stringify(event) !== JSON.stringify(originalEvent);
   };
@@ -89,7 +114,7 @@ const EditEvent = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?",
+        "You have unsaved changes. Are you sure you want to leave?"
       )
     ) {
       return;
@@ -177,6 +202,10 @@ const EditEvent = () => {
     }
 
     setEvent(updatedEvent);
+    fetchOccupiedHalls(
+      updatedEvent.assembly_start_date,
+      updatedEvent.disassembly_end_date
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -202,10 +231,10 @@ const EditEvent = () => {
       ];
 
       const originalPhase = phases.findIndex(
-        (phase) => originalDate >= phase.start && originalDate <= phase.end,
+        (phase) => originalDate >= phase.start && originalDate <= phase.end
       );
       const newPhase = phases.findIndex(
-        (phase) => newDate >= phase.start && newDate <= phase.end,
+        (phase) => newDate >= phase.start && newDate <= phase.end
       );
 
       return originalPhase !== newPhase;
@@ -264,6 +293,7 @@ const EditEvent = () => {
   };
 
   const toggleHall = (hall) => {
+    if (occupiedHalls.includes(hall)) return;
     setEvent((prevEvent) => {
       const halls = prevEvent.halls.includes(hall)
         ? prevEvent.halls.filter((h) => h !== hall)
@@ -295,28 +325,37 @@ const EditEvent = () => {
     const hallMatrix = [];
     const rows = 3;
     const cols = 6;
+    const startDate = event.assembly_start_date;
+    const endDate = event.disassembly_end_date;
+    const restrictSelection = !startDate || !endDate;
 
     for (let row = 0; row < rows; row++) {
       const rowData = [];
       for (let col = 1; col <= cols; col++) {
         const hall = `${String.fromCharCode(67 - row)}${col}`;
+        const isOccupied = occupiedHalls.includes(hall);
+        const isSelected = halls.includes(hall);
+        const isRestricted = restrictSelection || isOccupied;
+
         rowData.push(
           <TableCell
             key={hall}
-            onClick={() => toggleHall(hall)}
+            onClick={() => !isRestricted && toggleHall(hall)}
             style={{
-              backgroundColor: halls.includes(hall)
+              backgroundColor: isSelected
                 ? event.color
+                : isOccupied
+                ? "#ccc"
                 : "transparent",
-              color: halls.includes(hall)
+              color: isSelected
                 ? getContrastingTextColor(event.color)
                 : "inherit",
               textAlign: "center",
-              cursor: "pointer",
+              cursor: isRestricted ? "not-allowed" : "pointer",
             }}
           >
             {hall}
-          </TableCell>,
+          </TableCell>
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);

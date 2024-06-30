@@ -55,6 +55,7 @@ const AddEvent = () => {
     message: "",
     severity: "info",
   });
+  const [occupiedHalls, setOccupiedHalls] = useState([]);
 
   const navigate = useNavigate();
 
@@ -66,7 +67,7 @@ const AddEvent = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?",
+        "You have unsaved changes. Are you sure you want to leave?"
       )
     ) {
       return;
@@ -80,6 +81,21 @@ const AddEvent = () => {
       ...event,
       [name]: value,
     });
+  };
+
+  const fetchOccupiedHalls = async (startDate, endDate) => {
+    try {
+      const response = await axios.get("/api/events/occupied_halls", {
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+        },
+      });
+      setOccupiedHalls(response.data);
+      console.log("Occupied halls:", response.data);
+    } catch (error) {
+      console.error("Error fetching occupied halls:", error);
+    }
   };
 
   const handleDateRangeChange = (phase, dates) => {
@@ -102,7 +118,7 @@ const AddEvent = () => {
         }
         const disassemblyStartDate = dayjs(updatedEvent.runtime_end_date).add(
           1,
-          "day",
+          "day"
         );
         updatedEvent.disassembly_start_date =
           disassemblyStartDate.format("YYYY-MM-DD");
@@ -174,6 +190,13 @@ const AddEvent = () => {
     }
 
     setEvent(updatedEvent);
+
+    const startDate = updatedEvent.assembly_start_date;
+    const endDate = updatedEvent.disassembly_end_date;
+
+    if (startDate && endDate) {
+      fetchOccupiedHalls(startDate, endDate);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -210,6 +233,7 @@ const AddEvent = () => {
   };
 
   const toggleHall = (hall) => {
+    if (occupiedHalls.includes(hall)) return;
     setEvent((prevEvent) => {
       const halls = prevEvent.halls.includes(hall)
         ? prevEvent.halls.filter((h) => h !== hall)
@@ -241,28 +265,37 @@ const AddEvent = () => {
     const hallMatrix = [];
     const rows = 3;
     const cols = 6;
+    const startDate = event.assembly_start_date;
+    const endDate = event.disassembly_end_date;
+    const restrictSelection = !startDate || !endDate;
 
     for (let row = 0; row < rows; row++) {
       const rowData = [];
       for (let col = 1; col <= cols; col++) {
         const hall = `${String.fromCharCode(67 - row)}${col}`;
+        const isOccupied = occupiedHalls.includes(hall);
+        const isSelected = halls.includes(hall);
+        const isRestricted = restrictSelection || isOccupied;
+
         rowData.push(
           <TableCell
             key={hall}
-            onClick={() => toggleHall(hall)}
+            onClick={() => !isRestricted && toggleHall(hall)}
             style={{
-              backgroundColor: halls.includes(hall)
+              backgroundColor: isSelected
                 ? event.color
+                : isOccupied
+                ? "#ccc"
                 : "transparent",
-              color: halls.includes(hall)
+              color: isSelected
                 ? getContrastingTextColor(event.color)
                 : "inherit",
               textAlign: "center",
-              cursor: "pointer",
+              cursor: isRestricted ? "not-allowed" : "pointer",
             }}
           >
             {hall}
-          </TableCell>,
+          </TableCell>
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
