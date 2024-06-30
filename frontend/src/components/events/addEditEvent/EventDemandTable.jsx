@@ -104,7 +104,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const handleSave = async () => {
     const modifiedDates = editedDemands
       .filter((demand, index) => {
-        const originalDemand = demands[index];
+        const originalDemand = demands[index] || {};
         return (
           demand.car_demand !== originalDemand.car_demand ||
           demand.truck_demand !== originalDemand.truck_demand ||
@@ -113,9 +113,11 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       })
       .map((demand) => demand.date);
 
-    const allocationsToDelete = allocations.filter((allocation) =>
-      modifiedDates.includes(allocation.date),
-    );
+    const allocationsToDelete = Array.isArray(allocations)
+      ? allocations.filter((allocation) =>
+          modifiedDates.includes(allocation.date),
+        )
+      : [];
 
     if (allocationsToDelete.length > 0) {
       setDatesToDelete(modifiedDates);
