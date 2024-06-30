@@ -125,9 +125,8 @@ const EditEvent = () => {
           if (
             dayjs(event.disassembly_end_date).isBefore(disassemblyStartDate)
           ) {
-            updatedEvent.disassembly_end_date = disassemblyStartDate
-              .add(1, "day")
-              .format("YYYY-MM-DD");
+            updatedEvent.disassembly_end_date =
+              disassemblyStartDate.format("YYYY-MM-DD");
           }
         }
       }
@@ -166,15 +165,12 @@ const EditEvent = () => {
       if (runtimeEndDate) {
         updatedEvent.runtime_end_date = runtimeEndDate.format("YYYY-MM-DD");
         if (dayjs(event.runtime_start_date).isAfter(runtimeEndDate)) {
-          updatedEvent.runtime_start_date = runtimeEndDate
-            .subtract(1, "day")
-            .format("YYYY-MM-DD");
+          updatedEvent.runtime_start_date = runtimeEndDate.format("YYYY-MM-DD");
           const assemblyEndDate = runtimeEndDate.subtract(1, "day");
           updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
           if (dayjs(event.assembly_start_date).isAfter(assemblyEndDate)) {
-            updatedEvent.assembly_start_date = assemblyEndDate
-              .subtract(1, "day")
-              .format("YYYY-MM-DD");
+            updatedEvent.assembly_start_date =
+              assemblyEndDate.format("YYYY-MM-DD");
           }
         }
       }
@@ -401,6 +397,7 @@ const EditEvent = () => {
                 value={event.name}
                 onChange={handleChange}
                 fullWidth
+                required={true}
               />
             </Box>
           </FormControl>
@@ -626,15 +623,20 @@ const EditEvent = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} color="primary">
+          <Button
+            className="popup-btn-close"
+            onClick={() => setDialogOpen(false)}
+          >
             Cancel
           </Button>
           <Button
+            className="popup-btn"
+            variant="contained"
+            color="primary"
             onClick={() => {
               setDialogOpen(false);
               if (submitCallback) submitCallback();
             }}
-            color="primary"
           >
             Proceed
           </Button>

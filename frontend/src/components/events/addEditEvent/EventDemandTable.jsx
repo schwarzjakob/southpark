@@ -659,7 +659,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             Saving the changes will delete existing allocations for the
-            respective phases. Do you want to proceed?
+            respective dates. Do you want to proceed?
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -110,9 +110,8 @@ const AddEvent = () => {
           !event.disassembly_end_date ||
           disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
         ) {
-          updatedEvent.disassembly_end_date = disassemblyStartDate
-            .add(2, "day")
-            .format("YYYY-MM-DD");
+          updatedEvent.disassembly_end_date =
+            disassemblyStartDate.format("YYYY-MM-DD");
         }
       }
     }
@@ -131,9 +130,8 @@ const AddEvent = () => {
           !event.assembly_start_date ||
           assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
         ) {
-          updatedEvent.assembly_start_date = assemblyEndDate
-            .subtract(2, "day")
-            .format("YYYY-MM-DD");
+          updatedEvent.assembly_start_date =
+            assemblyEndDate.format("YYYY-MM-DD");
         }
       }
 
@@ -144,9 +142,8 @@ const AddEvent = () => {
           !event.disassembly_end_date ||
           disassemblyStartDate.isAfter(dayjs(event.disassembly_end_date))
         ) {
-          updatedEvent.disassembly_end_date = disassemblyStartDate
-            .add(2, "day")
-            .format("YYYY-MM-DD");
+          updatedEvent.disassembly_end_date =
+            disassemblyStartDate.format("YYYY-MM-DD");
         }
       }
     }
@@ -162,9 +159,7 @@ const AddEvent = () => {
           !event.runtime_start_date ||
           runtimeEndDate.isBefore(dayjs(event.runtime_start_date))
         ) {
-          updatedEvent.runtime_start_date = runtimeEndDate
-            .subtract(2, "day")
-            .format("YYYY-MM-DD");
+          updatedEvent.runtime_start_date = runtimeEndDate.format("YYYY-MM-DD");
         }
         const assemblyEndDate = runtimeEndDate.subtract(1, "day");
         updatedEvent.assembly_end_date = assemblyEndDate.format("YYYY-MM-DD");
@@ -172,9 +167,8 @@ const AddEvent = () => {
           !event.assembly_start_date ||
           assemblyEndDate.isBefore(dayjs(event.assembly_start_date))
         ) {
-          updatedEvent.assembly_start_date = assemblyEndDate
-            .subtract(2, "day")
-            .format("YYYY-MM-DD");
+          updatedEvent.assembly_start_date =
+            assemblyEndDate.format("YYYY-MM-DD");
         }
       }
     }
@@ -340,6 +334,7 @@ const AddEvent = () => {
                 value={event.name}
                 onChange={handleChange}
                 fullWidth
+                required={true}
               />
             </Box>
           </FormControl>
