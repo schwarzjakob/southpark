@@ -40,17 +40,15 @@ const downwardsOverlays = [
   "PN12",
 ];
 
-// Occupancies settings
-
-const RUNTIME = 0.9;
-const NOT_RUNTIME = 0.5;
-const GREYED_OUT = 0.25;
+const COLOR_OCCUPIED = "#ff434375";
+const COLOR_FREE = "#6a91ce75";
 
 const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
   const [entrances, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
+  const [occupancy, setOccupancy] = useState([]);
 
   useEffect(() => {
     const fetchCoordinates = async () => {
@@ -68,6 +66,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
         );
       }
     };
+
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
@@ -81,8 +80,45 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
       }
     };
 
+    const fetchOccupancyAndCapacity = async () => {
+      try {
+        const [occupancyRes, capacityRes] = await Promise.all([
+          axios.get(`/api/map/parking_occupancy/${selectedDate}`),
+          axios.get(`/api/map/parking_lots_capacity/${selectedDate}`),
+        ]);
+
+        if (
+          Array.isArray(occupancyRes.data) &&
+          Array.isArray(capacityRes.data)
+        ) {
+          const occupancyData = occupancyRes.data;
+          const capacityData = capacityRes.data;
+
+          const combinedData = occupancyData.map((occ) => {
+            const capacity = capacityData.find(
+              (cap) => cap.name === occ.parking_lot_name
+            );
+            return {
+              ...occ,
+              total_capacity: capacity ? capacity.capacity : 0,
+            };
+          });
+
+          setOccupancy(combinedData);
+        } else {
+          console.error("Occupancy or Capacity data is not an array!");
+        }
+      } catch (error) {
+        console.error(
+          "There was an error fetching the occupancy or capacity data!",
+          error
+        );
+      }
+    };
+
     fetchCoordinates();
     fetchEvents();
+    fetchOccupancyAndCapacity();
   }, [selectedDate]);
 
   const transformCoordinates = (originalCoords) => {
@@ -132,6 +168,27 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
     return "unknown";
   };
 
+  const calculateColor = (occupancy) => {
+    const r1 = parseInt(COLOR_FREE.substring(1, 3), 16);
+    const g1 = parseInt(COLOR_FREE.substring(3, 5), 16);
+    const b1 = parseInt(COLOR_FREE.substring(5, 7), 16);
+
+    const r2 = parseInt(COLOR_OCCUPIED.substring(1, 3), 16);
+    const g2 = parseInt(COLOR_OCCUPIED.substring(3, 5), 16);
+    const b2 = parseInt(COLOR_OCCUPIED.substring(5, 7), 16);
+
+    const r = Math.round(r1 + (r2 - r1) * occupancy)
+      .toString(16)
+      .padStart(2, "0");
+    const g = Math.round(g1 + (g2 - g1) * occupancy)
+      .toString(16)
+      .padStart(2, "0");
+    const b = Math.round(b1 + (b2 - b1) * occupancy)
+      .toString(16)
+      .padStart(2, "0");
+    return `#${r}${g}${b}`;
+  };
+
   const getPopupContent = (event, id, type) => {
     const status = getEventStatus(event, selectedDate);
     const parkingLots = event[`${status}_parking_lots`] || "None";
@@ -143,7 +200,6 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
           <p>Status: {status}</p>
           <p>Entrance: {entrances}</p>
           <p>Allocated Parking Lots: {parkingLots}</p>
-
           <div className="details-link_container">
             <a href={`/events/event/${event.event_id}`}>
               <LinkRoundedIcon />
@@ -249,23 +305,8 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
         const event = uniqueFilteredEvents.find((event) =>
           event.halls ? event.halls.split(", ").includes(hall.name) : false
         );
-        const fillColor = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? `${event.event_color}`
-            : "gray"
-          : event
-          ? `${event.event_color}`
-          : "gray";
+        const fillColor = event ? `${event.event_color}` : "gray";
         const borderColor = event ? `${event.event_color}` : "transparent";
-        const opacity = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? getEventStatus(event, selectedDate) === "runtime"
-              ? RUNTIME
-              : NOT_RUNTIME
-            : GREYED_OUT
-          : event && getEventStatus(event, selectedDate) === "runtime"
-          ? RUNTIME
-          : NOT_RUNTIME;
 
         return (
           <Polygon
@@ -275,7 +316,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
             pathOptions={{
               color: borderColor,
               fillColor: fillColor,
-              fillOpacity: opacity,
+              fillOpacity: event ? 0.75 : 0.25, // Adjusted opacity logic
               weight: 2,
             }}
           >
@@ -297,6 +338,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
           </Polygon>
         );
       })}
+
       {/* Rendering entrances */}
       {entrances.map((entrance) => {
         const transformedCoords = transformCoordinates(entrance.coordinates);
@@ -305,23 +347,8 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
             ? event.event_entrance.includes(entrance.name)
             : false
         );
-        const fillColor = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? `${event.event_color}`
-            : "gray"
-          : event
-          ? `${event.event_color}`
-          : "gray";
+        const fillColor = event ? `${event.event_color}` : "gray";
         const borderColor = event ? `${event.event_color}` : "transparent";
-        const opacity = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? getEventStatus(event, selectedDate) === "runtime"
-              ? RUNTIME
-              : NOT_RUNTIME
-            : GREYED_OUT
-          : event && getEventStatus(event, selectedDate) === "runtime"
-          ? RUNTIME
-          : NOT_RUNTIME;
         const popupOffset = downwardsOverlays.includes(entrance.name)
           ? [0, 50]
           : [0, 0];
@@ -334,7 +361,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
             pathOptions={{
               color: borderColor,
               fillColor: fillColor,
-              fillOpacity: opacity,
+              fillOpacity: event ? 0.75 : 0.25, // Adjusted opacity logic
               weight: 2,
             }}
           >
@@ -356,33 +383,22 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
           </Polygon>
         );
       })}
+
       {/* Rendering parking lots */}
       {parkingLots.map((parkingLot) => {
         const transformedCoords = transformCoordinates(parkingLot.coordinates);
-        const event = uniqueFilteredEvents.find((event) =>
-          event[`${getEventStatus(event, selectedDate)}_parking_lots`]
-            ? event[`${getEventStatus(event, selectedDate)}_parking_lots`]
-                .split(", ")
-                .includes(parkingLot.name)
-            : false
+        const occupancyData = occupancy.find(
+          (data) => data.parking_lot_name === parkingLot.name
         );
-        const fillColor = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? `${event.event_color}`
-            : "gray"
-          : event
-          ? `${event.event_color}`
-          : "gray";
-        const borderColor = event ? `${event.event_color}` : "transparent";
-        const opacity = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? getEventStatus(event, selectedDate) === "runtime"
-              ? RUNTIME
-              : NOT_RUNTIME
-            : GREYED_OUT
-          : event && getEventStatus(event, selectedDate) === "runtime"
-          ? RUNTIME
-          : NOT_RUNTIME;
+        console.log("Occupancy Data for", parkingLot.name, ":", occupancyData);
+
+        const occupancyRate =
+          occupancyData && occupancyData.total_capacity
+            ? occupancyData.occupancy / occupancyData.total_capacity
+            : 0;
+
+        const fillColor = calculateColor(occupancyRate);
+        const borderColor = fillColor;
         const popupOffset = downwardsOverlays.includes(parkingLot.name)
           ? [0, 80]
           : [0, 0];
@@ -395,7 +411,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
             pathOptions={{
               color: borderColor,
               fillColor: fillColor,
-              fillOpacity: opacity,
+              fillOpacity: 0.75,
               weight: 2,
             }}
           >
@@ -408,19 +424,24 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
               <span>{parkingLot.name}</span>
             </Tooltip>
             <Popup autoPan={false} offset={popupOffset}>
-              <div>
-                {event ? (
-                  getPopupContent(event, parkingLot.name, "parking lot")
-                ) : (
-                  <span>{parkingLot.name}: No Event!</span>
-                )}
-                <div className="details-link_container">
-                  <a href={`/parking_space/${parkingLot.id}`}>
-                    <LinkRoundedIcon />
-                    {parkingLot.name} Details
-                  </a>
+              {occupancyData ? (
+                <div>
+                  <h4>{parkingLot.name}</h4>
+                  <p>Occupancy: {occupancyData.occupancy}</p>
+                  <p>
+                    Free Capacity:{" "}
+                    {occupancyData.total_capacity - occupancyData.occupancy}
+                  </p>
+                  <div className="details-link_container">
+                    <a href={`/parking_space/${parkingLot.id}`}>
+                      <LinkRoundedIcon />
+                      {parkingLot.name} Details
+                    </a>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <span>{parkingLot.name}: No Data!</span>
+              )}
             </Popup>
           </Polygon>
         );
