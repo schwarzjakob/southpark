@@ -14,6 +14,11 @@ import {
   Button,
   TextField,
   Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
@@ -49,6 +54,8 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const [notification, setNotification] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [editedDemands, setEditedDemands] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [datesToDelete, setDatesToDelete] = useState([]);
 
   useEffect(() => {
     const fetchDemands = async () => {
@@ -95,6 +102,30 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   };
 
   const handleSave = async () => {
+    const modifiedDates = editedDemands
+      .filter((demand, index) => {
+        const originalDemand = demands[index];
+        return (
+          demand.car_demand !== originalDemand.car_demand ||
+          demand.truck_demand !== originalDemand.truck_demand ||
+          demand.bus_demand !== originalDemand.bus_demand
+        );
+      })
+      .map((demand) => demand.date);
+
+    const allocationsToDelete = allocations.filter((allocation) =>
+      modifiedDates.includes(allocation.date),
+    );
+
+    if (allocationsToDelete.length > 0) {
+      setDatesToDelete(modifiedDates);
+      setOpenDialog(true);
+    } else {
+      await saveDemands();
+    }
+  };
+
+  const saveDemands = async () => {
     try {
       await axios.put(`/api/events/demands/${eventId}`, editedDemands);
       setEditMode(false);
@@ -106,6 +137,22 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     } catch (error) {
       console.error("Error saving demands data:", error);
     }
+  };
+
+  const handleConfirmSave = async () => {
+    try {
+      await axios.delete(`/api/events/allocations`, {
+        data: { event_id: eventId, dates: datesToDelete },
+      });
+      await saveDemands();
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error deleting allocations:", error);
+    }
+  };
+
+  const handleCancelSave = () => {
+    setOpenDialog(false);
   };
 
   const handleCancel = () => {
@@ -601,6 +648,29 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCancelSave}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Confirm Save"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Saving the changes will delete existing allocations for the
+            respective phases. Do you want to proceed?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelSave} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmSave} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

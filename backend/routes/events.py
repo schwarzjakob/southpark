@@ -811,3 +811,30 @@ def allocate_demands():
         logger.error(e)
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+@events_bp.route("/allocations", methods=["DELETE"])
+def delete_allocations_for_dates():
+    try:
+        data = request.json
+        event_id = data.get("event_id")
+        dates = data.get("dates", [])
+
+        if not event_id or not dates:
+            return jsonify({"error": "Event ID and dates must be provided"}), 400
+
+        delete_allocations_query = text(
+            """
+            DELETE FROM public.parking_lot_allocation
+            WHERE event_id = :event_id AND date IN :dates
+            """
+        )
+        db.session.execute(
+            delete_allocations_query, {"event_id": event_id, "dates": tuple(dates)}
+        )
+        db.session.commit()
+        return jsonify({"message": "Allocations deleted successfully"}), 200
+    except Exception as e:
+        logger.error(e)
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
