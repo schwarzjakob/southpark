@@ -7,6 +7,7 @@ import {
   Typography,
   Box,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
@@ -18,6 +19,7 @@ const Login = () => {
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
   const [clientIp, setClientIp] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,6 +39,7 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post("/api/auth/login", {
         identifier: identifier.trim(),
@@ -46,17 +49,18 @@ const Login = () => {
       const { token } = response.data;
       sessionStorage.setItem("token", token);
       localStorage.setItem("auth", "true");
-      console.log("Login successful");
-      window.dispatchEvent(new Event("authChange"));
       setMessage("Login Successful");
       setSeverity("success");
+      window.dispatchEvent(new Event("authChange"));
 
-      const initialPath = location.state?.from?.pathname || "/";
-      navigate(initialPath, { replace: true });
+      setTimeout(() => {
+        const initialPath = location.state?.from?.pathname || "/";
+        navigate(initialPath, { replace: true });
+      }, 1000);
     } catch (error) {
       setMessage(error.response.data.message || "Invalid credentials");
       setSeverity("error");
-      console.log("Invalid credentials");
+      setLoading(false);
     }
   };
 
@@ -71,46 +75,51 @@ const Login = () => {
         </Box>
 
         {message && <Alert severity={severity}>{message}</Alert>}
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Username or Email"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            autoComplete="username email"
-          />
-          <TextField
-            label="Password"
-            type="password"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-          />
-          <Button
-            className="login-submit"
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-          >
-            Login
-          </Button>
-          <Button
-            component={RouterLink}
-            className="register-link"
-            to="/register"
-            variant="outlined"
-            color="primary"
-            fullWidth
-          >
-            Sign up
-          </Button>
-        </form>
+
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Username or Email"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              autoComplete="username email"
+            />
+            <TextField
+              label="Password"
+              type="password"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+            <Button
+              className="login-submit"
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+            >
+              Login
+            </Button>
+            <Button
+              component={RouterLink}
+              className="register-link"
+              to="/register"
+              variant="outlined"
+              color="primary"
+              fullWidth
+            >
+              Sign up
+            </Button>
+          </form>
+        )}
       </Box>
     </Container>
   );

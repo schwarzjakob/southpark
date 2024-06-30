@@ -94,6 +94,38 @@ def login():
     return jsonify({"token": token, "message": "Login successful"}), 200
 
 
+@auth_bp.route("/refresh_token", methods=["POST"])
+def refresh_token():
+    token = request.headers.get("Authorization").split()[1]
+
+    if not token:
+        return jsonify({"message": "Token is missing!"}), 403
+
+    try:
+        data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"], options={"verify_exp": False})
+        user = User.query.filter_by(username=data["username"]).first()
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+
+        new_token = jwt.encode(
+            {
+                "username": user.username,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+            },
+            SECRET_KEY,
+            algorithm="HS256",
+        )
+
+        user.token = new_token
+        db.session.commit()
+
+        return jsonify({"token": new_token, "message": "Token refreshed successfully"}), 200
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token has expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
+
 @auth_bp.route("/user", methods=["GET"])
 def get_user():
     token = request.headers.get("Authorization").split()[1]

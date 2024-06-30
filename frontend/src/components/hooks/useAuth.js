@@ -1,5 +1,8 @@
+// src/hooks/useAuth.js
+
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { refreshToken } from "./refreshToken";
 
 const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -7,12 +10,17 @@ const useAuth = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem("auth");
+    const token = sessionStorage.getItem("token");
     if (token) {
       setIsAuthenticated(true);
     } else {
       setIsAuthenticated(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(refreshToken, 55 * 60 * 1000); // Refresh token every 55 minutes
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
