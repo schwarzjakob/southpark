@@ -1,7 +1,7 @@
 /* Map Component */
 .leaflet-container {
   height: 100%;
-  width: 100vw;
+  width: 100%;
   z-index: 10;
   overflow: hidden;
 }
@@ -69,6 +69,18 @@
   right: 0 !important;
   top: 0 !important;
   left: 95% !important;
+}
+
+.recenter-button {
+  background-color: var(--color-pure-white) !important;
+  color: black !important;
+  font-weight: bold !important;
+  border: 2px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+.recenter-button:hover {
+  background-color: #f0f0f0 !important;
+  color: var(--color-primary) !important;
 }
 
 /* Map Legend */

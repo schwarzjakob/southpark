@@ -9,6 +9,7 @@ import {
   Popup,
   useMap,
 } from "react-leaflet";
+import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import axios from "axios";
 import MapLegendComponent from "./MapLegend.jsx";
@@ -49,6 +50,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
   const [entrances, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
   const [occupancy, setOccupancy] = useState([]);
+  const center = [48.1375, 11.702];
 
   useEffect(() => {
     const fetchCoordinates = async () => {
@@ -62,7 +64,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
       } catch (error) {
         console.error(
           "There was an error fetching the coordinates data!",
-          error
+          error,
         );
       }
     };
@@ -70,7 +72,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
+          `/api/map/events_timeline/${selectedDate}`,
         );
         if (data) {
           setEvents(data);
@@ -96,7 +98,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
 
           const combinedData = occupancyData.map((occ) => {
             const capacity = capacityData.find(
-              (cap) => cap.name === occ.parking_lot_name
+              (cap) => cap.name === occ.parking_lot_name,
             );
             return {
               ...occ,
@@ -111,7 +113,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
       } catch (error) {
         console.error(
           "There was an error fetching the occupancy or capacity data!",
-          error
+          error,
         );
       }
     };
@@ -138,7 +140,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         event.assembly_start_date,
         event.assembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "assembly";
@@ -149,7 +151,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         event.runtime_start_date,
         event.runtime_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "runtime";
@@ -160,7 +162,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         event.disassembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "disassembly";
@@ -258,10 +260,10 @@ const LeafletMap = ({ selectedDate, zoom }) => {
           event.assembly_start_date,
           event.disassembly_end_date,
           null,
-          "[]"
+          "[]",
         ) ||
-        dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
-    )
+        dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
+    ),
   );
 
   const SetZoomLevel = ({ zoom }) => {
@@ -275,13 +277,34 @@ const LeafletMap = ({ selectedDate, zoom }) => {
     return null;
   };
 
+  const RecenterButton = () => {
+    const map = useMap();
+
+    const handleRecenter = () => {
+      map.setView(center, zoom);
+    };
+
+    return (
+      <Box position="absolute" top={10} right={"5%"} zIndex={1000}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleRecenter}
+          className="recenter-button"
+        >
+          Recenter
+        </Button>
+      </Box>
+    );
+  };
+
   return (
     <MapContainer
-      center={[48.1375, 11.702]}
+      center={center}
       zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={true}
-      dragging={false}
+      dragging={true}
       touchZoom={true}
       doubleClickZoom={true}
       keyboard={false}
@@ -293,6 +316,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
+      <RecenterButton />
       {/* Rendering Legend */}
       <MapLegendComponent
         events={uniqueFilteredEvents}
@@ -303,7 +327,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = uniqueFilteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false
+          event.halls ? event.halls.split(", ").includes(hall.name) : false,
         );
         const fillColor = event ? `${event.event_color}` : "gray";
         const borderColor = event ? `${event.event_color}` : "transparent";
@@ -345,7 +369,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         const event = uniqueFilteredEvents.find((event) =>
           event.event_entrance
             ? event.event_entrance.includes(entrance.name)
-            : false
+            : false,
         );
         const fillColor = event ? `${event.event_color}` : "gray";
         const borderColor = event ? `${event.event_color}` : "transparent";
@@ -388,7 +412,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
       {parkingLots.map((parkingLot) => {
         const transformedCoords = transformCoordinates(parkingLot.coordinates);
         const occupancyData = occupancy.find(
-          (data) => data.parking_lot_name === parkingLot.name
+          (data) => data.parking_lot_name === parkingLot.name,
         );
         const totalCapacity = occupancyData ? occupancyData.total_capacity : 0;
         const occupancyRate =
