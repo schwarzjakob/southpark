@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   TextField,
   Button,
@@ -27,7 +27,6 @@ const Account = () => {
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
   const [passwordStatus, setPasswordStatus] = useState([]);
-  const [currentPasswordValid, setCurrentPasswordValid] = useState(false);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
 
   useEffect(() => {
@@ -67,7 +66,7 @@ const Account = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       return response.status === 200;
     } catch (error) {
@@ -77,7 +76,6 @@ const Account = () => {
 
   const handleCurrentPasswordBlur = async () => {
     const isValid = await validateCurrentPassword(currentPassword);
-    setCurrentPasswordValid(isValid);
     if (!isValid) {
       setMessage("Current password is incorrect");
       setSeverity("error");
@@ -85,28 +83,32 @@ const Account = () => {
       setMessage(null);
     }
   };
-  const passwordRules = [
-    {
-      rule: "New Passwords match",
-      test: (pwd) =>
-        newPassword.length > 0 &&
-        confirmNewPassword.length > 0 &&
-        pwd === confirmNewPassword,
-    },
-    { rule: "At least 8 characters", test: (pwd) => pwd.length >= 8 },
-    { rule: "At least 1 digit", test: (pwd) => /\d/.test(pwd) },
-    { rule: "At least 1 special character", test: (pwd) => /\W/.test(pwd) },
-  ];
 
-  const checkPasswordRules = async (pwd) => {
-    const results = await Promise.all(
-      passwordRules.map(async (rule) => ({
-        rule: rule.rule,
-        passed: await rule.test(pwd),
-      })),
-    );
-    return results;
-  };
+  const checkPasswordRules = useCallback(
+    async (pwd) => {
+      const passwordRules = [
+        {
+          rule: "New Passwords match",
+          test: (pwd) =>
+            newPassword.length > 0 &&
+            confirmNewPassword.length > 0 &&
+            pwd === confirmNewPassword,
+        },
+        { rule: "At least 8 characters", test: (pwd) => pwd.length >= 8 },
+        { rule: "At least 1 digit", test: (pwd) => /\d/.test(pwd) },
+        { rule: "At least 1 special character", test: (pwd) => /\W/.test(pwd) },
+      ];
+
+      const results = await Promise.all(
+        passwordRules.map(async (rule) => ({
+          rule: rule.rule,
+          passed: await rule.test(pwd),
+        }))
+      );
+      return results;
+    },
+    [newPassword, confirmNewPassword]
+  );
 
   useEffect(() => {
     const validateFields = async () => {
@@ -119,12 +121,19 @@ const Account = () => {
           currentPassword &&
           newPassword &&
           confirmNewPassword &&
-          allPassed,
+          allPassed
       );
     };
 
     validateFields();
-  }, [username, email, currentPassword, newPassword, confirmNewPassword]);
+  }, [
+    username,
+    email,
+    currentPassword,
+    newPassword,
+    confirmNewPassword,
+    checkPasswordRules,
+  ]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -143,7 +152,7 @@ const Account = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       setMessage(response.data.message);
       setSeverity("success");
