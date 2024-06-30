@@ -195,11 +195,18 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       const allocation = allocations.find(
         (alloc) => formatDate(alloc.date) === formatDate(demand.date),
       );
-      let status = "not_allocated";
-      if (allocation) {
+      let status;
+      if (totalDemand === 0) {
+        status = "no_demands";
+      } else if (!allocation || allocation.allocated_capacity === 0) {
+        status = "not_allocated";
+      } else {
         const ratio = allocation.allocated_capacity / totalDemand;
-        if (ratio === 1) status = "allocated";
-        else if (ratio > 0) status = "partially_allocated";
+        if (ratio === 1) {
+          status = "allocated";
+        } else {
+          status = "partially_allocated";
+        }
       }
       return { ...demand, status };
     });
@@ -275,6 +282,8 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     const demandTotal =
       demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
 
+    if (demandTotal === 0) return `0/0`;
+
     if (!Array.isArray(allocations)) return `0/${demandTotal}`;
 
     const allocationsForDate = allocations.filter(
@@ -290,6 +299,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   };
 
   const calculateStatus = (demandDate, demandTotal) => {
+    if (demandTotal === 0) return "no_demands";
     if (!Array.isArray(allocations)) return "not_allocated";
 
     const allocationsForDate = allocations.filter(
@@ -302,7 +312,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     );
 
     const ratio = totalAllocated / demandTotal;
-    if (!demandTotal) return "no_demands";
     if (totalAllocated === 0) return "not_allocated";
     if (ratio === 1) return "allocated";
     return "partially_allocated";

@@ -56,7 +56,7 @@ const getStatusCircle = (status) => {
 const getStatusText = (status) => {
   switch (status) {
     case "no_demands":
-      return "No demands known";
+      return "Demands missing";
     case "ok":
       return "O.K.";
     case "demands_to_allocate":
@@ -86,6 +86,7 @@ const Events = () => {
 
         const events = eventsResponse.data;
         const statusMap = statusResponse.data.reduce((acc, status) => {
+          console.log(status);
           acc[status.event_id] = status.status;
           return acc;
         }, {});
