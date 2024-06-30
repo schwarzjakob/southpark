@@ -56,6 +56,8 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
         const response = await axios.get(`/api/events/demands/${eventId}`);
         if (response.status === 204) {
           setNotification("No demands found for this event.");
+          setDemands([]);
+          setEditedDemands([]);
         } else {
           setDemands(response.data);
           setEditedDemands(response.data);
@@ -95,11 +97,12 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const handleSave = async () => {
     try {
       await axios.put(`/api/events/demands/${eventId}`, editedDemands);
-      setDemands(editedDemands);
       setEditMode(false);
       setIsEditingDemands(false);
-      await fetchAllocations();
+      setDemands(editedDemands);
       updateStatuses(); // Update statuses after saving demands
+      await fetchAllocations();
+      await fetchDemands();
     } catch (error) {
       console.error("Error saving demands data:", error);
     }
@@ -117,6 +120,22 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       setAllocations(response.data);
     } catch (error) {
       console.error("Error fetching allocations data:", error);
+    }
+  };
+
+  const fetchDemands = async () => {
+    try {
+      const response = await axios.get(`/api/events/demands/${eventId}`);
+      if (response.status === 204) {
+        setNotification("No demands found for this event.");
+        setDemands([]);
+        setEditedDemands([]);
+      } else {
+        setDemands(response.data);
+        setEditedDemands(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching demands data:", error);
     }
   };
 
