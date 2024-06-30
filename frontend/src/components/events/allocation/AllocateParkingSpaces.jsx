@@ -101,7 +101,7 @@ const AllocateParkingSpaces = () => {
         return "disassembly";
       return null;
     },
-    [event]
+    [event],
   );
   const storeAllocationsInSession = useCallback(
     (allocations) => {
@@ -129,21 +129,21 @@ const AllocateParkingSpaces = () => {
         }
         groupedAllocations[status][parkingLotName].cars = Math.max(
           groupedAllocations[status][parkingLotName].cars,
-          allocation.allocated_cars
+          allocation.allocated_cars,
         );
         groupedAllocations[status][parkingLotName].buses = Math.max(
           groupedAllocations[status][parkingLotName].buses,
-          allocation.allocated_buses
+          allocation.allocated_buses,
         );
         groupedAllocations[status][parkingLotName].trucks = Math.max(
           groupedAllocations[status][parkingLotName].trucks,
-          allocation.allocated_trucks
+          allocation.allocated_trucks,
         );
       });
       sessionStorage.setItem("allocations", JSON.stringify(groupedAllocations));
-      window.dispatchEvent(new Event("allocations-updated")); 
+      window.dispatchEvent(new Event("allocations-updated"));
     },
-    [event, getStatus]
+    [event, getStatus],
   );
 
   const fetchAllocations = useCallback(async () => {
@@ -203,23 +203,50 @@ const AllocateParkingSpaces = () => {
           const endDate = new Date(phase.end_date);
           for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
             const date = d.toISOString().split("T")[0];
-            formattedAllocations.push({
-              event_id: id,
-              parking_lot_id: allocation.parking_lot_id,
-              date: date,
-              allocated_cars: allocation.cars,
-              allocated_trucks: allocation.trucks,
-              allocated_buses: allocation.buses,
+            const dailyDemand = demands.find((d) => {
+              const demandDate = new Date(d.date).toISOString().split("T")[0];
+              return demandDate === date && d.status === phase.name;
             });
+
+            if (dailyDemand) {
+              const allocatedCars = Math.min(
+                allocation.cars,
+                dailyDemand.car_demand,
+              );
+              const allocatedTrucks = Math.min(
+                allocation.trucks,
+                dailyDemand.truck_demand,
+              );
+              const allocatedBuses = Math.min(
+                allocation.buses,
+                dailyDemand.bus_demand,
+              );
+
+              // Only add the allocation if it's within the demand limits
+              if (
+                allocatedCars > 0 ||
+                allocatedTrucks > 0 ||
+                allocatedBuses > 0
+              ) {
+                formattedAllocations.push({
+                  event_id: id,
+                  parking_lot_id: allocation.parking_lot_id,
+                  date: date,
+                  allocated_cars: allocatedCars,
+                  allocated_trucks: allocatedTrucks,
+                  allocated_buses: allocatedBuses,
+                });
+              }
+
+              // Update the remaining demand for the day
+              dailyDemand.car_demand -= allocatedCars;
+              dailyDemand.truck_demand -= allocatedTrucks;
+              dailyDemand.bus_demand -= allocatedBuses;
+            }
           }
         });
       }
     });
-
-    console.log(
-      "Sending to API:",
-      JSON.stringify({ allocations: formattedAllocations, event_id: id })
-    );
 
     try {
       const response = await axios.post("/api/events/allocate_demands", {
@@ -236,11 +263,11 @@ const AllocateParkingSpaces = () => {
       }
     } catch (error) {
       setSnackbarMessage(
-        error.response?.data?.error || "Failed to save allocations"
+        error.response?.data?.error || "Failed to save allocations",
       );
       setSnackbarSeverity("error");
     } finally {
-      setIsSaving(false); 
+      setIsSaving(false);
       setSnackbarOpen(true);
       setTimeout(() => {
         window.location.reload();
@@ -253,7 +280,7 @@ const AllocateParkingSpaces = () => {
       const recommendationResponse = await axios.post(
         `/api/recommendation/engine`,
         { id: id },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
 
       const recommendationData = recommendationResponse.data;
@@ -389,7 +416,7 @@ const AllocateParkingSpaces = () => {
   useEffect(() => {
     const handleEvent = () => {
       const fullyAllocatedData = JSON.parse(
-        sessionStorage.getItem("fullyAllocated")
+        sessionStorage.getItem("fullyAllocated"),
       );
       if (fullyAllocatedData) {
         const newButtonStates = {
@@ -416,7 +443,7 @@ const AllocateParkingSpaces = () => {
   const handleNavigation = (path) => {
     if (unsavedChanges) {
       const confirmLeave = window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       );
       if (!confirmLeave) return;
     }
@@ -494,7 +521,7 @@ const AllocateParkingSpaces = () => {
 
   useEffect(() => {
     const handleAllocationsUpdated = () => {
-      fetchDemands(); 
+      fetchDemands();
     };
 
     window.addEventListener("allocations-updated", handleAllocationsUpdated);
@@ -503,7 +530,7 @@ const AllocateParkingSpaces = () => {
     return () => {
       window.removeEventListener(
         "allocations-updated",
-        handleAllocationsUpdated
+        handleAllocationsUpdated,
       );
       window.removeEventListener("storage", handleAllocationsUpdated);
     };
@@ -519,7 +546,7 @@ const AllocateParkingSpaces = () => {
       buses: phaseDemands.reduce((sum, demand) => sum + demand.bus_demand, 0),
       trucks: phaseDemands.reduce(
         (sum, demand) => sum + demand.truck_demand,
-        0
+        0,
       ),
       total: phaseDemands.reduce((sum, demand) => sum + demand.demand, 0),
     };

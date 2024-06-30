@@ -337,17 +337,22 @@ lines = data.strip().split("\n")
 values = [line.split(",") for line in lines]
 
 # Create a DataFrame from the values
-distances_df = pd.DataFrame(values, columns=["entrance_id", "parking_lot_id", "distance"])
+distances_df = pd.DataFrame(
+    values, columns=["entrance_id", "parking_lot_id", "distance"]
+)
 # Convert the columns to the appropriate data types
 distances_df["entrance_id"] = distances_df["entrance_id"].astype(int)
 distances_df["parking_lot_id"] = distances_df["parking_lot_id"].astype(int)
 distances_df["distance"] = distances_df["distance"].astype(int)
 
-logger.info(f"Distances DataFrame created with {len(distances_df)} rows.")
+# logger.info(f"Distances DataFrame created with {len(distances_df)} rows.")
+
 
 def get_parking_lots(material=None, service_level=None):
     try:
-        logger.info(f"Fetching parking lots with material: {material} and service level: {service_level}")
+        # logger.info(
+        #     f"Fetching parking lots with material: {material} and service level: {service_level}"
+        # )
         query = """
         SELECT id, name, service_toilets, surface_material, service_shelter, pricing, external, coordinates
         FROM public.parking_lot
@@ -369,35 +374,45 @@ def get_parking_lots(material=None, service_level=None):
 
         parking_lot_list = []
         for lot in parking_lots:
-            parking_lot_list.append({
-                "id": lot[0],  # Using index 0 for 'id'
-                "name": lot[1],  # Using index 1 for 'name'
-                "service_toilets": lot[2],  # Using index 2 for 'service_toilets'
-                "surface_material": lot[3],  # Using index 3 for 'surface_material'
-                "service_shelter": lot[4],  # Using index 4 for 'service_shelter'
-                "pricing": lot[5],  # Using index 5 for 'pricing'
-                "external": lot[6],  # Using index 6 for 'external'
-                "coordinates": lot[7]  # Using index 7 for 'coordinates'
-            })
+            parking_lot_list.append(
+                {
+                    "id": lot[0],  # Using index 0 for 'id'
+                    "name": lot[1],  # Using index 1 for 'name'
+                    "service_toilets": lot[2],  # Using index 2 for 'service_toilets'
+                    "surface_material": lot[3],  # Using index 3 for 'surface_material'
+                    "service_shelter": lot[4],  # Using index 4 for 'service_shelter'
+                    "pricing": lot[5],  # Using index 5 for 'pricing'
+                    "external": lot[6],  # Using index 6 for 'external'
+                    "coordinates": lot[7],  # Using index 7 for 'coordinates'
+                }
+            )
 
-        logger.info(f"Parking lots fetched: {parking_lot_list}")
+        # logger.info(f"Parking lots fetched: {parking_lot_list}")
         return parking_lot_list
     except Exception as e:
         logger.error(f"Error fetching parking lots: {str(e)}")
         return f"Error fetching parking lots: {str(e)}"
 
+
 def get_average_distance(hall_ids, parking_lot_id):
-    distances = distances_df[(distances_df['entrance_id'].isin(hall_ids)) & (distances_df['parking_lot_id'] == parking_lot_id)]
+    distances = distances_df[
+        (distances_df["entrance_id"].isin(hall_ids))
+        & (distances_df["parking_lot_id"] == parking_lot_id)
+    ]
     if not distances.empty:
-        average_distance = distances['distance'].mean()
+        average_distance = distances["distance"].mean()
     else:
-        average_distance = float('inf')
-    logger.info(f"Average distance for parking lot {parking_lot_id} and halls {hall_ids}: {average_distance}")
+        average_distance = float("inf")
+    # logger.info(
+    #     f"Average distance for parking lot {parking_lot_id} and halls {hall_ids}: {average_distance}"
+    # )
     return average_distance
 
 
 def fetch_parking_capacities(parking_lot_ids, start_date, end_date, event_id):
-    logger.info(f"Fetching capacities for parking lots from {start_date} to {end_date}, excluding allocations for event_id {event_id}")
+    # logger.info(
+    #     f"Fetching capacities for parking lots from {start_date} to {end_date}, excluding allocations for event_id {event_id}"
+    # )
     query = f"""
     WITH date_series AS (
         SELECT generate_series('{start_date}'::date, '{end_date}'::date, '1 day'::interval) AS date
@@ -450,84 +465,144 @@ def fetch_parking_capacities(parking_lot_ids, start_date, end_date, event_id):
     """
     result = db.session.execute(text(query)).fetchall()
     capacities = {row[0]: row[1:] for row in result}
-    logger.info(f"Fetched capacities: {capacities}")
+    # logger.info(f"Fetched capacities: {capacities}")
     return capacities
 
+
 def prepare_capacity_data(lots, start_date, end_date, event_id):
-    logger.info(f"Preparing capacity data for lots from {start_date} to {end_date} for event_id {event_id}")
-    parking_lot_ids = [lot['id'] for lot in lots]
-    capacities = fetch_parking_capacities(parking_lot_ids, start_date, end_date, event_id)
+    # logger.info(
+    #     f"Preparing capacity data for lots from {start_date} to {end_date} for event_id {event_id}"
+    # )
+    parking_lot_ids = [lot["id"] for lot in lots]
+    capacities = fetch_parking_capacities(
+        parking_lot_ids, start_date, end_date, event_id
+    )
     capacity_data = []
     for lot in lots:
-        if lot['id'] in capacities:
-            min_free_capacity, min_truck_units, min_bus_units = capacities[lot['id']]
-            capacity_data.append({
-                "parking_lot_id": lot['id'],
-                "remaining_free_capacity": min_free_capacity,
-                "bus_limit": min_bus_units,
-                "truck_limit": min_truck_units,
-                "prio_weighting": 0  # Placeholder for priority weighting
-            })
+        if lot["id"] in capacities:
+            min_free_capacity, min_truck_units, min_bus_units = capacities[lot["id"]]
+            capacity_data.append(
+                {
+                    "parking_lot_id": lot["id"],
+                    "remaining_free_capacity": min_free_capacity,
+                    "bus_limit": min_bus_units,
+                    "truck_limit": min_truck_units,
+                    "prio_weighting": 0,  # Placeholder for priority weighting
+                }
+            )
     capacity_df = pd.DataFrame(capacity_data)
-    logger.info(f"Capacity DataFrame:\n{capacity_df}")
+    # logger.info(f"Capacity DataFrame:\n{capacity_df}")
     return capacity_df
+
+
 def calculate_priority(df, hall_ids):
-    df['average_distance'] = df['parking_lot_id'].apply(lambda lot_id: get_average_distance(hall_ids, lot_id))
-    
+    df["average_distance"] = df["parking_lot_id"].apply(
+        lambda lot_id: get_average_distance(hall_ids, lot_id)
+    )
+
     # Berechnung der Prioritätsgewichtung als Kombination aus durchschnittlicher Entfernung und umgekehrter Kapazität
-    df['prio_weighting'] = df.apply(lambda row: row['average_distance'] + (1000 / (row['remaining_free_capacity'] + 1)), axis=1)
-    
-    logger.info(f"Priority calculated DataFrame:\n{df}")
+    df["prio_weighting"] = df.apply(
+        lambda row: row["average_distance"]
+        + (1000 / (row["remaining_free_capacity"] + 1)),
+        axis=1,
+    )
+
+    # logger.info(f"Priority calculated DataFrame:\n{df}")
     return df
 
-def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, hall_ids, event_id):
-    print(f"Assigning parking for {car_demand} cars, {bus_demand} buses, {truck_demand} trucks in {phase} phase")
-    logger.info(f"Starting assignment for phase: {phase}")
-    assigned_lots = {'cars': [], 'buses': [], 'trucks': []}
-    remaining_demand = {'cars': car_demand, 'buses': bus_demand, 'trucks': truck_demand}
+
+def assign_parking(
+    lots,
+    car_demand,
+    bus_demand,
+    truck_demand,
+    phase,
+    start_date,
+    end_date,
+    hall_ids,
+    event_id,
+):
+    # print(
+    #     f"Assigning parking for {car_demand} cars, {bus_demand} buses, {truck_demand} trucks in {phase} phase"
+    # )
+    # logger.info(f"Starting assignment for phase: {phase}")
+    assigned_lots = {"cars": [], "buses": [], "trucks": []}
+    remaining_demand = {"cars": car_demand, "buses": bus_demand, "trucks": truck_demand}
 
     # Determine if any halls in the event belong to west halls
     prioritize_20 = any(hall in west_halls for hall in hall_ids)
 
     # Calculate average distances for all lots
-    lots_with_distances = [(lot, get_average_distance(hall_ids, lot['id'])) for lot in lots]
+    lots_with_distances = [
+        (lot, get_average_distance(hall_ids, lot["id"])) for lot in lots
+    ]
 
     # Sort the lots by distance and by ID if prioritize_20 is True
     if prioritize_20:
-        lots_sorted = sorted(lots_with_distances, key=lambda x: (x[0]['id'] != 20, x[1], x[0]['id']))
+        lots_sorted = sorted(
+            lots_with_distances, key=lambda x: (x[0]["id"] != 20, x[1], x[0]["id"])
+        )
     else:
-        lots_sorted = sorted(lots_with_distances, key=lambda x: (x[1], x[0]['id']))
+        lots_sorted = sorted(lots_with_distances, key=lambda x: (x[1], x[0]["id"]))
 
     # Prepare capacity data
-    capacity_df = prepare_capacity_data([lot[0] for lot in lots_sorted], start_date, end_date, event_id)
-    
+    capacity_df = prepare_capacity_data(
+        [lot[0] for lot in lots_sorted], start_date, end_date, event_id
+    )
+
     # Calculate priority based on distances and remaining capacity
     capacity_df = calculate_priority(capacity_df, hall_ids)
 
     for lot, _ in lots_sorted:
-        lot_capacity = capacity_df[capacity_df['parking_lot_id'] == lot['id']]
+        lot_capacity = capacity_df[capacity_df["parking_lot_id"] == lot["id"]]
         if lot_capacity.empty:
             continue
-        remaining_free_capacity = lot_capacity.iloc[0]['remaining_free_capacity']
-        bus_limit = lot_capacity.iloc[0]['bus_limit']
-        truck_limit = lot_capacity.iloc[0]['truck_limit']
+        remaining_free_capacity = lot_capacity.iloc[0]["remaining_free_capacity"]
+        bus_limit = lot_capacity.iloc[0]["bus_limit"]
+        truck_limit = lot_capacity.iloc[0]["truck_limit"]
 
-        while remaining_free_capacity > 0 and (remaining_demand['cars'] > 0 or remaining_demand['buses'] > 0 or remaining_demand['trucks'] > 0):
-            if remaining_demand['cars'] > 0 and remaining_free_capacity > 0:
-                allocated_capacity = min(remaining_free_capacity, remaining_demand['cars'])
-                assigned_lots['cars'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
-                remaining_demand['cars'] -= allocated_capacity
+        while remaining_free_capacity > 0 and (
+            remaining_demand["cars"] > 0
+            or remaining_demand["buses"] > 0
+            or remaining_demand["trucks"] > 0
+        ):
+            if remaining_demand["cars"] > 0 and remaining_free_capacity > 0:
+                allocated_capacity = min(
+                    remaining_free_capacity, remaining_demand["cars"]
+                )
+                assigned_lots["cars"].append(
+                    {"parking_lot_id": lot["id"], "capacity": allocated_capacity}
+                )
+                remaining_demand["cars"] -= allocated_capacity
                 remaining_free_capacity -= allocated_capacity
-            elif remaining_demand['buses'] > 0 and remaining_free_capacity >= 3 and bus_limit > 0:
-                allocated_capacity = min(remaining_free_capacity // 3, remaining_demand['buses'], bus_limit)
-                assigned_lots['buses'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
-                remaining_demand['buses'] -= allocated_capacity
+            elif (
+                remaining_demand["buses"] > 0
+                and remaining_free_capacity >= 3
+                and bus_limit > 0
+            ):
+                allocated_capacity = min(
+                    remaining_free_capacity // 3, remaining_demand["buses"], bus_limit
+                )
+                assigned_lots["buses"].append(
+                    {"parking_lot_id": lot["id"], "capacity": allocated_capacity}
+                )
+                remaining_demand["buses"] -= allocated_capacity
                 remaining_free_capacity -= allocated_capacity * 3
                 bus_limit -= allocated_capacity
-            elif remaining_demand['trucks'] > 0 and remaining_free_capacity >= 4 and truck_limit > 0:
-                allocated_capacity = min(remaining_free_capacity // 4, remaining_demand['trucks'], truck_limit)
-                assigned_lots['trucks'].append({'parking_lot_id': lot['id'], 'capacity': allocated_capacity})
-                remaining_demand['trucks'] -= allocated_capacity
+            elif (
+                remaining_demand["trucks"] > 0
+                and remaining_free_capacity >= 4
+                and truck_limit > 0
+            ):
+                allocated_capacity = min(
+                    remaining_free_capacity // 4,
+                    remaining_demand["trucks"],
+                    truck_limit,
+                )
+                assigned_lots["trucks"].append(
+                    {"parking_lot_id": lot["id"], "capacity": allocated_capacity}
+                )
+                remaining_demand["trucks"] -= allocated_capacity
                 remaining_free_capacity -= allocated_capacity * 4
                 truck_limit -= allocated_capacity
             else:
@@ -536,90 +611,135 @@ def assign_parking(lots, car_demand, bus_demand, truck_demand, phase, start_date
         if all(demand == 0 for demand in remaining_demand.values()):
             break
 
-    for lot in assigned_lots['buses']:
-        lot['capacity'] *= 3
-    for lot in assigned_lots['trucks']:
-        lot['capacity'] *= 4
+    for lot in assigned_lots["buses"]:
+        lot["capacity"] *= 3
+    for lot in assigned_lots["trucks"]:
+        lot["capacity"] *= 4
 
-    logger.info(f"Assigned lots: {assigned_lots}")
-    print(f"Assigned lots: {assigned_lots}")
+    # logger.info(f"Assigned lots: {assigned_lots}")
+    # print(f"Assigned lots: {assigned_lots}")
     return assigned_lots, remaining_demand
 
 
 def recommendation_engine(event):
     recommendations = {}
-    phases = ['assembly', 'runtime', 'disassembly']
+    phases = ["assembly", "runtime", "disassembly"]
     for phase in phases:
-        print(f"Processing phase: {phase}")
-        logger.info(f"Processing phase: {phase}")
+        # print(f"Processing phase: {phase}")
+        # logger.info(f"Processing phase: {phase}")
         try:
-            start_date = event[f'{phase}_start_date']
-            end_date = event[f'{phase}_end_date']
-            car_demand = int(event[f'{phase}_demand_cars'])
-            bus_demand = int(event[f'{phase}_demand_buses'])
-            truck_demand = int(event[f'{phase}_demand_trucks'])
-            
-            phase_recommendations = {'cars': [], 'buses': [], 'trucks': []}
+            start_date = event[f"{phase}_start_date"]
+            end_date = event[f"{phase}_end_date"]
+            car_demand = int(event[f"{phase}_demand_cars"])
+            bus_demand = int(event[f"{phase}_demand_buses"])
+            truck_demand = int(event[f"{phase}_demand_trucks"])
+
+            phase_recommendations = {"cars": [], "buses": [], "trucks": []}
             status_message = "ok"
 
             if car_demand > 0:
-                hall_ids_set = set(event['hall_ids'])
-                suitable_lots = get_parking_lots(service_level='high')
+                hall_ids_set = set(event["hall_ids"])
+                suitable_lots = get_parking_lots(service_level="high")
                 if isinstance(suitable_lots, str):
                     logger.error(f"Error fetching parking lots: {suitable_lots}")
                     return f"Error fetching parking lots: {suitable_lots}"
-                assigned_cars, remaining_cars = assign_parking(suitable_lots, car_demand, 0, 0, phase, start_date, end_date, event['hall_ids'], event['id'])
-                phase_recommendations['cars'] = assigned_cars['cars']
+                assigned_cars, remaining_cars = assign_parking(
+                    suitable_lots,
+                    car_demand,
+                    0,
+                    0,
+                    phase,
+                    start_date,
+                    end_date,
+                    event["hall_ids"],
+                    event["id"],
+                )
+                phase_recommendations["cars"] = assigned_cars["cars"]
 
-                if remaining_cars['cars'] > 0:
+                if remaining_cars["cars"] > 0:
                     status_message = f"Allocated within capacities, but missing capacities for {remaining_cars['cars']} car units"
 
             if truck_demand > 0:
                 remaining_truck_demand = truck_demand
-                assigned_trucks, remaining_trucks = assign_parking([{'id': 5}], 0, 0, truck_demand, phase, start_date, end_date, event['hall_ids'], event['id'])
-                phase_recommendations['trucks'] = assigned_trucks['trucks']
+                assigned_trucks, remaining_trucks = assign_parking(
+                    [{"id": 5}],
+                    0,
+                    0,
+                    truck_demand,
+                    phase,
+                    start_date,
+                    end_date,
+                    event["hall_ids"],
+                    event["id"],
+                )
+                phase_recommendations["trucks"] = assigned_trucks["trucks"]
                 if remaining_truck_demand > 0:
                     suitable_lots = get_parking_lots()
                     if isinstance(suitable_lots, str):
                         logger.error(f"Error fetching parking lots: {suitable_lots}")
                         return f"Error fetching parking lots: {suitable_lots}"
-                    additional_trucks, remaining_trucks = assign_parking(suitable_lots, 0, 0, remaining_truck_demand, phase, start_date, end_date, event['hall_ids'], event['id'])
-                    phase_recommendations['trucks'].extend(additional_trucks['trucks'])
+                    additional_trucks, remaining_trucks = assign_parking(
+                        suitable_lots,
+                        0,
+                        0,
+                        remaining_truck_demand,
+                        phase,
+                        start_date,
+                        end_date,
+                        event["hall_ids"],
+                        event["id"],
+                    )
+                    phase_recommendations["trucks"].extend(additional_trucks["trucks"])
 
-                if remaining_trucks['trucks'] > 0:
+                if remaining_trucks["trucks"] > 0:
                     status_message = f"Allocated within capacities, but missing capacities for {remaining_trucks['trucks']} truck units"
 
             suitable_lots = get_parking_lots()
             if isinstance(suitable_lots, str):
                 logger.error(f"Error fetching parking lots: {suitable_lots}")
                 return f"Error fetching parking lots: {suitable_lots}"
-            assigned_all, remaining_all = assign_parking(suitable_lots, car_demand, bus_demand, truck_demand, phase, start_date, end_date, event['hall_ids'], event['id'])
+            assigned_all, remaining_all = assign_parking(
+                suitable_lots,
+                car_demand,
+                bus_demand,
+                truck_demand,
+                phase,
+                start_date,
+                end_date,
+                event["hall_ids"],
+                event["id"],
+            )
             phase_recommendations.update(assigned_all)
 
             if isinstance(phase_recommendations, str):
                 return phase_recommendations
 
             recommendations[phase] = phase_recommendations
-            recommendations[phase]['status'] = status_message
+            recommendations[phase]["status"] = status_message
         except Exception as e:
-            logger.error(f"Error generating recommendations for phase {phase}: {str(e)}")
-            recommendations[phase] = {"status": "Error generating recommendations, please try again later"}
+            logger.error(
+                f"Error generating recommendations for phase {phase}: {str(e)}"
+            )
+            recommendations[phase] = {
+                "status": "Error generating recommendations, please try again later"
+            }
 
-    logger.info(f"Recommendations: {recommendations}")
+    # logger.info(f"Recommendations: {recommendations}")
     return recommendations
 
 
 def adjust_recommendations(recommendations):
     def adjust_capacity(vehicles, divisor):
         for vehicle in vehicles:
-            vehicle['capacity'] = round(vehicle['capacity'] / divisor)
+            vehicle["capacity"] = round(vehicle["capacity"] / divisor)
 
-    for phase in ['assembly', 'disassembly', 'runtime']:
-        if 'buses' in recommendations[phase]:
-            adjust_capacity(recommendations[phase]['buses'], 3)
-        if 'trucks' in recommendations[phase]:
-            adjust_capacity(recommendations[phase]['trucks'], 4)
+    for phase in ["assembly", "disassembly", "runtime"]:
+        if "buses" in recommendations[phase]:
+            adjust_capacity(recommendations[phase]["buses"], 3)
+        if "trucks" in recommendations[phase]:
+            adjust_capacity(recommendations[phase]["trucks"], 4)
     return recommendations
+
 
 @recommendation_bp.route("/engine", methods=["POST"])
 def get_recommendations():
@@ -653,7 +773,9 @@ def get_recommendations():
         """
 
         event = db.session.execute(text(event_query), {"event_id": event_id}).fetchone()
-        entrance = db.session.execute(text(entrance_query), {"event_id": event_id}).fetchone()
+        entrance = db.session.execute(
+            text(entrance_query), {"event_id": event_id}
+        ).fetchone()
 
         if not event:
             return jsonify({"error": "Event not found"}), 404
@@ -680,8 +802,8 @@ def get_recommendations():
             "disassembly_demand_trucks": event.disassembly_demand_trucks,
         }
 
-        logger.info("Event Data: %s", event_data)
-        print(f"Event Data: {event_data}")
+        # logger.info("Event Data: %s", event_data)
+        # print(f"Event Data: {event_data}")
 
         recommendations = recommendation_engine(event_data)
         recommendations_adjusted = adjust_recommendations(recommendations)

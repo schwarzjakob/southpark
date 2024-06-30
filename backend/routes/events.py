@@ -708,12 +708,18 @@ def allocate_demands():
         if not event_id:
             return jsonify({"error": "Event ID must be provided"}), 400
 
+        # Print the dataframe of received allocations to the terminal
+        if allocations:
+            allocations_df = pd.DataFrame(allocations)
+            print("Received allocations:")
+            print(allocations_df)
+
         # Delete existing allocations for the entire event
         delete_event_query = text(
             """
-        DELETE FROM public.parking_lot_allocation
-        WHERE event_id = :event_id
-        """
+            DELETE FROM public.parking_lot_allocation
+            WHERE event_id = :event_id
+            """
         )
         db.session.execute(delete_event_query, {"event_id": event_id})
 
@@ -728,12 +734,12 @@ def allocate_demands():
             # Check parking lot capacity
             capacity_query = text(
                 """
-            SELECT capacity - COALESCE(SUM(allocated_capacity), 0) AS free_capacity
-            FROM public.parking_lot_capacity pc
-            LEFT JOIN public.parking_lot_allocation pa ON pc.parking_lot_id = pa.parking_lot_id AND pa.date = :date
-            WHERE pc.parking_lot_id = :parking_lot_id AND :date BETWEEN pc.valid_from AND pc.valid_to
-            GROUP BY pc.capacity
-            """
+                SELECT capacity - COALESCE(SUM(allocated_capacity), 0) AS free_capacity
+                FROM public.parking_lot_capacity pc
+                LEFT JOIN public.parking_lot_allocation pa ON pc.parking_lot_id = pa.parking_lot_id AND pa.date = :date
+                WHERE pc.parking_lot_id = :parking_lot_id AND :date BETWEEN pc.valid_from AND pc.valid_to
+                GROUP BY pc.capacity
+                """
             )
             result = db.session.execute(
                 capacity_query,
@@ -760,8 +766,8 @@ def allocate_demands():
                 # Fetch the parking lot name corresponding to allocation['parking_lot_id']
                 parking_lot_name_query = text(
                     """
-                SELECT name FROM public.parking_lot WHERE id = :parking_lot_id
-                """
+                    SELECT name FROM public.parking_lot WHERE id = :parking_lot_id
+                    """
                 )
                 parking_lot_name_result = db.session.execute(
                     parking_lot_name_query,
@@ -786,17 +792,17 @@ def allocate_demands():
             # Insert new allocation
             insert_query = text(
                 """
-            INSERT INTO public.parking_lot_allocation (
-                event_id, parking_lot_id, date, allocated_cars, allocated_trucks, allocated_buses
-            ) VALUES (
-                :event_id, :parking_lot_id, :date, :allocated_cars, :allocated_trucks, :allocated_buses
-            )
-            """
+                INSERT INTO public.parking_lot_allocation (
+                    event_id, parking_lot_id, date, allocated_cars, allocated_trucks, allocated_buses
+                ) VALUES (
+                    :event_id, :parking_lot_id, :date, :allocated_cars, :allocated_trucks, :allocated_buses
+                )
+                """
             )
             db.session.execute(
                 insert_query,
                 {
-                    "event_id": allocation["event_id"],
+                    "event_id": event_id,
                     "parking_lot_id": allocation["parking_lot_id"],
                     "date": allocation["date"],
                     "allocated_cars": allocation["allocated_cars"],
