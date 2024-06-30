@@ -468,7 +468,16 @@ def edit_event(id):
                 delete_demands_query, {"event_id": id, "dates": tuple(dates_to_remove)}
             )
 
-        # Update visitor demands for changed phases
+            # Delete parking lot allocations for removed dates
+            delete_allocations_query = text(
+                "DELETE FROM public.parking_lot_allocation WHERE event_id = :event_id AND date IN :dates"
+            )
+            db.session.execute(
+                delete_allocations_query,
+                {"event_id": id, "dates": tuple(dates_to_remove)},
+            )
+
+        # Update visitor demands and allocations for changed phases
         for date in new_dates - dates_to_add:
             date_obj = datetime.strptime(date, "%Y-%m-%d")
             if date_obj < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):

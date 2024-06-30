@@ -15,6 +15,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
@@ -55,6 +60,8 @@ const EditEvent = () => {
     message: "",
     severity: "info",
   });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitCallback, setSubmitCallback] = useState(null);
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -178,21 +185,85 @@ const EditEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.put(`/api/events/event/${id}`, event);
-      setFeedback({
-        open: true,
-        message: "Event updated successfully.",
-        severity: "success",
+
+    // Determine if any dates moved between phases
+    const dateChangedPhases = (originalDate, newDate) => {
+      if (!originalDate || !newDate) return false;
+
+      const phases = [
+        {
+          start: originalEvent.assembly_start_date,
+          end: originalEvent.assembly_end_date,
+        },
+        {
+          start: originalEvent.runtime_start_date,
+          end: originalEvent.runtime_end_date,
+        },
+        {
+          start: originalEvent.disassembly_start_date,
+          end: originalEvent.disassembly_end_date,
+        },
+      ];
+
+      const originalPhase = phases.findIndex(
+        (phase) => originalDate >= phase.start && originalDate <= phase.end,
+      );
+      const newPhase = phases.findIndex(
+        (phase) => newDate >= phase.start && newDate <= phase.end,
+      );
+
+      return originalPhase !== newPhase;
+    };
+
+    const phaseDatesChanged = [
+      ["assembly_start_date", "assembly_end_date"],
+      ["runtime_start_date", "runtime_end_date"],
+      ["disassembly_start_date", "disassembly_end_date"],
+    ].some(([startKey, endKey]) => {
+      return (
+        dateChangedPhases(originalEvent[startKey], event[startKey]) ||
+        dateChangedPhases(originalEvent[endKey], event[endKey])
+      );
+    });
+
+    if (phaseDatesChanged) {
+      setDialogOpen(true);
+      setSubmitCallback(() => async () => {
+        try {
+          await axios.put(`/api/events/event/${id}`, event);
+          setFeedback({
+            open: true,
+            message:
+              "Event updated successfully. Please review demands and allocations.",
+            severity: "success",
+          });
+          navigate(`/events/event/${id}`);
+        } catch (error) {
+          console.error("Error updating event:", error);
+          setFeedback({
+            open: true,
+            message: "Error updating event.",
+            severity: "error",
+          });
+        }
       });
-      navigate(`/events/event/${id}`);
-    } catch (error) {
-      console.error("Error updating event:", error);
-      setFeedback({
-        open: true,
-        message: "Error updating event.",
-        severity: "error",
-      });
+    } else {
+      try {
+        await axios.put(`/api/events/event/${id}`, event);
+        setFeedback({
+          open: true,
+          message: "Event updated successfully.",
+          severity: "success",
+        });
+        navigate(`/events/event/${id}`);
+      } catch (error) {
+        console.error("Error updating event:", error);
+        setFeedback({
+          open: true,
+          message: "Error updating event.",
+          severity: "error",
+        });
+      }
     }
   };
 
@@ -547,6 +618,28 @@ const EditEvent = () => {
           </Box>
         </form>
       </Paper>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>Phase Dates Changed</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Phase dates have changed. Please review demands and allocations!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setDialogOpen(false);
+              if (submitCallback) submitCallback();
+            }}
+            color="primary"
+          >
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={feedback.open}
         autoHideDuration={6000}
