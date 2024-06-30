@@ -43,7 +43,7 @@ const downwardsOverlays = [
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 
-const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
+const LeafletMap = ({ selectedDate, zoom }) => {
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
   const [entrances, setEntrances] = useState([]);
@@ -392,9 +392,10 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
         );
         console.log("Occupancy Data for", parkingLot.name, ":", occupancyData);
 
+        const totalCapacity = occupancyData ? occupancyData.total_capacity : 0;
         const occupancyRate =
-          occupancyData && occupancyData.total_capacity
-            ? occupancyData.occupancy / occupancyData.total_capacity
+          occupancyData && totalCapacity
+            ? occupancyData.occupancy / totalCapacity
             : 0;
 
         const fillColor = calculateColor(occupancyRate);
@@ -429,8 +430,7 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
                   <h4>{parkingLot.name}</h4>
                   <p>Occupancy: {occupancyData.occupancy}</p>
                   <p>
-                    Free Capacity:{" "}
-                    {occupancyData.total_capacity - occupancyData.occupancy}
+                    Free Capacity: {totalCapacity - occupancyData.occupancy}
                   </p>
                   <div className="details-link_container">
                     <a href={`/parking_space/${parkingLot.id}`}>
@@ -440,7 +440,17 @@ const LeafletMap = ({ selectedDate, zoom, selectedEventId }) => {
                   </div>
                 </div>
               ) : (
-                <span>{parkingLot.name}: No Data!</span>
+                <div>
+                  <h4>{parkingLot.name}</h4>
+                  <p>Occupancy: 0</p>
+                  <p>Free Capacity: {totalCapacity}</p>
+                  <div className="details-link_container">
+                    <a href={`/parking_space/${parkingLot.id}`}>
+                      <LinkRoundedIcon />
+                      {parkingLot.name} Details
+                    </a>
+                  </div>
+                </div>
               )}
             </Popup>
           </Polygon>
