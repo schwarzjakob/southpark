@@ -87,8 +87,8 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const handleEditChange = (id, field, value) => {
     setEditedDemands((prevEditedDemands) =>
       prevEditedDemands.map((demand) =>
-        demand.id === id ? { ...demand, [field]: Number(value) } : demand
-      )
+        demand.id === id ? { ...demand, [field]: Number(value) } : demand,
+      ),
     );
   };
 
@@ -125,7 +125,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       const totalDemand =
         demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
       const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date),
       );
       let status = "not_allocated";
       if (allocation) {
@@ -200,7 +200,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const getAllocatedTotal = (demandDate) => {
     const demand = editedDemands.find(
-      (d) => formatDate(d.date) === formatDate(demandDate)
+      (d) => formatDate(d.date) === formatDate(demandDate),
     );
     if (!demand) return `0/0`;
 
@@ -210,7 +210,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     if (!Array.isArray(allocations)) return `0/${demandTotal}`;
 
     const allocation = allocations.find(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate)
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
     );
 
     return allocation
@@ -222,9 +222,10 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     if (!Array.isArray(allocations)) return "not_allocated";
 
     const allocation = allocations.find(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate)
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
     );
 
+    if (!demandTotal) return "no_demands";
     if (!allocation) return "not_allocated";
 
     const ratio = allocation.allocated_capacity / demandTotal;
@@ -235,6 +236,14 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const getStatusLabel = (status) => {
     switch (status) {
+      case "no_demands":
+        return (
+          <Box className="status-label">
+            <Typography className="status-label" variant="body2">
+              No demands
+            </Typography>
+          </Box>
+        );
       case "allocated":
         return (
           <Box className="status-label">
@@ -497,7 +506,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "car_demand",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -518,7 +527,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "bus_demand",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -538,7 +547,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "truck_demand",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -550,10 +559,10 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                         <TableCell>
                           <Box display="flex" alignItems="center">
                             {getStatusCircle(
-                              calculateStatus(demand.date, demand.demand)
+                              calculateStatus(demand.date, demand.demand),
                             )}
                             {getStatusLabel(
-                              calculateStatus(demand.date, demand.demand)
+                              calculateStatus(demand.date, demand.demand),
                             )}
                           </Box>
                         </TableCell>
