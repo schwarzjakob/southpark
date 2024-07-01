@@ -10,7 +10,7 @@ const useAuth = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (token) {
       setIsAuthenticated(true);
     } else {

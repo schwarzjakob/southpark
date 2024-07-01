@@ -47,12 +47,12 @@ const Login = () => {
         ip_address: clientIp,
       });
       const { token } = response.data;
-      sessionStorage.setItem("token", token);
+      localStorage.setItem("token", token);
       localStorage.setItem("auth", "true");
       setMessage("Login Successful");
       setSeverity("success");
       window.dispatchEvent(new Event("authChange"));
-
+  
       setTimeout(() => {
         const initialPath = location.state?.from?.pathname || "/";
         navigate(initialPath, { replace: true });
@@ -63,7 +63,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-
+  
   return (
     <Container maxWidth="sm" className="login">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>

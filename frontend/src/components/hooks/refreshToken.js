@@ -3,7 +3,7 @@
 import axios from "axios";
 
 export const refreshToken = async () => {
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   if (!token) {
     console.log("No token found");
@@ -17,7 +17,7 @@ export const refreshToken = async () => {
       },
     });
     const newToken = response.data.token;
-    sessionStorage.setItem("token", newToken);
+    localStorage.setItem("token", newToken);
     console.log("Token refreshed");
   } catch (error) {
     console.log("Failed to refresh token", error);
