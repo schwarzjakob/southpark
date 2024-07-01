@@ -222,7 +222,6 @@ const AllocateParkingSpaces = () => {
                 dailyDemand.bus_demand,
               );
 
-              // Only add the allocation if it's within the demand limits
               if (
                 allocatedCars > 0 ||
                 allocatedTrucks > 0 ||
@@ -237,8 +236,6 @@ const AllocateParkingSpaces = () => {
                   allocated_buses: allocatedBuses,
                 });
               }
-
-              // Update the remaining demand for the day
               dailyDemand.car_demand -= allocatedCars;
               dailyDemand.truck_demand -= allocatedTrucks;
               dailyDemand.bus_demand -= allocatedBuses;

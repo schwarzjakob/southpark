@@ -13,7 +13,6 @@ const InfoHoverComponent = ({ infoText, direction = "bottom" }) => {
   );
 };
 
-// Add prop validation
 InfoHoverComponent.propTypes = {
   infoText: PropTypes.string.isRequired,
   direction: PropTypes.oneOf(["top", "bottom", "left", "right"]),

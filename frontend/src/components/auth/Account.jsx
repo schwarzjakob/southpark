@@ -58,7 +58,7 @@ const Account = () => {
         "/api/auth/user/password",
         {
           current_password: password,
-          new_password: password, // Temporarily use current password for new_password to avoid changing it
+          new_password: password,
           confirm_new_password: password,
         },
         {
@@ -156,7 +156,6 @@ const Account = () => {
       );
       setMessage(response.data.message);
       setSeverity("success");
-      // Reset the password fields after a successful update
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");

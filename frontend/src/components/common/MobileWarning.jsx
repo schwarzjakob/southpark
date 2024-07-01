@@ -1,4 +1,3 @@
-// src/components/MobileWarning.jsx
 import { Typography, Box, IconButton } from "@mui/material";
 import ScreenshotMonitorIcon from "@mui/icons-material/ScreenshotMonitor";
 import logo from "../../assets/logo.svg";

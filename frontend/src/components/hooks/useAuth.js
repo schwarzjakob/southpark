@@ -1,5 +1,3 @@
-// src/hooks/useAuth.js
-
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { refreshToken } from "./refreshToken";
@@ -19,7 +17,7 @@ const useAuth = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(refreshToken, 55 * 60 * 1000); // Refresh token every 55 minutes
+    const interval = setInterval(refreshToken, 55 * 60 * 1000); 
     return () => clearInterval(interval);
   }, []);
 

@@ -56,7 +56,6 @@ const Event = () => {
         const response = await axios.get(`/api/events/event/${id}`);
         const eventData = response.data;
 
-        // Convert dates to "YYYY-MM-DD" format
         eventData.assembly_start_date = formatDateToISO(
           eventData.assembly_start_date
         );
@@ -99,7 +98,7 @@ const Event = () => {
     const handleBeforeUnload = (e) => {
       if (hasUnsavedChanges()) {
         e.preventDefault();
-        e.returnValue = ""; // Chrome requires returnValue to be set
+        e.returnValue = ""; 
       }
     };
 

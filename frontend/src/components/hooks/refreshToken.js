@@ -1,5 +1,3 @@
-// src/utils/auth.js
-
 import axios from "axios";
 
 export const refreshToken = async () => {

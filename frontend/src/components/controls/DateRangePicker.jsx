@@ -1,4 +1,3 @@
-// src/components/DateRangePicker.jsx
 import { useEffect } from "react";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
@@ -114,7 +113,6 @@ const DateRangePicker = ({
       : []
   );
 
-  // Update the dateRange state if start and end are provided
   useEffect(() => {
     if (start && end) {
       setDateRange([dayjs(start), dayjs(end)]);

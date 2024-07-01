@@ -32,46 +32,35 @@ ChartJS.register(
   ChartDataLabels
 );
 
-// Titles and labels for display
 const TITLE = "Capacity Utilization per Day";
 const FREE_CAPACITY_LABEL = "Free Capacity";
 const TOTAL_CAPACITY_UTILIZATION_LABEL = "Total Capacity Utilization";
 const NO_DATA_MESSAGE = "No data available for the selected time period.";
 
-// Animation settings for charts or visuals
 const ANIMATION_DURATION = 1000;
 const ANIMATION_EASING = "easeInOutQuad";
 
-// Chart display properties
 const DISPLAY = true;
 const STACKED = true;
 const LEGEND_POSITION = "top";
 
-// Font settings for charts
 const FONT_SIZE = 10;
 const FONT_SIZE_TITLE = 20;
 
-// Tooltip information formatting
 const TOOLTIP_CALLBACK_LOTS_INFO = "Parking Lots: ";
 
-// Color settings for various chart components
 const TOTAL_CAPACITY_UTILIZATION_COLOR = "#6a91ce";
 const FREE_CAPACITY_COLOR = "#4d4d4d";
 
-// Default color for events if no color is provided
 const DEFAULT_EVENT_COLOR = "#000000";
 
-// Threshold values for changing color states or alerts
 const ORANGE_BORDER_THRESHOLD = 80;
 const RED_BORDER_THRESHOLD = 100;
 
-// Transparency settings for chart elements
-// Hex codes for transparency 10%: "1A", 20%: "33", 30%: "4D", 40%: "66", 50%: "80", 60%: "99", 70%: "B3", 80%: "CC", 90%: "E6", 100%: "FF"
 const TRANSPARENCY = "66";
 
 const applyTransparency = (color) => {
   if (!color || typeof color !== "string") {
-    // Handle the case when color is null or not a string
     console.warn("Invalid color value provided:", color);
     return DEFAULT_EVENT_COLOR + TRANSPARENCY;
   }
@@ -316,7 +305,6 @@ const CapacityUtilization = ({
     });
   }
 
-  // Adding 100% and 80% capacity lines
   const capacity80Data = filteredData.map((d) => d.total_capacity * 0.8);
   const capacity100Data = filteredData.map((d) => d.total_capacity * 0.2);
 
@@ -469,7 +457,7 @@ const CapacityUtilization = ({
             );
           },
         },
-        onClick: null, // Disable click events on legend items
+        onClick: null, 
       },
     },
     title: {

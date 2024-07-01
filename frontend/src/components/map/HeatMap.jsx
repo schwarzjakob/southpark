@@ -125,7 +125,7 @@ const Heatmap = ({ selectedDate, zoom }) => {
     fetchCoordinates();
     fetchEvents();
     fetchOccupancyAndCapacity();
-  }, [selectedDate]); // Add selectedDate as a dependency
+  }, [selectedDate]);
 
   const transformCoordinates = (originalCoords) => {
     const transformedCoords = [];

@@ -211,7 +211,6 @@ const EditEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Determine if any dates moved between phases
     const dateChangedPhases = (originalDate, newDate) => {
       if (!originalDate || !newDate) return false;
 

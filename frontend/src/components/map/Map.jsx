@@ -24,8 +24,8 @@ const MapView = () => {
   const [events] = useState([]);
   const [isPercentage, setIsPercentage] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [selectedEventId] = useState(null); // Add this line
-  const [showHeatmap, setShowHeatmap] = useState(false); // Add this line
+  const [selectedEventId] = useState(null);
+  const [showHeatmap, setShowHeatmap] = useState(false); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -146,7 +146,7 @@ const MapView = () => {
               <EventsMap
                 selectedDate={selectedDate}
                 zoom={15.5}
-                selectedEventId={selectedEventId} // Pass this prop
+                selectedEventId={selectedEventId} 
               />
             )}
           </Box>
