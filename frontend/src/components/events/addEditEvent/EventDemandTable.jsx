@@ -133,7 +133,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       setEditMode(false);
       setIsEditingDemands(false);
       setDemands(editedDemands);
-      updateStatuses(); // Update statuses after saving demands
+      updateStatuses(); 
       await fetchAllocations();
       await fetchDemands();
     } catch (error) {

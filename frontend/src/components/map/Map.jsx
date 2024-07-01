@@ -6,7 +6,10 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import "./styles/mapView.css";
 import TimelineSlider from "./TimelineSlider.jsx";
-import LeafletMap from "./LeafletMap.jsx";
+import EventsMap from "./EventsMap.jsx";
+import Heatmap from "./HeatMap.jsx";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
@@ -21,6 +24,8 @@ const MapView = () => {
   const [events] = useState([]);
   const [isPercentage, setIsPercentage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedEventId] = useState(null);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,6 +40,10 @@ const MapView = () => {
 
   const handleToggle = () => {
     setIsPercentage(!isPercentage);
+  };
+
+  const toggleMap = () => {
+    setShowHeatmap(!showHeatmap);
   };
 
   const formattedDate = new Date(selectedDate).toLocaleDateString("de-DE", {
@@ -115,11 +124,31 @@ const MapView = () => {
             width="70vw"
             height="100%"
           >
-            <LeafletMap
-              selectedDate={selectedDate}
-              events={events}
-              zoom={15.5}
-            />
+            {showHeatmap ? (
+              <Heatmap selectedDate={selectedDate} zoom={15.5} />
+            ) : (
+              <EventsMap
+                selectedDate={selectedDate}
+                zoom={15.5}
+                selectedEventId={selectedEventId}
+              />
+            )}
+            <Box className="map-switch-container">
+              <Button
+                className="map-switch-btn"
+                variant="contained"
+                onClick={toggleMap}
+                startIcon={
+                  showHeatmap ? (
+                    <HorizontalSplitRoundedIcon />
+                  ) : (
+                    <LocalFireDepartmentRoundedIcon />
+                  )
+                }
+              >
+                {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
+              </Button>
+            </Box>
           </Box>
           <Box
             className="map__bar-chart-component"

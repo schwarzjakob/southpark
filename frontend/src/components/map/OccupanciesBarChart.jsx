@@ -60,9 +60,6 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
 
         const parkingLotOccupancy = parkingLotOccupancyResponse.data;
         const parkingLots = parkingLotsResponse.data;
-        //DEBUG
-        //console.log(parkingLots);
-
         if (parkingLots) {
           const sortedParkingLots = [...parkingLots]
             .map((lot) => ({
@@ -72,13 +69,10 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
             .sort((a, b) => {
               if (a.external === b.external) {
                 if (!a.external) {
-                  // If both are internal, sort by id
                   return a.id - b.id;
                 }
-                // If both are external, sort by name
                 return a.name.localeCompare(b.name);
               }
-              // Prioritize internal (false) over external (true)
               return a.external - b.external;
             });
 

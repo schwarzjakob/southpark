@@ -1,4 +1,3 @@
-// src/components/Team.jsx
 import {
   Container,
   Grid,

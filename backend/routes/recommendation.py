@@ -345,14 +345,10 @@ distances_df["entrance_id"] = distances_df["entrance_id"].astype(int)
 distances_df["parking_lot_id"] = distances_df["parking_lot_id"].astype(int)
 distances_df["distance"] = distances_df["distance"].astype(int)
 
-# logger.info(f"Distances DataFrame created with {len(distances_df)} rows.")
 
 
 def get_parking_lots(material=None, service_level=None):
     try:
-        # logger.info(
-        #     f"Fetching parking lots with material: {material} and service level: {service_level}"
-        # )
         query = """
         SELECT id, name, service_toilets, surface_material, service_shelter, pricing, external, coordinates
         FROM public.parking_lot
@@ -376,18 +372,17 @@ def get_parking_lots(material=None, service_level=None):
         for lot in parking_lots:
             parking_lot_list.append(
                 {
-                    "id": lot[0],  # Using index 0 for 'id'
-                    "name": lot[1],  # Using index 1 for 'name'
-                    "service_toilets": lot[2],  # Using index 2 for 'service_toilets'
-                    "surface_material": lot[3],  # Using index 3 for 'surface_material'
-                    "service_shelter": lot[4],  # Using index 4 for 'service_shelter'
-                    "pricing": lot[5],  # Using index 5 for 'pricing'
-                    "external": lot[6],  # Using index 6 for 'external'
-                    "coordinates": lot[7],  # Using index 7 for 'coordinates'
+                    "id": lot[0], 
+                    "name": lot[1],  
+                    "service_toilets": lot[2], 
+                    "surface_material": lot[3],  
+                    "service_shelter": lot[4], 
+                    "pricing": lot[5], 
+                    "external": lot[6],  
+                    "coordinates": lot[7],  
                 }
             )
 
-        # logger.info(f"Parking lots fetched: {parking_lot_list}")
         return parking_lot_list
     except Exception as e:
         logger.error(f"Error fetching parking lots: {str(e)}")
@@ -403,16 +398,11 @@ def get_average_distance(hall_ids, parking_lot_id):
         average_distance = distances["distance"].mean()
     else:
         average_distance = float("inf")
-    # logger.info(
-    #     f"Average distance for parking lot {parking_lot_id} and halls {hall_ids}: {average_distance}"
-    # )
     return average_distance
 
 
 def fetch_parking_capacities(parking_lot_ids, start_date, end_date, event_id):
-    # logger.info(
-    #     f"Fetching capacities for parking lots from {start_date} to {end_date}, excluding allocations for event_id {event_id}"
-    # )
+
     query = f"""
     WITH date_series AS (
         SELECT generate_series('{start_date}'::date, '{end_date}'::date, '1 day'::interval) AS date
@@ -465,14 +455,11 @@ def fetch_parking_capacities(parking_lot_ids, start_date, end_date, event_id):
     """
     result = db.session.execute(text(query)).fetchall()
     capacities = {row[0]: row[1:] for row in result}
-    # logger.info(f"Fetched capacities: {capacities}")
     return capacities
 
 
 def prepare_capacity_data(lots, start_date, end_date, event_id):
-    # logger.info(
-    #     f"Preparing capacity data for lots from {start_date} to {end_date} for event_id {event_id}"
-    # )
+
     parking_lot_ids = [lot["id"] for lot in lots]
     capacities = fetch_parking_capacities(
         parking_lot_ids, start_date, end_date, event_id
@@ -487,11 +474,10 @@ def prepare_capacity_data(lots, start_date, end_date, event_id):
                     "remaining_free_capacity": min_free_capacity,
                     "bus_limit": min_bus_units,
                     "truck_limit": min_truck_units,
-                    "prio_weighting": 0,  # Placeholder for priority weighting
+                    "prio_weighting": 0,  
                 }
             )
     capacity_df = pd.DataFrame(capacity_data)
-    # logger.info(f"Capacity DataFrame:\n{capacity_df}")
     return capacity_df
 
 
@@ -507,7 +493,6 @@ def calculate_priority(df, hall_ids):
         axis=1,
     )
 
-    # logger.info(f"Priority calculated DataFrame:\n{df}")
     return df
 
 
@@ -522,10 +507,6 @@ def assign_parking(
     hall_ids,
     event_id,
 ):
-    # print(
-    #     f"Assigning parking for {car_demand} cars, {bus_demand} buses, {truck_demand} trucks in {phase} phase"
-    # )
-    # logger.info(f"Starting assignment for phase: {phase}")
     assigned_lots = {"cars": [], "buses": [], "trucks": []}
     remaining_demand = {"cars": car_demand, "buses": bus_demand, "trucks": truck_demand}
 
@@ -616,8 +597,6 @@ def assign_parking(
     for lot in assigned_lots["trucks"]:
         lot["capacity"] *= 4
 
-    # logger.info(f"Assigned lots: {assigned_lots}")
-    # print(f"Assigned lots: {assigned_lots}")
     return assigned_lots, remaining_demand
 
 
@@ -625,8 +604,6 @@ def recommendation_engine(event):
     recommendations = {}
     phases = ["assembly", "runtime", "disassembly"]
     for phase in phases:
-        # print(f"Processing phase: {phase}")
-        # logger.info(f"Processing phase: {phase}")
         try:
             start_date = event[f"{phase}_start_date"]
             end_date = event[f"{phase}_end_date"]
@@ -724,7 +701,6 @@ def recommendation_engine(event):
                 "status": "Error generating recommendations, please try again later"
             }
 
-    # logger.info(f"Recommendations: {recommendations}")
     return recommendations
 
 
@@ -801,9 +777,6 @@ def get_recommendations():
             "disassembly_demand_buses": event.disassembly_demand_buses,
             "disassembly_demand_trucks": event.disassembly_demand_trucks,
         }
-
-        # logger.info("Event Data: %s", event_data)
-        # print(f"Event Data: {event_data}")
 
         recommendations = recommendation_engine(event_data)
         recommendations_adjusted = adjust_recommendations(recommendations)

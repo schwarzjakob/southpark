@@ -12,7 +12,7 @@ const ProtectedRoute = ({ element }) => {
   const location = useLocation();
 
   useEffect(() => {
-    refreshToken(); // Refresh token on component mount
+    refreshToken();
   }, []);
 
   if (isAuthenticated === null) {

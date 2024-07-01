@@ -176,7 +176,7 @@ const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         sizeMedium: {
-          padding: "10px 10px", // Adjust padding as needed for smaller size
+          padding: "10px 10px",
         },
       },
     },

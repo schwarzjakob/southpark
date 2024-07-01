@@ -22,7 +22,7 @@ import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
-import CustomBreadcrumbs from "../common/BreadCrumbs.jsx"; // Import the Breadcrumbs component
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx"; 
 
 import "./styles/parkingSpaces.css";
 

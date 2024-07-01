@@ -1,11 +1,11 @@
 {
   "recommendations": [
-    "ms-python.python", // Python support
-    "dbaeumer.vscode-eslint", // ESLint for JavaScript
-    "esbenp.prettier-vscode", // Prettier code formatter
-    "eamodio.gitlens", // GitLens for enhanced Git capabilities
-    "mhutchie.git-graph", // GitGraph for visualizing Git branches
-    "github.copilot", // GitHub Copilot for AI-powered code suggestions
-    "github.copilot-chat" // Copilot Chat for conversational code suggestions
+    "ms-python.python", 
+    "dbaeumer.vscode-eslint", 
+    "esbenp.prettier-vscode", 
+    "eamodio.gitlens", 
+    "mhutchie.git-graph", 
+    "github.copilot", 
+    "github.copilot-chat"
   ]
 }

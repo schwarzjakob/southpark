@@ -100,7 +100,7 @@ const MapLegendComponent = ({ events, selectedDate, eventId }) => {
             const phaseStyle =
               phase === "assembly" || phase === "disassembly"
                 ? {
-                    backgroundColor: `${event.event_color}80`, // 50% transparency
+                    backgroundColor: `${event.event_color}80`, 
                     border: `1px solid ${event.event_color}`,
                     color: event.event_color,
                   }
@@ -148,7 +148,7 @@ const MapLegendComponent = ({ events, selectedDate, eventId }) => {
 MapLegendComponent.propTypes = {
   events: PropTypes.arrayOf(PropTypes.object).isRequired,
   selectedDate: PropTypes.string.isRequired,
-  eventId: PropTypes.string, // Optional prop for event ID filtering
+  eventId: PropTypes.string, 
 };
 
 export default MapLegendComponent;

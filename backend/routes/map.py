@@ -160,3 +160,45 @@ def get_parking_lot_occupancy(date):
         # Log the exception and return an error response
         logger.error("Failed to fetch parking lot occupancy data", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+
+@map_bp.route("/parking_lots_allocations/<date>", methods=["GET"])
+def get_parking_lot_allocations(date):
+    """
+    Endpoint to retrieve detailed parking lot allocation data for a specific date.
+    """
+    try:
+        date = datetime.strptime(date, "%Y-%m-%d").date()
+        logger.info(
+            f"Fetching detailed parking lot allocation data from the database for date: {date}"
+        )
+
+        query_allocations = f"""
+        SELECT
+            pa.parking_lot_id,
+            pl.name AS parking_lot_name,
+            pa.event_id,
+            e.name AS event_name,
+            e.color AS event_color,
+            pa.allocated_capacity
+        FROM public.parking_lot_allocation pa
+        JOIN public.parking_lot pl ON pa.parking_lot_id = pl.id
+        JOIN public.event e ON pa.event_id = e.id
+        WHERE pa.date = '{date}'
+        ORDER BY pa.parking_lot_id, pa.event_id;
+        """
+
+        df_allocations = get_data(query_allocations)
+        if df_allocations.empty:
+            logger.info(f"No allocations available for parking lots on date: {date}")
+            return jsonify({"message": "No allocations found"}), 204
+
+        logger.info(
+            f"Parking lot allocation data fetched successfully for date: {date}"
+        )
+
+        allocations_data = df_allocations.to_dict(orient="records")
+        return jsonify(allocations_data), 200
+    except Exception as e:
+        logger.error("Failed to fetch parking lot allocation data", exc_info=True)
+        return jsonify({"error": str(e)}), 500

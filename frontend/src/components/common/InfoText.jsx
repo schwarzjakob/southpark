@@ -1,4 +1,3 @@
-// src/components/InfoTextComponent.jsx
 import LightbulbRoundedIcon from "@mui/icons-material/LightbulbRounded";
 import PropTypes from "prop-types";
 

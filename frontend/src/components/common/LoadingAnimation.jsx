@@ -1,4 +1,3 @@
-// src/components/LoadingAnimation.jsx
 const LoadingAnimation = () => {
   return (
     <div className="loader-container">

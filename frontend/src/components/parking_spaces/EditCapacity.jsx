@@ -201,7 +201,7 @@ const EditParkingSpaceCapacity = () => {
       : null;
 
     try {
-      await axios.put(`/api/parking/capacities//${capacityId}`, {
+      await axios.put(`/api/parking/capacities/${capacityId}`, {
         ...capacity,
         valid_from: updatedValidFrom,
         valid_to: updatedValidTo,
