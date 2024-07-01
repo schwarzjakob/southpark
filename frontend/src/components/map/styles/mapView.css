@@ -1,7 +1,7 @@
 /* Map Component */
 .leaflet-container {
   height: 100%;
-  width: 100vw;
+  width: 100%;
   z-index: 10;
   overflow: hidden;
 }
@@ -65,10 +65,46 @@
   font-size: 8px;
 }
 
+.leaflet-left {
+  left: auto !important;
+}
+
 .leaflet-top {
-  right: 0 !important;
-  top: 0 !important;
-  left: 95% !important;
+  right: 10px !important;
+  top: 40px !important;
+}
+
+.recenter-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  color: var(--textColor) !important;
+}
+
+.recenter-button {
+  background-color: var(--color-pure-white) !important;
+  color: var(--textColor) !important;
+  font-weight: bold !important;
+  border: 2px solid rgba(0, 0, 0, 0.2) !important;
+  min-width: none;
+  padding: 5px !important;
+  background-clip: padding-box;
+  border-radius: 4px !important;
+  min-width: 0 !important;
+}
+
+.recenter-button:hover {
+  background-color: #f0f0f0 !important;
+  color: var(--color-primary) !important;
+}
+
+.recenter-button span {
+  margin: 0 !important;
 }
 
 /* Map Legend */
@@ -81,7 +117,11 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   font-family: Arial, sans-serif;
   font-size: 12px;
+  line-height: 12px;
   z-index: 1000;
+  padding: 0.5rem !important;
+  background-clip: padding-box;
+  border-radius: 4px !important;
 }
 
 .legend-item {
@@ -89,6 +129,14 @@
   align-items: center;
   margin-bottom: 5px;
   transition: all 0.3s ease-in-out;
+}
+
+.legend p {
+  padding: 0 0 0.5rem 0 !important;
+}
+
+.legend .legend-item:last-of-type {
+  border-bottom: 2px solid black !important;
 }
 
 .legend-color {
@@ -103,7 +151,7 @@
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
-.legend-text {
+.legend-text.div {
   display: flex;
   flex-direction: column;
   transition: color 0.3s ease-in-out;
@@ -117,8 +165,25 @@
 }
 
 .legend-icons {
-  display: flex;
-  margin-top: 10px;
+  display: none !important;
+}
+
+.legend-runtime,
+.legend-assembly,
+.legend-disassembly {
+  max-width: 6rem !important;
+}
+
+.legend-runtime span,
+.legend-assembly span,
+.legend-disassembly span {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 5rem !important;
+  word-break: break-all;
 }
 
 .legend-icon {
@@ -174,8 +239,8 @@
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  top: 6px;
-  right: 6px;
+  top: 6px !important;
+  right: 6px !important;
 }
 
 /* Timeline Component */

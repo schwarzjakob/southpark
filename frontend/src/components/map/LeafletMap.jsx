@@ -9,10 +9,12 @@ import {
   Popup,
   useMap,
 } from "react-leaflet";
+import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import axios from "axios";
 import MapLegendComponent from "./MapLegend.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
+import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 
 const downwardsOverlays = [
   "C1",
@@ -49,6 +51,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
   const [entrances, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
   const [occupancy, setOccupancy] = useState([]);
+  const center = [48.1375, 11.702];
 
   useEffect(() => {
     const fetchCoordinates = async () => {
@@ -275,13 +278,33 @@ const LeafletMap = ({ selectedDate, zoom }) => {
     return null;
   };
 
+  const RecenterButton = () => {
+    const map = useMap();
+
+    const handleRecenter = () => {
+      map.setView(center, zoom);
+    };
+
+    return (
+      <Box className="recenter-container" zIndex={1000}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleRecenter}
+          className="recenter-button"
+          startIcon={<CenterFocusStrongRoundedIcon />}
+        ></Button>
+      </Box>
+    );
+  };
+
   return (
     <MapContainer
-      center={[48.1375, 11.702]}
+      center={center}
       zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={true}
-      dragging={false}
+      dragging={true}
       touchZoom={true}
       doubleClickZoom={true}
       keyboard={false}
@@ -293,6 +316,7 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
+      <RecenterButton />
       {/* Rendering Legend */}
       <MapLegendComponent
         events={uniqueFilteredEvents}
