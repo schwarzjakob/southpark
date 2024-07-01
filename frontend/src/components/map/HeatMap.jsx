@@ -42,6 +42,7 @@ const DOWNWARD_OVERLAYS = [
   "PN12",
 ];
 
+
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 const MAP_CENTER_POS = [48.1375, 11.702];

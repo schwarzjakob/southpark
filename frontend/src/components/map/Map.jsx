@@ -104,6 +104,7 @@ const MapView = () => {
           </Box>
         </Box>
 
+
         <Box
           className="map__timeline-slider"
           display="flex"
