@@ -239,8 +239,8 @@
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  top: 6px;
-  right: 6px;
+  top: 6px !important;
+  right: 6px !important;
 }
 
 /* Timeline Component */
