@@ -322,13 +322,18 @@ const LeafletMap = ({ selectedDate, zoom }) => {
                 {allocations.map((allocation, index) => (
                   <React.Fragment key={index}>
                     <div className="details-link_container">
-                      <a href={`/events/event/${allocation.event_id}`}>
+                      <a
+                        href={`/events/event/${allocation.event_id}`}
+                        style={{ color: allocation.event_color }}
+                      >
                         <LinkRoundedIcon />
                         {allocation.event_name}
                       </a>
                     </div>
-                    <div>{allocation.allocated_capacity}</div>
-                    <div>
+                    <div className="popup-table-cell">
+                      {allocation.allocated_capacity}
+                    </div>
+                    <div className="popup-table-cell">
                       {(
                         (allocation.allocated_capacity / parkingLotCapacity) *
                         100
@@ -340,10 +345,12 @@ const LeafletMap = ({ selectedDate, zoom }) => {
                 {freeCapacityPercentage > 0 && (
                   <React.Fragment>
                     <div>Free Capacity</div>
-                    <div>
+                    <div className="popup-table-cell">
                       {Math.round(freeCapacityPercentage * parkingLotCapacity)}
                     </div>
-                    <div>{(freeCapacityPercentage * 100).toFixed(2)}%</div>
+                    <div className="popup-table-cell">
+                      {(freeCapacityPercentage * 100).toFixed(2)}%
+                    </div>
                   </React.Fragment>
                 )}
               </div>
