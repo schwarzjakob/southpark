@@ -15,7 +15,13 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-
+import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
+import EventsMap from "../../map/EventsMap.jsx";
+import Heatmap from "../../map/HeatMap.jsx";
+import TimelineSlider from "../../map/TimelineSlider.jsx";
+import EventDemandTable from "./EventDemandTable.jsx";
+import "../../map/styles/mapView.css";
+import "../styles/events.css";
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
   PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
@@ -25,17 +31,12 @@ import {
   ArrowBack as ArrowBackIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
 } from "@mui/icons-material";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 
-import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
-import EventsMap from "../../map/EventsMap.jsx";
-import TimelineSlider from "../../map/TimelineSlider.jsx";
-import EventDemandTable from "./EventDemandTable.jsx";
-
-import "../../map/styles/mapView.css";
-import "../styles/events.css";
-
 const TITLE = "Event Details";
+const INITIAL_DATE = "2023-01-02";
 
 const Event = () => {
   const [event, setEvent] = useState(null);
@@ -45,10 +46,13 @@ const Event = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [events] = useState([]);
-
-  const initialDate = "2023-01-02";
-  const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(INITIAL_DATE);
   const [isEditingDemands, setIsEditingDemands] = useState(false);
+
+  const toggleMap = () => {
+    setShowHeatmap(!showHeatmap);
+  };
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -98,7 +102,7 @@ const Event = () => {
     const handleBeforeUnload = (e) => {
       if (hasUnsavedChanges()) {
         e.preventDefault();
-        e.returnValue = ""; 
+        e.returnValue = "";
       }
     };
 
@@ -356,12 +360,31 @@ const Event = () => {
               width="100%"
               height="100%"
             >
-              <EventsMap
-                selectedDate={selectedDate}
-                events={events}
-                zoom={15.5}
-                selectedEventId={parseInt(id)}
-              />
+              {showHeatmap ? (
+                <Heatmap selectedDate={selectedDate} zoom={15.5} />
+              ) : (
+                <EventsMap
+                  selectedDate={selectedDate}
+                  zoom={15.5}
+                  selectedEventId={parseInt(id)}
+                />
+              )}
+              <Box className="map-switch-container">
+                <Button
+                  className="map-switch-btn"
+                  variant="contained"
+                  onClick={toggleMap}
+                  startIcon={
+                    showHeatmap ? (
+                      <HorizontalSplitRoundedIcon />
+                    ) : (
+                      <LocalFireDepartmentRoundedIcon />
+                    )
+                  }
+                >
+                  {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Box>

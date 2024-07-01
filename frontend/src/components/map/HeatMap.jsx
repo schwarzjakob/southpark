@@ -42,7 +42,6 @@ const DOWNWARD_OVERLAYS = [
   "PN12",
 ];
 
-
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 const MAP_CENTER_POS = [48.1375, 11.702];
@@ -85,7 +84,6 @@ const Heatmap = ({ selectedDate, zoom }) => {
         console.error("There was an error fetching the events data!", error);
       }
     };
-
     const fetchOccupancyAndCapacity = async () => {
       try {
         const [occupancyRes, capacityRes] = await Promise.all([
@@ -93,13 +91,10 @@ const Heatmap = ({ selectedDate, zoom }) => {
           axios.get(`/api/map/parking_lots_capacity/${selectedDate}`),
         ]);
 
-        if (
-          Array.isArray(occupancyRes.data) &&
-          Array.isArray(capacityRes.data)
-        ) {
-          const occupancyData = occupancyRes.data;
-          const capacityData = capacityRes.data;
+        const occupancyData = occupancyRes.data;
+        const capacityData = capacityRes.data;
 
+        if (Array.isArray(occupancyData) && Array.isArray(capacityData)) {
           const combinedData = occupancyData.map((occ) => {
             const capacity = capacityData.find(
               (cap) => cap.name === occ.parking_lot_name
@@ -111,8 +106,6 @@ const Heatmap = ({ selectedDate, zoom }) => {
           });
 
           setOccupancy(combinedData);
-        } else {
-          console.error("Occupancy or Capacity data is not an array!");
         }
       } catch (error) {
         console.error(

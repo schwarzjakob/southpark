@@ -198,7 +198,6 @@ def get_parking_lot_allocations(date):
         )
 
         allocations_data = df_allocations.to_dict(orient="records")
-        print(allocations_data)
         return jsonify(allocations_data), 200
     except Exception as e:
         logger.error("Failed to fetch parking lot allocation data", exc_info=True)
