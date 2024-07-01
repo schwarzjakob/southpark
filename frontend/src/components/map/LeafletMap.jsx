@@ -390,8 +390,6 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         const occupancyData = occupancy.find(
           (data) => data.parking_lot_name === parkingLot.name
         );
-        console.log("Occupancy Data for", parkingLot.name, ":", occupancyData);
-
         const totalCapacity = occupancyData ? occupancyData.total_capacity : 0;
         const occupancyRate =
           occupancyData && totalCapacity
