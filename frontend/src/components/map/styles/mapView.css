@@ -13,7 +13,7 @@
   border-radius: 8px;
   box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
   margin: 0.25rem;
-  max-width: 250px;
+  max-width: 400px;
   line-height: 1;
 }
 
@@ -22,13 +22,35 @@
   font-size: 11px;
 }
 
+.popup-table {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 10px 0px;
+  text-align: left;
+}
+
+.popup-header {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  padding: 5px;
+  font-weight: bold;
+}
+
+.popup-header:first-child {
+  border-top-left-radius: 6px;
+}
+
+.popup-header:nth-child(3) {
+  border-top-right-radius: 6px;
+}
+
 .leaflet-popup-tip {
   display: none;
 }
 
 .leaflet-popup-content {
   margin: 1rem 0.5rem;
-  max-width: 250px;
+  max-width: 400px;
   line-height: 1;
 }
 

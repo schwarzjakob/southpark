@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 import MapLegendComponent from "./MapLegend.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
-import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
+import "./styles/mapView.css";
 
 const downwardsOverlays = [
   "C1",
@@ -286,15 +286,71 @@ const LeafletMap = ({ selectedDate, zoom }) => {
     };
 
     return (
-      <Box className="recenter-container" zIndex={1000}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleRecenter}
-          className="recenter-button"
-          startIcon={<CenterFocusStrongRoundedIcon />}
-        ></Button>
-      </Box>
+      <React.Fragment key={parkingLot.name}>
+        <svg style={{ height: 0 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="100%" x2="0%" y2="0%">
+              {gradientStops}
+            </linearGradient>
+          </defs>
+        </svg>
+        <Polygon
+          positions={transformedCoords}
+          className={`parking-lots parking-lot-${parkingLot.name}`}
+          pathOptions={{
+            fillColor: `url(#${gradientId})`,
+            fillOpacity: 1,
+            weight: 2,
+            color: "transparent",
+          }}
+        >
+          <Tooltip
+            direction="center"
+            offset={[0, 0]}
+            permanent
+            className="tags-parking-lots"
+          >
+            <span>{parkingLot.name}</span>
+          </Tooltip>
+          <Popup autoPan={false}>
+            <div>
+              <h4>{parkingLot.name}</h4>
+              <div className="popup-table">
+                <div className="popup-header">Event</div>
+                <div className="popup-header">Car units</div>
+                <div className="popup-header">Percentage</div>
+                {allocations.map((allocation, index) => (
+                  <React.Fragment key={index}>
+                    <div className="details-link_container">
+                      <a href={`/events/event/${allocation.event_id}`}>
+                        <LinkRoundedIcon />
+                        {allocation.event_name}
+                      </a>
+                    </div>
+                    <div>{allocation.allocated_capacity}</div>
+                    <div>
+                      {(
+                        (allocation.allocated_capacity / parkingLotCapacity) *
+                        100
+                      ).toFixed(2)}
+                      %
+                    </div>
+                  </React.Fragment>
+                ))}
+                {freeCapacityPercentage > 0 && (
+                  <React.Fragment>
+                    <div>Free Capacity</div>
+                    <div>
+                      {Math.round(freeCapacityPercentage * parkingLotCapacity)}
+                    </div>
+                    <div>{(freeCapacityPercentage * 100).toFixed(2)}%</div>
+                  </React.Fragment>
+                )}
+              </div>
+            </div>
+          </Popup>
+        </Polygon>
+      </React.Fragment>
     );
   };
 
