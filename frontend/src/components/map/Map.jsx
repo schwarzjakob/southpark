@@ -25,7 +25,7 @@ const MapView = () => {
   const [isPercentage, setIsPercentage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedEventId] = useState(null);
-  const [showHeatmap, setShowHeatmap] = useState(false); 
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,21 +78,6 @@ const MapView = () => {
           <Box>
             <Button
               variant="contained"
-              onClick={toggleMap}
-              startIcon={
-                showHeatmap ? (
-                  <HorizontalSplitRoundedIcon />
-                ) : (
-                  <LocalFireDepartmentRoundedIcon />
-                )
-              }
-            >
-              {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
-            </Button>
-          </Box>
-          <Box>
-            <Button
-              variant="contained"
               color="secondary"
               onClick={() => navigate(`/event/add`)}
             >
@@ -103,7 +88,6 @@ const MapView = () => {
             </Button>
           </Box>
         </Box>
-
 
         <Box
           className="map__timeline-slider"
@@ -146,9 +130,25 @@ const MapView = () => {
               <EventsMap
                 selectedDate={selectedDate}
                 zoom={15.5}
-                selectedEventId={selectedEventId} 
+                selectedEventId={selectedEventId}
               />
             )}
+            <Box className="map-switch-container">
+              <Button
+                className="map-switch-btn"
+                variant="contained"
+                onClick={toggleMap}
+                startIcon={
+                  showHeatmap ? (
+                    <HorizontalSplitRoundedIcon />
+                  ) : (
+                    <LocalFireDepartmentRoundedIcon />
+                  )
+                }
+              >
+                {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
+              </Button>
+            </Box>
           </Box>
           <Box
             className="map__bar-chart-component"
