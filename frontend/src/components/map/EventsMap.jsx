@@ -72,6 +72,10 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
   }, []);
 
   useEffect(() => {
+    setEvents([]);
+    setParkingAllocations([]);
+    setParkingCapacities([]);
+
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(

@@ -28,7 +28,7 @@ import {
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
-import LeafletMap from "../../map/LeafletMap.jsx";
+import EventsMap from "../../map/EventsMap.jsx";
 import TimelineSlider from "../../map/TimelineSlider.jsx";
 import EventDemandTable from "./EventDemandTable.jsx";
 
@@ -357,7 +357,7 @@ const Event = () => {
               width="100%"
               height="100%"
             >
-              <LeafletMap
+              <EventsMap
                 selectedDate={selectedDate}
                 events={events}
                 zoom={15.5}

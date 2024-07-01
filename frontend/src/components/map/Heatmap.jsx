@@ -51,6 +51,8 @@ const Heatmap = ({ selectedDate, zoom }) => {
   const [occupancy, setOccupancy] = useState([]);
 
   useEffect(() => {
+    setEvents([]);
+    setOccupancy([]);
     const fetchCoordinates = async () => {
       try {
         const { data } = await axios.get("/api/map/coordinates");
