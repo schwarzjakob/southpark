@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import "./styles/mapView.css";
 import TimelineSlider from "./TimelineSlider.jsx";
 import EventsMap from "./EventsMap.jsx";
-import Heatmap from "./Heatmap.jsx";
+import Heatmap from "./HeatMap.jsx";
 import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";

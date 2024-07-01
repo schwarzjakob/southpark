@@ -8,13 +8,15 @@ import {
   useMap,
 } from "react-leaflet";
 import PropTypes from "prop-types";
+import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import axios from "axios";
 import MapLegendComponent from "./MapLegend.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
+import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 
-const downwardsOverlays = [
+const DOWNWARD_OVERLAYS = [
   "C1",
   "C2",
   "C3",
@@ -43,6 +45,7 @@ const downwardsOverlays = [
 const RUNTIME = 0.9;
 const NOT_RUNTIME = 0.5;
 const GREYED_OUT = 0.25;
+const MAP_CENTER_POS = [48.1375, 11.702];
 
 const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
   const [halls, setHalls] = useState([]);
@@ -410,13 +413,33 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
     );
   };
 
+  const RecenterButton = () => {
+    const map = useMap();
+
+    const handleRecenter = () => {
+      map.setView(MAP_CENTER_POS, zoom);
+    };
+
+    return (
+      <Box className="recenter-container" zIndex={1000}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleRecenter}
+          className="recenter-button"
+          startIcon={<CenterFocusStrongRoundedIcon />}
+        ></Button>
+      </Box>
+    );
+  };
+
   return (
     <MapContainer
-      center={[48.1375, 11.702]}
+      center={MAP_CENTER_POS}
       zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={true}
-      dragging={false}
+      dragging={true}
       touchZoom={true}
       doubleClickZoom={true}
       keyboard={false}
@@ -428,6 +451,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
+      <RecenterButton />
       <MapLegendComponent
         events={uniqueFilteredEvents}
         selectedDate={selectedDate}
@@ -511,7 +535,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
           : event && getEventStatus(event, selectedDate) === "runtime"
           ? RUNTIME
           : NOT_RUNTIME;
-        const popupOffset = downwardsOverlays.includes(entrance.name)
+        const popupOffset = DOWNWARD_OVERLAYS.includes(entrance.name)
           ? [0, 50]
           : [0, 0];
 

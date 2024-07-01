@@ -11,10 +11,12 @@ import PropTypes from "prop-types";
 import dayjs from "dayjs";
 import axios from "axios";
 import MapLegendComponent from "./MapLegend.jsx";
+import { Box, Button } from "@mui/material";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
+import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 
-const downwardsOverlays = [
+const DOWNWARD_OVERLAYS = [
   "C1",
   "C2",
   "C3",
@@ -42,6 +44,7 @@ const downwardsOverlays = [
 
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
+const MAP_CENTER_POS = [48.1375, 11.702];
 
 const Heatmap = ({ selectedDate, zoom }) => {
   const [halls, setHalls] = useState([]);
@@ -277,13 +280,33 @@ const Heatmap = ({ selectedDate, zoom }) => {
     return null;
   };
 
+  const RecenterButton = () => {
+    const map = useMap();
+
+    const handleRecenter = () => {
+      map.setView(MAP_CENTER_POS, zoom);
+    };
+
+    return (
+      <Box className="recenter-container" zIndex={1000}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleRecenter}
+          className="recenter-button"
+          startIcon={<CenterFocusStrongRoundedIcon />}
+        ></Button>
+      </Box>
+    );
+  };
+
   return (
     <MapContainer
-      center={[48.1375, 11.702]}
+      center={MAP_CENTER_POS}
       zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={true}
-      dragging={false}
+      dragging={true}
       touchZoom={true}
       doubleClickZoom={true}
       keyboard={false}
@@ -295,6 +318,7 @@ const Heatmap = ({ selectedDate, zoom }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SetZoomLevel zoom={15.5} />
+      <RecenterButton />
       <MapLegendComponent
         events={uniqueFilteredEvents}
         selectedDate={selectedDate}
@@ -348,7 +372,7 @@ const Heatmap = ({ selectedDate, zoom }) => {
         );
         const fillColor = event ? `${event.event_color}` : "gray";
         const borderColor = event ? `${event.event_color}` : "transparent";
-        const popupOffset = downwardsOverlays.includes(entrance.name)
+        const popupOffset = DOWNWARD_OVERLAYS.includes(entrance.name)
           ? [0, 50]
           : [0, 0];
 
@@ -396,7 +420,7 @@ const Heatmap = ({ selectedDate, zoom }) => {
 
         const fillColor = calculateColor(occupancyRate);
         const borderColor = fillColor;
-        const popupOffset = downwardsOverlays.includes(parkingLot.name)
+        const popupOffset = DOWNWARD_OVERLAYS.includes(parkingLot.name)
           ? [0, 80]
           : [0, 0];
 
