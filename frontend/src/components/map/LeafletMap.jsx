@@ -69,7 +69,10 @@ const LeafletMap = ({ selectedDate, zoom }) => {
         );
       }
     };
+    fetchCoordinates();
+  }, []);
 
+  useEffect(() => {
     const fetchEvents = async () => {
       try {
         const { data } = await axios.get(
@@ -119,7 +122,6 @@ const LeafletMap = ({ selectedDate, zoom }) => {
       }
     };
 
-    fetchCoordinates();
     fetchEvents();
     fetchOccupancyAndCapacity();
   }, [selectedDate]);
