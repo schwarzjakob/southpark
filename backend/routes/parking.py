@@ -312,7 +312,7 @@ def get_parking_space_occupations(parking_lot_id):
         SELECT a.id, a.date, a.allocated_cars, a.allocated_trucks, a.allocated_buses,
                c.capacity AS total_capacity,
                (a.allocated_cars + 4 * a.allocated_trucks + 3 * a.allocated_buses) AS allocated_capacity,
-               e.name AS event_name, e.color AS event_color
+               e.id AS event_id, e.name AS event_name, e.color AS event_color
         FROM public.parking_lot_allocation a
         JOIN public.parking_lot_capacity c ON a.parking_lot_id = c.parking_lot_id
         JOIN public.event e ON a.event_id = e.id

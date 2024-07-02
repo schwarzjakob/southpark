@@ -19,9 +19,12 @@ import {
   AirportShuttleRounded as AirportShuttleRoundedIcon,
   LocalShippingRounded as LocalShippingRoundedIcon,
   LocalParkingRounded as LocalParkingRoundedIcon,
+  Circle as CircleIcon,
 } from "@mui/icons-material";
+import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
 import CommuteRoundedIcon from "@mui/icons-material/CommuteRounded";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./styles/parkingSpaces.css";
 
@@ -36,6 +39,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("date");
   const [notification, setNotification] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAllocations = async () => {
@@ -90,12 +94,31 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
     return luminance > 0.5 ? "black" : "white";
   };
 
-  const getStatusColor = (allocated, total) => {
-    const percentage = (allocated / total) * 100;
-    if (allocated === total) return "red";
-    if (percentage >= 80) return "orange";
-    if (percentage < 80) return "blue";
-    if (total - allocated === 1) return "green";
+  const getStatusColor = (percentage) => {
+    let red, green, blue;
+
+    if (percentage <= 50) {
+      // Dark green to Orange-like yellow
+      red = Math.min(255, Math.round((percentage / 50) * 255));
+      green = Math.min(128, Math.round(128 - (percentage / 50) * 128 + 128));
+      blue = 0;
+    } else {
+      // Orange-like yellow to Red
+      red = 255;
+      green = Math.min(128, Math.round((1 - (percentage - 50) / 50) * 128));
+      blue = 0;
+    }
+
+    return `rgb(${red}, ${green}, ${blue})`;
+  };
+
+  const getStatusCircle = (percentage) => {
+    const color = getStatusColor(percentage);
+    return <CircleIcon style={{ color }} />;
+  };
+
+  const getStatusText = (percentage) => {
+    return `${percentage}% Occupied`;
   };
 
   // Group allocations by date
@@ -145,7 +168,20 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Allocated Cars
+                    <TableSortLabel
+                      active={orderBy === "car_demand"}
+                      direction={orderBy === "car_demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("car_demand")}
+                    >
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Car Demand
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (Car Units)
+                        </Box>
+                      </Box>
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -154,7 +190,20 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Allocated Buses
+                    <TableSortLabel
+                      active={orderBy === "bus_demand"}
+                      direction={orderBy === "bus_demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("bus_demand")}
+                    >
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Bus Demand
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (= 3x Car Units)
+                        </Box>
+                      </Box>{" "}
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -163,16 +212,42 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    Allocated Trucks
+                    <TableSortLabel
+                      active={orderBy === "truck_demand"}
+                      direction={orderBy === "truck_demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("truck_demand")}
+                    >
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Truck Demand
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (= 4x Car Units)
+                        </Box>
+                      </Box>
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
                   <Box className="header-icon-container">
-                    <LocalParkingRoundedIcon
+                    <FunctionsRoundedIcon
                       fontSize="small"
                       className="header-icon"
                     />
-                    Allocated/Total Capacity
+                    <TableSortLabel
+                      active={orderBy === "demand"}
+                      direction={orderBy === "demand" ? order : "asc"}
+                      onClick={() => handleRequestSort("demand")}
+                    >
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Allocated / Total
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (Total Car Units)
+                        </Box>
+                      </Box>{" "}
+                    </TableSortLabel>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -185,7 +260,13 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Box className="header-icon-container">Status</Box>
+                  <Box className="header-icon-container">
+                    <LocalParkingRoundedIcon
+                      fontSize="small"
+                      className="header-icon"
+                    />
+                    Status
+                  </Box>
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -213,10 +294,21 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                   0
                 );
 
+                const occupancyPercentage = Math.round(
+                  (totalAllocatedCapacity / totalCapacity) * 100
+                );
+
                 return (
                   <React.Fragment key={dateIndex}>
                     {dateAllocations.map((allocation) => (
-                      <TableRow key={allocation.id} hover>
+                      <TableRow
+                        key={allocation.id}
+                        hover
+                        onClick={() =>
+                          navigate(`/events/event/${allocation.event_id}`)
+                        }
+                        style={{ cursor: "pointer" }}
+                      >
                         <TableCell>{formatDate(allocation.date)}</TableCell>
                         <TableCell>{allocation.allocated_cars}</TableCell>
                         <TableCell>{allocation.allocated_buses}</TableCell>
@@ -237,22 +329,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                             {allocation.event_name}
                           </Box>
                         </TableCell>
-                        <TableCell>
-                          <Box
-                            className="status-indicator"
-                            style={{
-                              backgroundColor: getStatusColor(
-                                allocation.allocated_capacity,
-                                allocation.total_capacity
-                              ),
-                            }}
-                          />
-                        </TableCell>
+                        <TableCell></TableCell>
                       </TableRow>
                     ))}
                     <TableRow
                       key={`${date}-total`}
-                      style={{ borderBottom: "2px solid #6a91ce" }}
+                      style={{
+                        borderBottom: "2px solid #6a91ce",
+                      }}
                     >
                       <TableCell>{formatDate(date)}</TableCell>
                       <TableCell>{totalAllocatedCars}</TableCell>
@@ -269,6 +353,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                             ),
                             wordWrap: "break-word",
                             maxWidth: "200px",
+                            cursor: "default",
                           }}
                         >
                           All Events
@@ -276,14 +361,18 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       </TableCell>
                       <TableCell>
                         <Box
-                          className="status-indicator"
-                          style={{
-                            backgroundColor: getStatusColor(
-                              totalAllocatedCapacity,
-                              totalCapacity
-                            ),
-                          }}
-                        />
+                          className="status-box"
+                          display="flex"
+                          alignItems="center"
+                        >
+                          {getStatusCircle(occupancyPercentage)}
+                          <Typography
+                            variant="body2"
+                            style={{ marginLeft: "8px" }}
+                          >
+                            {getStatusText(occupancyPercentage)}
+                          </Typography>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   </React.Fragment>
