@@ -11,54 +11,49 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
-  Button,
-  IconButton,
   Alert,
 } from "@mui/material";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
-  LocalParkingRounded as LocalParkingRoundedIcon,
   DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
   AirportShuttleRounded as AirportShuttleRoundedIcon,
   LocalShippingRounded as LocalShippingRoundedIcon,
-  NumbersRounded as NumbersRoundedIcon,
-  Add as AddIcon,
+  LocalParkingRounded as LocalParkingRoundedIcon,
 } from "@mui/icons-material";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import { Link, useNavigate } from "react-router-dom";
+import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
+import CommuteRoundedIcon from "@mui/icons-material/CommuteRounded";
 import PropTypes from "prop-types";
 import "./styles/parkingSpaces.css";
 
-const TITLE = "Parking Space Capacities";
+const TITLE = "Parking Space Occupation";
 
-const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
-  ParkingSpaceCapacitiesTable.propTypes = {
+const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
+  ParkingSpaceOccupationTable.propTypes = {
     parkingLotId: PropTypes.string.isRequired,
   };
 
-  const [capacities, setCapacities] = useState([]);
+  const [allocations, setAllocations] = useState([]);
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("valid_from");
+  const [orderBy, setOrderBy] = useState("date");
   const [notification, setNotification] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCapacities = async () => {
+    const fetchAllocations = async () => {
       try {
         const response = await axios.get(
-          `/api/parking/capacities/${parkingLotId}`
+          `/api/parking/occupations/${parkingLotId}`
         );
         if (response.status === 204) {
-          setNotification("No capacities found for this parking lot.");
+          setNotification("No allocations found for this parking lot.");
         } else {
-          setCapacities(response.data);
+          setAllocations(response.data);
         }
       } catch (error) {
-        console.error("Error fetching capacities data:", error);
+        console.error("Error fetching allocations data:", error);
       }
     };
 
-    fetchCapacities();
+    fetchAllocations();
   }, [parkingLotId]);
 
   const handleRequestSort = (property) => {
@@ -67,12 +62,12 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     setOrderBy(property);
   };
 
-  const sortedCapacities = capacities.sort((a, b) => {
+  const sortedAllocations = allocations.sort((a, b) => {
     const isAsc = order === "asc";
-    if (orderBy === "valid_from") {
+    if (orderBy === "date") {
       return isAsc
-        ? new Date(a.valid_from) - new Date(b.valid_from)
-        : new Date(b.valid_from) - new Date(a.valid_from);
+        ? new Date(a.date) - new Date(b.date)
+        : new Date(b.date) - new Date(a.date);
     }
     return 0;
   });
@@ -85,92 +80,52 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
     return `${day}.${month}.${year}`;
   };
 
+  const getContrastingTextColor = (backgroundColor) => {
+    const hex = backgroundColor.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    return luminance > 0.5 ? "black" : "white";
+  };
+
+  const getStatusColor = (allocated, total) => {
+    const percentage = (allocated / total) * 100;
+    if (allocated === total) return "red";
+    if (percentage >= 80) return "orange";
+    if (percentage < 80) return "blue";
+    if (total - allocated === 1) return "green";
+  };
+
   return (
-    <Box className="capacitiesTable-container" style={{ marginBottom: "2rem" }}>
+    <Box className="occupationTable-container">
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
-          <NumbersRoundedIcon />
+          <CommuteRoundedIcon />
           <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
         </Box>
-        <Link
-          to={`/parking_space/capacity/add?parkinglotId=${parkingLotId}`}
-          style={{ textDecoration: "none" }}
-        >
-          <Button
-            variant="contained"
-            color="secondary"
-            style={{ marginBottom: "1rem", float: "right" }}
-          >
-            <AddIcon className="addIcon" />
-            Add Capacity
-          </Button>
-        </Link>
       </Box>
       {notification && <Alert severity="info">{notification}</Alert>}
-      {capacities.length > 0 && (
+      {allocations.length > 0 && (
         <TableContainer className="parkingSpaces-container" component={Paper}>
           <Table className="parkingSpaces-table">
             <TableHead className="parkingSpaces-table__header">
               <TableRow>
                 <TableCell>
                   <Box className="header-icon-container">
-                    <NumbersRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "id"}
-                      direction={orderBy === "id" ? order : "asc"}
-                      onClick={() => handleRequestSort("id")}
-                    >
-                      ID
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
                     <DateRangeRoundedIcon
                       fontSize="small"
                       className="header-icon"
                     />
                     <TableSortLabel
-                      active={orderBy === "valid_from"}
-                      direction={orderBy === "valid_from" ? order : "asc"}
-                      onClick={() => handleRequestSort("valid_from")}
+                      active={orderBy === "date"}
+                      direction={orderBy === "date" ? order : "asc"}
+                      onClick={() => handleRequestSort("date")}
                     >
-                      Valid from
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <DateRangeRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "valid_to"}
-                      direction={orderBy === "valid_to" ? order : "asc"}
-                      onClick={() => handleRequestSort("valid_to")}
-                    >
-                      Valid to
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <LocalParkingRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "utilization_type"}
-                      direction={orderBy === "utilization_type" ? order : "asc"}
-                      onClick={() => handleRequestSort("utilization_type")}
-                    >
-                      Utilization Type
+                      Date
                     </TableSortLabel>
                   </Box>
                 </TableCell>
@@ -187,7 +142,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                     >
                       <Box className="header-icon-container__label">
                         <Box className="header-icon-container__label-title">
-                          Total Capacity
+                          Allocated Cars
                         </Box>
                         <Box className="header-icon-container__label-unit">
                           (Car Units)
@@ -209,7 +164,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                     >
                       <Box className="header-icon-container__label">
                         <Box className="header-icon-container__label-title">
-                          Bus limit
+                          Allocated Buses
                         </Box>
                         <Box className="header-icon-container__label-unit">
                           (= 3x Car Units)
@@ -231,7 +186,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                     >
                       <Box className="header-icon-container__label">
                         <Box className="header-icon-container__label-title">
-                          Truck limit
+                          Allocated Trucks
                         </Box>
                         <Box className="header-icon-container__label-unit">
                           (= 4x Car Units)
@@ -241,45 +196,90 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <p></p>
+                  <Box className="header-icon-container">
+                    <LocalShippingRoundedIcon
+                      fontSize="small"
+                      className="header-icon"
+                    />
+                    <TableSortLabel
+                      active={orderBy === "allocated_total"}
+                      direction={orderBy === "allocated_total" ? order : "asc"}
+                      onClick={() => handleRequestSort("allocated_total")}
+                    >
+                      <Box className="header-icon-container__label">
+                        <Box className="header-icon-container__label-title">
+                          Allocated / Total
+                        </Box>
+                        <Box className="header-icon-container__label-unit">
+                          (Total Car Units)
+                        </Box>
+                      </Box>{" "}
+                    </TableSortLabel>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box className="header-icon-container">
+                    <InsertInvitationRoundedIcon
+                      fontSize="small"
+                      className="header-icon"
+                    />
+                    <TableSortLabel
+                      active={orderBy === "name"}
+                      direction={orderBy === "name" ? order : "asc"}
+                      onClick={() => handleRequestSort("name")}
+                    >
+                      Event
+                    </TableSortLabel>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box className="header-icon-container">
+                    <LocalParkingRoundedIcon
+                      fontSize="small"
+                      className="header-icon"
+                    />
+                    <TableSortLabel
+                      active={orderBy === "status"}
+                      direction={orderBy === "status" ? order : "asc"}
+                      onClick={() => handleRequestSort("status")}
+                    >
+                      Status
+                    </TableSortLabel>
+                  </Box>
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedCapacities.map((capacity) => (
-                <TableRow
-                  key={capacity.id}
-                  hover
-                  onClick={() =>
-                    navigate(
-                      `/parking_space/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
-                    )
-                  }
-                  style={{ cursor: "pointer" }}
-                >
-                  <TableCell>{capacity.id}</TableCell>
-                  <TableCell>{formatDate(capacity.valid_from)}</TableCell>
-                  <TableCell>{formatDate(capacity.valid_to)}</TableCell>
+              {sortedAllocations.map((allocation) => (
+                <TableRow key={allocation.id} hover>
+                  <TableCell>{formatDate(allocation.date)}</TableCell>
+                  <TableCell>{allocation.allocated_cars}</TableCell>
+                  <TableCell>{allocation.allocated_buses}</TableCell>
+                  <TableCell>{allocation.allocated_trucks}</TableCell>
+                  <TableCell>{`${allocation.allocated_capacity}/${allocation.total_capacity}`}</TableCell>
                   <TableCell>
-                    {capacity.utilization_type.charAt(0).toUpperCase() +
-                      capacity.utilization_type.slice(1)}
-                  </TableCell>
-                  <TableCell>{capacity.capacity}</TableCell>
-                  <TableCell>{capacity.bus_limit}</TableCell>
-                  <TableCell>{capacity.truck_limit}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(
-                          `/parking_space/capacity/edit/?capacityId=${capacity.id}&parkinglotId=${parkingLotId}`
-                        );
+                    <Box
+                      className="event-box"
+                      style={{
+                        backgroundColor: allocation.event_color,
+                        color: getContrastingTextColor(allocation.event_color),
+                        wordWrap: "break-word",
+                        maxWidth: "200px",
                       }}
-                      edge="start"
-                      size="small"
                     >
-                      <EditRoundedIcon fontSize="small" />
-                    </IconButton>
+                      {allocation.event_name}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box
+                      className="status-indicator"
+                      style={{
+                        backgroundColor: getStatusColor(
+                          allocation.allocated_capacity,
+                          allocation.total_capacity
+                        ),
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -291,4 +291,4 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
   );
 };
 
-export default ParkingSpaceCapacitiesTable;
+export default ParkingSpaceOccupationTable;
