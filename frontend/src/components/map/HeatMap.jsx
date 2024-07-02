@@ -57,19 +57,22 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
   const [entrances, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
   const [occupancy, setOccupancy] = useState([]);
+  const [capacity, setCapacity] = useState([]);
 
   useEffect(() => {
     setHalls(coordinates.halls);
     setParkingLots(coordinates.parking_lots);
     setEntrances(coordinates.entrances);
     setEvents(events_timeline);
+    setCapacity(parking_lots_capacity); // Set the capacity here
+
     const combinedData = parking_lots_occupancy.map((occ) => {
-      const capacity = parking_lots_capacity.find(
+      const capacityData = parking_lots_capacity.find(
         (cap) => cap.name === occ.parking_lot_name
       );
       return {
         ...occ,
-        total_capacity: capacity ? capacity.capacity : 0,
+        total_capacity: capacityData ? capacityData.capacity : 0,
       };
     });
     setOccupancy(combinedData);
@@ -366,7 +369,10 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         const occupancyData = occupancy.find(
           (data) => data.parking_lot_name === parkingLot.name
         );
-        const totalCapacity = occupancyData ? occupancyData.total_capacity : 0;
+        const capacityData = capacity.find(
+          (cap) => cap.name === parkingLot.name
+        );
+        const totalCapacity = capacityData ? capacityData.capacity : 0;
         const occupancyRate =
           occupancyData && totalCapacity
             ? occupancyData.occupancy / totalCapacity
