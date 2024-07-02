@@ -61,6 +61,7 @@
   margin: 0.7rem !important;
   max-width: 400px;
   line-height: 1;
+  min-width: 7rem;
 }
 
 .popup-title {
@@ -527,7 +528,6 @@
   flex-direction: row;
   align-items: center;
   word-break: break-all;
-  padding: 0.2rem 0.5rem;
 }
 
 .popup-table-cell-footer {
@@ -545,6 +545,10 @@
 
 .popup-header.car-units {
   min-width: 5rem;
+}
+
+.details-link_container.event a {
+  padding: 0.2rem 0.5rem;
 }
 
 .details-link_container svg {
@@ -576,4 +580,12 @@
 .tags-parking-lots {
   background-color: var(--color-primary) !important;
   color: var(--color-pure-white) !important;
+}
+
+h4 {
+  padding-right: 1rem !important;
+}
+.popup-title-container {
+  display: flex;
+  gap: 0.5rem;
 }
