@@ -35,11 +35,17 @@ const FONT_SIZE = 10;
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 
-const ParkingLotBarChart = ({ selectedDate, mapData, isPercentage }) => {
+const ParkingLotBarChart = ({
+  selectedDate,
+  mapData,
+  isPercentage,
+  reloading,
+}) => {
   ParkingLotBarChart.propTypes = {
     selectedDate: PropTypes.string.isRequired,
     mapData: PropTypes.object.isRequired,
     isPercentage: PropTypes.bool.isRequired,
+    reloading: PropTypes.bool,
   };
 
   const [chartData, setChartData] = useState(null);
@@ -298,7 +304,7 @@ const ParkingLotBarChart = ({ selectedDate, mapData, isPercentage }) => {
     maintainAspectRatio: false,
   };
 
-  if (loading) {
+  if (loading || reloading) {
     return (
       <Box
         className="circular-loading_container"
