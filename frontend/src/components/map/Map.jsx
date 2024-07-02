@@ -45,6 +45,45 @@ const MapView = () => {
     fetchMapData(selectedDate);
   }, [selectedDate]);
 
+  const filterDataForSelectedDay = (data, date) => {
+    const selectedDay = dayjs(date);
+    console.log("data", data);
+    console.log("selectedDay", selectedDay, date);
+
+    // Filter parking_lots_allocations
+    const filteredParkingLotsAllocations = data.parking_lots_allocations.filter(
+      (allocation) => {
+        return dayjs(allocation.date).isSame(selectedDay, "day");
+      }
+    );
+
+    // Filter parking_lots_capacity
+    const filteredParkingLotsCapacity = data.parking_lots_capacity.filter(
+      (capacity) => {
+        return dayjs(capacity.date).isSame(selectedDay, "day");
+      }
+    );
+
+    // Filter parking_lots_occupancy
+    const filteredParkingLotsOccupancy = data.parking_lots_occupancy.filter(
+      (occupancy) => {
+        return dayjs(occupancy.date).isSame(selectedDay, "day");
+      }
+    );
+
+    console.log(
+      "filteredParkingLotsAllocations",
+      filteredParkingLotsAllocations
+    );
+
+    return {
+      ...data,
+      parking_lots_allocations: filteredParkingLotsAllocations,
+      parking_lots_capacity: filteredParkingLotsCapacity,
+      parking_lots_occupancy: filteredParkingLotsOccupancy,
+    };
+  };
+
   const handleToggle = () => {
     setIsPercentage(!isPercentage);
   };
@@ -71,6 +110,8 @@ const MapView = () => {
       </Box>
     );
   }
+
+  const mapDataForSelectedDay = filterDataForSelectedDay(mapData, selectedDate);
 
   return (
     <Box>
@@ -136,13 +177,13 @@ const MapView = () => {
               <Heatmap
                 selectedDate={selectedDate}
                 zoom={15.5}
-                mapData={mapData}
+                mapData={mapDataForSelectedDay}
               />
             ) : (
               <EventsMap
                 selectedDate={selectedDate}
                 zoom={15.5}
-                mapData={mapData}
+                mapData={mapDataForSelectedDay}
                 selectedEventId={selectedEventId}
               />
             )}
@@ -216,7 +257,7 @@ const MapView = () => {
             <OccupanciesBarChart
               className="bar-chart"
               selectedDate={selectedDate}
-              mapData={mapData}
+              mapData={mapDataForSelectedDay}
               isPercentage={isPercentage}
               handleToggle={handleToggle}
             />
