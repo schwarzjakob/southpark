@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -16,10 +16,8 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
-import EventsMap from "../../map/EventsMap.jsx";
-import Heatmap from "../../map/HeatMap.jsx";
-import TimelineSlider from "../../map/TimelineSlider.jsx";
 import EventDemandTable from "./EventDemandTable.jsx";
+import EventMapSection from "./EventMapSection.jsx";
 import "../../map/styles/mapView.css";
 import "../styles/events.css";
 import {
@@ -31,59 +29,22 @@ import {
   ArrowBack as ArrowBackIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
 } from "@mui/icons-material";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
-import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 import dayjs from "dayjs";
 
 const TITLE = "Event Details";
-const INITIAL_DATE = "2023-01-02";
-
-const filterDataForSelectedDay = (data, date) => {
-  if (!data) return {}; // Ensure data is not null
-
-  const selectedDay = dayjs(date);
-
-  // Filter parking_lots_allocations
-  const filteredParkingLotsAllocations = (
-    data.parking_lots_allocations || []
-  ).filter((allocation) => dayjs(allocation.date).isSame(selectedDay, "day"));
-
-  // Filter parking_lots_capacity
-  const filteredParkingLotsCapacity = (data.parking_lots_capacity || []).filter(
-    (capacity) => dayjs(capacity.date).isSame(selectedDay, "day")
-  );
-
-  // Filter parking_lots_occupancy
-  const filteredParkingLotsOccupancy = (
-    data.parking_lots_occupancy || []
-  ).filter((occupancy) => dayjs(occupancy.date).isSame(selectedDay, "day"));
-
-  return {
-    ...data,
-    parking_lots_allocations: filteredParkingLotsAllocations,
-    parking_lots_capacity: filteredParkingLotsCapacity,
-    parking_lots_occupancy: filteredParkingLotsOccupancy,
-  };
-};
+const INITIAL_DATE = "2000-01-01";
 
 const Event = () => {
   const [event, setEvent] = useState(null);
-  const [mapData, setMapData] = useState(null);
   const [error, setError] = useState("");
   const [eventLoading, setEventLoading] = useState(true);
-  const [mapLoading, setMapLoading] = useState(true);
   const [originalEvent, setOriginalEvent] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const [events] = useState([]);
-  const [showHeatmap, setShowHeatmap] = useState(false);
   const [selectedDate, setSelectedDate] = useState(INITIAL_DATE);
   const [isEditingDemands, setIsEditingDemands] = useState(false);
-
-  const toggleMap = () => {
-    setShowHeatmap(!showHeatmap);
-  };
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -110,42 +71,36 @@ const Event = () => {
           eventData.disassembly_end_date
         );
 
+        const calculateMiddleDate = (start, end) => {
+          const startDate = dayjs(start);
+          const endDate = dayjs(end);
+          const middleDate = startDate.add(
+            endDate.diff(startDate, "days") / 2,
+            "days"
+          );
+          return middleDate.format("YYYY-MM-DD");
+        };
+
         setEvent(eventData);
         setOriginalEvent(eventData);
         if (eventData && eventData.runtime_start_date) {
-          setSelectedDate(eventData.runtime_start_date);
-          fetchMapData(eventData.runtime_start_date); // Fetch map data for the correct date after setting it
+          setSelectedDate(
+            calculateMiddleDate(
+              eventData.runtime_start_date,
+              eventData.runtime_end_date
+            )
+          );
         }
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
       } finally {
-        setEventLoading(false); // Ensure loading is set to false on error
+        setEventLoading(false);
       }
     };
 
     fetchEvent();
   }, [id]);
-
-  const fetchMapData = async (date) => {
-    try {
-      setMapLoading(true);
-      const { data } = await axios.get(`/api/map/map_data/${date}`);
-      setMapData(data);
-    } catch (error) {
-      console.error("Error fetching map data:", error);
-    } finally {
-      setMapLoading(false);
-    }
-  };
-
-  // Fetch map data whenever selectedDate changes
-  useEffect(() => {
-    if (selectedDate !== INITIAL_DATE) {
-      // Avoid fetching for the initial incorrect date
-      fetchMapData(selectedDate);
-    }
-  }, [selectedDate]);
 
   const hasUnsavedChanges = useCallback(() => {
     return JSON.stringify(event) !== JSON.stringify(originalEvent);
@@ -230,8 +185,6 @@ const Event = () => {
       </Box>
     );
   }
-
-  const mapDataForSelectedDay = filterDataForSelectedDay(mapData, selectedDate);
 
   return (
     <Box className="form-width">
@@ -377,80 +330,13 @@ const Event = () => {
             </Table>
           </TableContainer>
         </Box>
-        <Box display="flex" flexDirection="column" gap="1rem">
-          <Box
-            className="map__timeline-slider"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            border="1px solid"
-            borderColor="grey.300"
-            p={2}
-          >
-            <TimelineSlider
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              events={events}
-              selectedEventId={parseInt(id)}
-              mapData={mapData}
-            />
-          </Box>
 
-          <Box
-            className="map__main-content"
-            display="flex"
-            alignItems="stretch"
-            justifyContent="center"
-            width="100%"
-            height="50vh"
-            gap="1rem"
-          >
-            <Box
-              className="map__map-component"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              border="1px solid"
-              borderColor="grey.300"
-              p={2}
-              width="100%"
-              height="100%"
-            >
-              {mapLoading ? (
-                <CircularProgress />
-              ) : showHeatmap ? (
-                <Heatmap
-                  selectedDate={selectedDate}
-                  zoom={15.5}
-                  mapData={mapDataForSelectedDay}
-                />
-              ) : (
-                <EventsMap
-                  selectedDate={selectedDate}
-                  zoom={15.5}
-                  mapData={mapDataForSelectedDay}
-                  selectedEventId={parseInt(id)}
-                />
-              )}
-              <Box className="map-switch-container">
-                <Button
-                  className="map-switch-btn"
-                  variant="contained"
-                  onClick={toggleMap}
-                  startIcon={
-                    showHeatmap ? (
-                      <HorizontalSplitRoundedIcon />
-                    ) : (
-                      <LocalFireDepartmentRoundedIcon />
-                    )
-                  }
-                >
-                  {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+        <EventMapSection
+          event={event}
+          events={events}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
       </Paper>
 
       <EventDemandTable
