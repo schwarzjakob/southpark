@@ -342,6 +342,9 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                 occupancyPercentage = Math.round(occupancyPercentage);
               }
 
+              const isLastRow =
+                dateIndex === Object.keys(groupedAllocations).length - 1;
+
               return (
                 <React.Fragment key={dateIndex}>
                   {dateAllocations.map((allocation) => (
@@ -379,7 +382,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                   <TableRow
                     key={`${date}-total`}
                     style={{
-                      borderBottom: "2px solid #6a91ce",
+                      borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
                     }}
                   >
                     <TableCell>{formatDate(date)}</TableCell>
