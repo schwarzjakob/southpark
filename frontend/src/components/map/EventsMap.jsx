@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -10,7 +10,6 @@ import {
 import PropTypes from "prop-types";
 import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
-import axios from "axios";
 import MapLegendComponent from "./MapLegend.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
@@ -47,85 +46,13 @@ const NOT_RUNTIME = 0.5;
 const GREYED_OUT = 0.25;
 const MAP_CENTER_POS = [48.1375, 11.702];
 
-const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
-  const [halls, setHalls] = useState([]);
-  const [parkingLots, setParkingLots] = useState([]);
-  const [entrances, setEntrances] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [parkingAllocations, setParkingAllocations] = useState([]);
-  const [parkingCapacities, setParkingCapacities] = useState([]);
-
-  useEffect(() => {
-    const fetchCoordinates = async () => {
-      try {
-        const { data } = await axios.get("/api/map/coordinates");
-        if (data) {
-          setEntrances(data.entrances);
-          setHalls(data.halls);
-          setParkingLots(data.parking_lots);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the coordinates data!",
-          error
-        );
-      }
-    };
-    fetchCoordinates();
-  }, []);
-
-  useEffect(() => {
-    setEvents([]);
-    setParkingAllocations([]);
-    setParkingCapacities([]);
-
-    const fetchEvents = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
-        );
-        if (data) {
-          setEvents(data);
-        }
-      } catch (error) {
-        console.error("There was an error fetching the events data!", error);
-      }
-    };
-    const fetchParkingAllocations = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/parking_lots_allocations/${selectedDate}`
-        );
-        if (data) {
-          setParkingAllocations(data);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the parking allocations data!",
-          error
-        );
-      }
-    };
-    const fetchParkingCapacities = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/parking_lots_capacity/${selectedDate}`
-        );
-        if (data) {
-          setParkingCapacities(data);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the parking capacities data!",
-          error
-        );
-      }
-    };
-
-    fetchEvents();
-    fetchParkingAllocations();
-    fetchParkingCapacities();
-  }, [selectedDate]);
+const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
+  const {
+    coordinates,
+    events_timeline,
+    parking_lots_allocations,
+    parking_lots_capacity,
+  } = mapData;
 
   const transformCoordinates = (originalCoords) => {
     const transformedCoords = [];
@@ -236,7 +163,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
   };
 
   const uniqueFilteredEvents = removeDuplicateEvents(
-    events.filter(
+    events_timeline.filter(
       (event) =>
         dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
         dayjs(selectedDate).isBetween(
@@ -262,12 +189,12 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
 
   const renderParkingLotOverlay = (parkingLot, index) => {
     const transformedCoords = transformCoordinates(parkingLot.coordinates);
-    const allocations = parkingAllocations.filter(
+    const allocations = parking_lots_allocations.filter(
       (allocation) => allocation.parking_lot_id === parkingLot.id
     );
 
     const parkingLotCapacity =
-      parkingCapacities.find((capacity) => capacity.id === parkingLot.id)
+      parking_lots_capacity.find((capacity) => capacity.id === parkingLot.id)
         ?.capacity || 0;
 
     if (allocations.length === 0 || parkingLotCapacity === 0) {
@@ -457,7 +384,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
         selectedDate={selectedDate}
       />
 
-      {halls.map((hall) => {
+      {coordinates.halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = uniqueFilteredEvents.find((event) =>
           event.halls ? event.halls.split(", ").includes(hall.name) : false
@@ -511,7 +438,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
         );
       })}
 
-      {entrances.map((entrance) => {
+      {coordinates.entrances.map((entrance) => {
         const transformedCoords = transformCoordinates(entrance.coordinates);
         const event = uniqueFilteredEvents.find((event) =>
           event.event_entrance
@@ -570,7 +497,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
         );
       })}
 
-      {parkingLots.map((parkingLot, index) =>
+      {coordinates.parking_lots.map((parkingLot, index) =>
         renderParkingLotOverlay(parkingLot, index)
       )}
     </MapContainer>
@@ -581,6 +508,7 @@ EventsMap.propTypes = {
   selectedDate: PropTypes.string.isRequired,
   zoom: PropTypes.number.isRequired,
   selectedEventId: PropTypes.number,
+  mapData: PropTypes.object,
 };
 
 export default EventsMap;

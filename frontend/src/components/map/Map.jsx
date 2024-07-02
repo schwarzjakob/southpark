@@ -13,6 +13,7 @@ import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRound
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import axios from "axios";
 
 const TITLE = "Map";
 
@@ -26,17 +27,23 @@ const MapView = () => {
   const [loading, setLoading] = useState(true);
   const [selectedEventId] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [mapData, setMapData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      setLoading(false);
+    const fetchMapData = async (date) => {
+      try {
+        const { data } = await axios.get(`/api/map/map_data/${date}`);
+        setMapData(data);
+      } catch (error) {
+        console.error("Error fetching map data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchData();
-  }, []);
+    fetchMapData(selectedDate);
+  }, [selectedDate]);
 
   const handleToggle = () => {
     setIsPercentage(!isPercentage);
@@ -102,6 +109,7 @@ const MapView = () => {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             events={events}
+            mapData={mapData}
           />
         </Box>
         <Box
@@ -125,11 +133,16 @@ const MapView = () => {
             height="100%"
           >
             {showHeatmap ? (
-              <Heatmap selectedDate={selectedDate} zoom={15.5} />
+              <Heatmap
+                selectedDate={selectedDate}
+                zoom={15.5}
+                mapData={mapData}
+              />
             ) : (
               <EventsMap
                 selectedDate={selectedDate}
                 zoom={15.5}
+                mapData={mapData}
                 selectedEventId={selectedEventId}
               />
             )}
@@ -188,24 +201,14 @@ const MapView = () => {
                   width: "100%",
                 }}
               >
-                <Typography
-                  sx={{
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  # Absolute
-                </Typography>
+                <Typography sx={{ fontSize: "0.8rem" }}># Absolute</Typography>
                 <Switch
                   checked={isPercentage}
                   onChange={handleToggle}
                   className="switch"
                   size="small"
                 />
-                <Typography
-                  sx={{
-                    fontSize: "0.8rem",
-                  }}
-                >
+                <Typography sx={{ fontSize: "0.8rem" }}>
                   % Percentage
                 </Typography>
               </Box>
@@ -213,6 +216,7 @@ const MapView = () => {
             <OccupanciesBarChart
               className="bar-chart"
               selectedDate={selectedDate}
+              mapData={mapData}
               isPercentage={isPercentage}
               handleToggle={handleToggle}
             />

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import axios from "axios";
 import PropTypes from "prop-types";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
@@ -27,7 +26,12 @@ const MONTHS = [
   "Dec",
 ];
 
-const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
+const TimelineSlider = ({
+  selectedDate,
+  setSelectedDate,
+  mapData,
+  selectedEventId,
+}) => {
   const theme = useTheme();
   const [days, setDays] = useState([]);
   const [events, setEvents] = useState([]);
@@ -40,7 +44,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
         const today = dayjs(centerDate);
         const halfNumberOfDays = Math.floor(numberOfDays / 2);
         return Array.from({ length: numberOfDays }, (_, i) =>
-          today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD"),
+          today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD")
         );
       };
       setDays(generateDays(selectedDate, calculateNumberOfDays() + BUFFER * 2));
@@ -52,60 +56,44 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
   }, [selectedDate]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`,
-        );
-        const eventsData = Array.isArray(data) ? data : [];
-        setEvents(eventsData);
+    const eventsData = mapData?.events_timeline || [];
+    setEvents(eventsData);
 
-        const rows = [];
-        eventsData.forEach((event) => {
-          const eventStart = dayjs(event.assembly_start_date).format(
-            "YYYY-MM-DD",
-          );
-          const eventEnd = dayjs(event.disassembly_end_date).format(
-            "YYYY-MM-DD",
-          );
-          let assigned = false;
-          for (let i = 0; i < rows.length; i++) {
-            if (
-              !rows[i].some(
-                (e) =>
-                  dayjs(eventStart).isBetween(e.start, e.end, "day", "[]") ||
-                  dayjs(eventEnd).isBetween(e.start, e.end, "day", "[]") ||
-                  dayjs(e.start).isBetween(eventStart, eventEnd, "day", "[]") ||
-                  dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]"),
-              )
-            ) {
-              rows[i].push({ start: eventStart, end: eventEnd, event });
-              event.row = i;
-              assigned = true;
-              break;
-            }
-          }
-          if (!assigned) {
-            rows.push([{ start: eventStart, end: eventEnd, event }]);
-            event.row = rows.length - 1;
-          }
-        });
-
-        setEventRows(rows);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-        setEvents([]);
+    const rows = [];
+    eventsData.forEach((event) => {
+      const eventStart = dayjs(event.assembly_start_date).format("YYYY-MM-DD");
+      const eventEnd = dayjs(event.disassembly_end_date).format("YYYY-MM-DD");
+      let assigned = false;
+      for (let i = 0; i < rows.length; i++) {
+        if (
+          !rows[i].some(
+            (e) =>
+              dayjs(eventStart).isBetween(e.start, e.end, "day", "[]") ||
+              dayjs(eventEnd).isBetween(e.start, e.end, "day", "[]") ||
+              dayjs(e.start).isBetween(eventStart, eventEnd, "day", "[]") ||
+              dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]")
+          )
+        ) {
+          rows[i].push({ start: eventStart, end: eventEnd, event });
+          event.row = i;
+          assigned = true;
+          break;
+        }
       }
-    };
+      if (!assigned) {
+        rows.push([{ start: eventStart, end: eventEnd, event }]);
+        event.row = rows.length - 1;
+      }
+    });
 
-    fetchEvents();
-  }, [selectedDate]);
+    setEventRows(rows);
+  }, [mapData]);
 
   const handleLeftClick = useCallback(() => {
     const newDate = dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD")),
+      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD"))
     );
   }, [selectedDate, setSelectedDate]);
 
@@ -113,7 +101,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     const newDate = dayjs(selectedDate).add(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD")),
+      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD"))
     );
   }, [selectedDate, setSelectedDate]);
 
@@ -199,7 +187,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
           dayjs(event.assembly_start_date).startOf("day"),
           dayjs(event.disassembly_end_date).endOf("day"),
           "day",
-          "[]",
+          "[]"
         )
       ) {
         uniqueEvents[event.event_id] = event;
@@ -208,7 +196,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     const dayEvents = Object.values(uniqueEvents);
     const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
     const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
-      dayEvents.find((event) => event.row === index),
+      dayEvents.find((event) => event.row === index)
     );
     filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
 
@@ -251,10 +239,10 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
         const phaseStart = dayjs(phase.startDate);
         const phaseEnd = dayjs(phase.endDate);
         const startIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseStart, "day"),
+          dayjs(d).isSame(phaseStart, "day")
         );
         const endIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseEnd, "day"),
+          dayjs(d).isSame(phaseEnd, "day")
         );
         if (startIndex === -1 || endIndex === -1) return null;
         const labelText =
@@ -267,7 +255,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
           endIndex,
           phase.opacity,
           labelText,
-          phase.className,
+          phase.className
         );
       });
       return phaseSegments;
@@ -280,7 +268,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
     endIndex,
     opacity,
     labelText,
-    additionalClass = "",
+    additionalClass = ""
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
@@ -440,6 +428,7 @@ const TimelineSlider = ({ selectedDate, setSelectedDate, selectedEventId }) => {
 TimelineSlider.propTypes = {
   selectedDate: PropTypes.string.isRequired,
   setSelectedDate: PropTypes.func.isRequired,
+  mapData: PropTypes.object,
   selectedEventId: PropTypes.number,
 };
 

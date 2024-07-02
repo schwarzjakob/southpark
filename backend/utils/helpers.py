@@ -4,6 +4,26 @@ from sqlalchemy import text
 from extensions import db
 from models import UserLog
 import requests
+import psycopg2
+from psycopg2.extras import DictCursor
+from urllib.parse import urlparse
+from flask import current_app
+import os
+
+
+def get_db_connection():
+    url = os.getenv("DATABASE_URL")
+    result = urlparse(url)
+    conn = psycopg2.connect(
+        dbname=result.path[1:],
+        user=result.username,
+        password=result.password,
+        host=result.hostname,
+        port=result.port,
+        sslmode='require',
+        cursor_factory=DictCursor
+    )
+    return conn
 
 def get_data(query, params=None):
     try:
