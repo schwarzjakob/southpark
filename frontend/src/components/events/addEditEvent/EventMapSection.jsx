@@ -38,7 +38,7 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
   EventMapSection.propTypes = {
     event: PropTypes.object.isRequired,
     events: PropTypes.arrayOf(PropTypes.object).isRequired,
-    selectedDate: PropTypes.instanceOf(Date).isRequired,
+    selectedDate: PropTypes.string.isRequired,
     setSelectedDate: PropTypes.func.isRequired,
   };
 
@@ -63,7 +63,9 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
         setReloading(true);
       }
       try {
-        const { data } = await axios.get(`/api/map/map_data/${date}`);
+        const { data } = await axios.get(
+          `/api/map/map_data/${dayjs(date).format("YYYY-MM-DD")}`
+        );
         setMapData(data);
 
         const start = dayjs(date).subtract(365, "days");
@@ -97,7 +99,6 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
       const start = currentFetchedTimeRange.current.start;
       const end = currentFetchedTimeRange.current.end;
       const selected = dayjs(selectedDate);
-
       const withinFetchedRange =
         selected.isAfter(start.add(0.2 * 365, "days")) &&
         selected.isBefore(end.subtract(0.2 * 365, "days"));
@@ -125,7 +126,7 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
         p={2}
       >
         <TimelineSlider
-          selectedDate={selectedDate}
+          selectedDate={dayjs(selectedDate).format("YYYY-MM-DD")}
           setSelectedDate={setSelectedDate}
           events={events}
           selectedEventId={parseInt(event.id)}
@@ -139,7 +140,7 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
         alignItems="stretch"
         justifyContent="center"
         width="100%"
-        height="65vh"
+        height="50vh"
         gap="1rem"
       >
         <Box
@@ -157,13 +158,13 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
             <CircularProgress />
           ) : showHeatmap ? (
             <Heatmap
-              selectedDate={selectedDate}
+              selectedDate={dayjs(selectedDate).format("YYYY-MM-DD")}
               zoom={15.5}
               mapData={mapDataForSelectedDay}
             />
           ) : (
             <EventsMap
-              selectedDate={selectedDate}
+              selectedDate={dayjs(selectedDate).format("YYYY-MM-DD")}
               zoom={15.5}
               mapData={mapDataForSelectedDay}
               selectedEventId={parseInt(event.id)}
