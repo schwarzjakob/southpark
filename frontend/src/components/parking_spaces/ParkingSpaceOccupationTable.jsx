@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Box,
@@ -98,6 +98,16 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
     if (total - allocated === 1) return "green";
   };
 
+  // Group allocations by date
+  const groupedAllocations = sortedAllocations.reduce((acc, allocation) => {
+    const date = allocation.date;
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(allocation);
+    return acc;
+  }, {});
+
   return (
     <Box className="occupationTable-container">
       <Box className="form-headline-button__container">
@@ -109,7 +119,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
         </Box>
       </Box>
       {notification && <Alert severity="info">{notification}</Alert>}
-      {allocations.length > 0 && (
+      {Object.keys(groupedAllocations).length > 0 && (
         <TableContainer className="parkingSpaces-container" component={Paper}>
           <Table className="parkingSpaces-table">
             <TableHead className="parkingSpaces-table__header">
@@ -135,20 +145,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    <TableSortLabel
-                      active={orderBy === "capacity"}
-                      direction={orderBy === "capacity" ? order : "asc"}
-                      onClick={() => handleRequestSort("capacity")}
-                    >
-                      <Box className="header-icon-container__label">
-                        <Box className="header-icon-container__label-title">
-                          Allocated Cars
-                        </Box>
-                        <Box className="header-icon-container__label-unit">
-                          (Car Units)
-                        </Box>
-                      </Box>
-                    </TableSortLabel>
+                    Allocated Cars
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -157,20 +154,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    <TableSortLabel
-                      active={orderBy === "bus_limit"}
-                      direction={orderBy === "bus_limit" ? order : "asc"}
-                      onClick={() => handleRequestSort("bus_limit")}
-                    >
-                      <Box className="header-icon-container__label">
-                        <Box className="header-icon-container__label-title">
-                          Allocated Buses
-                        </Box>
-                        <Box className="header-icon-container__label-unit">
-                          (= 3x Car Units)
-                        </Box>
-                      </Box>
-                    </TableSortLabel>
+                    Allocated Buses
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -179,57 +163,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    <TableSortLabel
-                      active={orderBy === "truck_limit"}
-                      direction={orderBy === "truck_limit" ? order : "asc"}
-                      onClick={() => handleRequestSort("truck_limit")}
-                    >
-                      <Box className="header-icon-container__label">
-                        <Box className="header-icon-container__label-title">
-                          Allocated Trucks
-                        </Box>
-                        <Box className="header-icon-container__label-unit">
-                          (= 4x Car Units)
-                        </Box>
-                      </Box>{" "}
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <LocalShippingRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "allocated_total"}
-                      direction={orderBy === "allocated_total" ? order : "asc"}
-                      onClick={() => handleRequestSort("allocated_total")}
-                    >
-                      <Box className="header-icon-container__label">
-                        <Box className="header-icon-container__label-title">
-                          Allocated / Total
-                        </Box>
-                        <Box className="header-icon-container__label-unit">
-                          (Total Car Units)
-                        </Box>
-                      </Box>{" "}
-                    </TableSortLabel>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="header-icon-container">
-                    <InsertInvitationRoundedIcon
-                      fontSize="small"
-                      className="header-icon"
-                    />
-                    <TableSortLabel
-                      active={orderBy === "name"}
-                      direction={orderBy === "name" ? order : "asc"}
-                      onClick={() => handleRequestSort("name")}
-                    >
-                      Event
-                    </TableSortLabel>
+                    Allocated Trucks
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -238,51 +172,123 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       fontSize="small"
                       className="header-icon"
                     />
-                    <TableSortLabel
-                      active={orderBy === "status"}
-                      direction={orderBy === "status" ? order : "asc"}
-                      onClick={() => handleRequestSort("status")}
-                    >
-                      Status
-                    </TableSortLabel>
+                    Allocated/Total Capacity
                   </Box>
+                </TableCell>
+                <TableCell>
+                  <Box className="header-icon-container">
+                    <InsertInvitationRoundedIcon
+                      fontSize="small"
+                      className="header-icon"
+                    />
+                    Event
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box className="header-icon-container">Status</Box>
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedAllocations.map((allocation) => (
-                <TableRow key={allocation.id} hover>
-                  <TableCell>{formatDate(allocation.date)}</TableCell>
-                  <TableCell>{allocation.allocated_cars}</TableCell>
-                  <TableCell>{allocation.allocated_buses}</TableCell>
-                  <TableCell>{allocation.allocated_trucks}</TableCell>
-                  <TableCell>{`${allocation.allocated_capacity}/${allocation.total_capacity}`}</TableCell>
-                  <TableCell>
-                    <Box
-                      className="event-box"
-                      style={{
-                        backgroundColor: allocation.event_color,
-                        color: getContrastingTextColor(allocation.event_color),
-                        wordWrap: "break-word",
-                        maxWidth: "200px",
-                      }}
+              {Object.keys(groupedAllocations).map((date, dateIndex) => {
+                const dateAllocations = groupedAllocations[date];
+                const totalAllocatedCars = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_cars,
+                  0
+                );
+                const totalAllocatedBuses = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_buses,
+                  0
+                );
+                const totalAllocatedTrucks = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_trucks,
+                  0
+                );
+                const totalAllocatedCapacity = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_capacity,
+                  0
+                );
+                const totalCapacity = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.total_capacity,
+                  0
+                );
+
+                return (
+                  <React.Fragment key={dateIndex}>
+                    {dateAllocations.map((allocation) => (
+                      <TableRow key={allocation.id} hover>
+                        <TableCell>{formatDate(allocation.date)}</TableCell>
+                        <TableCell>{allocation.allocated_cars}</TableCell>
+                        <TableCell>{allocation.allocated_buses}</TableCell>
+                        <TableCell>{allocation.allocated_trucks}</TableCell>
+                        <TableCell>{`${allocation.allocated_capacity}/${allocation.total_capacity}`}</TableCell>
+                        <TableCell>
+                          <Box
+                            className="event-box"
+                            style={{
+                              backgroundColor: allocation.event_color,
+                              color: getContrastingTextColor(
+                                allocation.event_color
+                              ),
+                              wordWrap: "break-word",
+                              maxWidth: "200px",
+                            }}
+                          >
+                            {allocation.event_name}
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box
+                            className="status-indicator"
+                            style={{
+                              backgroundColor: getStatusColor(
+                                allocation.allocated_capacity,
+                                allocation.total_capacity
+                              ),
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow
+                      key={`${date}-total`}
+                      style={{ borderBottom: "2px solid #6a91ce" }}
                     >
-                      {allocation.event_name}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box
-                      className="status-indicator"
-                      style={{
-                        backgroundColor: getStatusColor(
-                          allocation.allocated_capacity,
-                          allocation.total_capacity
-                        ),
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <TableCell>{formatDate(date)}</TableCell>
+                      <TableCell>{totalAllocatedCars}</TableCell>
+                      <TableCell>{totalAllocatedBuses}</TableCell>
+                      <TableCell>{totalAllocatedTrucks}</TableCell>
+                      <TableCell>{`${totalAllocatedCapacity}/${totalCapacity}`}</TableCell>
+                      <TableCell>
+                        <Box
+                          className="event-box"
+                          style={{
+                            background: "rgba(128, 128, 128, 75)",
+                            color: getContrastingTextColor(
+                              "rgba(128, 128, 128, 75)"
+                            ),
+                            wordWrap: "break-word",
+                            maxWidth: "200px",
+                          }}
+                        >
+                          All Events
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box
+                          className="status-indicator"
+                          style={{
+                            backgroundColor: getStatusColor(
+                              totalAllocatedCapacity,
+                              totalCapacity
+                            ),
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
