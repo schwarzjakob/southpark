@@ -50,6 +50,16 @@ const ParkingLotBarChart = ({
 
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(loading || reloading);
+
+  useEffect(() => {
+    if (loading || reloading) {
+      setShowLoading(true);
+    } else {
+      const timer = setTimeout(() => setShowLoading(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, reloading]);
 
   useEffect(() => {
     const prepareChartData = () => {
@@ -306,7 +316,7 @@ const ParkingLotBarChart = ({
     maintainAspectRatio: false,
   };
 
-  if (loading || reloading) {
+  if (showLoading) {
     return (
       <Box
         className="circular-loading_container"

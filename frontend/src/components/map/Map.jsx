@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { Switch } from "antd";
@@ -28,52 +28,89 @@ const MapView = () => {
   const [selectedEventId] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [mapData, setMapData] = useState(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialFetch, setInitialFetch] = useState(true);
+  const [reloading, setReloading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchMapData = async (date) => {
+  const currentFetchedTimeRange = useRef({
+    start: dayjs().subtract(365, "days"),
+    end: dayjs().add(365, "days"),
+  });
+
+  const fetchMapData = useCallback(
+    async (date) => {
+      if (initialLoading) {
+        setLoading(true);
+      }
+      if (!initialLoading) {
+        setReloading(true);
+      }
       try {
         const { data } = await axios.get(`/api/map/map_data/${date}`);
         setMapData(data);
+
+        const start = dayjs(date).subtract(365, "days");
+        const end = dayjs(date).add(365, "days");
+        currentFetchedTimeRange.current = { start, end };
       } catch (error) {
         console.error("Error fetching map data:", error);
       } finally {
-        setLoading(false);
-      }
-    };
+        if (initialLoading) {
+          setLoading(false);
 
-    fetchMapData(selectedDate);
-  }, [selectedDate]);
+          setInitialLoading(false);
+        }
+        setReloading(false);
+      }
+    },
+    [initialLoading]
+  );
+
+  useEffect(() => {
+    if (initialFetch) {
+      fetchMapData(selectedDate);
+      setInitialFetch(false);
+    }
+  }, [fetchMapData, selectedDate, initialFetch]);
+
+  useEffect(() => {
+    if (
+      currentFetchedTimeRange.current.start &&
+      currentFetchedTimeRange.current.end
+    ) {
+      const start = currentFetchedTimeRange.current.start;
+      const end = currentFetchedTimeRange.current.end;
+      const selected = dayjs(selectedDate);
+
+      const withinFetchedRange =
+        selected.isAfter(start.add(0.2 * 365, "days")) &&
+        selected.isBefore(end.subtract(0.2 * 365, "days"));
+      if (!withinFetchedRange) {
+        fetchMapData(selectedDate);
+      }
+    }
+  }, [fetchMapData, selectedDate, reloading]);
 
   const filterDataForSelectedDay = (data, date) => {
     const selectedDay = dayjs(date);
-    console.log("data", data);
-    console.log("selectedDay", selectedDay, date);
 
-    // Filter parking_lots_allocations
     const filteredParkingLotsAllocations = data.parking_lots_allocations.filter(
       (allocation) => {
         return dayjs(allocation.date).isSame(selectedDay, "day");
       }
     );
 
-    // Filter parking_lots_capacity
     const filteredParkingLotsCapacity = data.parking_lots_capacity.filter(
       (capacity) => {
         return dayjs(capacity.date).isSame(selectedDay, "day");
       }
     );
 
-    // Filter parking_lots_occupancy
     const filteredParkingLotsOccupancy = data.parking_lots_occupancy.filter(
       (occupancy) => {
         return dayjs(occupancy.date).isSame(selectedDay, "day");
       }
-    );
-
-    console.log(
-      "filteredParkingLotsAllocations",
-      filteredParkingLotsAllocations
     );
 
     return {
@@ -260,6 +297,7 @@ const MapView = () => {
               mapData={mapDataForSelectedDay}
               isPercentage={isPercentage}
               handleToggle={handleToggle}
+              reloading={reloading}
             />
           </Box>
         </Box>
