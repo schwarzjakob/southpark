@@ -18,7 +18,7 @@ import {
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
 import EventDemandTable from "./EventDemandTable.jsx";
 import EventMapSection from "./EventMapSection.jsx";
-import "../../map/styles/mapView.css";
+import "../../map/styles/map.css";
 import "../styles/events.css";
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,

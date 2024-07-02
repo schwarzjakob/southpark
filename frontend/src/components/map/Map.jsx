@@ -4,7 +4,7 @@ import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import "./styles/mapView.css";
+import "./styles/map.css";
 import TimelineSlider from "./TimelineSlider.jsx";
 import EventsMap from "./EventsMap.jsx";
 import Heatmap from "./HeatMap.jsx";
