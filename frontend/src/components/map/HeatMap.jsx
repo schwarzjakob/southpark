@@ -41,6 +41,11 @@ const DOWNWARD_OVERLAYS = [
   "PN12",
 ];
 
+const MAP_BOUNDS = [
+  [48.146965, 11.672466],
+  [48.126979, 11.718895],
+];
+
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 const MAP_CENTER_POS = [48.1375, 11.702];
@@ -64,7 +69,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
     setParkingLots(coordinates.parking_lots);
     setEntrances(coordinates.entrances);
     setEvents(events_timeline);
-    setCapacity(parking_lots_capacity); // Set the capacity here
+    setCapacity(parking_lots_capacity);
 
     const combinedData = parking_lots_occupancy.map((occ) => {
       const capacityData = parking_lots_capacity.find(
@@ -269,6 +274,10 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
       keyboard={false}
       zoomSnap={0.3}
       zoomDelta={0.3}
+      maxBounds={MAP_BOUNDS}
+      maxBoundsViscosity={1}
+      minZoom={14}
+      maxZoom={17}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

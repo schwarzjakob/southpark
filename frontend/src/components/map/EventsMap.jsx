@@ -41,12 +41,18 @@ const DOWNWARD_OVERLAYS = [
   "PN12",
 ];
 
+const MAP_BOUNDS = [
+  [48.146965, 11.672466],
+  [48.126979, 11.718895],
+];
+
 const RUNTIME = 0.9;
 const NOT_RUNTIME = 0.5;
 const GREYED_OUT = 0.25;
 const MAP_CENTER_POS = [48.1375, 11.702];
 
 const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
+  console.log("zoom", zoom);
   const {
     coordinates = { halls: [], entrances: [], parking_lots: [] },
     events_timeline = [],
@@ -372,6 +378,10 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
       keyboard={false}
       zoomSnap={0.3}
       zoomDelta={0.3}
+      maxBounds={MAP_BOUNDS}
+      maxBoundsViscosity={1}
+      minZoom={14}
+      maxZoom={17}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
