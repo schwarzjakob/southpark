@@ -299,42 +299,72 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
           </Tooltip>
           <Popup autoPan={false}>
             <div>
-              <h4>{parkingLot.name}</h4>
+              <div className="popup-title">
+                <span>{parkingLot.name}</span>
+              </div>
               <div className="popup-table">
                 <div className="popup-header">Event</div>
-                <div className="popup-header">Car units</div>
+                <div className="popup-header car-units">Car units</div>
                 <div className="popup-header">Percentage</div>
-                {allocations.map((allocation, index) => (
-                  <React.Fragment key={index}>
-                    <div className="details-link_container">
-                      <a
-                        href={`/events/event/${allocation.event_id}`}
-                        style={{ color: allocation.event_color }}
+                {allocations.map((allocation, index) => {
+                  const textColor = getContrastingTextColor(
+                    allocation.event_color
+                  );
+                  return (
+                    <React.Fragment key={index}>
+                      <div className="details-link_container">
+                        <a
+                          href={`/events/event/${allocation.event_id}`}
+                          style={{
+                            backgroundColor: allocation.event_color,
+                            color: textColor,
+                          }}
+                        >
+                          <LinkRoundedIcon style={{ color: textColor }} />
+                          {allocation.event_name}
+                        </a>
+                      </div>
+                      <div
+                        className="popup-table-cell"
+                        style={{
+                          backgroundColor: allocation.event_color,
+                          color: textColor,
+                        }}
                       >
-                        <LinkRoundedIcon />
-                        {allocation.event_name}
-                      </a>
-                    </div>
-                    <div className="popup-table-cell">
-                      {allocation.allocated_capacity}
-                    </div>
-                    <div className="popup-table-cell">
-                      {(
-                        (allocation.allocated_capacity / parkingLotCapacity) *
-                        100
-                      ).toFixed(2)}
-                      %
-                    </div>
-                  </React.Fragment>
-                ))}
+                        {allocation.allocated_capacity}
+                      </div>
+                      <div
+                        className="popup-table-cell"
+                        style={{
+                          backgroundColor: allocation.event_color,
+                          color: textColor,
+                        }}
+                      >
+                        {(
+                          (allocation.allocated_capacity / parkingLotCapacity) *
+                          100
+                        ).toFixed(2)}
+                        %
+                      </div>
+                    </React.Fragment>
+                  );
+                })}
                 {freeCapacityPercentage > 0 && (
                   <React.Fragment>
-                    <div>Free Capacity</div>
-                    <div className="popup-table-cell">
-                      {Math.round(freeCapacityPercentage * parkingLotCapacity)}
+                    <div className="popup-table-cell-footer capacity">
+                      <strong>Free Capacity</strong>
                     </div>
-                    <div className="popup-table-cell">
-                      {(freeCapacityPercentage * 100).toFixed(2)}%
+                    <div className="popup-table-cell-footer">
+                      <strong>
+                        {Math.round(
+                          freeCapacityPercentage * parkingLotCapacity
+                        )}
+                      </strong>
+                    </div>
+                    <div className="popup-table-cell-footer percentage">
+                      <strong>
+                        {(freeCapacityPercentage * 100).toFixed(2)}%
+                      </strong>
                     </div>
                   </React.Fragment>
                 )}
@@ -364,6 +394,16 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         ></Button>
       </Box>
     );
+  };
+
+  const getContrastingTextColor = (backgroundColor) => {
+    const hex = backgroundColor.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    return luminance > 0.5 ? "black" : "white";
   };
 
   return (
