@@ -260,7 +260,20 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  Car Demand
+                  <TableSortLabel
+                    active={orderBy === "car_demand"}
+                    direction={orderBy === "car_demand" ? order : "asc"}
+                    onClick={() => handleRequestSort("car_demand")}
+                  >
+                    <Box className="header-icon-container__label">
+                      <Box className="header-icon-container__label-title">
+                        Allocated Cars
+                      </Box>
+                      <Box className="header-icon-container__label-unit">
+                        (Car Units)
+                      </Box>
+                    </Box>
+                  </TableSortLabel>
                 </Box>
               </TableCell>
               <TableCell>
@@ -269,7 +282,20 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  Bus Demand
+                  <TableSortLabel
+                    active={orderBy === "bus_demand"}
+                    direction={orderBy === "bus_demand" ? order : "asc"}
+                    onClick={() => handleRequestSort("bus_demand")}
+                  >
+                    <Box className="header-icon-container__label">
+                      <Box className="header-icon-container__label-title">
+                        Allocated Buses
+                      </Box>
+                      <Box className="header-icon-container__label-unit">
+                        (= 3x Car Units)
+                      </Box>
+                    </Box>{" "}
+                  </TableSortLabel>
                 </Box>
               </TableCell>
               <TableCell>
@@ -278,7 +304,20 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  Truck Demand
+                  <TableSortLabel
+                    active={orderBy === "truck_demand"}
+                    direction={orderBy === "truck_demand" ? order : "asc"}
+                    onClick={() => handleRequestSort("truck_demand")}
+                  >
+                    <Box className="header-icon-container__label">
+                      <Box className="header-icon-container__label-title">
+                        Allocated Trucks
+                      </Box>
+                      <Box className="header-icon-container__label-unit">
+                        (= 4x Car Units)
+                      </Box>
+                    </Box>
+                  </TableSortLabel>
                 </Box>
               </TableCell>
               <TableCell>
@@ -287,7 +326,20 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  Allocated / Total Capacity
+                  <TableSortLabel
+                    active={orderBy === "demand"}
+                    direction={orderBy === "demand" ? order : "asc"}
+                    onClick={() => handleRequestSort("demand")}
+                  >
+                    <Box className="header-icon-container__label">
+                      <Box className="header-icon-container__label-title">
+                        Allocated / Total
+                      </Box>
+                      <Box className="header-icon-container__label-unit">
+                        (Total Car Units)
+                      </Box>
+                    </Box>{" "}
+                  </TableSortLabel>
                 </Box>
               </TableCell>
               <TableCell>
