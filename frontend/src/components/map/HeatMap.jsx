@@ -47,11 +47,11 @@ const MAP_CENTER_POS = [48.1375, 11.702];
 
 const Heatmap = ({ selectedDate, zoom, mapData }) => {
   const {
-    coordinates,
-    events_timeline,
-    parking_lots_occupancy,
-    parking_lots_capacity,
-  } = mapData;
+    coordinates = { halls: [], entrances: [], parking_lots: [] },
+    events_timeline = [],
+    parking_lots_occupancy = [],
+    parking_lots_capacity = [],
+  } = mapData || {};
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
   const [entrances, setEntrances] = useState([]);

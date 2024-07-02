@@ -34,14 +34,45 @@ import {
 import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
+import dayjs from "dayjs";
 
 const TITLE = "Event Details";
 const INITIAL_DATE = "2023-01-02";
 
+const filterDataForSelectedDay = (data, date) => {
+  if (!data) return {}; // Ensure data is not null
+
+  const selectedDay = dayjs(date);
+
+  // Filter parking_lots_allocations
+  const filteredParkingLotsAllocations = (
+    data.parking_lots_allocations || []
+  ).filter((allocation) => dayjs(allocation.date).isSame(selectedDay, "day"));
+
+  // Filter parking_lots_capacity
+  const filteredParkingLotsCapacity = (data.parking_lots_capacity || []).filter(
+    (capacity) => dayjs(capacity.date).isSame(selectedDay, "day")
+  );
+
+  // Filter parking_lots_occupancy
+  const filteredParkingLotsOccupancy = (
+    data.parking_lots_occupancy || []
+  ).filter((occupancy) => dayjs(occupancy.date).isSame(selectedDay, "day"));
+
+  return {
+    ...data,
+    parking_lots_allocations: filteredParkingLotsAllocations,
+    parking_lots_capacity: filteredParkingLotsCapacity,
+    parking_lots_occupancy: filteredParkingLotsOccupancy,
+  };
+};
+
 const Event = () => {
   const [event, setEvent] = useState(null);
+  const [mapData, setMapData] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [eventLoading, setEventLoading] = useState(true);
+  const [mapLoading, setMapLoading] = useState(true);
   const [originalEvent, setOriginalEvent] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -83,16 +114,38 @@ const Event = () => {
         setOriginalEvent(eventData);
         if (eventData && eventData.runtime_start_date) {
           setSelectedDate(eventData.runtime_start_date);
+          fetchMapData(eventData.runtime_start_date); // Fetch map data for the correct date after setting it
         }
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
       } finally {
-        setLoading(false);
+        setEventLoading(false); // Ensure loading is set to false on error
       }
     };
+
     fetchEvent();
   }, [id]);
+
+  const fetchMapData = async (date) => {
+    try {
+      setMapLoading(true);
+      const { data } = await axios.get(`/api/map/map_data/${date}`);
+      setMapData(data);
+    } catch (error) {
+      console.error("Error fetching map data:", error);
+    } finally {
+      setMapLoading(false);
+    }
+  };
+
+  // Fetch map data whenever selectedDate changes
+  useEffect(() => {
+    if (selectedDate !== INITIAL_DATE) {
+      // Avoid fetching for the initial incorrect date
+      fetchMapData(selectedDate);
+    }
+  }, [selectedDate]);
 
   const hasUnsavedChanges = useCallback(() => {
     return JSON.stringify(event) !== JSON.stringify(originalEvent);
@@ -164,7 +217,7 @@ const Event = () => {
     return diffDays;
   };
 
-  if (loading) {
+  if (eventLoading) {
     return (
       <Box
         className="form-width"
@@ -177,6 +230,8 @@ const Event = () => {
       </Box>
     );
   }
+
+  const mapDataForSelectedDay = filterDataForSelectedDay(mapData, selectedDate);
 
   return (
     <Box className="form-width">
@@ -337,6 +392,7 @@ const Event = () => {
               setSelectedDate={setSelectedDate}
               events={events}
               selectedEventId={parseInt(id)}
+              mapData={mapData}
             />
           </Box>
 
@@ -360,12 +416,19 @@ const Event = () => {
               width="100%"
               height="100%"
             >
-              {showHeatmap ? (
-                <Heatmap selectedDate={selectedDate} zoom={15.5} />
+              {mapLoading ? (
+                <CircularProgress />
+              ) : showHeatmap ? (
+                <Heatmap
+                  selectedDate={selectedDate}
+                  zoom={15.5}
+                  mapData={mapDataForSelectedDay}
+                />
               ) : (
                 <EventsMap
                   selectedDate={selectedDate}
                   zoom={15.5}
+                  mapData={mapDataForSelectedDay}
                   selectedEventId={parseInt(id)}
                 />
               )}

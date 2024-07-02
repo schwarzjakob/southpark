@@ -48,11 +48,11 @@ const MAP_CENTER_POS = [48.1375, 11.702];
 
 const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
   const {
-    coordinates,
-    events_timeline,
-    parking_lots_allocations,
-    parking_lots_capacity,
-  } = mapData;
+    coordinates = { halls: [], entrances: [], parking_lots: [] },
+    events_timeline = [],
+    parking_lots_allocations = [],
+    parking_lots_capacity = [],
+  } = mapData || {};
 
   const transformCoordinates = (originalCoords) => {
     const transformedCoords = [];
