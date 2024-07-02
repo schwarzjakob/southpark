@@ -17,7 +17,7 @@ import axios from "axios";
 
 const TITLE = "Map";
 
-const MapView = () => {
+const MapPage = () => {
   const location = useLocation();
   const initialDate =
     location.state?.selectedDate || dayjs().format("YYYY-MM-DD");
@@ -306,4 +306,4 @@ const MapView = () => {
   );
 };
 
-export default MapView;
+export default MapPage;
