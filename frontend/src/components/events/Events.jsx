@@ -86,7 +86,6 @@ const Events = () => {
 
         const events = eventsResponse.data;
         const statusMap = statusResponse.data.reduce((acc, status) => {
-          console.log(status);
           acc[status.event_id] = status.status;
           return acc;
         }, {});
@@ -118,7 +117,7 @@ const Events = () => {
   };
 
   const filteredEvents = events.filter((event) =>
-    event.name.toLowerCase().includes(filter.toLowerCase()),
+    event.name.toLowerCase().includes(filter.toLowerCase())
   );
 
   const sortedEvents = filteredEvents.sort((a, b) => {
@@ -156,17 +155,13 @@ const Events = () => {
             .map((pl) => pl.parking_lot_name)
             .join(", ")
             .localeCompare(
-              b.allocatedParkingLots
-                .map((pl) => pl.parking_lot_name)
-                .join(", "),
+              b.allocatedParkingLots.map((pl) => pl.parking_lot_name).join(", ")
             )
         : b.allocatedParkingLots
             .map((pl) => pl.parking_lot_name)
             .join(", ")
             .localeCompare(
-              a.allocatedParkingLots
-                .map((pl) => pl.parking_lot_name)
-                .join(", "),
+              a.allocatedParkingLots.map((pl) => pl.parking_lot_name).join(", ")
             );
     }
 
@@ -402,28 +397,28 @@ const Events = () => {
                       {Object.entries(groupHallsByLetter(event.halls)).map(
                         ([letter, halls]) => (
                           <Box key={letter}>{halls.join(", ")}</Box>
-                        ),
+                        )
                       )}
                     </TableCell>
                     <TableCell className="assembly">
                       {`${new Date(
-                        event.assembly_start_date,
+                        event.assembly_start_date
                       ).toLocaleDateString()} - ${new Date(
-                        event.assembly_end_date,
+                        event.assembly_end_date
                       ).toLocaleDateString()}`}
                     </TableCell>
                     <TableCell className="runtime">
                       {`${new Date(
-                        event.runtime_start_date,
+                        event.runtime_start_date
                       ).toLocaleDateString()} - ${new Date(
-                        event.runtime_end_date,
+                        event.runtime_end_date
                       ).toLocaleDateString()}`}
                     </TableCell>
                     <TableCell className="disassembly">
                       {`${new Date(
-                        event.disassembly_start_date,
+                        event.disassembly_start_date
                       ).toLocaleDateString()} - ${new Date(
-                        event.disassembly_end_date,
+                        event.disassembly_end_date
                       ).toLocaleDateString()}`}
                     </TableCell>
                     <TableCell className="status">
