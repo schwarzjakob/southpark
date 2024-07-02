@@ -55,6 +55,8 @@ const ParkingLotBarChart = ({
     const prepareChartData = () => {
       setLoading(true);
 
+      setChartData(null);
+
       const parkingLotOccupancy = mapData.parking_lots_occupancy;
       const parkingLots = mapData.parking_lots_capacity;
 
