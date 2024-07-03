@@ -17,32 +17,6 @@ import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 
-const DOWNWARD_OVERLAYS = [
-  "C1",
-  "C2",
-  "C3",
-  "C4",
-  "C5",
-  "C6",
-  "North East",
-  "North West",
-  "North",
-  "PWest",
-  "PM3",
-  "PM4",
-  "PM5",
-  "PN3",
-  "PN4",
-  "PN5",
-  "PN6",
-  "PN7",
-  "PN8",
-  "PN9",
-  "PN10",
-  "PN11",
-  "PN12",
-];
-
 const MAP_BOUNDS = [
   [48.146965, 11.672466],
   [48.126979, 11.718895],
