@@ -14,7 +14,7 @@ import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 import MapLegendComponent from "./MapLegend.jsx";
 import "leaflet/dist/leaflet.css";
-import PopupContent from "./ParkingPopupContent.jsx";
+
 const DOWNWARD_OVERLAYS = [
   "C1",
   "C2",
@@ -373,7 +373,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         );
       })}
 
-      {parkingLots.map((parkingLot, index) => {
+      {parkingLots.map((parkingLot) => {
         const transformedCoords = transformCoordinates(parkingLot.coordinates);
         const occupancyData = occupancy.find(
           (data) => data.parking_lot_name === parkingLot.name
@@ -392,12 +392,6 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         const popupOffset = DOWNWARD_OVERLAYS.includes(parkingLot.name)
           ? [0, 80]
           : [0, 0];
-
-        const event = uniqueFilteredEvents.find((event) =>
-          event.parking_lots
-            ? event.parking_lots.includes(parkingLot.name)
-            : false
-        );
 
         return (
           <Polygon
@@ -420,16 +414,32 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
               <span>{parkingLot.name}</span>
             </Tooltip>
             <Popup autoPan={false} offset={popupOffset}>
-              {event ? (
-                <PopupContent
-                  parkingLot={parkingLot}
-                  index={index}
-                  parking_lots_allocations={occupancy}
-                  parking_lots_capacity={capacity}
-                  GREYED_OUT={0.25}
-                />
+              {occupancyData ? (
+                <div>
+                  <h4>{parkingLot.name}</h4>
+                  <p>Occupancy: {occupancyData.occupancy}</p>
+                  <p>
+                    Free Capacity: {totalCapacity - occupancyData.occupancy}
+                  </p>
+                  <div className="details-link_container">
+                    <a href={`/parking_space/${parkingLot.id}`}>
+                      <LinkRoundedIcon />
+                      {parkingLot.name} Details
+                    </a>
+                  </div>
+                </div>
               ) : (
-                <span>{parkingLot.name}: No Event!</span>
+                <div>
+                  <h4>{parkingLot.name}</h4>
+                  <p>Occupancy: 0</p>
+                  <p>Free Capacity: {totalCapacity}</p>
+                  <div className="details-link_container">
+                    <a href={`/parking_space/${parkingLot.id}`}>
+                      <LinkRoundedIcon />
+                      {parkingLot.name} Details
+                    </a>
+                  </div>
+                </div>
               )}
             </Popup>
           </Polygon>

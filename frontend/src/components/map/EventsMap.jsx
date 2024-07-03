@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import MapLegendComponent from "./MapLegend.jsx";
-import PopupContent from "./ParkingPopupContent.jsx";
+import ParkingPopup from "./ParkingPopup.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
@@ -354,16 +354,25 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         );
       })}
 
-      {coordinates.parking_lots.map((parkingLot, index) => (
-        <PopupContent
-          key={parkingLot.name}
-          parkingLot={parkingLot}
-          index={index}
-          parking_lots_allocations={parking_lots_allocations}
-          parking_lots_capacity={parking_lots_capacity}
-          GREYED_OUT={GREYED_OUT}
-        />
-      ))}
+      {coordinates.parking_lots.map(
+        (parkingLot, index) => (
+          console.log(" (A) EVENT MAP _______________::::::"),
+          console.log("parkinglot", parkingLot),
+          console.log("index", index),
+          console.log("parking_lots_allocations", parking_lots_allocations),
+          console.log("parking_lots_capacity", parking_lots_capacity),
+          (
+            <ParkingPopup
+              key={parkingLot.name}
+              parkingLot={parkingLot}
+              index={index}
+              parking_lots_allocations={parking_lots_allocations}
+              parking_lots_capacity={parking_lots_capacity}
+              GREYED_OUT={GREYED_OUT}
+            />
+          )
+        )
+      )}
     </MapContainer>
   );
 };

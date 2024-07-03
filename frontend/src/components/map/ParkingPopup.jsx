@@ -21,7 +21,7 @@ const getContrastingTextColor = (backgroundColor) => {
   return luminance > 0.5 ? "black" : "white";
 };
 
-const ParkingPopupContent = ({
+const ParkingPopup = ({
   parkingLot,
   index,
   parking_lots_allocations,
@@ -216,7 +216,7 @@ const ParkingPopupContent = ({
   );
 };
 
-ParkingPopupContent.propTypes = {
+ParkingPopup.propTypes = {
   parkingLot: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
   parking_lots_allocations: PropTypes.array.isRequired,
@@ -224,4 +224,4 @@ ParkingPopupContent.propTypes = {
   GREYED_OUT: PropTypes.number.isRequired,
 };
 
-export default ParkingPopupContent;
+export default ParkingPopup;
