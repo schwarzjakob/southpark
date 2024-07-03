@@ -29,6 +29,13 @@
   justify-content: center;
 }
 
+.popup-table-entrance {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  text-align: left;
+  justify-content: center;
+}
+
 .popup-header {
   background-color: var(--color-primary);
   color: var(--color-pure-white);
