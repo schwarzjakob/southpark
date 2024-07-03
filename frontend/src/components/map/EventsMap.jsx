@@ -11,7 +11,8 @@ import PropTypes from "prop-types";
 import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import MapLegendComponent from "./MapLegend.jsx";
-import ParkingPopup from "./EventsMapParkingLotPopup.jsx";
+import ParkingPopup from "./ParkingPopup.jsx";
+import EntrancePopup from "./EntrancePopup.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
@@ -77,7 +78,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         event.assembly_start_date,
         event.assembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "assembly";
@@ -88,7 +89,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         event.runtime_start_date,
         event.runtime_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "runtime";
@@ -99,7 +100,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         event.disassembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "disassembly";
@@ -176,10 +177,10 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
           event.assembly_start_date,
           event.disassembly_end_date,
           null,
-          "[]"
+          "[]",
         ) ||
-        dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
-    )
+        dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
+    ),
   );
 
   const SetZoomLevel = ({ zoom }) => {
@@ -244,7 +245,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
       {coordinates.halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = uniqueFilteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false
+          event.halls ? event.halls.split(", ").includes(hall.name) : false,
         );
         const fillColor = selectedEventId
           ? event && event.event_id === selectedEventId
@@ -295,79 +296,26 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         );
       })}
 
-      {coordinates.entrances.map((entrance) => {
-        const transformedCoords = transformCoordinates(entrance.coordinates);
-        const event = uniqueFilteredEvents.find((event) =>
-          event.event_entrance
-            ? event.event_entrance.includes(entrance.name)
-            : false
-        );
-        const fillColor = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? `${event.event_color}`
-            : "gray"
-          : event
-          ? `${event.event_color}`
-          : "gray";
-        const borderColor = event ? `${event.event_color}` : "transparent";
-        const opacity = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? getEventStatus(event, selectedDate) === "runtime"
-              ? RUNTIME
-              : NOT_RUNTIME
-            : GREYED_OUT
-          : event && getEventStatus(event, selectedDate) === "runtime"
-          ? RUNTIME
-          : NOT_RUNTIME;
-        const popupOffset = DOWNWARD_OVERLAYS.includes(entrance.name)
-          ? [0, 50]
-          : [0, 0];
+      {coordinates.entrances.map((entrance, index) => (
+        <EntrancePopup
+          key={entrance.name}
+          entrance={entrance}
+          index={index}
+          events={uniqueFilteredEvents}
+          GREYED_OUT={GREYED_OUT}
+        />
+      ))}
 
-        return (
-          <Polygon
-            key={entrance.name}
-            positions={transformedCoords}
-            className={`entrances entrance-${entrance.name}`}
-            pathOptions={{
-              color: borderColor,
-              fillColor: fillColor,
-              fillOpacity: opacity,
-              weight: 2,
-            }}
-          >
-            <Tooltip
-              direction="center"
-              offset={[0, 0]}
-              permanent
-              className="tags-entrances"
-            >
-              <span>{entrance.name}</span>
-            </Tooltip>
-            <Popup autoPan={false} offset={popupOffset}>
-              {event ? (
-                getPopupContent(event, entrance.name, "entrance")
-              ) : (
-                <span>{entrance.name}: No Event!</span>
-              )}
-            </Popup>
-          </Polygon>
-        );
-      })}
-
-      {coordinates.parking_lots.map(
-        (parkingLot, index) => (
-          (
-            <ParkingPopup
-              key={parkingLot.name}
-              parkingLot={parkingLot}
-              index={index}
-              parking_lots_allocations={parking_lots_allocations}
-              parking_lots_capacity={parking_lots_capacity}
-              GREYED_OUT={GREYED_OUT}
-            />
-          )
-        )
-      )}
+      {coordinates.parking_lots.map((parkingLot, index) => (
+        <ParkingPopup
+          key={parkingLot.name}
+          parkingLot={parkingLot}
+          index={index}
+          parking_lots_allocations={parking_lots_allocations}
+          parking_lots_capacity={parking_lots_capacity}
+          GREYED_OUT={GREYED_OUT}
+        />
+      ))}
     </MapContainer>
   );
 };
