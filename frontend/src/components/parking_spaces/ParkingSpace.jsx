@@ -7,7 +7,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ParkingSpaceCapacitysTable from "./ParkingSpaceCapacityTable";
 import ParkingSpaceOccupationTable from "./ParkingSpaceOccupationTable.jsx";
 import GarageIcon from "@mui/icons-material/GarageRounded";
@@ -29,6 +29,7 @@ const ParkingSpace = () => {
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [breadcrumbLinks, setBreadcrumbLinks] = useState([
     { label: "Parking Spaces", path: "/parking_spaces" },
     { label: "", path: "" },
@@ -152,7 +153,10 @@ const ParkingSpace = () => {
         )}
       </Paper>
       <ParkingSpaceCapacitysTable parkingLotId={id} />
-      <ParkingSpaceOccupationTable parkingLotId={id} />
+      <ParkingSpaceOccupationTable
+        parkingLotId={id}
+        selectedDate={location.state?.selectedDate}
+      />
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Button
           className="back-button"

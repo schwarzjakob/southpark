@@ -33,9 +33,10 @@ import "./styles/parkingSpaces.css";
 
 const TITLE = "Parking Space Occupation";
 
-const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
+const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
   ParkingSpaceOccupationTable.propTypes = {
     parkingLotId: PropTypes.string.isRequired,
+    selectedDate: PropTypes.string,
   };
 
   const [allocations, setAllocations] = useState([]);
@@ -54,9 +55,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
         );
         if (response.status === 204) {
           console.log("No allocations found for this parking lot.");
+          setAllocations([{}]);
         } else {
-          setAllocations(response.data);
-          filterAllocations(response.data, selectedYear, selectedMonth);
+          setAllocations(response.data.length ? response.data : [{}]);
+          filterAllocations(
+            response.data.length ? response.data : [{}],
+            selectedYear,
+            selectedMonth,
+          );
         }
       } catch (error) {
         console.error("Error fetching allocations data:", error);
@@ -69,6 +75,43 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
   useEffect(() => {
     filterAllocations(allocations, selectedYear, selectedMonth);
   }, [allocations, selectedYear, selectedMonth]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      const selectedDateObj = new Date(selectedDate);
+      setSelectedYear(selectedDateObj.getFullYear());
+      setSelectedMonth(selectedDateObj.getMonth());
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      const selectedDateObj = new Date(selectedDate);
+      const dateStr = `${selectedDateObj
+        .getDate()
+        .toString()
+        .padStart(2, "0")}.${(selectedDateObj.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}.${selectedDateObj.getFullYear()}`;
+
+      setTimeout(() => {
+        const tableContainer = document.querySelector(
+          ".parkingSpaces-container",
+        );
+        if (tableContainer) {
+          tableContainer.scrollTop = 0;
+        }
+
+        const targetRow = document.querySelector(
+          `.allocation-table-row[data-date="${dateStr}"]`,
+        );
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+          targetRow.classList.add("highlight");
+        }
+      }, 0);
+    }
+  }, [selectedDate, filteredAllocations]);
 
   const filterAllocations = (allocations, year, month) => {
     const startOfMonth = dayjs().year(year).month(month).startOf("month");
@@ -124,12 +167,10 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
     let red, green, blue;
 
     if (percentage <= 50) {
-      // Dark green to Orange-like yellow
       red = Math.min(255, Math.round((percentage / 50) * 255));
       green = Math.min(128, Math.round(128 - (percentage / 50) * 128 + 128));
       blue = 0;
     } else {
-      // Orange-like yellow to Red
       red = 255;
       green = Math.min(128, Math.round((1 - (percentage - 50) / 50) * 128));
       blue = 0;
@@ -147,7 +188,6 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
     return `${percentage}% Occupied`;
   };
 
-  // Group allocations by date
   const groupedAllocations = sortedAllocations.reduce((acc, allocation) => {
     const date = allocation.date;
     if (!acc[date]) {
@@ -260,20 +300,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "car_demand"}
-                    direction={orderBy === "car_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("car_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated Cars
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Car Units)
-                      </Box>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated Cars
                     </Box>
-                  </TableSortLabel>
+                    <Box className="header-icon-container__label-unit">
+                      (Car Units)
+                    </Box>
+                  </Box>
                 </Box>
               </TableCell>
               <TableCell>
@@ -282,20 +316,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "bus_demand"}
-                    direction={orderBy === "bus_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("bus_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated Buses
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 3x Car Units)
-                      </Box>
-                    </Box>{" "}
-                  </TableSortLabel>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated Buses
+                    </Box>
+                    <Box className="header-icon-container__label-unit">
+                      (= 3x Car Units)
+                    </Box>
+                  </Box>{" "}
                 </Box>
               </TableCell>
               <TableCell>
@@ -304,20 +332,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "truck_demand"}
-                    direction={orderBy === "truck_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("truck_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated Trucks
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 4x Car Units)
-                      </Box>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated Trucks
                     </Box>
-                  </TableSortLabel>
+                    <Box className="header-icon-container__label-unit">
+                      (= 4x Car Units)
+                    </Box>
+                  </Box>
                 </Box>
               </TableCell>
               <TableCell>
@@ -326,20 +348,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "demand"}
-                    direction={orderBy === "demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated / Total
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Total Car Units)
-                      </Box>
-                    </Box>{" "}
-                  </TableSortLabel>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated / Total
+                    </Box>
+                    <Box className="header-icon-container__label-unit">
+                      (Total Car Units)
+                    </Box>
+                  </Box>{" "}
                 </Box>
               </TableCell>
               <TableCell>
@@ -363,137 +379,147 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {Object.keys(groupedAllocations).map((date, dateIndex) => {
-              const dateAllocations = groupedAllocations[date];
-              const totalAllocatedCars = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_cars,
-                0,
-              );
-              const totalAllocatedBuses = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_buses,
-                0,
-              );
-              const totalAllocatedTrucks = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_trucks,
-                0,
-              );
-              const totalAllocatedCapacity = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_capacity,
-                0,
-              );
-              const totalCapacity = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.total_capacity,
-                0,
-              );
+            {Object.keys(groupedAllocations).length > 0 ? (
+              Object.keys(groupedAllocations).map((date, dateIndex) => {
+                const dateAllocations = groupedAllocations[date];
+                const totalAllocatedCars = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_cars,
+                  0,
+                );
+                const totalAllocatedBuses = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_buses,
+                  0,
+                );
+                const totalAllocatedTrucks = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_trucks,
+                  0,
+                );
+                const totalAllocatedCapacity = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_capacity,
+                  0,
+                );
+                const totalCapacity = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.total_capacity,
+                  0,
+                );
 
-              let occupancyPercentage =
-                (totalAllocatedCapacity / totalCapacity) * 100;
-              if (occupancyPercentage > 99 && occupancyPercentage < 100) {
-                occupancyPercentage = 99;
-              } else {
-                occupancyPercentage = Math.round(occupancyPercentage);
-              }
+                let occupancyPercentage =
+                  (totalAllocatedCapacity / totalCapacity) * 100;
+                if (occupancyPercentage > 99 && occupancyPercentage < 100) {
+                  occupancyPercentage = 99;
+                } else {
+                  occupancyPercentage = Math.round(occupancyPercentage);
+                }
 
-              const isLastRow =
-                dateIndex === Object.keys(groupedAllocations).length - 1;
+                const isLastRow =
+                  dateIndex === Object.keys(groupedAllocations).length - 1;
 
-              const style = {
-                position: "relative",
-                borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
-                paddingTop: "6px", // Adjust padding to account for the pseudo-element
-              };
+                const style = {
+                  position: "relative",
+                  borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
+                  paddingTop: "6px",
+                };
 
-              const doubleStrokeStyle = {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "3px",
-                borderTop: "1px solid rgba(128, 128, 128, 0.5)",
-                borderBottom: "1px solid rgba(128, 128, 128, 0.5)",
-              };
+                const doubleStrokeStyle = {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "3px",
+                  borderTop: "1px solid rgba(128, 128, 128, 0.5)",
+                  borderBottom: "1px solid rgba(128, 128, 128, 0.5)",
+                };
 
-              return (
-                <React.Fragment key={dateIndex}>
-                  {dateAllocations.map((allocation) => (
-                    <TableRow
-                      key={allocation.id}
-                      hover
-                      onClick={() =>
-                        navigate(`/events/event/${allocation.event_id}`)
-                      }
-                      style={{ cursor: "pointer" }}
-                    >
-                      <TableCell>{formatDate(allocation.date)}</TableCell>
-                      <TableCell>{allocation.allocated_cars}</TableCell>
-                      <TableCell>{allocation.allocated_buses}</TableCell>
-                      <TableCell>{allocation.allocated_trucks}</TableCell>
-                      <TableCell>{`${allocation.allocated_capacity}/${allocation.total_capacity}`}</TableCell>
+                return (
+                  <React.Fragment key={dateIndex}>
+                    {dateAllocations.map((allocation) => (
+                      <TableRow
+                        key={allocation.id}
+                        hover
+                        onClick={() =>
+                          navigate(`/events/event/${allocation.event_id}`)
+                        }
+                        style={{ cursor: "pointer" }}
+                        className="allocation-table-row"
+                        data-date={formatDate(allocation.date)}
+                      >
+                        <TableCell>{formatDate(allocation.date)}</TableCell>
+                        <TableCell>{allocation.allocated_cars}</TableCell>
+                        <TableCell>{allocation.allocated_buses}</TableCell>
+                        <TableCell>{allocation.allocated_trucks}</TableCell>
+                        <TableCell>{`${allocation.allocated_capacity}/${allocation.total_capacity}`}</TableCell>
+                        <TableCell>
+                          <Box
+                            className="event-box"
+                            style={{
+                              backgroundColor: allocation.event_color,
+                              color: getContrastingTextColor(
+                                allocation.event_color,
+                              ),
+                              wordWrap: "break-word",
+                              maxWidth: "200px",
+                            }}
+                          >
+                            {allocation.event_name}
+                          </Box>
+                        </TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow key={`${date}-total`} style={style}>
+                      <TableCell>
+                        <Box style={doubleStrokeStyle}></Box>
+                        <Box style={{ display: "flex", alignItems: "center" }}>
+                          <FunctionsRoundedIcon></FunctionsRoundedIcon>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{totalAllocatedCars}</TableCell>
+                      <TableCell>{totalAllocatedBuses}</TableCell>
+                      <TableCell>{totalAllocatedTrucks}</TableCell>
+                      <TableCell>{`${totalAllocatedCapacity}/${totalCapacity}`}</TableCell>
                       <TableCell>
                         <Box
                           className="event-box"
                           style={{
-                            backgroundColor: allocation.event_color,
+                            background: "rgba(128, 128, 128, 75)",
                             color: getContrastingTextColor(
-                              allocation.event_color,
+                              "rgba(128, 128, 128, 75)",
                             ),
                             wordWrap: "break-word",
                             maxWidth: "200px",
+                            cursor: "default",
                           }}
                         >
-                          {allocation.event_name}
+                          All Events
                         </Box>
                       </TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow key={`${date}-total`} style={style}>
-                    <TableCell>
-                      <Box style={doubleStrokeStyle}></Box>
-                      <Box style={{ display: "flex", alignItems: "center" }}>
-                        <FunctionsRoundedIcon></FunctionsRoundedIcon>
-                      </Box>
-                    </TableCell>
-                    <TableCell>{totalAllocatedCars}</TableCell>
-                    <TableCell>{totalAllocatedBuses}</TableCell>
-                    <TableCell>{totalAllocatedTrucks}</TableCell>
-                    <TableCell>{`${totalAllocatedCapacity}/${totalCapacity}`}</TableCell>
-                    <TableCell>
-                      <Box
-                        className="event-box"
-                        style={{
-                          background: "rgba(128, 128, 128, 75)",
-                          color: getContrastingTextColor(
-                            "rgba(128, 128, 128, 75)",
-                          ),
-                          wordWrap: "break-word",
-                          maxWidth: "200px",
-                          cursor: "default",
-                        }}
-                      >
-                        All Events
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box
-                        className="status-box"
-                        display="flex"
-                        alignItems="center"
-                      >
-                        {getStatusCircle(occupancyPercentage)}
-                        <Typography
-                          variant="body2"
-                          style={{ marginLeft: "8px" }}
+                      <TableCell>
+                        <Box
+                          className="status-box"
+                          display="flex"
+                          alignItems="center"
                         >
-                          {getStatusText(occupancyPercentage)}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              );
-            })}
+                          {getStatusCircle(occupancyPercentage)}
+                          <Typography
+                            variant="body2"
+                            style={{ marginLeft: "8px" }}
+                          >
+                            {getStatusText(occupancyPercentage)}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No allocations available.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
