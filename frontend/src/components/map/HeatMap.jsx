@@ -24,7 +24,6 @@ const MAP_BOUNDS = [
 
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
-const NOT_RUNTIME = 0.5;
 const MAP_CENTER_POS = [48.1375, 11.702];
 
 const Heatmap = ({ selectedDate, zoom, mapData }) => {
@@ -295,7 +294,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
           entrance={entrance}
           index={index}
           events={uniqueFilteredEvents}
-          GREYED_OUT={NOT_RUNTIME} // Grey out is too light for entrances
+          GREYED_OUT={"0.8"} // Grey out is too light for entrances
         />
       ))}
 
