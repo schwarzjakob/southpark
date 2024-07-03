@@ -26,6 +26,7 @@ import AddParkingSpace from "./components/parking_spaces/AddParkingSpace.jsx";
 import EditParkingSpace from "./components/parking_spaces/EditParkingSpace.jsx";
 import EditCapacity from "./components/parking_spaces/EditCapacity.jsx";
 import AddCapacity from "./components/parking_spaces/AddCapacity.jsx";
+import NotFound from "./components/common/NotFound.jsx";
 
 const LoggedLogin = LoggerHOC(Login);
 const LoggedRegister = LoggerHOC(Register);
@@ -136,6 +137,7 @@ function App() {
                 path="/team"
                 element={<ProtectedRoute element={<LoggedTeam />} />}
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
           <Footer />
