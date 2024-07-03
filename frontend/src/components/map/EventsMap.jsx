@@ -302,7 +302,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
           entrance={entrance}
           index={index}
           events={uniqueFilteredEvents}
-          GREYED_OUT={GREYED_OUT}
+          GREYED_OUT={NOT_RUNTIME} // Grey out is too light for entrances
         />
       ))}
 
