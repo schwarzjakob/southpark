@@ -64,6 +64,7 @@
   padding: 1rem;
 }
 
+/* Parking Space Occupation Table */
 .parkingSpaces-year-month-table {
   background-color: var(--color-primary);
 }
@@ -71,4 +72,20 @@
 .parkingSpaces-year-month-table th {
   border-radius: 0px !important;
   border-bottom-color: var(--color-primary) !important;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #ff434375;
+  }
+  75% {
+    background-color: #ff434375;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.allocation-table-row.highlight {
+  animation: highlightFade 2s ease-out forwards;
 }
