@@ -114,16 +114,9 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
               <div className="popup-title">
                 <span>{entrance.name}</span>
               </div>
-              <div className="details-link_container">
-                <a href={`/entrance/${entrance.id}`}>
-                  <LinkRoundedIcon />
-                  Details
-                </a>
-              </div>
             </div>
             <div className="popup-table-entrance">
-              <div className="popup-header">Event</div>
-              <div className="popup-header">Status</div>
+              <div className="popup-header-entrance">Event</div>
               {entranceEvents.map((event, index) => {
                 const textColor = getContrastingTextColor(event.event_color);
                 return (
@@ -139,15 +132,6 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
                         <LinkRoundedIcon style={{ color: textColor }} />
                         {event.event_name}
                       </a>
-                    </div>
-                    <div
-                      className="popup-table-cell"
-                      style={{
-                        backgroundColor: event.event_color,
-                        color: textColor,
-                      }}
-                    >
-                      {event.status}
                     </div>
                   </React.Fragment>
                 );
