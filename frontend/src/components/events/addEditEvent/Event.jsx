@@ -30,7 +30,6 @@ import {
   ArrowBack as ArrowBackIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
 } from "@mui/icons-material";
-import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 import dayjs from "dayjs";
 
 const TITLE = "Event Details";
@@ -344,7 +343,7 @@ const Event = () => {
         setIsEditingDemands={setIsEditingDemands}
         style={{ marginBottom: "32px" }}
       />
-      <Allocations setIsEditingDemands={setIsEditingDemands} eventId={id} />
+      <Allocations isEditingDemands={isEditingDemands} eventId={id} />
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Box display="flex" justifyContent="space-between">
           <Button
@@ -357,18 +356,6 @@ const Event = () => {
             Back
           </Button>
         </Box>
-        {!isEditingDemands && (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AccountTreeRoundedIcon />}
-            onClick={() =>
-              navigate(`/events/event/${id}/allocate-parking-spaces`)
-            }
-          >
-            Allocate Parking Spaces
-          </Button>
-        )}
       </Box>
     </Box>
   );

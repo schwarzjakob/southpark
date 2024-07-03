@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Box,
+  Button,
   Typography,
   Paper,
   Table,
@@ -20,20 +21,23 @@ import {
   LocalShippingRounded as LocalShippingRoundedIcon,
   FunctionsRounded as FunctionsRoundedIcon,
   Garage as GarageIcon,
+  AccountTreeRounded as AccountTreeRoundedIcon,
 } from "@mui/icons-material";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
 const TITLE = "Event Allocations";
 
-const Allocations = ({ eventId }) => {
+const Allocations = ({ eventId, isEditingDemands }) => {
   Allocations.propTypes = {
     eventId: PropTypes.string.isRequired,
+    isEditingDemands: PropTypes.func.isRequired,
   };
 
   const [allocations, setAllocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("date");
   const navigate = useNavigate();
@@ -107,6 +111,24 @@ const Allocations = ({ eventId }) => {
           <Typography variant="h4" gutterBottom>
             {TITLE}
           </Typography>
+        </Box>
+        <Box display="flex" justifyContent="space-between" mt={2}>
+          {!isEditingDemands && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AccountTreeRoundedIcon />}
+              onClick={() =>
+                navigate(`/events/event/${eventId}/allocate-parking-spaces`)
+              }
+              style={{
+                marginBottom: "1rem",
+                float: "right",
+              }}
+            >
+              Allocate Parking Spaces
+            </Button>
+          )}
         </Box>
       </Box>
       {error && (
