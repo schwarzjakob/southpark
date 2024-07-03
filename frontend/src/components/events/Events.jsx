@@ -117,7 +117,7 @@ const Events = () => {
   };
 
   const filteredEvents = events.filter((event) =>
-    event.name.toLowerCase().includes(filter.toLowerCase())
+    event.name.toLowerCase().includes(filter.toLowerCase()),
   );
 
   const sortedEvents = filteredEvents.sort((a, b) => {
@@ -155,13 +155,17 @@ const Events = () => {
             .map((pl) => pl.parking_lot_name)
             .join(", ")
             .localeCompare(
-              b.allocatedParkingLots.map((pl) => pl.parking_lot_name).join(", ")
+              b.allocatedParkingLots
+                .map((pl) => pl.parking_lot_name)
+                .join(", "),
             )
         : b.allocatedParkingLots
             .map((pl) => pl.parking_lot_name)
             .join(", ")
             .localeCompare(
-              a.allocatedParkingLots.map((pl) => pl.parking_lot_name).join(", ")
+              a.allocatedParkingLots
+                .map((pl) => pl.parking_lot_name)
+                .join(", "),
             );
     }
 
@@ -177,6 +181,14 @@ const Events = () => {
       acc[letter].push(hall);
       return acc;
     }, {});
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear().toString().slice(2);
+    return `${day}.${month}.${year}`;
   };
 
   const getContrastingTextColor = (backgroundColor) => {
@@ -397,29 +409,23 @@ const Events = () => {
                       {Object.entries(groupHallsByLetter(event.halls)).map(
                         ([letter, halls]) => (
                           <Box key={letter}>{halls.join(", ")}</Box>
-                        )
+                        ),
                       )}
                     </TableCell>
                     <TableCell className="assembly">
-                      {`${new Date(
-                        event.assembly_start_date
-                      ).toLocaleDateString()} - ${new Date(
-                        event.assembly_end_date
-                      ).toLocaleDateString()}`}
+                      {`${formatDate(event.assembly_start_date)} -`}
+                      <br />
+                      {`${formatDate(event.assembly_end_date)}`}
                     </TableCell>
                     <TableCell className="runtime">
-                      {`${new Date(
-                        event.runtime_start_date
-                      ).toLocaleDateString()} - ${new Date(
-                        event.runtime_end_date
-                      ).toLocaleDateString()}`}
+                      {`${formatDate(event.runtime_start_date)} -`}
+                      <br />
+                      {`${formatDate(event.runtime_end_date)}`}
                     </TableCell>
                     <TableCell className="disassembly">
-                      {`${new Date(
-                        event.disassembly_start_date
-                      ).toLocaleDateString()} - ${new Date(
-                        event.disassembly_end_date
-                      ).toLocaleDateString()}`}
+                      {`${formatDate(event.disassembly_start_date)} -`}
+                      <br />
+                      {`${formatDate(event.disassembly_end_date)}`}
                     </TableCell>
                     <TableCell className="status">
                       <Box
