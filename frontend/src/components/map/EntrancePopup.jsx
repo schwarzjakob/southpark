@@ -29,7 +29,8 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
 
   const tooltipOffset =
     entrance.name.trim().toLowerCase() === "north west" ||
-    entrance.name.trim().toLowerCase() === "north east"
+    entrance.name.trim().toLowerCase() === "north east" ||
+    entrance.name.trim().toLowerCase() === "north"
       ? [0, -20] // Adjust this value as needed
       : [0, 0];
 
