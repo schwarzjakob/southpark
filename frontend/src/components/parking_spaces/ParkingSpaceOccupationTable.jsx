@@ -55,7 +55,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
         );
         if (response.status === 204) {
           console.log("No allocations found for this parking lot.");
-          setAllocations([{}]); // Add an empty row if no data is received
+          setAllocations([{}]);
         } else {
           setAllocations(response.data.length ? response.data : [{}]);
           filterAllocations(
@@ -99,7 +99,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
           ".parkingSpaces-container",
         );
         if (tableContainer) {
-          tableContainer.scrollTop = 0; // Ensure the initial view is at the top
+          tableContainer.scrollTop = 0;
         }
 
         const targetRow = document.querySelector(
@@ -167,12 +167,10 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
     let red, green, blue;
 
     if (percentage <= 50) {
-      // Dark green to Orange-like yellow
       red = Math.min(255, Math.round((percentage / 50) * 255));
       green = Math.min(128, Math.round(128 - (percentage / 50) * 128 + 128));
       blue = 0;
     } else {
-      // Orange-like yellow to Red
       red = 255;
       green = Math.min(128, Math.round((1 - (percentage - 50) / 50) * 128));
       blue = 0;
@@ -190,7 +188,6 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
     return `${percentage}% Occupied`;
   };
 
-  // Group allocations by date
   const groupedAllocations = sortedAllocations.reduce((acc, allocation) => {
     const date = allocation.date;
     if (!acc[date]) {
@@ -420,7 +417,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
                 const style = {
                   position: "relative",
                   borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
-                  paddingTop: "6px", // Adjust padding to account for the pseudo-element
+                  paddingTop: "6px",
                 };
 
                 const doubleStrokeStyle = {
