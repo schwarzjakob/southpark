@@ -50,7 +50,7 @@ const Allocations = ({ eventId, isEditingDemands }) => {
       try {
         const response = await axios.get(`/api/events/allocations/${eventId}`);
         if (response.status === 204) {
-          setAllocations([{}]); // Add an empty row if no data is received
+          setAllocations([{}]);
         } else {
           setAllocations(response.data.length ? response.data : [{}]);
         }
@@ -125,7 +125,7 @@ const Allocations = ({ eventId, isEditingDemands }) => {
     const demand = demands.find(
       (d) => formatDate(d.date) === formatDate(allocation.date),
     );
-    const phase = demand ? demand.status : "other"; // default to 'other' if no matching demand is found
+    const phase = demand ? demand.status : "other";
     if (!acc[phase]) {
       acc[phase] = [];
     }
