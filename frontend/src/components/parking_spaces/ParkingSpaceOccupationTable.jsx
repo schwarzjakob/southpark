@@ -33,9 +33,10 @@ import "./styles/parkingSpaces.css";
 
 const TITLE = "Parking Space Occupation";
 
-const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
+const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
   ParkingSpaceOccupationTable.propTypes = {
     parkingLotId: PropTypes.string.isRequired,
+    selectedDate: PropTypes.string,
   };
 
   const [allocations, setAllocations] = useState([]);
@@ -69,6 +70,43 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
   useEffect(() => {
     filterAllocations(allocations, selectedYear, selectedMonth);
   }, [allocations, selectedYear, selectedMonth]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      const selectedDateObj = new Date(selectedDate);
+      setSelectedYear(selectedDateObj.getFullYear());
+      setSelectedMonth(selectedDateObj.getMonth());
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      const selectedDateObj = new Date(selectedDate);
+      const dateStr = `${selectedDateObj
+        .getDate()
+        .toString()
+        .padStart(2, "0")}.${(selectedDateObj.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}.${selectedDateObj.getFullYear()}`;
+
+      setTimeout(() => {
+        const tableContainer = document.querySelector(
+          ".parkingSpaces-container",
+        );
+        if (tableContainer) {
+          tableContainer.scrollTop = 0; // Ensure the initial view is at the top
+        }
+
+        const targetRow = document.querySelector(
+          `.allocation-table-row[data-date="${dateStr}"]`,
+        );
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+          targetRow.classList.add("highlight");
+        }
+      }, 0);
+    }
+  }, [selectedDate, filteredAllocations]);
 
   const filterAllocations = (allocations, year, month) => {
     const startOfMonth = dayjs().year(year).month(month).startOf("month");
@@ -260,20 +298,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "car_demand"}
-                    direction={orderBy === "car_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("car_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated Cars
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Car Units)
-                      </Box>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated Cars
                     </Box>
-                  </TableSortLabel>
+                    <Box className="header-icon-container__label-unit">
+                      (Car Units)
+                    </Box>
+                  </Box>
                 </Box>
               </TableCell>
               <TableCell>
@@ -282,20 +314,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "bus_demand"}
-                    direction={orderBy === "bus_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("bus_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated Buses
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 3x Car Units)
-                      </Box>
-                    </Box>{" "}
-                  </TableSortLabel>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated Buses
+                    </Box>
+                    <Box className="header-icon-container__label-unit">
+                      (= 3x Car Units)
+                    </Box>
+                  </Box>{" "}
                 </Box>
               </TableCell>
               <TableCell>
@@ -304,20 +330,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "truck_demand"}
-                    direction={orderBy === "truck_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("truck_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated Trucks
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 4x Car Units)
-                      </Box>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated Trucks
                     </Box>
-                  </TableSortLabel>
+                    <Box className="header-icon-container__label-unit">
+                      (= 4x Car Units)
+                    </Box>
+                  </Box>
                 </Box>
               </TableCell>
               <TableCell>
@@ -326,20 +346,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "demand"}
-                    direction={orderBy === "demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated / Total
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Total Car Units)
-                      </Box>
-                    </Box>{" "}
-                  </TableSortLabel>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated / Total
+                    </Box>
+                    <Box className="header-icon-container__label-unit">
+                      (Total Car Units)
+                    </Box>
+                  </Box>{" "}
                 </Box>
               </TableCell>
               <TableCell>
@@ -424,6 +438,8 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                         navigate(`/events/event/${allocation.event_id}`)
                       }
                       style={{ cursor: "pointer" }}
+                      className="allocation-table-row"
+                      data-date={formatDate(allocation.date)}
                     >
                       <TableCell>{formatDate(allocation.date)}</TableCell>
                       <TableCell>{allocation.allocated_cars}</TableCell>

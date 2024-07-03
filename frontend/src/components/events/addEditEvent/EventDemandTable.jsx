@@ -133,7 +133,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       setEditMode(false);
       setIsEditingDemands(false);
       setDemands(editedDemands);
-      updateStatuses(); 
+      updateStatuses();
       await fetchAllocations();
       await fetchDemands();
     } catch (error) {
@@ -375,7 +375,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   };
 
   return (
-    <Box className="capacitiesTable-container">
+    <Box className="capacitiesTable-container" style={{ marginBottom: "2rem" }}>
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
           <NumbersRoundedIcon />
@@ -454,20 +454,14 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "car_demand"}
-                    direction={orderBy === "car_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("car_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Car Demand
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Car Units)
-                      </Box>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Car Demand
                     </Box>
-                  </TableSortLabel>
+                    <Box className="header-icon-container__label-unit">
+                      (Car Units)
+                    </Box>
+                  </Box>
                 </Box>
               </TableCell>
               <TableCell>
@@ -476,20 +470,14 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "bus_demand"}
-                    direction={orderBy === "bus_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("bus_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Bus Demand
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 3x Car Units)
-                      </Box>
-                    </Box>{" "}
-                  </TableSortLabel>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Bus Demand
+                    </Box>
+                    <Box className="header-icon-container__label-unit">
+                      (= 3x Car Units)
+                    </Box>
+                  </Box>{" "}
                 </Box>
               </TableCell>
               <TableCell>
@@ -498,20 +486,14 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "truck_demand"}
-                    direction={orderBy === "truck_demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("truck_demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Truck Demand
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (= 4x Car Units)
-                      </Box>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Truck Demand
                     </Box>
-                  </TableSortLabel>
+                    <Box className="header-icon-container__label-unit">
+                      (= 4x Car Units)
+                    </Box>
+                  </Box>
                 </Box>
               </TableCell>
               <TableCell>
@@ -520,20 +502,14 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "demand"}
-                    direction={orderBy === "demand" ? order : "asc"}
-                    onClick={() => handleRequestSort("demand")}
-                  >
-                    <Box className="header-icon-container__label">
-                      <Box className="header-icon-container__label-title">
-                        Allocated / Total
-                      </Box>
-                      <Box className="header-icon-container__label-unit">
-                        (Total Car Units)
-                      </Box>
-                    </Box>{" "}
-                  </TableSortLabel>
+                  <Box className="header-icon-container__label">
+                    <Box className="header-icon-container__label-title">
+                      Allocated / Total
+                    </Box>
+                    <Box className="header-icon-container__label-unit">
+                      (Total Car Units)
+                    </Box>
+                  </Box>{" "}
                 </Box>
               </TableCell>
               <TableCell>
@@ -542,13 +518,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     fontSize="small"
                     className="header-icon"
                   />
-                  <TableSortLabel
-                    active={orderBy === "status"}
-                    direction={orderBy === "status" ? order : "asc"}
-                    onClick={() => handleRequestSort("status")}
-                  >
-                    Status
-                  </TableSortLabel>
+                  Status
                 </Box>
               </TableCell>
             </TableRow>

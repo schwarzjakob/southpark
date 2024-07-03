@@ -18,6 +18,7 @@ import {
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
 import EventDemandTable from "./EventDemandTable.jsx";
 import EventMapSection from "./EventMapSection.jsx";
+import Allocations from "./Allocations.jsx";
 import "../../map/styles/map.css";
 import "../styles/events.css";
 import {
@@ -53,22 +54,22 @@ const Event = () => {
         const eventData = response.data;
 
         eventData.assembly_start_date = formatDateToISO(
-          eventData.assembly_start_date
+          eventData.assembly_start_date,
         );
         eventData.assembly_end_date = formatDateToISO(
-          eventData.assembly_end_date
+          eventData.assembly_end_date,
         );
         eventData.runtime_start_date = formatDateToISO(
-          eventData.runtime_start_date
+          eventData.runtime_start_date,
         );
         eventData.runtime_end_date = formatDateToISO(
-          eventData.runtime_end_date
+          eventData.runtime_end_date,
         );
         eventData.disassembly_start_date = formatDateToISO(
-          eventData.disassembly_start_date
+          eventData.disassembly_start_date,
         );
         eventData.disassembly_end_date = formatDateToISO(
-          eventData.disassembly_end_date
+          eventData.disassembly_end_date,
         );
 
         const calculateMiddleDate = (start, end) => {
@@ -76,7 +77,7 @@ const Event = () => {
           const endDate = dayjs(end);
           const middleDate = startDate.add(
             endDate.diff(startDate, "days") / 2,
-            "days"
+            "days",
           );
           return middleDate.format("YYYY-MM-DD");
         };
@@ -87,8 +88,8 @@ const Event = () => {
           setSelectedDate(
             calculateMiddleDate(
               eventData.runtime_start_date,
-              eventData.runtime_end_date
-            )
+              eventData.runtime_end_date,
+            ),
           );
         }
       } catch (error) {
@@ -125,7 +126,7 @@ const Event = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       )
     ) {
       return;
@@ -270,7 +271,7 @@ const Event = () => {
                       <Box className="time-span-days">
                         {calculateDaysBetween(
                           event.assembly_start_date,
-                          event.assembly_end_date
+                          event.assembly_end_date,
                         )}{" "}
                         Days
                       </Box>
@@ -288,7 +289,7 @@ const Event = () => {
                       <Box className="time-span-days">
                         {calculateDaysBetween(
                           event.runtime_start_date,
-                          event.runtime_end_date
+                          event.runtime_end_date,
                         )}{" "}
                         Days
                       </Box>
@@ -309,7 +310,7 @@ const Event = () => {
                       <Box className="time-span-days">
                         {calculateDaysBetween(
                           event.disassembly_start_date,
-                          event.disassembly_end_date
+                          event.disassembly_end_date,
                         )}{" "}
                         Days
                       </Box>
@@ -338,11 +339,12 @@ const Event = () => {
           setSelectedDate={setSelectedDate}
         />
       </Paper>
-
       <EventDemandTable
         eventId={id}
         setIsEditingDemands={setIsEditingDemands}
+        style={{ marginBottom: "32px" }}
       />
+      <Allocations setIsEditingDemands={setIsEditingDemands} eventId={id} />
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Box display="flex" justifyContent="space-between">
           <Button
