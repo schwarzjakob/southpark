@@ -14,6 +14,7 @@ import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 import MapLegendComponent from "./MapLegend.jsx";
 import HeatMapParkingLotPopup from "./HeatMapParkingLotPopup.jsx";
+import EntrancePopup from "./EntrancePopup.jsx";
 import "leaflet/dist/leaflet.css";
 
 const DOWNWARD_OVERLAYS = [
@@ -49,6 +50,7 @@ const MAP_BOUNDS = [
 
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
+const NOT_RUNTIME = 0.5;
 const MAP_CENTER_POS = [48.1375, 11.702];
 
 const Heatmap = ({ selectedDate, zoom, mapData }) => {
@@ -313,49 +315,15 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         );
       })}
 
-      {entrances.map((entrance) => {
-        const transformedCoords = transformCoordinates(entrance.coordinates);
-        const event = uniqueFilteredEvents.find((event) =>
-          event.event_entrance
-            ? event.event_entrance.includes(entrance.name)
-            : false,
-        );
-        const fillColor = event ? `${event.event_color}` : "gray";
-        const borderColor = event ? `${event.event_color}` : "transparent";
-        const popupOffset = DOWNWARD_OVERLAYS.includes(entrance.name)
-          ? [0, 50]
-          : [0, 0];
-
-        return (
-          <Polygon
-            key={entrance.name}
-            positions={transformedCoords}
-            className={`entrances entrance-${entrance.name}`}
-            pathOptions={{
-              color: borderColor,
-              fillColor: fillColor,
-              fillOpacity: event ? 0.75 : 0.25,
-              weight: 2,
-            }}
-          >
-            <Tooltip
-              direction="center"
-              offset={[0, 0]}
-              permanent
-              className="tags-entrances"
-            >
-              <span>{entrance.name}</span>
-            </Tooltip>
-            <Popup autoPan={false} offset={popupOffset}>
-              {event ? (
-                getPopupContent(event, entrance.name, "entrance")
-              ) : (
-                <span>{entrance.name}: No Event!</span>
-              )}
-            </Popup>
-          </Polygon>
-        );
-      })}
+      {coordinates.entrances.map((entrance, index) => (
+        <EntrancePopup
+          key={entrance.name}
+          entrance={entrance}
+          index={index}
+          events={uniqueFilteredEvents}
+          GREYED_OUT={NOT_RUNTIME} // Grey out is too light for entrances
+        />
+      ))}
 
       {parkingLots.map((parkingLot, index) => (
         <HeatMapParkingLotPopup
