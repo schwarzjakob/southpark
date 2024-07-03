@@ -13,6 +13,7 @@ import { Box, Button } from "@mui/material";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 import MapLegendComponent from "./MapLegend.jsx";
+import HeatMapParkingLotPopup from "./HeatMapParkingLotPopup.jsx";
 import "leaflet/dist/leaflet.css";
 
 const DOWNWARD_OVERLAYS = [
@@ -56,6 +57,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
     events_timeline = [],
     parking_lots_occupancy = [],
     parking_lots_capacity = [],
+    parking_lots_allocations = [],
   } = mapData || {};
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
@@ -63,6 +65,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
   const [events, setEvents] = useState([]);
   const [occupancy, setOccupancy] = useState([]);
   const [capacity, setCapacity] = useState([]);
+  const [allocations, setAllocations] = useState([]);
 
   useEffect(() => {
     setHalls(coordinates.halls);
@@ -70,10 +73,11 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
     setEntrances(coordinates.entrances);
     setEvents(events_timeline);
     setCapacity(parking_lots_capacity);
+    setAllocations(parking_lots_allocations);
 
     const combinedData = parking_lots_occupancy.map((occ) => {
       const capacityData = parking_lots_capacity.find(
-        (cap) => cap.name === occ.parking_lot_name
+        (cap) => cap.name === occ.parking_lot_name,
       );
       return {
         ...occ,
@@ -86,6 +90,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
     events_timeline,
     parking_lots_occupancy,
     parking_lots_capacity,
+    parking_lots_allocations,
   ]);
 
   const transformCoordinates = (originalCoords) => {
@@ -105,7 +110,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         event.assembly_start_date,
         event.assembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "assembly";
@@ -116,7 +121,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         event.runtime_start_date,
         event.runtime_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "runtime";
@@ -127,33 +132,12 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         event.disassembly_start_date,
         event.disassembly_end_date,
         null,
-        "[]"
+        "[]",
       )
     ) {
       return "disassembly";
     }
     return "unknown";
-  };
-
-  const calculateColor = (occupancy) => {
-    const r1 = parseInt(COLOR_FREE.substring(1, 3), 16);
-    const g1 = parseInt(COLOR_FREE.substring(3, 5), 16);
-    const b1 = parseInt(COLOR_FREE.substring(5, 7), 16);
-
-    const r2 = parseInt(COLOR_OCCUPIED.substring(1, 3), 16);
-    const g2 = parseInt(COLOR_OCCUPIED.substring(3, 5), 16);
-    const b2 = parseInt(COLOR_OCCUPIED.substring(5, 7), 16);
-
-    const r = Math.round(r1 + (r2 - r1) * occupancy)
-      .toString(16)
-      .padStart(2, "0");
-    const g = Math.round(g1 + (g2 - g1) * occupancy)
-      .toString(16)
-      .padStart(2, "0");
-    const b = Math.round(b1 + (b2 - b1) * occupancy)
-      .toString(16)
-      .padStart(2, "0");
-    return `#${r}${g}${b}`;
   };
 
   const getPopupContent = (event, id, type) => {
@@ -225,10 +209,10 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
           event.assembly_start_date,
           event.disassembly_end_date,
           null,
-          "[]"
+          "[]",
         ) ||
-        dayjs(selectedDate).isSame(event.disassembly_end_date, "day")
-    )
+        dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
+    ),
   );
 
   const SetZoomLevel = ({ zoom }) => {
@@ -293,7 +277,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
       {halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = uniqueFilteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false
+          event.halls ? event.halls.split(", ").includes(hall.name) : false,
         );
         const fillColor = event ? `${event.event_color}` : "gray";
         const borderColor = event ? `${event.event_color}` : "transparent";
@@ -334,7 +318,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         const event = uniqueFilteredEvents.find((event) =>
           event.event_entrance
             ? event.event_entrance.includes(entrance.name)
-            : false
+            : false,
         );
         const fillColor = event ? `${event.event_color}` : "gray";
         const borderColor = event ? `${event.event_color}` : "transparent";
@@ -373,78 +357,18 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         );
       })}
 
-      {parkingLots.map((parkingLot) => {
-        const transformedCoords = transformCoordinates(parkingLot.coordinates);
-        const occupancyData = occupancy.find(
-          (data) => data.parking_lot_name === parkingLot.name
-        );
-        const capacityData = capacity.find(
-          (cap) => cap.name === parkingLot.name
-        );
-        const totalCapacity = capacityData ? capacityData.capacity : 0;
-        const occupancyRate =
-          occupancyData && totalCapacity
-            ? occupancyData.occupancy / totalCapacity
-            : 0;
-
-        const fillColor = calculateColor(occupancyRate);
-        const borderColor = fillColor;
-        const popupOffset = DOWNWARD_OVERLAYS.includes(parkingLot.name)
-          ? [0, 80]
-          : [0, 0];
-
-        return (
-          <Polygon
-            key={parkingLot.name}
-            positions={transformedCoords}
-            className={`parking-lots parking-lot-${parkingLot.name}`}
-            pathOptions={{
-              color: borderColor,
-              fillColor: fillColor,
-              fillOpacity: 0.75,
-              weight: 2,
-            }}
-          >
-            <Tooltip
-              direction="center"
-              offset={[0, 0]}
-              permanent
-              className="tags-parking-lots"
-            >
-              <span>{parkingLot.name}</span>
-            </Tooltip>
-            <Popup autoPan={false} offset={popupOffset}>
-              {occupancyData ? (
-                <div>
-                  <h4>{parkingLot.name}</h4>
-                  <p>Occupancy: {occupancyData.occupancy}</p>
-                  <p>
-                    Free Capacity: {totalCapacity - occupancyData.occupancy}
-                  </p>
-                  <div className="details-link_container">
-                    <a href={`/parking_space/${parkingLot.id}`}>
-                      <LinkRoundedIcon />
-                      {parkingLot.name} Details
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <h4>{parkingLot.name}</h4>
-                  <p>Occupancy: 0</p>
-                  <p>Free Capacity: {totalCapacity}</p>
-                  <div className="details-link_container">
-                    <a href={`/parking_space/${parkingLot.id}`}>
-                      <LinkRoundedIcon />
-                      {parkingLot.name} Details
-                    </a>
-                  </div>
-                </div>
-              )}
-            </Popup>
-          </Polygon>
-        );
-      })}
+      {parkingLots.map((parkingLot, index) => (
+        <HeatMapParkingLotPopup
+          key={parkingLot.name}
+          parkingLot={parkingLot}
+          index={index}
+          parking_lots_occupancy={occupancy}
+          parking_lots_capacity={capacity}
+          parking_lots_allocations={allocations}
+          COLOR_OCCUPIED={COLOR_OCCUPIED}
+          COLOR_FREE={COLOR_FREE}
+        />
+      ))}
     </MapContainer>
   );
 };

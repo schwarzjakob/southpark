@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
 import MapLegendComponent from "./MapLegend.jsx";
-import ParkingPopup from "./ParkingPopup.jsx";
+import ParkingPopup from "./EventsMapParkingLotPopup.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";

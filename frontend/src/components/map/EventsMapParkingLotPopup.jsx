@@ -30,40 +30,12 @@ const ParkingPopup = ({
 }) => {
   const transformedCoords = transformCoordinates(parkingLot.coordinates);
   const allocations = parking_lots_allocations.filter(
-    (allocation) => allocation.parking_lot_id === parkingLot.id
+    (allocation) => allocation.parking_lot_id === parkingLot.id,
   );
 
   const parkingLotCapacity =
     parking_lots_capacity.find((capacity) => capacity.id === parkingLot.id)
       ?.capacity || 0;
-
-  if (allocations.length === 0 || parkingLotCapacity === 0) {
-    return (
-      <Polygon
-        key={parkingLot.name}
-        positions={transformedCoords}
-        className={`parking-lots parking-lot-${parkingLot.name}`}
-        pathOptions={{
-          color: "transparent",
-          fillColor: "gray",
-          fillOpacity: GREYED_OUT,
-          weight: 2,
-        }}
-      >
-        <Tooltip
-          direction="center"
-          offset={[0, 0]}
-          permanent
-          className="tags-parking-lots"
-        >
-          <span>{parkingLot.name}</span>
-        </Tooltip>
-        <Popup autoPan={false}>
-          <span>{parkingLot.name}: No Event!</span>
-        </Popup>
-      </Polygon>
-    );
-  }
 
   const fillColors = allocations.map((allocation) => ({
     color: allocation.event_color,
@@ -72,7 +44,7 @@ const ParkingPopup = ({
 
   const usedCapacityPercentage = fillColors.reduce(
     (acc, cur) => acc + cur.percentage,
-    0
+    0,
   );
   const freeCapacityPercentage = 1 - usedCapacityPercentage;
 
@@ -103,6 +75,65 @@ const ParkingPopup = ({
   });
 
   const gradientId = `gradient-${index}-${parkingLot.id}`;
+
+  if (!allocations || allocations.length === 0) {
+    return (
+      <div>
+        <Polygon
+          key={parkingLot.name}
+          positions={transformedCoords}
+          className={`parking-lots parking-lot-${parkingLot.name}`}
+          pathOptions={{
+            color: "transparent",
+            fillColor: "gray",
+            fillOpacity: GREYED_OUT,
+            weight: 2,
+          }}
+        >
+          <Tooltip
+            direction="center"
+            offset={[0, 0]}
+            permanent
+            className="tags-parking-lots"
+          >
+            <span>{parkingLot.name}</span>
+          </Tooltip>
+          <Popup autoPan={false}>
+            <div className="popup-title-container">
+              <div className="popup-title">
+                <span>{parkingLot.name}</span>
+              </div>
+              <div className="details-link_container">
+                <a href={`/parking_space/${parkingLot.id}`}>
+                  <LinkRoundedIcon />
+                  Details
+                </a>
+              </div>
+            </div>
+
+            <div className="popup-table">
+              <div className="popup-header">No Event!</div>
+              <div className="popup-header car-units">Car units</div>
+              <div className="popup-header">Percentage</div>
+              <React.Fragment>
+                <div className="popup-table-cell-footer capacity">
+                  <strong>Free Capacity</strong>
+                </div>
+                <div className="popup-table-cell-footer">
+                  <strong>
+                    {Math.round(freeCapacityPercentage * parkingLotCapacity)}
+                  </strong>
+                </div>
+                <div className="popup-table-cell-footer percentage">
+                  <strong>{(freeCapacityPercentage * 100).toFixed(2)}%</strong>
+                </div>
+              </React.Fragment>
+            </div>
+          </Popup>
+        </Polygon>
+      </div>
+    );
+  }
 
   return (
     <React.Fragment key={parkingLot.name}>
@@ -150,7 +181,7 @@ const ParkingPopup = ({
               <div className="popup-header">Percentage</div>
               {allocations.map((allocation, index) => {
                 const textColor = getContrastingTextColor(
-                  allocation.event_color
+                  allocation.event_color,
                 );
                 return (
                   <React.Fragment key={index}>
