@@ -55,9 +55,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
         );
         if (response.status === 204) {
           console.log("No allocations found for this parking lot.");
+          setAllocations([{}]); // Add an empty row if no data is received
         } else {
-          setAllocations(response.data);
-          filterAllocations(response.data, selectedYear, selectedMonth);
+          setAllocations(response.data.length ? response.data : [{}]);
+          filterAllocations(
+            response.data.length ? response.data : [{}],
+            selectedYear,
+            selectedMonth,
+          );
         }
       } catch (error) {
         console.error("Error fetching allocations data:", error);
@@ -377,139 +382,147 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {Object.keys(groupedAllocations).map((date, dateIndex) => {
-              const dateAllocations = groupedAllocations[date];
-              const totalAllocatedCars = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_cars,
-                0,
-              );
-              const totalAllocatedBuses = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_buses,
-                0,
-              );
-              const totalAllocatedTrucks = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_trucks,
-                0,
-              );
-              const totalAllocatedCapacity = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.allocated_capacity,
-                0,
-              );
-              const totalCapacity = dateAllocations.reduce(
-                (sum, alloc) => sum + alloc.total_capacity,
-                0,
-              );
+            {Object.keys(groupedAllocations).length > 0 ? (
+              Object.keys(groupedAllocations).map((date, dateIndex) => {
+                const dateAllocations = groupedAllocations[date];
+                const totalAllocatedCars = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_cars,
+                  0,
+                );
+                const totalAllocatedBuses = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_buses,
+                  0,
+                );
+                const totalAllocatedTrucks = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_trucks,
+                  0,
+                );
+                const totalAllocatedCapacity = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.allocated_capacity,
+                  0,
+                );
+                const totalCapacity = dateAllocations.reduce(
+                  (sum, alloc) => sum + alloc.total_capacity,
+                  0,
+                );
 
-              let occupancyPercentage =
-                (totalAllocatedCapacity / totalCapacity) * 100;
-              if (occupancyPercentage > 99 && occupancyPercentage < 100) {
-                occupancyPercentage = 99;
-              } else {
-                occupancyPercentage = Math.round(occupancyPercentage);
-              }
+                let occupancyPercentage =
+                  (totalAllocatedCapacity / totalCapacity) * 100;
+                if (occupancyPercentage > 99 && occupancyPercentage < 100) {
+                  occupancyPercentage = 99;
+                } else {
+                  occupancyPercentage = Math.round(occupancyPercentage);
+                }
 
-              const isLastRow =
-                dateIndex === Object.keys(groupedAllocations).length - 1;
+                const isLastRow =
+                  dateIndex === Object.keys(groupedAllocations).length - 1;
 
-              const style = {
-                position: "relative",
-                borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
-                paddingTop: "6px", // Adjust padding to account for the pseudo-element
-              };
+                const style = {
+                  position: "relative",
+                  borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
+                  paddingTop: "6px", // Adjust padding to account for the pseudo-element
+                };
 
-              const doubleStrokeStyle = {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "3px",
-                borderTop: "1px solid rgba(128, 128, 128, 0.5)",
-                borderBottom: "1px solid rgba(128, 128, 128, 0.5)",
-              };
+                const doubleStrokeStyle = {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "3px",
+                  borderTop: "1px solid rgba(128, 128, 128, 0.5)",
+                  borderBottom: "1px solid rgba(128, 128, 128, 0.5)",
+                };
 
-              return (
-                <React.Fragment key={dateIndex}>
-                  {dateAllocations.map((allocation) => (
-                    <TableRow
-                      key={allocation.id}
-                      hover
-                      onClick={() =>
-                        navigate(`/events/event/${allocation.event_id}`)
-                      }
-                      style={{ cursor: "pointer" }}
-                      className="allocation-table-row"
-                      data-date={formatDate(allocation.date)}
-                    >
-                      <TableCell>{formatDate(allocation.date)}</TableCell>
-                      <TableCell>{allocation.allocated_cars}</TableCell>
-                      <TableCell>{allocation.allocated_buses}</TableCell>
-                      <TableCell>{allocation.allocated_trucks}</TableCell>
-                      <TableCell>{`${allocation.allocated_capacity}/${allocation.total_capacity}`}</TableCell>
+                return (
+                  <React.Fragment key={dateIndex}>
+                    {dateAllocations.map((allocation) => (
+                      <TableRow
+                        key={allocation.id}
+                        hover
+                        onClick={() =>
+                          navigate(`/events/event/${allocation.event_id}`)
+                        }
+                        style={{ cursor: "pointer" }}
+                        className="allocation-table-row"
+                        data-date={formatDate(allocation.date)}
+                      >
+                        <TableCell>{formatDate(allocation.date)}</TableCell>
+                        <TableCell>{allocation.allocated_cars}</TableCell>
+                        <TableCell>{allocation.allocated_buses}</TableCell>
+                        <TableCell>{allocation.allocated_trucks}</TableCell>
+                        <TableCell>{`${allocation.allocated_capacity}/${allocation.total_capacity}`}</TableCell>
+                        <TableCell>
+                          <Box
+                            className="event-box"
+                            style={{
+                              backgroundColor: allocation.event_color,
+                              color: getContrastingTextColor(
+                                allocation.event_color,
+                              ),
+                              wordWrap: "break-word",
+                              maxWidth: "200px",
+                            }}
+                          >
+                            {allocation.event_name}
+                          </Box>
+                        </TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow key={`${date}-total`} style={style}>
+                      <TableCell>
+                        <Box style={doubleStrokeStyle}></Box>
+                        <Box style={{ display: "flex", alignItems: "center" }}>
+                          <FunctionsRoundedIcon></FunctionsRoundedIcon>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{totalAllocatedCars}</TableCell>
+                      <TableCell>{totalAllocatedBuses}</TableCell>
+                      <TableCell>{totalAllocatedTrucks}</TableCell>
+                      <TableCell>{`${totalAllocatedCapacity}/${totalCapacity}`}</TableCell>
                       <TableCell>
                         <Box
                           className="event-box"
                           style={{
-                            backgroundColor: allocation.event_color,
+                            background: "rgba(128, 128, 128, 75)",
                             color: getContrastingTextColor(
-                              allocation.event_color,
+                              "rgba(128, 128, 128, 75)",
                             ),
                             wordWrap: "break-word",
                             maxWidth: "200px",
+                            cursor: "default",
                           }}
                         >
-                          {allocation.event_name}
+                          All Events
                         </Box>
                       </TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow key={`${date}-total`} style={style}>
-                    <TableCell>
-                      <Box style={doubleStrokeStyle}></Box>
-                      <Box style={{ display: "flex", alignItems: "center" }}>
-                        <FunctionsRoundedIcon></FunctionsRoundedIcon>
-                      </Box>
-                    </TableCell>
-                    <TableCell>{totalAllocatedCars}</TableCell>
-                    <TableCell>{totalAllocatedBuses}</TableCell>
-                    <TableCell>{totalAllocatedTrucks}</TableCell>
-                    <TableCell>{`${totalAllocatedCapacity}/${totalCapacity}`}</TableCell>
-                    <TableCell>
-                      <Box
-                        className="event-box"
-                        style={{
-                          background: "rgba(128, 128, 128, 75)",
-                          color: getContrastingTextColor(
-                            "rgba(128, 128, 128, 75)",
-                          ),
-                          wordWrap: "break-word",
-                          maxWidth: "200px",
-                          cursor: "default",
-                        }}
-                      >
-                        All Events
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box
-                        className="status-box"
-                        display="flex"
-                        alignItems="center"
-                      >
-                        {getStatusCircle(occupancyPercentage)}
-                        <Typography
-                          variant="body2"
-                          style={{ marginLeft: "8px" }}
+                      <TableCell>
+                        <Box
+                          className="status-box"
+                          display="flex"
+                          alignItems="center"
                         >
-                          {getStatusText(occupancyPercentage)}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              );
-            })}
+                          {getStatusCircle(occupancyPercentage)}
+                          <Typography
+                            variant="body2"
+                            style={{ marginLeft: "8px" }}
+                          >
+                            {getStatusText(occupancyPercentage)}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No allocations available.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
