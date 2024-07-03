@@ -8,9 +8,9 @@ const LoggerHOC = (WrappedComponent) => {
 
     useEffect(() => {
       const logPageView = async () => {
-        const email = sessionStorage.getItem("email");
-        const token = sessionStorage.getItem("token");
-        const clientIp = sessionStorage.getItem("clientIp");
+        const email = localStorage.getItem("email");
+        const token = localStorage.getItem("token");
+        const clientIp = localStorage.getItem("clientIp");
 
         if (token) {
           try {

@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
-import axios from "axios";
-
 import { Typography, Box, CircularProgress } from "@mui/material";
 import PropTypes from "prop-types";
 import "chart.js/auto";
@@ -37,202 +35,206 @@ const FONT_SIZE = 10;
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 
-const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
+const ParkingLotBarChart = ({
+  selectedDate,
+  mapData,
+  isPercentage,
+  reloading,
+}) => {
   ParkingLotBarChart.propTypes = {
     selectedDate: PropTypes.string.isRequired,
+    mapData: PropTypes.object.isRequired,
     isPercentage: PropTypes.bool.isRequired,
+    reloading: PropTypes.bool,
   };
 
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [setError] = useState(null);
-  const [parkingLots, setParkingLots] = useState([]);
+  const [showLoading, setShowLoading] = useState(loading || reloading);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [parkingLotOccupancyResponse, parkingLotsResponse] =
-          await Promise.all([
-            axios.get(`/api/map/parking_occupancy/${selectedDate}`),
-            axios.get(`/api/map/parking_lots_capacity/${selectedDate}`),
-          ]);
+    if (loading || reloading) {
+      setShowLoading(true);
+    } else {
+      const timer = setTimeout(() => setShowLoading(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, reloading]);
 
-        const parkingLotOccupancy = parkingLotOccupancyResponse.data;
-        const parkingLots = parkingLotsResponse.data;
-        if (parkingLots) {
-          const sortedParkingLots = [...parkingLots]
-            .map((lot) => ({
-              ...lot,
-              name: lot.external ? `${lot.name} (ext.)` : lot.name,
-            }))
-            .sort((a, b) => {
-              if (a.external === b.external) {
-                if (!a.external) {
-                  return a.id - b.id;
-                }
-                return a.name.localeCompare(b.name);
+  useEffect(() => {
+    const prepareChartData = () => {
+      setLoading(true);
+
+      setChartData(null);
+
+      const parkingLotOccupancy = mapData.parking_lots_occupancy;
+      const parkingLots = mapData.parking_lots_capacity;
+
+      if (parkingLots) {
+        const sortedParkingLots = [...parkingLots]
+          .map((lot) => ({
+            ...lot,
+            name: lot.external ? `${lot.name} (ext.)` : lot.name,
+          }))
+          .sort((a, b) => {
+            if (a.external === b.external) {
+              if (!a.external) {
+                return a.id - b.id;
               }
-              return a.external - b.external;
-            });
-
-          setParkingLots(sortedParkingLots);
-
-          const labels = sortedParkingLots.map((item) => item.name);
-
-          const usedCapacityData = Array(sortedParkingLots.length).fill(0);
-          const freeCapacityData = isPercentage
-            ? Array(sortedParkingLots.length).fill(100)
-            : [...sortedParkingLots.map((item) => item.capacity)];
-
-          if (parkingLotOccupancy !== "No data") {
-            parkingLotOccupancy.forEach((item) => {
-              const index = sortedParkingLots.findIndex(
-                (lot) =>
-                  lot.name.replace(" (ext.)", "") === item.parking_lot_name
-              );
-              if (index >= 0) {
-                const totalCapacity = sortedParkingLots[index].capacity;
-                const usedCapacity = item.occupancy;
-                const freeCapacity = totalCapacity - usedCapacity;
-                const usedPercentage = (usedCapacity / totalCapacity) * 100;
-                const freePercentage = (freeCapacity / totalCapacity) * 100;
-
-                usedCapacityData[index] = isPercentage
-                  ? usedPercentage
-                  : usedCapacity;
-                freeCapacityData[index] = isPercentage
-                  ? freePercentage
-                  : freeCapacity;
-              }
-            });
-          }
-          const datasets = [];
-
-          if (!isPercentage) {
-            datasets.push({
-              label: "Used Capacity",
-              backgroundColor: COLOR_OCCUPIED,
-              borderColor: COLOR_OCCUPIED,
-              borderWidth: 1,
-              data: usedCapacityData,
-              datalabels: {
-                anchor: "end",
-                align: function (context) {
-                  const value = context.dataset.data[context.dataIndex];
-                  return value > 250 ? "start" : "end";
-                },
-                offset: function (context) {
-                  const value = context.dataset.data[context.dataIndex];
-                  return value > 250 ? 0 : 0;
-                },
-                color: "#000000",
-                font: {
-                  size: FONT_SIZE,
-                },
-                display: function (context) {
-                  const usedValue = context.dataset.data[context.dataIndex];
-                  const freeValue = freeCapacityData[context.dataIndex];
-                  return usedValue >= freeValue;
-                },
-                formatter: (value) => value.toFixed(0),
-              },
-            });
-
-            datasets.push({
-              label: "Free Capacity",
-              backgroundColor: COLOR_FREE,
-              borderColor: COLOR_FREE,
-              borderWidth: 1,
-              data: freeCapacityData,
-              datalabels: {
-                anchor: "end",
-                align: "end",
-                color: "#000000",
-                offset: 0,
-                font: {
-                  size: FONT_SIZE,
-                },
-                display: function (context) {
-                  const freeValue = context.dataset.data[context.dataIndex];
-                  const usedValue = usedCapacityData[context.dataIndex];
-                  return freeValue > usedValue;
-                },
-                formatter: (value) => `${value.toFixed(0)}`,
-              },
-            });
-          } else {
-            datasets.push({
-              label: "Used Capacity",
-              backgroundColor: COLOR_OCCUPIED,
-              borderColor: COLOR_OCCUPIED,
-              borderWidth: 1,
-              data: usedCapacityData,
-              datalabels: {
-                anchor: "end",
-                align: function (context) {
-                  const value = context.dataset.data[context.dataIndex];
-                  return value > 25 ? "start" : "end";
-                },
-                offset: function (context) {
-                  const value = context.dataset.data[context.dataIndex];
-                  return value > 25 ? 3 : 0;
-                },
-                color: "#000000",
-                font: {
-                  size: FONT_SIZE,
-                },
-                display: function (context) {
-                  const usedValue = context.dataset.data[context.dataIndex];
-                  const freeValue = freeCapacityData[context.dataIndex];
-                  return usedValue >= freeValue;
-                },
-                formatter: (value) => `${value.toFixed(2)}%`,
-              },
-            });
-
-            datasets.push({
-              label: "Free Capacity",
-              backgroundColor: COLOR_FREE,
-              borderColor: COLOR_FREE,
-              borderWidth: 1,
-              data: freeCapacityData,
-              datalabels: {
-                anchor: "end",
-                align: "start",
-                color: "#000000",
-                offset: 0,
-                font: {
-                  size: FONT_SIZE,
-                },
-                display: function (context) {
-                  const freeValue = context.dataset.data[context.dataIndex];
-                  const usedValue = usedCapacityData[context.dataIndex];
-                  return freeValue > usedValue;
-                },
-                formatter: (value) => `${value.toFixed(2)}%`,
-              },
-            });
-          }
-
-          setChartData({
-            labels,
-            datasets,
+              return a.name.localeCompare(b.name);
+            }
+            return a.external - b.external;
           });
-          setLoading(false);
-        } else {
-          setChartData(null);
-          setLoading(false);
+
+        const labels = sortedParkingLots.map((item) => item.name);
+
+        const usedCapacityData = Array(sortedParkingLots.length).fill(0);
+        const freeCapacityData = isPercentage
+          ? Array(sortedParkingLots.length).fill(100)
+          : [...sortedParkingLots.map((item) => item.capacity)];
+
+        if (parkingLotOccupancy && parkingLotOccupancy.length > 0) {
+          parkingLotOccupancy.forEach((item) => {
+            const index = sortedParkingLots.findIndex(
+              (lot) => lot.name.replace(" (ext.)", "") === item.parking_lot_name
+            );
+            if (index >= 0) {
+              const totalCapacity = sortedParkingLots[index].capacity;
+              const usedCapacity = item.occupancy;
+              const freeCapacity = totalCapacity - usedCapacity;
+              const usedPercentage = (usedCapacity / totalCapacity) * 100;
+              const freePercentage = (freeCapacity / totalCapacity) * 100;
+
+              usedCapacityData[index] = isPercentage
+                ? usedPercentage
+                : usedCapacity;
+              freeCapacityData[index] = isPercentage
+                ? freePercentage
+                : freeCapacity;
+            }
+          });
         }
-      } catch (error) {
-        console.error(error);
-        setError(error);
+        const datasets = [];
+
+        if (!isPercentage) {
+          datasets.push({
+            label: "Used Capacity",
+            backgroundColor: COLOR_OCCUPIED,
+            borderColor: COLOR_OCCUPIED,
+            borderWidth: 1,
+            data: usedCapacityData,
+            datalabels: {
+              anchor: "end",
+              align: function (context) {
+                const value = context.dataset.data[context.dataIndex];
+                return value > 250 ? "start" : "end";
+              },
+              offset: function (context) {
+                const value = context.dataset.data[context.dataIndex];
+                return value > 250 ? 0 : 0;
+              },
+              color: "#000000",
+              font: {
+                size: FONT_SIZE,
+              },
+              display: function (context) {
+                const usedValue = context.dataset.data[context.dataIndex];
+                const freeValue = freeCapacityData[context.dataIndex];
+                return usedValue >= freeValue;
+              },
+              formatter: (value) => value.toFixed(0),
+            },
+          });
+
+          datasets.push({
+            label: "Free Capacity",
+            backgroundColor: COLOR_FREE,
+            borderColor: COLOR_FREE,
+            borderWidth: 1,
+            data: freeCapacityData,
+            datalabels: {
+              anchor: "end",
+              align: "end",
+              color: "#000000",
+              offset: 0,
+              font: {
+                size: FONT_SIZE,
+              },
+              display: function (context) {
+                const freeValue = context.dataset.data[context.dataIndex];
+                const usedValue = usedCapacityData[context.dataIndex];
+                return freeValue > usedValue;
+              },
+              formatter: (value) => `${value.toFixed(0)}`,
+            },
+          });
+        } else {
+          datasets.push({
+            label: "Used Capacity",
+            backgroundColor: COLOR_OCCUPIED,
+            borderColor: COLOR_OCCUPIED,
+            borderWidth: 1,
+            data: usedCapacityData,
+            datalabels: {
+              anchor: "end",
+              align: function (context) {
+                const value = context.dataset.data[context.dataIndex];
+                return value > 25 ? "start" : "end";
+              },
+              offset: function (context) {
+                const value = context.dataset.data[context.dataIndex];
+                return value > 25 ? 3 : 0;
+              },
+              color: "#000000",
+              font: {
+                size: FONT_SIZE,
+              },
+              display: function (context) {
+                const usedValue = context.dataset.data[context.dataIndex];
+                const freeValue = freeCapacityData[context.dataIndex];
+                return usedValue >= freeValue;
+              },
+              formatter: (value) => `${value.toFixed(2)}%`,
+            },
+          });
+
+          datasets.push({
+            label: "Free Capacity",
+            backgroundColor: COLOR_FREE,
+            borderColor: COLOR_FREE,
+            borderWidth: 1,
+            data: freeCapacityData,
+            datalabels: {
+              anchor: "end",
+              align: "start",
+              color: "#000000",
+              offset: 0,
+              font: {
+                size: FONT_SIZE,
+              },
+              display: function (context) {
+                const freeValue = context.dataset.data[context.dataIndex];
+                const usedValue = usedCapacityData[context.dataIndex];
+                return freeValue > usedValue;
+              },
+              formatter: (value) => `${value.toFixed(2)}%`,
+            },
+          });
+        }
+
+        setChartData({
+          labels,
+          datasets,
+        });
+        setLoading(false);
+      } else {
+        setChartData(null);
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [selectedDate, isPercentage, setError]);
+    prepareChartData();
+  }, [selectedDate, isPercentage, mapData]);
 
   const options = {
     indexAxis: "y",
@@ -267,7 +269,8 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
         callbacks: {
           label: function (context) {
             const index = context.dataIndex;
-            const totalCapacity = parkingLots[index]?.capacity || 0;
+            const totalCapacity =
+              mapData.parking_lots_capacity[index]?.capacity || 0;
             const value = context.raw;
             const label = context.dataset.label;
 
@@ -313,7 +316,7 @@ const ParkingLotBarChart = ({ selectedDate, isPercentage }) => {
     maintainAspectRatio: false,
   };
 
-  if (loading) {
+  if (showLoading) {
     return (
       <Box
         className="circular-loading_container"

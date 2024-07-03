@@ -101,7 +101,7 @@ const AllocateParkingSpaces = () => {
         return "disassembly";
       return null;
     },
-    [event],
+    [event]
   );
   const storeAllocationsInSession = useCallback(
     (allocations) => {
@@ -129,21 +129,21 @@ const AllocateParkingSpaces = () => {
         }
         groupedAllocations[status][parkingLotName].cars = Math.max(
           groupedAllocations[status][parkingLotName].cars,
-          allocation.allocated_cars,
+          allocation.allocated_cars
         );
         groupedAllocations[status][parkingLotName].buses = Math.max(
           groupedAllocations[status][parkingLotName].buses,
-          allocation.allocated_buses,
+          allocation.allocated_buses
         );
         groupedAllocations[status][parkingLotName].trucks = Math.max(
           groupedAllocations[status][parkingLotName].trucks,
-          allocation.allocated_trucks,
+          allocation.allocated_trucks
         );
       });
-      sessionStorage.setItem("allocations", JSON.stringify(groupedAllocations));
+      localStorage.setItem("allocations", JSON.stringify(groupedAllocations));
       window.dispatchEvent(new Event("allocations-updated"));
     },
-    [event, getStatus],
+    [event, getStatus]
   );
 
   const fetchAllocations = useCallback(async () => {
@@ -176,7 +176,7 @@ const AllocateParkingSpaces = () => {
 
   const saveAllocations = async () => {
     setIsSaving(true);
-    const allocations = JSON.parse(sessionStorage.getItem("allocations"));
+    const allocations = JSON.parse(localStorage.getItem("allocations"));
     const formattedAllocations = [];
     const phases = [
       {
@@ -211,15 +211,15 @@ const AllocateParkingSpaces = () => {
             if (dailyDemand) {
               const allocatedCars = Math.min(
                 allocation.cars,
-                dailyDemand.car_demand,
+                dailyDemand.car_demand
               );
               const allocatedTrucks = Math.min(
                 allocation.trucks,
-                dailyDemand.truck_demand,
+                dailyDemand.truck_demand
               );
               const allocatedBuses = Math.min(
                 allocation.buses,
-                dailyDemand.bus_demand,
+                dailyDemand.bus_demand
               );
 
               if (
@@ -260,7 +260,7 @@ const AllocateParkingSpaces = () => {
       }
     } catch (error) {
       setSnackbarMessage(
-        error.response?.data?.error || "Failed to save allocations",
+        error.response?.data?.error || "Failed to save allocations"
       );
       setSnackbarSeverity("error");
     } finally {
@@ -277,7 +277,7 @@ const AllocateParkingSpaces = () => {
       const recommendationResponse = await axios.post(
         `/api/recommendation/engine`,
         { id: id },
-        { headers: { "Content-Type": "application/json" } },
+        { headers: { "Content-Type": "application/json" } }
       );
 
       const recommendationData = recommendationResponse.data;
@@ -357,8 +357,6 @@ const AllocateParkingSpaces = () => {
 
       const transformedData = transformData(recommendationData);
       setTransformedRecommendationData(transformedData);
-
-      console.log("Recommendation:", transformedData);
     } catch (error) {
       console.error("Error fetching allocations:", error);
     }
@@ -375,13 +373,13 @@ const AllocateParkingSpaces = () => {
       fetchAllocations();
     }
     return () => {
-      sessionStorage.removeItem("allocations");
+      localStorage.removeItem("allocations");
     };
   }, [fetchAllocations, event]);
 
   useEffect(() => {
     if (event) {
-      const storedAllocations = sessionStorage.getItem("allocations");
+      const storedAllocations = localStorage.getItem("allocations");
       if (storedAllocations) {
         storeAllocationsInSession(JSON.parse(storedAllocations));
         setIsDataLoaded(true);
@@ -390,7 +388,7 @@ const AllocateParkingSpaces = () => {
       }
     }
     return () => {
-      sessionStorage.removeItem("allocations");
+      localStorage.removeItem("allocations");
       setIsDataLoaded(false);
     };
   }, [fetchAllocations, event, storeAllocationsInSession]);
@@ -413,7 +411,7 @@ const AllocateParkingSpaces = () => {
   useEffect(() => {
     const handleEvent = () => {
       const fullyAllocatedData = JSON.parse(
-        sessionStorage.getItem("fullyAllocated"),
+        localStorage.getItem("fullyAllocated")
       );
       if (fullyAllocatedData) {
         const newButtonStates = {
@@ -440,7 +438,7 @@ const AllocateParkingSpaces = () => {
   const handleNavigation = (path) => {
     if (unsavedChanges) {
       const confirmLeave = window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?",
+        "You have unsaved changes. Are you sure you want to leave?"
       );
       if (!confirmLeave) return;
     }
@@ -499,7 +497,7 @@ const AllocateParkingSpaces = () => {
   ];
 
   const calculateAllocatedDemands = (phase) => {
-    const allocations = JSON.parse(sessionStorage.getItem("allocations"));
+    const allocations = JSON.parse(localStorage.getItem("allocations"));
     if (!allocations) return { cars: 0, buses: 0, trucks: 0, total: 0 };
 
     const phaseAllocations = allocations[phase];
@@ -527,7 +525,7 @@ const AllocateParkingSpaces = () => {
     return () => {
       window.removeEventListener(
         "allocations-updated",
-        handleAllocationsUpdated,
+        handleAllocationsUpdated
       );
       window.removeEventListener("storage", handleAllocationsUpdated);
     };
@@ -543,7 +541,7 @@ const AllocateParkingSpaces = () => {
       buses: phaseDemands.reduce((sum, demand) => sum + demand.bus_demand, 0),
       trucks: phaseDemands.reduce(
         (sum, demand) => sum + demand.truck_demand,
-        0,
+        0
       ),
       total: phaseDemands.reduce((sum, demand) => sum + demand.demand, 0),
     };
@@ -553,7 +551,6 @@ const AllocateParkingSpaces = () => {
     setPopupOpen(true);
     setUnsavedChanges(true);
     window.dispatchEvent(new Event("popup-opened"));
-    console.log("popup-opened");
   };
   const applyRecommendations = (phase) => {
     if (
@@ -567,13 +564,13 @@ const AllocateParkingSpaces = () => {
     }
 
     const currentAllocations =
-      JSON.parse(sessionStorage.getItem("allocations")) || {};
+      JSON.parse(localStorage.getItem("allocations")) || {};
 
     currentAllocations[phase] = {};
 
     currentAllocations[phase] = transformedRecommendationData[phase];
 
-    sessionStorage.setItem("allocations", JSON.stringify(currentAllocations));
+    localStorage.setItem("allocations", JSON.stringify(currentAllocations));
 
     window.dispatchEvent(new Event("allocations-updated"));
 

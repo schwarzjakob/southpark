@@ -1,22 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import "./styles/mapView.css";
+import "./styles/map.css";
 import TimelineSlider from "./TimelineSlider.jsx";
 import EventsMap from "./EventsMap.jsx";
 import Heatmap from "./HeatMap.jsx";
+import LoadingAnimation from "../common/LoadingAnimation.jsx";
 import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import MapIcon from "@mui/icons-material/MapRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import axios from "axios";
 
 const TITLE = "Map";
 
-const MapView = () => {
+const MapPage = () => {
   const location = useLocation();
   const initialDate =
     location.state?.selectedDate || dayjs().format("YYYY-MM-DD");
@@ -26,17 +28,99 @@ const MapView = () => {
   const [loading, setLoading] = useState(true);
   const [selectedEventId] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [mapData, setMapData] = useState(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialFetch, setInitialFetch] = useState(true);
+  const [reloading, setReloading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      setLoading(false);
-    };
+  const currentFetchedTimeRange = useRef({
+    start: dayjs().subtract(365, "days"),
+    end: dayjs().add(365, "days"),
+  });
 
-    fetchData();
-  }, []);
+  const fetchMapData = useCallback(
+    async (date) => {
+      if (initialLoading) {
+        setLoading(true);
+      }
+      if (!initialLoading) {
+        setReloading(true);
+      }
+      try {
+        const { data } = await axios.get(`/api/map/map_data/${date}`);
+        setMapData(data);
+
+        const start = dayjs(date).subtract(365, "days");
+        const end = dayjs(date).add(365, "days");
+        currentFetchedTimeRange.current = { start, end };
+      } catch (error) {
+        console.error("Error fetching map data:", error);
+      } finally {
+        if (initialLoading) {
+          setLoading(false);
+
+          setInitialLoading(false);
+        }
+        setReloading(false);
+      }
+    },
+    [initialLoading]
+  );
+
+  useEffect(() => {
+    if (initialFetch) {
+      fetchMapData(selectedDate);
+      setInitialFetch(false);
+    }
+  }, [fetchMapData, selectedDate, initialFetch]);
+
+  useEffect(() => {
+    if (
+      currentFetchedTimeRange.current.start &&
+      currentFetchedTimeRange.current.end
+    ) {
+      const start = currentFetchedTimeRange.current.start;
+      const end = currentFetchedTimeRange.current.end;
+      const selected = dayjs(selectedDate);
+
+      const withinFetchedRange =
+        selected.isAfter(start.add(0.2 * 365, "days")) &&
+        selected.isBefore(end.subtract(0.2 * 365, "days"));
+      if (!withinFetchedRange) {
+        fetchMapData(selectedDate);
+      }
+    }
+  }, [fetchMapData, selectedDate, reloading]);
+
+  const filterDataForSelectedDay = (data, date) => {
+    const selectedDay = dayjs(date);
+
+    const filteredParkingLotsAllocations = data.parking_lots_allocations.filter(
+      (allocation) => {
+        return dayjs(allocation.date).isSame(selectedDay, "day");
+      }
+    );
+
+    const filteredParkingLotsCapacity = data.parking_lots_capacity.filter(
+      (capacity) => {
+        return dayjs(capacity.date).isSame(selectedDay, "day");
+      }
+    );
+
+    const filteredParkingLotsOccupancy = data.parking_lots_occupancy.filter(
+      (occupancy) => {
+        return dayjs(occupancy.date).isSame(selectedDay, "day");
+      }
+    );
+
+    return {
+      ...data,
+      parking_lots_allocations: filteredParkingLotsAllocations,
+      parking_lots_capacity: filteredParkingLotsCapacity,
+      parking_lots_occupancy: filteredParkingLotsOccupancy,
+    };
+  };
 
   const handleToggle = () => {
     setIsPercentage(!isPercentage);
@@ -53,17 +137,10 @@ const MapView = () => {
   });
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingAnimation />;
   }
+
+  const mapDataForSelectedDay = filterDataForSelectedDay(mapData, selectedDate);
 
   return (
     <Box>
@@ -102,6 +179,7 @@ const MapView = () => {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             events={events}
+            mapData={mapData}
           />
         </Box>
         <Box
@@ -125,11 +203,16 @@ const MapView = () => {
             height="100%"
           >
             {showHeatmap ? (
-              <Heatmap selectedDate={selectedDate} zoom={15.5} />
+              <Heatmap
+                selectedDate={selectedDate}
+                zoom={15.5}
+                mapData={mapDataForSelectedDay}
+              />
             ) : (
               <EventsMap
                 selectedDate={selectedDate}
                 zoom={15.5}
+                mapData={mapDataForSelectedDay}
                 selectedEventId={selectedEventId}
               />
             )}
@@ -188,24 +271,14 @@ const MapView = () => {
                   width: "100%",
                 }}
               >
-                <Typography
-                  sx={{
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  # Absolute
-                </Typography>
+                <Typography sx={{ fontSize: "0.8rem" }}># Absolute</Typography>
                 <Switch
                   checked={isPercentage}
                   onChange={handleToggle}
                   className="switch"
                   size="small"
                 />
-                <Typography
-                  sx={{
-                    fontSize: "0.8rem",
-                  }}
-                >
+                <Typography sx={{ fontSize: "0.8rem" }}>
                   % Percentage
                 </Typography>
               </Box>
@@ -213,8 +286,10 @@ const MapView = () => {
             <OccupanciesBarChart
               className="bar-chart"
               selectedDate={selectedDate}
+              mapData={mapDataForSelectedDay}
               isPercentage={isPercentage}
               handleToggle={handleToggle}
+              reloading={reloading}
             />
           </Box>
         </Box>
@@ -223,4 +298,4 @@ const MapView = () => {
   );
 };
 
-export default MapView;
+export default MapPage;

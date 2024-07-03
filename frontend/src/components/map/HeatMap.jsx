@@ -9,12 +9,11 @@ import {
 } from "react-leaflet";
 import PropTypes from "prop-types";
 import dayjs from "dayjs";
-import axios from "axios";
-import MapLegendComponent from "./MapLegend.jsx";
 import { Box, Button } from "@mui/material";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
-import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
+import MapLegendComponent from "./MapLegend.jsx";
+import "leaflet/dist/leaflet.css";
 
 const DOWNWARD_OVERLAYS = [
   "C1",
@@ -42,83 +41,52 @@ const DOWNWARD_OVERLAYS = [
   "PN12",
 ];
 
+const MAP_BOUNDS = [
+  [48.146965, 11.672466],
+  [48.126979, 11.718895],
+];
+
 const COLOR_OCCUPIED = "#ff434375";
 const COLOR_FREE = "#6a91ce75";
 const MAP_CENTER_POS = [48.1375, 11.702];
 
-const Heatmap = ({ selectedDate, zoom }) => {
+const Heatmap = ({ selectedDate, zoom, mapData }) => {
+  const {
+    coordinates = { halls: [], entrances: [], parking_lots: [] },
+    events_timeline = [],
+    parking_lots_occupancy = [],
+    parking_lots_capacity = [],
+  } = mapData || {};
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
   const [entrances, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
   const [occupancy, setOccupancy] = useState([]);
+  const [capacity, setCapacity] = useState([]);
 
   useEffect(() => {
-    setEvents([]);
-    setOccupancy([]);
-    const fetchCoordinates = async () => {
-      try {
-        const { data } = await axios.get("/api/map/coordinates");
-        if (data) {
-          setEntrances(data.entrances);
-          setHalls(data.halls);
-          setParkingLots(data.parking_lots);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the coordinates data!",
-          error
-        );
-      }
-    };
+    setHalls(coordinates.halls);
+    setParkingLots(coordinates.parking_lots);
+    setEntrances(coordinates.entrances);
+    setEvents(events_timeline);
+    setCapacity(parking_lots_capacity);
 
-    const fetchEvents = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
-        );
-        if (data) {
-          setEvents(data);
-        }
-      } catch (error) {
-        console.error("There was an error fetching the events data!", error);
-      }
-    };
-    const fetchOccupancyAndCapacity = async () => {
-      try {
-        const [occupancyRes, capacityRes] = await Promise.all([
-          axios.get(`/api/map/parking_occupancy/${selectedDate}`),
-          axios.get(`/api/map/parking_lots_capacity/${selectedDate}`),
-        ]);
-
-        const occupancyData = occupancyRes.data;
-        const capacityData = capacityRes.data;
-
-        if (Array.isArray(occupancyData) && Array.isArray(capacityData)) {
-          const combinedData = occupancyData.map((occ) => {
-            const capacity = capacityData.find(
-              (cap) => cap.name === occ.parking_lot_name
-            );
-            return {
-              ...occ,
-              total_capacity: capacity ? capacity.capacity : 0,
-            };
-          });
-
-          setOccupancy(combinedData);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the occupancy or capacity data!",
-          error
-        );
-      }
-    };
-
-    fetchCoordinates();
-    fetchEvents();
-    fetchOccupancyAndCapacity();
-  }, [selectedDate]);
+    const combinedData = parking_lots_occupancy.map((occ) => {
+      const capacityData = parking_lots_capacity.find(
+        (cap) => cap.name === occ.parking_lot_name
+      );
+      return {
+        ...occ,
+        total_capacity: capacityData ? capacityData.capacity : 0,
+      };
+    });
+    setOccupancy(combinedData);
+  }, [
+    coordinates,
+    events_timeline,
+    parking_lots_occupancy,
+    parking_lots_capacity,
+  ]);
 
   const transformCoordinates = (originalCoords) => {
     const transformedCoords = [];
@@ -306,6 +274,10 @@ const Heatmap = ({ selectedDate, zoom }) => {
       keyboard={false}
       zoomSnap={0.3}
       zoomDelta={0.3}
+      maxBounds={MAP_BOUNDS}
+      maxBoundsViscosity={1}
+      minZoom={14}
+      maxZoom={17}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -406,7 +378,10 @@ const Heatmap = ({ selectedDate, zoom }) => {
         const occupancyData = occupancy.find(
           (data) => data.parking_lot_name === parkingLot.name
         );
-        const totalCapacity = occupancyData ? occupancyData.total_capacity : 0;
+        const capacityData = capacity.find(
+          (cap) => cap.name === parkingLot.name
+        );
+        const totalCapacity = capacityData ? capacityData.capacity : 0;
         const occupancyRate =
           occupancyData && totalCapacity
             ? occupancyData.occupancy / totalCapacity
@@ -477,6 +452,7 @@ const Heatmap = ({ selectedDate, zoom }) => {
 Heatmap.propTypes = {
   selectedDate: PropTypes.string.isRequired,
   zoom: PropTypes.number.isRequired,
+  mapData: PropTypes.object.isRequired,
 };
 
 export default Heatmap;

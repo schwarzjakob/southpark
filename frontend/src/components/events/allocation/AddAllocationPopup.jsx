@@ -193,7 +193,7 @@ const AddAllocationPopup = ({
     }
 
     const storedAllocations =
-      JSON.parse(sessionStorage.getItem("allocations")) || {};
+      JSON.parse(localStorage.getItem("allocations")) || {};
     const newAllocation = {
       cars: capacities.cars,
       buses: capacities.buses,
@@ -206,7 +206,7 @@ const AddAllocationPopup = ({
       storedAllocations[phase] = {};
     }
     storedAllocations[phase][newAllocation.parking_lot_name] = newAllocation;
-    sessionStorage.setItem("allocations", JSON.stringify(storedAllocations));
+    localStorage.setItem("allocations", JSON.stringify(storedAllocations));
     window.dispatchEvent(new Event("storage"));
     window.dispatchEvent(new Event("allocations-updated"));
     onClose();

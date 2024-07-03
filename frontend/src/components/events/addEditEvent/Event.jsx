@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -16,11 +16,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
-import EventsMap from "../../map/EventsMap.jsx";
-import Heatmap from "../../map/HeatMap.jsx";
-import TimelineSlider from "../../map/TimelineSlider.jsx";
 import EventDemandTable from "./EventDemandTable.jsx";
-import "../../map/styles/mapView.css";
+import EventMapSection from "./EventMapSection.jsx";
+import "../../map/styles/map.css";
 import "../styles/events.css";
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
@@ -31,28 +29,22 @@ import {
   ArrowBack as ArrowBackIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
 } from "@mui/icons-material";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
-import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
+import dayjs from "dayjs";
 
 const TITLE = "Event Details";
-const INITIAL_DATE = "2023-01-02";
+const INITIAL_DATE = "2000-01-01";
 
 const Event = () => {
   const [event, setEvent] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [eventLoading, setEventLoading] = useState(true);
   const [originalEvent, setOriginalEvent] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const [events] = useState([]);
-  const [showHeatmap, setShowHeatmap] = useState(false);
   const [selectedDate, setSelectedDate] = useState(INITIAL_DATE);
   const [isEditingDemands, setIsEditingDemands] = useState(false);
-
-  const toggleMap = () => {
-    setShowHeatmap(!showHeatmap);
-  };
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -79,18 +71,34 @@ const Event = () => {
           eventData.disassembly_end_date
         );
 
+        const calculateMiddleDate = (start, end) => {
+          const startDate = dayjs(start);
+          const endDate = dayjs(end);
+          const middleDate = startDate.add(
+            endDate.diff(startDate, "days") / 2,
+            "days"
+          );
+          return middleDate.format("YYYY-MM-DD");
+        };
+
         setEvent(eventData);
         setOriginalEvent(eventData);
         if (eventData && eventData.runtime_start_date) {
-          setSelectedDate(eventData.runtime_start_date);
+          setSelectedDate(
+            calculateMiddleDate(
+              eventData.runtime_start_date,
+              eventData.runtime_end_date
+            )
+          );
         }
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
       } finally {
-        setLoading(false);
+        setEventLoading(false);
       }
     };
+
     fetchEvent();
   }, [id]);
 
@@ -164,7 +172,7 @@ const Event = () => {
     return diffDays;
   };
 
-  if (loading) {
+  if (eventLoading) {
     return (
       <Box
         className="form-width"
@@ -322,72 +330,13 @@ const Event = () => {
             </Table>
           </TableContainer>
         </Box>
-        <Box display="flex" flexDirection="column" gap="1rem">
-          <Box
-            className="map__timeline-slider"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            border="1px solid"
-            borderColor="grey.300"
-            p={2}
-          >
-            <TimelineSlider
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              events={events}
-              selectedEventId={parseInt(id)}
-            />
-          </Box>
 
-          <Box
-            className="map__main-content"
-            display="flex"
-            alignItems="stretch"
-            justifyContent="center"
-            width="100%"
-            height="50vh"
-            gap="1rem"
-          >
-            <Box
-              className="map__map-component"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              border="1px solid"
-              borderColor="grey.300"
-              p={2}
-              width="100%"
-              height="100%"
-            >
-              {showHeatmap ? (
-                <Heatmap selectedDate={selectedDate} zoom={15.5} />
-              ) : (
-                <EventsMap
-                  selectedDate={selectedDate}
-                  zoom={15.5}
-                  selectedEventId={parseInt(id)}
-                />
-              )}
-              <Box className="map-switch-container">
-                <Button
-                  className="map-switch-btn"
-                  variant="contained"
-                  onClick={toggleMap}
-                  startIcon={
-                    showHeatmap ? (
-                      <HorizontalSplitRoundedIcon />
-                    ) : (
-                      <LocalFireDepartmentRoundedIcon />
-                    )
-                  }
-                >
-                  {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+        <EventMapSection
+          event={event}
+          events={events}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
       </Paper>
 
       <EventDemandTable

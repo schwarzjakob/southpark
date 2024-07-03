@@ -28,9 +28,9 @@ const Login = () => {
       try {
         const response = await axios.get("https://api.ipify.org?format=json");
         setClientIp(response.data.ip);
-        sessionStorage.setItem("clientIp", response.data.ip);
+        localStorage.setItem("clientIp", response.data.ip);
       } catch (error) {
-        console.log("Failed to get client IP");
+        console.warn("IP Address not found");
       }
     };
 
@@ -49,10 +49,12 @@ const Login = () => {
       const { token } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("auth", "true");
+      localStorage.setItem("user", response.data.username);
+      localStorage.setItem("email", response.data.email);
       setMessage("Login Successful");
       setSeverity("success");
       window.dispatchEvent(new Event("authChange"));
-  
+
       setTimeout(() => {
         const initialPath = location.state?.from?.pathname || "/";
         navigate(initialPath, { replace: true });
@@ -63,7 +65,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <Container maxWidth="sm" className="login">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>

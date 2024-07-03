@@ -16,10 +16,10 @@ const Allocation = ({ phase }) => {
   const [allocations, setAllocations] = useState([]);
 
   const handleDelete = (parkingSpace) => {
-    const storedAllocations = JSON.parse(sessionStorage.getItem("allocations"));
+    const storedAllocations = JSON.parse(localStorage.getItem("allocations"));
     if (storedAllocations && storedAllocations[phase]) {
       delete storedAllocations[phase][parkingSpace];
-      sessionStorage.setItem("allocations", JSON.stringify(storedAllocations));
+      localStorage.setItem("allocations", JSON.stringify(storedAllocations));
 
       setAllocations(Object.entries(storedAllocations[phase]));
       window.dispatchEvent(new Event("allocations-updated"));
@@ -27,7 +27,7 @@ const Allocation = ({ phase }) => {
   };
 
   const loadAllocations = useCallback(() => {
-    const storedAllocations = JSON.parse(sessionStorage.getItem("allocations"));
+    const storedAllocations = JSON.parse(localStorage.getItem("allocations"));
     if (storedAllocations && storedAllocations[phase]) {
       setAllocations(Object.entries(storedAllocations[phase]));
     } else {

@@ -69,7 +69,6 @@ const AddParkingSpace = () => {
     try {
       const response = await axios.post("/api/parking/space", parkingSpace);
       const parkingLotId = response.data.id;
-      console.log("Parking space added:", parkingLotId);
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
       if (error.response && error.response.status === 400) {

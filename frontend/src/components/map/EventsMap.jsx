@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -10,8 +10,8 @@ import {
 import PropTypes from "prop-types";
 import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
-import axios from "axios";
 import MapLegendComponent from "./MapLegend.jsx";
+import ParkingPopup from "./ParkingPopup.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
@@ -42,98 +42,31 @@ const DOWNWARD_OVERLAYS = [
   "PN12",
 ];
 
+const MAP_BOUNDS = [
+  [48.146965, 11.672466],
+  [48.126979, 11.718895],
+];
+
 const RUNTIME = 0.9;
 const NOT_RUNTIME = 0.5;
 const GREYED_OUT = 0.25;
 const MAP_CENTER_POS = [48.1375, 11.702];
 
-const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
-  const [halls, setHalls] = useState([]);
-  const [parkingLots, setParkingLots] = useState([]);
-  const [entrances, setEntrances] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [parkingAllocations, setParkingAllocations] = useState([]);
-  const [parkingCapacities, setParkingCapacities] = useState([]);
+const transformCoordinates = (originalCoords) => {
+  const transformedCoords = [];
+  for (let i = 0; i < originalCoords.length; i += 2) {
+    transformedCoords.push([originalCoords[i], originalCoords[i + 1]]);
+  }
+  return transformedCoords;
+};
 
-  useEffect(() => {
-    const fetchCoordinates = async () => {
-      try {
-        const { data } = await axios.get("/api/map/coordinates");
-        if (data) {
-          setEntrances(data.entrances);
-          setHalls(data.halls);
-          setParkingLots(data.parking_lots);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the coordinates data!",
-          error
-        );
-      }
-    };
-    fetchCoordinates();
-  }, []);
-
-  useEffect(() => {
-    setEvents([]);
-    setParkingAllocations([]);
-    setParkingCapacities([]);
-
-    const fetchEvents = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/events_timeline/${selectedDate}`
-        );
-        if (data) {
-          setEvents(data);
-        }
-      } catch (error) {
-        console.error("There was an error fetching the events data!", error);
-      }
-    };
-    const fetchParkingAllocations = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/parking_lots_allocations/${selectedDate}`
-        );
-        if (data) {
-          setParkingAllocations(data);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the parking allocations data!",
-          error
-        );
-      }
-    };
-    const fetchParkingCapacities = async () => {
-      try {
-        const { data } = await axios.get(
-          `/api/map/parking_lots_capacity/${selectedDate}`
-        );
-        if (data) {
-          setParkingCapacities(data);
-        }
-      } catch (error) {
-        console.error(
-          "There was an error fetching the parking capacities data!",
-          error
-        );
-      }
-    };
-
-    fetchEvents();
-    fetchParkingAllocations();
-    fetchParkingCapacities();
-  }, [selectedDate]);
-
-  const transformCoordinates = (originalCoords) => {
-    const transformedCoords = [];
-    for (let i = 0; i < originalCoords.length; i += 2) {
-      transformedCoords.push([originalCoords[i], originalCoords[i + 1]]);
-    }
-    return transformedCoords;
-  };
+const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
+  const {
+    coordinates = { halls: [], entrances: [], parking_lots: [] },
+    events_timeline = [],
+    parking_lots_allocations = [],
+    parking_lots_capacity = [],
+  } = mapData || {};
 
   const getEventStatus = (event, date) => {
     const eventDate = dayjs(date);
@@ -236,7 +169,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
   };
 
   const uniqueFilteredEvents = removeDuplicateEvents(
-    events.filter(
+    events_timeline.filter(
       (event) =>
         dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
         dayjs(selectedDate).isBetween(
@@ -258,159 +191,6 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
     }, [map, zoom]);
 
     return null;
-  };
-
-  const renderParkingLotOverlay = (parkingLot, index) => {
-    const transformedCoords = transformCoordinates(parkingLot.coordinates);
-    const allocations = parkingAllocations.filter(
-      (allocation) => allocation.parking_lot_id === parkingLot.id
-    );
-
-    const parkingLotCapacity =
-      parkingCapacities.find((capacity) => capacity.id === parkingLot.id)
-        ?.capacity || 0;
-
-    if (allocations.length === 0 || parkingLotCapacity === 0) {
-      return (
-        <Polygon
-          key={parkingLot.name}
-          positions={transformedCoords}
-          className={`parking-lots parking-lot-${parkingLot.name}`}
-          pathOptions={{
-            color: "transparent",
-            fillColor: "gray",
-            fillOpacity: GREYED_OUT,
-            weight: 2,
-          }}
-        >
-          <Tooltip
-            direction="center"
-            offset={[0, 0]}
-            permanent
-            className="tags-parking-lots"
-          >
-            <span>{parkingLot.name}</span>
-          </Tooltip>
-          <Popup autoPan={false}>
-            <span>{parkingLot.name}: No Event!</span>
-          </Popup>
-        </Polygon>
-      );
-    }
-
-    const fillColors = allocations.map((allocation) => ({
-      color: allocation.event_color,
-      percentage: allocation.allocated_capacity / parkingLotCapacity,
-    }));
-
-    const usedCapacityPercentage = fillColors.reduce(
-      (acc, cur) => acc + cur.percentage,
-      0
-    );
-    const freeCapacityPercentage = 1 - usedCapacityPercentage;
-
-    if (freeCapacityPercentage > 0) {
-      fillColors.push({
-        color: "rgba(128, 128, 128, 0.25)",
-        percentage: freeCapacityPercentage,
-      });
-    }
-
-    const gradientStops = fillColors.map((fillColor, index) => {
-      const previousPercentage = fillColors
-        .slice(0, index)
-        .reduce((acc, cur) => acc + cur.percentage, 0);
-      const currentPercentage = previousPercentage + fillColor.percentage;
-      return (
-        <React.Fragment key={index}>
-          <stop
-            offset={`${previousPercentage * 100}%`}
-            stopColor={fillColor.color}
-          />
-          <stop
-            offset={`${currentPercentage * 100}%`}
-            stopColor={fillColor.color}
-          />
-        </React.Fragment>
-      );
-    });
-
-    const gradientId = `gradient-${index}-${parkingLot.id}`;
-
-    return (
-      <React.Fragment key={parkingLot.name}>
-        <svg style={{ height: 0 }}>
-          <defs>
-            <linearGradient id={gradientId} x1="0%" y1="100%" x2="0%" y2="0%">
-              {gradientStops}
-            </linearGradient>
-          </defs>
-        </svg>
-        <Polygon
-          positions={transformedCoords}
-          className={`parking-lots parking-lot-${parkingLot.name}`}
-          pathOptions={{
-            fillColor: `url(#${gradientId})`,
-            fillOpacity: 1,
-            weight: 2,
-            color: "transparent",
-          }}
-        >
-          <Tooltip
-            direction="center"
-            offset={[0, 0]}
-            permanent
-            className="tags-parking-lots"
-          >
-            <span>{parkingLot.name}</span>
-          </Tooltip>
-          <Popup autoPan={false}>
-            <div>
-              <h4>{parkingLot.name}</h4>
-              <div className="popup-table">
-                <div className="popup-header">Event</div>
-                <div className="popup-header">Car units</div>
-                <div className="popup-header">Percentage</div>
-                {allocations.map((allocation, index) => (
-                  <React.Fragment key={index}>
-                    <div className="details-link_container">
-                      <a
-                        href={`/events/event/${allocation.event_id}`}
-                        style={{ color: allocation.event_color }}
-                      >
-                        <LinkRoundedIcon />
-                        {allocation.event_name}
-                      </a>
-                    </div>
-                    <div className="popup-table-cell">
-                      {allocation.allocated_capacity}
-                    </div>
-                    <div className="popup-table-cell">
-                      {(
-                        (allocation.allocated_capacity / parkingLotCapacity) *
-                        100
-                      ).toFixed(2)}
-                      %
-                    </div>
-                  </React.Fragment>
-                ))}
-                {freeCapacityPercentage > 0 && (
-                  <React.Fragment>
-                    <div>Free Capacity</div>
-                    <div className="popup-table-cell">
-                      {Math.round(freeCapacityPercentage * parkingLotCapacity)}
-                    </div>
-                    <div className="popup-table-cell">
-                      {(freeCapacityPercentage * 100).toFixed(2)}%
-                    </div>
-                  </React.Fragment>
-                )}
-              </div>
-            </div>
-          </Popup>
-        </Polygon>
-      </React.Fragment>
-    );
   };
 
   const RecenterButton = () => {
@@ -445,6 +225,10 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
       keyboard={false}
       zoomSnap={0.3}
       zoomDelta={0.3}
+      maxBounds={MAP_BOUNDS}
+      maxBoundsViscosity={1}
+      minZoom={14}
+      maxZoom={17}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -457,7 +241,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
         selectedDate={selectedDate}
       />
 
-      {halls.map((hall) => {
+      {coordinates.halls.map((hall) => {
         const transformedCoords = transformCoordinates(hall.coordinates);
         const event = uniqueFilteredEvents.find((event) =>
           event.halls ? event.halls.split(", ").includes(hall.name) : false
@@ -511,7 +295,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
         );
       })}
 
-      {entrances.map((entrance) => {
+      {coordinates.entrances.map((entrance) => {
         const transformedCoords = transformCoordinates(entrance.coordinates);
         const event = uniqueFilteredEvents.find((event) =>
           event.event_entrance
@@ -570,8 +354,19 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId }) => {
         );
       })}
 
-      {parkingLots.map((parkingLot, index) =>
-        renderParkingLotOverlay(parkingLot, index)
+      {coordinates.parking_lots.map(
+        (parkingLot, index) => (
+          (
+            <ParkingPopup
+              key={parkingLot.name}
+              parkingLot={parkingLot}
+              index={index}
+              parking_lots_allocations={parking_lots_allocations}
+              parking_lots_capacity={parking_lots_capacity}
+              GREYED_OUT={GREYED_OUT}
+            />
+          )
+        )
       )}
     </MapContainer>
   );
@@ -581,6 +376,7 @@ EventsMap.propTypes = {
   selectedDate: PropTypes.string.isRequired,
   zoom: PropTypes.number.isRequired,
   selectedEventId: PropTypes.number,
+  mapData: PropTypes.object,
 };
 
 export default EventsMap;

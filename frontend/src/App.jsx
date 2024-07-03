@@ -14,7 +14,7 @@ import Header from "./components/common/Header.jsx";
 import Footer from "./components/common/Footer.jsx";
 import Team from "./components/team/Team.jsx";
 import Dashboard from "./components/dashboard/Dashboard.jsx";
-import Map from "./components/map/Map.jsx";
+import MapPage from "./components/map/MapPage.jsx";
 import Events from "./components/events/Events.jsx";
 import Event from "./components/events/addEditEvent/Event.jsx";
 import AddEvent from "./components/events/addEditEvent/AddEvent.jsx";
@@ -26,11 +26,12 @@ import AddParkingSpace from "./components/parking_spaces/AddParkingSpace.jsx";
 import EditParkingSpace from "./components/parking_spaces/EditParkingSpace.jsx";
 import EditCapacity from "./components/parking_spaces/EditCapacity.jsx";
 import AddCapacity from "./components/parking_spaces/AddCapacity.jsx";
+import NotFound from "./components/common/NotFound.jsx";
 
 const LoggedLogin = LoggerHOC(Login);
 const LoggedRegister = LoggerHOC(Register);
 const LoggedAccount = LoggerHOC(Account);
-const LoggedMap = LoggerHOC(Map);
+const LoggedMap = LoggerHOC(MapPage);
 const LoggedDashboard = LoggerHOC(Dashboard);
 const LoggedEvents = LoggerHOC(Events);
 const LoggedAddEvent = LoggerHOC(AddEvent);
@@ -136,6 +137,7 @@ function App() {
                 path="/team"
                 element={<ProtectedRoute element={<LoggedTeam />} />}
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
           <Footer />
