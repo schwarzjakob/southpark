@@ -50,7 +50,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
     const fetchAllocations = async () => {
       try {
         const response = await axios.get(
-          `/api/parking/occupations/${parkingLotId}`
+          `/api/parking/occupations/${parkingLotId}`,
         );
         if (response.status === 204) {
           console.log("No allocations found for this parking lot.");
@@ -158,7 +158,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
   }, {});
 
   const months = Array.from({ length: 12 }, (_, i) =>
-    dayjs().month(i).format("MMM")
+    dayjs().month(i).format("MMM"),
   );
 
   return (
@@ -367,23 +367,23 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
               const dateAllocations = groupedAllocations[date];
               const totalAllocatedCars = dateAllocations.reduce(
                 (sum, alloc) => sum + alloc.allocated_cars,
-                0
+                0,
               );
               const totalAllocatedBuses = dateAllocations.reduce(
                 (sum, alloc) => sum + alloc.allocated_buses,
-                0
+                0,
               );
               const totalAllocatedTrucks = dateAllocations.reduce(
                 (sum, alloc) => sum + alloc.allocated_trucks,
-                0
+                0,
               );
               const totalAllocatedCapacity = dateAllocations.reduce(
                 (sum, alloc) => sum + alloc.allocated_capacity,
-                0
+                0,
               );
               const totalCapacity = dateAllocations.reduce(
                 (sum, alloc) => sum + alloc.total_capacity,
-                0
+                0,
               );
 
               let occupancyPercentage =
@@ -396,6 +396,23 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
 
               const isLastRow =
                 dateIndex === Object.keys(groupedAllocations).length - 1;
+
+              const style = {
+                position: "relative",
+                borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
+                paddingTop: "6px", // Adjust padding to account for the pseudo-element
+              };
+
+              const doubleStrokeStyle = {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "3px",
+                borderTop: "1px solid rgba(128, 128, 128, 0.5)",
+                borderBottom: "1px solid rgba(128, 128, 128, 0.5)",
+              };
 
               return (
                 <React.Fragment key={dateIndex}>
@@ -419,7 +436,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                           style={{
                             backgroundColor: allocation.event_color,
                             color: getContrastingTextColor(
-                              allocation.event_color
+                              allocation.event_color,
                             ),
                             wordWrap: "break-word",
                             maxWidth: "200px",
@@ -431,13 +448,13 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                       <TableCell></TableCell>
                     </TableRow>
                   ))}
-                  <TableRow
-                    key={`${date}-total`}
-                    style={{
-                      borderBottom: isLastRow ? "none" : "2px solid #6a91ce",
-                    }}
-                  >
-                    <TableCell>{formatDate(date)}</TableCell>
+                  <TableRow key={`${date}-total`} style={style}>
+                    <TableCell>
+                      <Box style={doubleStrokeStyle}></Box>
+                      <Box style={{ display: "flex", alignItems: "center" }}>
+                        <FunctionsRoundedIcon></FunctionsRoundedIcon>
+                      </Box>
+                    </TableCell>
                     <TableCell>{totalAllocatedCars}</TableCell>
                     <TableCell>{totalAllocatedBuses}</TableCell>
                     <TableCell>{totalAllocatedTrucks}</TableCell>
@@ -448,7 +465,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId }) => {
                         style={{
                           background: "rgba(128, 128, 128, 75)",
                           color: getContrastingTextColor(
-                            "rgba(128, 128, 128, 75)"
+                            "rgba(128, 128, 128, 75)",
                           ),
                           wordWrap: "break-word",
                           maxWidth: "200px",
