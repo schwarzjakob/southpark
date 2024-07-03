@@ -103,33 +103,15 @@ const HeatMapParkingLotPopup = ({
             <div className="popup-header car-units">Car units</div>
             <div className="popup-header">Percentage</div>
             <React.Fragment>
-              <div
-                className="popup-table-cell-footer capacity"
-                style={{
-                  backgroundColor: fillColor,
-                  color: "white",
-                }}
-              >
+              <div className="popup-table-cell-footer capacity">
                 <strong>Free Capacity</strong>
               </div>
-              <div
-                className="popup-table-cell-footer"
-                style={{
-                  backgroundColor: fillColor,
-                  color: "white",
-                }}
-              >
+              <div className="popup-table-cell-footer">
                 <strong>
                   {Math.round((1 - occupancyRatio) * parkingLotCapacity)}
                 </strong>
               </div>
-              <div
-                className="popup-table-cell-footer percentage"
-                style={{
-                  backgroundColor: fillColor,
-                  color: "white",
-                }}
-              >
+              <div className="popup-table-cell-footer percentage">
                 <strong>{((1 - occupancyRatio) * 100).toFixed(2)}%</strong>
               </div>
             </React.Fragment>
@@ -197,33 +179,15 @@ const HeatMapParkingLotPopup = ({
             );
           })}
           <React.Fragment>
-            <div
-              className="popup-table-cell-footer capacity"
-              style={{
-                backgroundColor: fillColor,
-                color: "white",
-              }}
-            >
+            <div className="popup-table-cell-footer capacity">
               <strong>Free Capacity</strong>
             </div>
-            <div
-              className="popup-table-cell-footer"
-              style={{
-                backgroundColor: fillColor,
-                color: "white",
-              }}
-            >
+            <div className="popup-table-cell-footer">
               <strong>
                 {Math.round((1 - occupancyRatio) * parkingLotCapacity)}
               </strong>
             </div>
-            <div
-              className="popup-table-cell-footer percentage"
-              style={{
-                backgroundColor: fillColor,
-                color: "white",
-              }}
-            >
+            <div className="popup-table-cell-footer percentage">
               <strong>{((1 - occupancyRatio) * 100).toFixed(2)}%</strong>
             </div>
           </React.Fragment>
