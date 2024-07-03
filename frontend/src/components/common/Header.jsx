@@ -36,6 +36,7 @@ function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("auth");
+    localStorage.clear();
     window.location.reload();
   };
 

@@ -140,7 +140,7 @@ const AllocateParkingSpaces = () => {
           allocation.allocated_trucks
         );
       });
-      sessionStorage.setItem("allocations", JSON.stringify(groupedAllocations));
+      localStorage.setItem("allocations", JSON.stringify(groupedAllocations));
       window.dispatchEvent(new Event("allocations-updated"));
     },
     [event, getStatus]
@@ -176,7 +176,7 @@ const AllocateParkingSpaces = () => {
 
   const saveAllocations = async () => {
     setIsSaving(true);
-    const allocations = JSON.parse(sessionStorage.getItem("allocations"));
+    const allocations = JSON.parse(localStorage.getItem("allocations"));
     const formattedAllocations = [];
     const phases = [
       {
@@ -373,13 +373,13 @@ const AllocateParkingSpaces = () => {
       fetchAllocations();
     }
     return () => {
-      sessionStorage.removeItem("allocations");
+      localStorage.removeItem("allocations");
     };
   }, [fetchAllocations, event]);
 
   useEffect(() => {
     if (event) {
-      const storedAllocations = sessionStorage.getItem("allocations");
+      const storedAllocations = localStorage.getItem("allocations");
       if (storedAllocations) {
         storeAllocationsInSession(JSON.parse(storedAllocations));
         setIsDataLoaded(true);
@@ -388,7 +388,7 @@ const AllocateParkingSpaces = () => {
       }
     }
     return () => {
-      sessionStorage.removeItem("allocations");
+      localStorage.removeItem("allocations");
       setIsDataLoaded(false);
     };
   }, [fetchAllocations, event, storeAllocationsInSession]);
@@ -411,7 +411,7 @@ const AllocateParkingSpaces = () => {
   useEffect(() => {
     const handleEvent = () => {
       const fullyAllocatedData = JSON.parse(
-        sessionStorage.getItem("fullyAllocated")
+        localStorage.getItem("fullyAllocated")
       );
       if (fullyAllocatedData) {
         const newButtonStates = {
@@ -497,7 +497,7 @@ const AllocateParkingSpaces = () => {
   ];
 
   const calculateAllocatedDemands = (phase) => {
-    const allocations = JSON.parse(sessionStorage.getItem("allocations"));
+    const allocations = JSON.parse(localStorage.getItem("allocations"));
     if (!allocations) return { cars: 0, buses: 0, trucks: 0, total: 0 };
 
     const phaseAllocations = allocations[phase];
@@ -564,13 +564,13 @@ const AllocateParkingSpaces = () => {
     }
 
     const currentAllocations =
-      JSON.parse(sessionStorage.getItem("allocations")) || {};
+      JSON.parse(localStorage.getItem("allocations")) || {};
 
     currentAllocations[phase] = {};
 
     currentAllocations[phase] = transformedRecommendationData[phase];
 
-    sessionStorage.setItem("allocations", JSON.stringify(currentAllocations));
+    localStorage.setItem("allocations", JSON.stringify(currentAllocations));
 
     window.dispatchEvent(new Event("allocations-updated"));
 

@@ -32,7 +32,7 @@ const Account = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = sessionStorage.getItem("token");
+        const token = localStorage.getItem("token");
 
         const response = await axios.get("/api/auth/user", {
           headers: {
@@ -53,7 +53,7 @@ const Account = () => {
 
   const validateCurrentPassword = async (password) => {
     try {
-      const token = sessionStorage.getItem("token");
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         "/api/auth/user/password",
         {
@@ -139,7 +139,7 @@ const Account = () => {
     event.preventDefault();
 
     try {
-      const token = sessionStorage.getItem("token");
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         "/api/auth/user/password",
         {

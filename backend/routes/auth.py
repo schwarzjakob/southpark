@@ -91,8 +91,7 @@ def login():
     user.token = token
     db.session.commit()
 
-    return jsonify({"token": token, "message": "Login successful"}), 200
-
+    return jsonify({"token": token, "username": user.username, "email": user.email, "message": "Login successful"}), 200
 
 @auth_bp.route("/refresh_token", methods=["POST"])
 def refresh_token():

@@ -13,8 +13,8 @@ const UserMenu = ({ onLogout }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUsername = sessionStorage.getItem("username");
-    const storedEmail = sessionStorage.getItem("email");
+    const storedUsername = localStorage.getItem("user");
+    const storedEmail = localStorage.getItem("email");
 
     if (storedUsername && storedEmail) {
       setUser({ username: storedUsername, email: storedEmail });
@@ -30,7 +30,7 @@ const UserMenu = ({ onLogout }) => {
   };
 
   const handleLogout = () => {
-    sessionStorage.clear();
+    localStorage.clear();
     onLogout();
     navigate("/login");
   };
@@ -62,20 +62,11 @@ const UserMenu = ({ onLogout }) => {
         open={open}
         onClose={handleClose}
       >
-        <MenuItem disabled>
-          <Box display="flex" alignItems="center">
-            <AccountCircleRoundedIcon />
-            <Typography variant="body1" ml={1}>
-              {user.username}
-            </Typography>
-          </Box>
-        </MenuItem>
-
         <MenuItem onClick={() => navigate("/account")}>
           <Box display="flex" alignItems="center">
             <ManageAccountsRoundedIcon />
             <Typography variant="body1" ml={1}>
-              Manage Account
+              {user.username}
             </Typography>
           </Box>
         </MenuItem>

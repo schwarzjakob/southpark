@@ -48,7 +48,7 @@ const Demand = ({ phase, data }) => {
   useEffect(() => {
     const handleStorageChange = () => {
       const storedAllocations = JSON.parse(
-        sessionStorage.getItem("allocations"),
+        localStorage.getItem("allocations"),
       );
       if (storedAllocations && storedAllocations[phase]) {
         const phaseAllocations = Object.values(storedAllocations[phase]).reduce(
@@ -132,11 +132,11 @@ const Demand = ({ phase, data }) => {
     const state = totalAllocatedDemand === totalMaxDemand;
 
     const storedPhases =
-      JSON.parse(sessionStorage.getItem("fullyAllocated")) || [];
+      JSON.parse(localStorage.getItem("fullyAllocated")) || [];
     const updatedPhases = storedPhases.filter((p) => p.phase !== phase);
     updatedPhases.push({ phase, state });
 
-    sessionStorage.setItem("fullyAllocated", JSON.stringify(updatedPhases));
+    localStorage.setItem("fullyAllocated", JSON.stringify(updatedPhases));
 
     const storageEvent = new Event("storage");
     window.dispatchEvent(storageEvent);
