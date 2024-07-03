@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -8,6 +8,7 @@ import "./styles/map.css";
 import TimelineSlider from "./TimelineSlider.jsx";
 import EventsMap from "./EventsMap.jsx";
 import Heatmap from "./HeatMap.jsx";
+import LoadingAnimation from "../common/LoadingAnimation.jsx";
 import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
@@ -136,16 +137,7 @@ const MapPage = () => {
   });
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingAnimation />;
   }
 
   const mapDataForSelectedDay = filterDataForSelectedDay(mapData, selectedDate);

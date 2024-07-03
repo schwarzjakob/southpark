@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import Heatmap from "../../map/HeatMap.jsx";
 import EventsMap from "../../map/EventsMap.jsx";
 import TimelineSlider from "../../map/TimelineSlider.jsx";
+import LoadingAnimation from "../../common/LoadingAnimation.jsx";
 import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import dayjs from "dayjs";
@@ -140,7 +141,7 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
         alignItems="stretch"
         justifyContent="center"
         width="100%"
-        height="50vh"
+        height="65vh"
         gap="1rem"
       >
         <Box
@@ -155,7 +156,7 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
           height="100%"
         >
           {mapLoading ? (
-            <CircularProgress />
+            <LoadingAnimation />
           ) : showHeatmap ? (
             <Heatmap
               selectedDate={dayjs(selectedDate).format("YYYY-MM-DD")}
