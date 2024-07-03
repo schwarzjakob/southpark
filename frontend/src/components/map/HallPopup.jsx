@@ -1,6 +1,7 @@
 import React from "react";
 import { Polygon, Tooltip, Popup } from "react-leaflet";
 import PropTypes from "prop-types";
+import dayjs from "dayjs";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 
 const transformCoordinates = (originalCoords) => {
@@ -136,6 +137,49 @@ const HallPopup = ({
 
   const gradientId = `gradient-hall-${index}-${hall.id}`;
 
+  const getPopupContent = () => (
+    <div className="popup-container">
+      <div className="popup-title-container">
+        <div className="popup-title">
+          <span>{hall.name}</span>
+        </div>
+      </div>
+      <div className="popup-table-hall">
+        <div className="popup-header-hall">Event</div>
+        <div className="popup-header-hall">Status</div>
+        <div className="popup-header-hall">Entrance</div>
+        <div className="popup-header-hall">Allocated Parking Lots</div>
+        {hallEvents.map((event, index) => {
+          const textColor = getContrastingTextColor(event.event_color);
+          const status = getEventStatus(event, selectedDate);
+          const parkingLots = event[`${status}_parking_lots`] || "None";
+          const entrances = event.event_entrance || "None";
+          return (
+            <React.Fragment key={index}>
+              <div className="details-link_container event">
+                <a
+                  href={`/events/event/${event.event_id}`}
+                  style={{
+                    backgroundColor: event.event_color,
+                    color: textColor,
+                  }}
+                >
+                  <LinkRoundedIcon style={{ color: textColor }} />
+                  {event.event_name}
+                </a>
+              </div>
+              <div className="popup-table-cell-footer status">{status}</div>
+              <div className="popup-table-cell-footer entrances">
+                {entrances}
+              </div>
+              <div className="popup-table-cell-footer lots">{parkingLots}</div>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <React.Fragment key={hall.name}>
       <svg style={{ height: 0 }}>
@@ -163,46 +207,7 @@ const HallPopup = ({
         >
           <span>{hall.name}</span>
         </Tooltip>
-        <Popup autoPan={false}>
-          <div>
-            <div className="popup-title-container">
-              <div className="popup-title">
-                <span>{hall.name}</span>
-              </div>
-            </div>
-            <div className="popup-table-hall">
-              <div className="popup-header-hall">Event</div>
-              <div className="popup-header-hall">Status</div>
-              <div className="popup-header-hall">Entrance</div>
-              <div className="popup-header-hall">Allocated Parking Lots</div>
-              {hallEvents.map((event, index) => {
-                const textColor = getContrastingTextColor(event.event_color);
-                const status = getEventStatus(event, selectedDate);
-                const parkingLots = event[`${status}_parking_lots`] || "None";
-                const entrances = event.event_entrance || "None";
-                return (
-                  <React.Fragment key={index}>
-                    <div className="details-link_container event">
-                      <a
-                        href={`/events/event/${event.event_id}`}
-                        style={{
-                          backgroundColor: event.event_color,
-                          color: textColor,
-                        }}
-                      >
-                        <LinkRoundedIcon style={{ color: textColor }} />
-                        {event.event_name}
-                      </a>
-                    </div>
-                    <div className="popup-table-cell">{status}</div>
-                    <div className="popup-table-cell">{entrances}</div>
-                    <div className="popup-table-cell">{parkingLots}</div>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          </div>
-        </Popup>
+        <Popup autoPan={false}>{getPopupContent()}</Popup>
       </Polygon>
     </React.Fragment>
   );

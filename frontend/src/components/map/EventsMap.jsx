@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import MapLegendComponent from "./MapLegend.jsx";
 import ParkingPopup from "./EventsMapParkingLotPopup.jsx";
 import EntrancePopup from "./EntrancePopup.jsx";
+import HallPopup from "./HallPopup.jsx";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
@@ -27,14 +28,6 @@ const NOT_RUNTIME = 0.5;
 const GREYED_OUT = 0.25;
 const MAP_CENTER_POS = [48.1375, 11.702];
 
-const transformCoordinates = (originalCoords) => {
-  const transformedCoords = [];
-  for (let i = 0; i < originalCoords.length; i += 2) {
-    transformedCoords.push([originalCoords[i], originalCoords[i + 1]]);
-  }
-  return transformedCoords;
-};
-
 const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
   const {
     coordinates = { halls: [], entrances: [], parking_lots: [] },
@@ -42,97 +35,6 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
     parking_lots_allocations = [],
     parking_lots_capacity = [],
   } = mapData || {};
-
-  const getEventStatus = (event, date) => {
-    const eventDate = dayjs(date);
-    if (
-      eventDate.isSame(event.assembly_start_date, "day") ||
-      eventDate.isSame(event.assembly_end_date, "day") ||
-      eventDate.isBetween(
-        event.assembly_start_date,
-        event.assembly_end_date,
-        null,
-        "[]",
-      )
-    ) {
-      return "assembly";
-    } else if (
-      eventDate.isSame(event.runtime_start_date, "day") ||
-      eventDate.isSame(event.runtime_end_date, "day") ||
-      eventDate.isBetween(
-        event.runtime_start_date,
-        event.runtime_end_date,
-        null,
-        "[]",
-      )
-    ) {
-      return "runtime";
-    } else if (
-      eventDate.isSame(event.disassembly_start_date, "day") ||
-      eventDate.isSame(event.disassembly_end_date, "day") ||
-      eventDate.isBetween(
-        event.disassembly_start_date,
-        event.disassembly_end_date,
-        null,
-        "[]",
-      )
-    ) {
-      return "disassembly";
-    }
-    return "unknown";
-  };
-
-  const getPopupContent = (event, id, type) => {
-    const status = getEventStatus(event, selectedDate);
-    const parkingLots = event[`${status}_parking_lots`] || "None";
-    const entrances = event.event_entrance || "None";
-    if (type === "hall" && event.halls && event.halls.includes(id)) {
-      return (
-        <div className="cap">
-          <h4>{event.event_name}</h4>
-          <p>Status: {status}</p>
-          <p>Entrance: {entrances}</p>
-          <p>Allocated Parking Lots: {parkingLots}</p>
-          <div className="details-link_container">
-            <a href={`/events/event/${event.event_id}`}>
-              <LinkRoundedIcon />
-              {event.event_name} Details
-            </a>
-          </div>
-        </div>
-      );
-    } else if (type === "entrance" && event.event_entrance) {
-      return (
-        <div className="cap">
-          <h4>{event.event_name}</h4>
-          <p>Status: {status}</p>
-          <p>Allocated Halls: {event.halls}</p>
-          <p>Allocated Parking Lots: {parkingLots}</p>
-          <div className="details-link_container">
-            <a href={`/events/event/${event.event_id}`}>
-              <LinkRoundedIcon />
-              {event.event_name} Details
-            </a>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="cap">
-          <h4>{event.event_name}</h4>
-          <p>Status: {status}</p>
-          <p>Entrance: {entrances}</p>
-          <p>Associated Halls: {event.halls}</p>
-          <div className="details-link_container">
-            <a href={`/events/event/${event.event_id}`}>
-              <LinkRoundedIcon />
-              {event.event_name} Details
-            </a>
-          </div>
-        </div>
-      );
-    }
-  };
 
   const removeDuplicateEvents = (events) => {
     const seen = new Set();
@@ -216,59 +118,17 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         selectedDate={selectedDate}
       />
 
-      {coordinates.halls.map((hall) => {
-        const transformedCoords = transformCoordinates(hall.coordinates);
-        const event = uniqueFilteredEvents.find((event) =>
-          event.halls ? event.halls.split(", ").includes(hall.name) : false,
-        );
-        const fillColor = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? `${event.event_color}`
-            : "gray"
-          : event
-          ? `${event.event_color}`
-          : "gray";
-        const borderColor = event ? `${event.event_color}` : "transparent";
-        const opacity = selectedEventId
-          ? event && event.event_id === selectedEventId
-            ? getEventStatus(event, selectedDate) === "runtime"
-              ? RUNTIME
-              : NOT_RUNTIME
-            : GREYED_OUT
-          : event && getEventStatus(event, selectedDate) === "runtime"
-          ? RUNTIME
-          : NOT_RUNTIME;
-
-        return (
-          <Polygon
-            key={hall.name}
-            positions={transformedCoords}
-            className={`halls hall-${hall.name}`}
-            pathOptions={{
-              color: borderColor,
-              fillColor: fillColor,
-              fillOpacity: opacity,
-              weight: 2,
-            }}
-          >
-            <Tooltip
-              direction="center"
-              offset={[0, 0]}
-              permanent
-              className="tags-halls"
-            >
-              <span>{hall.name}</span>
-            </Tooltip>
-            <Popup autoPan={false}>
-              {event ? (
-                getPopupContent(event, hall.name, "hall")
-              ) : (
-                <span>{hall.name}: No Event!</span>
-              )}
-            </Popup>
-          </Polygon>
-        );
-      })}
+      {coordinates.halls.map((hall, index) => (
+        <HallPopup
+          key={hall.name}
+          hall={hall}
+          index={index}
+          events={uniqueFilteredEvents}
+          selectedDate={selectedDate}
+          selectedEventId={selectedEventId}
+          GREYED_OUT={GREYED_OUT}
+        />
+      ))}
 
       {coordinates.entrances.map((entrance, index) => (
         <EntrancePopup

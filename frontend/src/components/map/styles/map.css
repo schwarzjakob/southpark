@@ -15,18 +15,63 @@
   margin: 0.25rem;
   max-width: 400px;
   line-height: 1;
-}
-
-.leaflet-popup-content-wrapper {
   padding: 0.5rem 0.5rem;
   font-size: 11px;
 }
 
+.leaflet-popup-content {
+  margin: 0.7rem !important;
+  max-width: 400px;
+  line-height: 1;
+  min-width: 7rem;
+}
+
+.leaflet-popup-tip {
+  display: none;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  top: 0.7rem !important;
+  right: 0.7rem !important;
+}
+
+/* Popup Tables */
 .popup-table {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   text-align: left;
   justify-content: center;
+}
+
+.popup-header,
+.popup-header-hall {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  padding: 5px;
+  font-weight: bold;
+  padding: 0.3rem 0.5rem;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.popup-header:first-child,
+.popup-header-hall:first-child {
+  border-top-left-radius: 6px;
+}
+
+.popup-header:nth-child(3),
+.popup-header-hall:nth-child(4) {
+  border-top-right-radius: 6px;
+}
+
+.popup-table-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  word-break: keep-all;
+  white-space: nowrap;
+  padding: 0.2rem 0.5rem;
 }
 
 .popup-table-entrance {
@@ -38,14 +83,6 @@
   overflow: hidden;
 }
 
-.popup-header {
-  background-color: var(--color-primary);
-  color: var(--color-pure-white);
-  padding: 5px;
-  font-weight: bold;
-  padding: 0.3rem 0.5rem;
-}
-
 .popup-header-entrance {
   background-color: var(--color-primary);
   color: var(--color-pure-white);
@@ -55,20 +92,25 @@
   border-radius: 6px 6px 0 0;
 }
 
-.popup-header:first-child {
-  border-top-left-radius: 6px;
+.popup-table-hall {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 3fr;
+  text-align: left;
+  justify-content: center;
+  padding: 0.5rem;
+  min-width: 100%; /* Ensure table doesn't exceed the container */
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.popup-header:nth-child(3) {
-  border-top-right-radius: 6px;
-}
-
-.popup-table-cell {
-  display: flex;
-  flex-direction: row;
+.popup-header-hall {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  padding: 5px;
+  font-weight: bold;
+  padding: 0.3rem 0.5rem;
+  display: grid;
   align-items: center;
-  word-break: break-all;
-  padding: 0.2rem 0.5rem;
 }
 
 .popup-table-entrance .details-link_container:last-child {
@@ -76,25 +118,57 @@
   border-bottom-right-radius: 6px;
 }
 
-.leaflet-popup-tip {
-  display: none;
-}
-
-.leaflet-popup-content {
-  margin: 0.7rem !important;
-  max-width: 400px;
-  line-height: 1;
-  min-width: 7rem;
+/* Popup Title */
+.popup-title-container {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .popup-title {
   font-size: 1.2rem;
   display: flex;
 }
+
 .popup-title span {
   margin-bottom: 0.5rem !important;
 }
 
+/* Popup Details Link */
+.details-link_container a {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.details-link_container.event a {
+  height: 100%;
+  padding: 0.2rem 0.5rem;
+  word-break: keep-all;
+}
+
+.details-link_container svg {
+  width: 20px !important;
+  color: var(--color-primary);
+  margin-right: 5px;
+}
+
+/* Popup Table Footer */
+.popup-table-cell-footer {
+  padding: 0.2rem 0.5rem;
+  background-color: var(--color-gray-150);
+}
+
+.popup-table-cell-footer.capacity {
+  border-bottom-left-radius: 5px;
+}
+
+.popup-table-cell-footer.percentage,
+.popup-table-cell-footer.lots {
+  border-bottom-right-radius: 5px;
+}
+
+/* Popup Cap Styling */
 .cap h4 {
   text-transform: capitalize;
   word-break: break-all;
@@ -110,11 +184,7 @@
   margin-bottom: 0.5rem;
 }
 
-.leaflet-zoom-animated .leaflet-interactive {
-  transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out,
-    fill-opacity 0.2s ease-in-out, stroke-opacity 0.2s ease-in-out;
-}
-
+/* Tooltip Tags */
 .tags-halls,
 .tags-entrances,
 .tags-parking-lots {
@@ -122,15 +192,14 @@
   font-size: 10px;
   line-height: 1;
 }
+
 .tags-entrances {
   white-space: pre-wrap;
   text-align: center;
   font-size: 8px;
 }
-.leaflet-left {
-  left: auto !important;
-}
 
+/* Tooltip Positioning */
 .leaflet-left {
   left: auto !important;
 }
@@ -140,6 +209,7 @@
   top: 40px !important;
 }
 
+/* Recenter Button */
 .recenter-container {
   position: absolute;
   top: 10px;
@@ -189,6 +259,7 @@
   background-clip: padding-box;
   border-radius: 4px !important;
 }
+
 .legend-item {
   display: flex;
   align-items: center;
@@ -227,10 +298,6 @@
 .legend-disassembly {
   color: var(--textColor);
   transition: color 0.3s ease-in-out;
-}
-
-.legend-icons {
-  display: none !important;
 }
 
 .legend-runtime,
@@ -320,11 +387,6 @@
   display: flex;
   align-items: center;
   height: 100%;
-}
-
-.leaflet-container a.leaflet-popup-close-button {
-  top: 0.7rem !important;
-  right: 0.7rem !important;
 }
 
 /* Timeline Component */
@@ -445,6 +507,7 @@
   transition: background-color 0.3s ease-in-out;
 }
 
+/* Timeline Arrows */
 .arrow-button {
   z-index: 20;
   background-color: white;
@@ -489,17 +552,28 @@
   justify-content: space-between;
 }
 
+/* Timeline Date and Week */
 .selected .timeline-date__DD,
 .selected .timeline-date__ddd,
 .selected .timeline-week__KW {
   font-weight: bold !important;
 }
 
+.timeline-date:not(.selected):nth-child(2n) {
+  background-color: var(--color-gray-100) !important;
+}
+
+.timeline-date:nth-child(2n + 1):not(.selected) {
+  background-color: var(--color-gray-200) !important;
+}
+
+/* Button Primary */
 .button-primary {
   border: none;
   margin: 1rem 0;
 }
 
+/* Map View Title */
 .mapView__title {
   align-items: center !important;
   justify-content: space-between !important;
@@ -523,14 +597,7 @@
   margin: 0px 0;
 }
 
-.timeline-date:not(.selected):nth-child(2n) {
-  background-color: var(--color-gray-100) !important;
-}
-
-.timeline-date:nth-child(2n + 1):not(.selected) {
-  background-color: var(--color-gray-200) !important;
-}
-
+/* Status Assembly and Disassembly */
 .status-assembly {
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -541,63 +608,10 @@
   border-bottom-right-radius: 8px;
 }
 
+/* Tags Parking Lots */
 .tags-parking-lots {
   background-color: var(--color-parking-space);
   color: white;
-}
-
-.details-link_container a {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  word-break: break-all;
-}
-
-.popup-table-cell-footer {
-  padding: 0.2rem 0.5rem;
-  background-color: var(--color-gray-150);
-}
-
-.popup-table-cell-footer.capacity {
-  border-bottom-left-radius: 5px;
-}
-
-.popup-table-cell-footer.percentage {
-  border-bottom-right-radius: 5px;
-}
-
-.popup-header.car-units {
-  min-width: 5rem;
-}
-
-.details-link_container.event a {
-  padding: 0.2rem 0.5rem;
-}
-
-.details-link_container svg {
-  width: 20px !important;
-  color: var(--color-primary);
-  margin-right: 5px;
-}
-
-.timeline-slider.days {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-}
-
-.timeline-slider-container {
-  overflow: hidden;
-  position: relative;
-}
-
-.event-bar__label {
-  display: flex;
-  justify-content: center;
-}
-
-.timeline-year.selected,
-.timeline-months.selected {
-  border-radius: 3px;
 }
 
 .tags-parking-lots {
@@ -605,6 +619,7 @@
   color: var(--color-pure-white) !important;
 }
 
+/* Chart Container */
 h4 {
   padding-right: 1rem !important;
 }
