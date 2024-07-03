@@ -3,10 +3,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from extensions import db
 from utils.helpers import get_data
-import logging 
+import logging
 
-parking_bp = Blueprint('parking', __name__)
+parking_bp = Blueprint("parking", __name__)
 logger = logging.getLogger(__name__)
+
 
 @parking_bp.route("/spaces", methods=["GET"])
 def get_parking_spaces():
@@ -90,10 +91,18 @@ def add_parking_space():
             result = connection.execute(text(query), params)
             parking_lot_id = result.fetchone()[0]
 
-        return jsonify({"message": "Parking space added successfully", "id": parking_lot_id}), 201
+        return (
+            jsonify(
+                {"message": "Parking space added successfully", "id": parking_lot_id}
+            ),
+            201,
+        )
     except IntegrityError as e:
         if "unique constraint" in str(e.orig):
-            return jsonify({"error": "Parking space with this name already exists."}), 400
+            return (
+                jsonify({"error": "Parking space with this name already exists."}),
+                400,
+            )
         else:
             return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
@@ -139,10 +148,18 @@ def edit_parking_space(id):
             result = connection.execute(text(query), params)
             parking_lot_id = result.fetchone()[0]
 
-        return jsonify({"message": "Parking space updated successfully", "id": parking_lot_id}), 200
+        return (
+            jsonify(
+                {"message": "Parking space updated successfully", "id": parking_lot_id}
+            ),
+            200,
+        )
     except IntegrityError as e:
         if "unique constraint" in str(e.orig):
-            return jsonify({"error": "Parking space with this name already exists."}), 400
+            return (
+                jsonify({"error": "Parking space with this name already exists."}),
+                400,
+            )
         else:
             return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
@@ -218,10 +235,16 @@ def add_parking_space_capacity(parking_lot_id):
             result = connection.execute(text(query), params)
             capacity_id = result.fetchone()[0]
 
-        return jsonify({"message": "New capacity added successfully", "id": capacity_id}), 201
+        return (
+            jsonify({"message": "New capacity added successfully", "id": capacity_id}),
+            201,
+        )
     except IntegrityError as e:
         if "unique constraint" in str(e.orig):
-            return jsonify({"error": "A capacity entry with this ID already exists."}), 400
+            return (
+                jsonify({"error": "A capacity entry with this ID already exists."}),
+                400,
+            )
         else:
             return jsonify({"error": "Integrity error occurred."}), 400
     except Exception as e:
@@ -276,4 +299,34 @@ def delete_parking_space_capacity(capacity_id):
 
         return jsonify({"message": "Capacity deleted successfully"}), 200
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@parking_bp.route("/occupations/<int:parking_lot_id>", methods=["GET"])
+def get_parking_space_occupations(parking_lot_id):
+    """
+    Endpoint to retrieve parking space allocations for a given parking lot ID.
+    """
+    try:
+        query = """
+        SELECT a.id, a.date, a.allocated_cars, a.allocated_trucks, a.allocated_buses,
+               c.capacity AS total_capacity,
+               (a.allocated_cars + 4 * a.allocated_trucks + 3 * a.allocated_buses) AS allocated_capacity,
+               e.id AS event_id, e.name AS event_name, e.color AS event_color
+        FROM public.parking_lot_allocation a
+        JOIN public.parking_lot_capacity c ON a.parking_lot_id = c.parking_lot_id
+        JOIN public.event e ON a.event_id = e.id
+        WHERE a.parking_lot_id = :parking_lot_id
+        AND a.date BETWEEN c.valid_from AND c.valid_to
+        ORDER BY a.date ASC
+        """
+        params = {"parking_lot_id": parking_lot_id}
+        allocations = get_data(query, params).to_dict(orient="records")
+
+        if not allocations:
+            return jsonify({"message": "No allocations found"}), 204
+
+        return jsonify(allocations), 200
+    except Exception as e:
+        logger.error("Failed to fetch allocations", exc_info=True)
         return jsonify({"error": str(e)}), 500

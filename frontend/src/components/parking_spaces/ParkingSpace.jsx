@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import ParkingSpaceCapacitysTable from "./ParkingSpaceCapacityTable";
+import ParkingSpaceOccupationTable from "./ParkingSpaceOccupationTable.jsx";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
 import AddRoadRoundedIcon from "@mui/icons-material/AddRoadRounded";
@@ -151,6 +152,7 @@ const ParkingSpace = () => {
         )}
       </Paper>
       <ParkingSpaceCapacitysTable parkingLotId={id} />
+      <ParkingSpaceOccupationTable parkingLotId={id} />
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Button
           className="back-button"

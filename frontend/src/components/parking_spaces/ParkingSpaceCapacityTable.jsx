@@ -86,7 +86,7 @@ const ParkingSpaceCapacitiesTable = ({ parkingLotId }) => {
   };
 
   return (
-    <Box className="capacitiesTable-container">
+    <Box className="capacitiesTable-container" style={{ marginBottom: "2rem" }}>
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
           <NumbersRoundedIcon />

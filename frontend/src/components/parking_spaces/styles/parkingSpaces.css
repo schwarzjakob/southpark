@@ -63,3 +63,12 @@
 .capacity-chart {
   padding: 1rem;
 }
+
+.parkingSpaces-year-month-table {
+  background-color: var(--color-primary);
+}
+
+.parkingSpaces-year-month-table th {
+  border-radius: 0px !important;
+  border-bottom-color: var(--color-primary) !important;
+}
