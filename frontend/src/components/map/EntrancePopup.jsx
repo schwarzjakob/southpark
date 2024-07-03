@@ -27,12 +27,19 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
     event.event_entrance ? event.event_entrance.includes(entrance.name) : false,
   );
 
-  const tooltipOffset =
-    entrance.name.trim().toLowerCase() === "north west" ||
-    entrance.name.trim().toLowerCase() === "north east" ||
-    entrance.name.trim().toLowerCase() === "north"
-      ? [0, -20] // Adjust this value as needed
-      : [0, 0];
+  const tooltipOffset = (() => {
+    const normalizedEntranceName = entrance.name.trim().toLowerCase();
+    if (normalizedEntranceName === "north") {
+      return [0, -33];
+    }
+    if (
+      normalizedEntranceName === "north west" ||
+      normalizedEntranceName === "north east"
+    ) {
+      return [0, -20];
+    }
+    return [0, 0];
+  })();
 
   if (entranceEvents.length === 0) {
     return (
