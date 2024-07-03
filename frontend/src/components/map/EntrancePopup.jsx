@@ -27,6 +27,12 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
     event.event_entrance ? event.event_entrance.includes(entrance.name) : false,
   );
 
+  const tooltipOffset =
+    entrance.name.trim().toLowerCase() === "north west" ||
+    entrance.name.trim().toLowerCase() === "north east"
+      ? [0, -20] // Adjust this value as needed
+      : [0, 0];
+
   if (entranceEvents.length === 0) {
     return (
       <Polygon
@@ -42,14 +48,23 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
       >
         <Tooltip
           direction="center"
-          offset={[0, 0]}
+          offset={tooltipOffset}
           permanent
           className="tags-entrances"
         >
           <span>{entrance.name}</span>
         </Tooltip>
         <Popup autoPan={false}>
-          <span>{entrance.name}: No Event!</span>
+          <div>
+            <div className="popup-title-container">
+              <div className="popup-title">
+                <span>{entrance.name}</span>
+              </div>
+            </div>
+            <div className="popup-table-entrance">
+              <div className="popup-header-entrance">No Event!</div>
+            </div>
+          </div>{" "}
         </Popup>
       </Polygon>
     );
@@ -102,7 +117,7 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
       >
         <Tooltip
           direction="center"
-          offset={[0, 0]}
+          offset={tooltipOffset}
           permanent
           className="tags-entrances"
         >
