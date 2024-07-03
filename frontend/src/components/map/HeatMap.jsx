@@ -36,7 +36,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
   } = mapData || {};
   const [halls, setHalls] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
-  const [entrances, setEntrances] = useState([]);
+  const [, setEntrances] = useState([]);
   const [events, setEvents] = useState([]);
   const [occupancy, setOccupancy] = useState([]);
   const [capacity, setCapacity] = useState([]);
@@ -294,7 +294,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
           entrance={entrance}
           index={index}
           events={uniqueFilteredEvents}
-          GREYED_OUT={0.8} // Grey out is too light for entrances
+          GREYED_OUT={0.8}
         />
       ))}
 

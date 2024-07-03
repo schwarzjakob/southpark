@@ -11,11 +11,9 @@ def create_app():
     app.config.from_object(Config)
     CORS(app)
 
-    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Register blueprints
     from routes.auth import auth_bp
     from routes.events import events_bp
     from routes.dashboard import dashboard_bp
@@ -32,7 +30,6 @@ def create_app():
     app.register_blueprint(data_bp, url_prefix='/data')
     app.register_blueprint(recommendation_bp, url_prefix='/recommendation')
 
-    # Print all routes
     with app.app_context():
         for rule in app.url_map.iter_rules():
             print(f'{rule.endpoint}: {rule}')

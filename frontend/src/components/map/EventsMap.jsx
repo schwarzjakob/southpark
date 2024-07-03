@@ -2,9 +2,7 @@ import { useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
-  Polygon,
-  Tooltip,
-  Popup,
+
   useMap,
 } from "react-leaflet";
 import PropTypes from "prop-types";
@@ -14,7 +12,6 @@ import MapLegendComponent from "./MapLegend.jsx";
 import ParkingPopup from "./EventsMapParkingLotPopup.jsx";
 import EntrancePopup from "./EntrancePopup.jsx";
 import HallPopup from "./HallPopup.jsx";
-import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 
@@ -23,8 +20,6 @@ const MAP_BOUNDS = [
   [48.126979, 11.718895],
 ];
 
-const RUNTIME = 0.9;
-const NOT_RUNTIME = 0.5;
 const GREYED_OUT = 0.25;
 const MAP_CENTER_POS = [48.1375, 11.702];
 
@@ -136,7 +131,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
           entrance={entrance}
           index={index}
           events={uniqueFilteredEvents}
-          GREYED_OUT={"0.8"} // Grey out is too light for entrances
+          GREYED_OUT={0.8}
         />
       ))}
 

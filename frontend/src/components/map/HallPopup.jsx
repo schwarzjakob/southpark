@@ -22,14 +22,7 @@ const getContrastingTextColor = (backgroundColor) => {
   return luminance > 0.5 ? "black" : "white";
 };
 
-const HallPopup = ({
-  hall,
-  index,
-  events,
-  selectedEventId,
-  GREYED_OUT,
-  selectedDate,
-}) => {
+const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
   const transformedCoords = transformCoordinates(hall.coordinates);
   const hallEvents = events.filter((event) =>
     event.halls ? event.halls.split(", ").includes(hall.name) : false,
@@ -98,12 +91,10 @@ const HallPopup = ({
         <Popup autoPan={false}>
           <div>
             <div className="popup-title-container">
-              <div className="popup-title">
-                <span>{hall.name}</span>
-              </div>
+              <div className="popup-title">{hall.name}</div>
             </div>
-            <div className="popup-table-hall">
-              <div className="popup-header-hall">No Event!</div>
+            <div className="">
+              <div style={{ minWidth: "10rem" }}>No Event!</div>
             </div>
           </div>
         </Popup>
@@ -139,16 +130,22 @@ const HallPopup = ({
 
   const getPopupContent = () => (
     <div className="popup-container">
-      <div className="popup-title-container">
-        <div className="popup-title">
-          <span>{hall.name}</span>
-        </div>
+      <div className="popup-title-container hall">
+        <div className="popup-title">{hall.name}</div>
       </div>
       <div className="popup-table-hall">
-        <div className="popup-header-hall">Event</div>
-        <div className="popup-header-hall">Status</div>
-        <div className="popup-header-hall">Entrance</div>
-        <div className="popup-header-hall">Allocated Parking Lots</div>
+        <div className="popup-header-hall" style={{ display: "bix" }}>
+          <span>Event</span>
+        </div>
+        <div className="popup-header-hall">
+          <span>Status</span>
+        </div>
+        <div className="popup-header-hall">
+          <span>Entrance</span>
+        </div>
+        <div className="popup-header-hall">
+          <span>Allocated Lot</span>s
+        </div>
         {hallEvents.map((event, index) => {
           const textColor = getContrastingTextColor(event.event_color);
           const status = getEventStatus(event, selectedDate);
@@ -156,23 +153,59 @@ const HallPopup = ({
           const entrances = event.event_entrance || "None";
           return (
             <React.Fragment key={index}>
-              <div className="details-link_container event">
-                <a
-                  href={`/events/event/${event.event_id}`}
-                  style={{
-                    backgroundColor: event.event_color,
-                    color: textColor,
-                  }}
-                >
+              <div
+                className="details-link_container event"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderRadius: "0 0 0 6px",
+                  backgroundColor: event.event_color,
+                  color: textColor,
+                }}
+              >
+                <a href={`/events/event/${event.event_id}`}>
                   <LinkRoundedIcon style={{ color: textColor }} />
-                  {event.event_name}
+                  <span style={{ color: textColor, minWidth: "5rem" }}>
+                    {event.event_name}
+                  </span>
                 </a>
               </div>
-              <div className="popup-table-cell-footer status">{status}</div>
-              <div className="popup-table-cell-footer entrances">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textAlign: "center",
+                  backgroundColor: event.event_color,
+                  color: textColor,
+                }}
+              >
+                {status}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textAlign: "center",
+
+                  backgroundColor: event.event_color,
+                  color: textColor,
+                }}
+              >
                 {entrances}
               </div>
-              <div className="popup-table-cell-footer lots">{parkingLots}</div>
+              <div
+                className="popup-table-cell-footer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textAlign: "center",
+                  borderRadius: "0 0 6px 0",
+                  backgroundColor: event.event_color,
+                  color: textColor,
+                }}
+              >
+                {parkingLots}
+              </div>
             </React.Fragment>
           );
         })}

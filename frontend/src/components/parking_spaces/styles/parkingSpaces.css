@@ -1,5 +1,3 @@
-/* Parking Spaces */
-
 .parking-lot-box {
   background-color: var(--color-parking-space);
   color: var(--color-pure-white);
@@ -17,8 +15,6 @@
   color: var(--color-pure-white);
   margin-right: 5px;
 }
-
-/* Add Parking Space */
 
 .form-containter {
   display: flex;
