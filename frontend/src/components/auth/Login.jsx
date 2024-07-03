@@ -30,7 +30,7 @@ const Login = () => {
         setClientIp(response.data.ip);
         sessionStorage.setItem("clientIp", response.data.ip);
       } catch (error) {
-        console.log("Failed to get client IP");
+        console.warn("IP Address not found");
       }
     };
 
@@ -52,7 +52,7 @@ const Login = () => {
       setMessage("Login Successful");
       setSeverity("success");
       window.dispatchEvent(new Event("authChange"));
-  
+
       setTimeout(() => {
         const initialPath = location.state?.from?.pathname || "/";
         navigate(initialPath, { replace: true });
@@ -63,7 +63,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <Container maxWidth="sm" className="login">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>

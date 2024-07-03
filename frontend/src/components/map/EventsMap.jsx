@@ -356,11 +356,6 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
 
       {coordinates.parking_lots.map(
         (parkingLot, index) => (
-          console.log(" (A) EVENT MAP _______________::::::"),
-          console.log("parkinglot", parkingLot),
-          console.log("index", index),
-          console.log("parking_lots_allocations", parking_lots_allocations),
-          console.log("parking_lots_capacity", parking_lots_capacity),
           (
             <ParkingPopup
               key={parkingLot.name}

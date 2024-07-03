@@ -92,7 +92,6 @@ const AddEvent = () => {
         },
       });
       setOccupiedHalls(response.data);
-      console.log("Occupied halls:", response.data);
     } catch (error) {
       console.error("Error fetching occupied halls:", error);
     }
