@@ -225,7 +225,6 @@ HeatMapParkingLotPopup.propTypes = {
   index: PropTypes.number.isRequired,
   parking_lots_allocations: PropTypes.array.isRequired,
   parking_lots_capacity: PropTypes.array.isRequired,
-  GREYED_OUT: PropTypes.number.isRequired,
   COLOR_OCCUPIED: PropTypes.string.isRequired,
   COLOR_FREE: PropTypes.string.isRequired,
 };

@@ -151,14 +151,17 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
           const status = getEventStatus(event, selectedDate);
           const parkingLots = event[`${status}_parking_lots`] || "None";
           const entrances = event.event_entrance || "None";
+          const isLastElement = index === hallEvents.length - 1;
+
           return (
             <React.Fragment key={index}>
               <div
-                className="details-link_container event"
+                className={`details-link_container event ${
+                  isLastElement ? "border-round-left" : ""
+                }`}
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  borderRadius: "0 0 0 6px",
                   backgroundColor: event.event_color,
                   color: textColor,
                 }}
@@ -186,7 +189,6 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                   display: "flex",
                   alignItems: "center",
                   textAlign: "center",
-
                   backgroundColor: event.event_color,
                   color: textColor,
                 }}
@@ -194,12 +196,13 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                 {entrances}
               </div>
               <div
-                className="popup-table-cell-footer"
+                className={`popup-table-cell-footer ${
+                  isLastElement ? "border-round-left" : ""
+                }`}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   textAlign: "center",
-                  borderRadius: "0 0 6px 0",
                   backgroundColor: event.event_color,
                   color: textColor,
                 }}
