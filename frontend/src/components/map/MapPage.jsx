@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/material";
 import { Switch } from "antd";
-import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import "./styles/map.css";
 import TimelineSlider from "./TimelineSlider.jsx";
@@ -10,11 +9,11 @@ import EventsMap from "./EventsMap.jsx";
 import Heatmap from "./HeatMap.jsx";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
 import LoadingAnimation from "../common/LoadingAnimation.jsx";
+import Events from "../events/Events.jsx";
 import {
   LocalFireDepartmentRounded as LocalFireDepartmentRoundedIcon,
   HorizontalSplitRounded as HorizontalSplitRoundedIcon,
   MapRounded as MapIcon,
-  AddRounded as AddRoundedIcon,
   TodayRounded as TodayRoundedIcon,
   GarageRounded as GarageRoundedIcon,
 } from "@mui/icons-material";
@@ -36,7 +35,6 @@ const MapPage = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [initialFetch, setInitialFetch] = useState(true);
   const [reloading, setReloading] = useState(false);
-  const navigate = useNavigate();
 
   const currentFetchedTimeRange = useRef({
     start: dayjs().subtract(365, "days"),
@@ -183,6 +181,18 @@ const MapPage = () => {
   const { totalOccupied, totalFree, occupiedPercentage, freePercentage } =
     calculateParkingSpaceStats(mapDataForSelectedDay);
 
+  const hasEvents = mapDataForSelectedDay.events_timeline.some(
+    (event) =>
+      dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
+      dayjs(selectedDate).isBetween(
+        event.assembly_start_date,
+        event.disassembly_end_date,
+        null,
+        "[]",
+      ) ||
+      dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
+  );
+
   return (
     <Box>
       <Box display="flex" flexDirection="column" gap={2}>
@@ -192,18 +202,6 @@ const MapPage = () => {
             <Typography variant="h4" gutterBottom>
               {TITLE}
             </Typography>
-          </Box>
-          <Box>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => navigate(`/event/add`)}
-            >
-              <Box display="flex" alignItems="center">
-                <AddRoundedIcon className="icon__edit-parking-space" />
-              </Box>
-              Add Event
-            </Button>
           </Box>
         </Box>
 
@@ -257,22 +255,24 @@ const MapPage = () => {
                 selectedEventId={selectedEventId}
               />
             )}
-            <Box className="map-switch-container">
-              <Button
-                className="map-switch-btn"
-                variant="contained"
-                onClick={toggleMap}
-                startIcon={
-                  showHeatmap ? (
-                    <HorizontalSplitRoundedIcon />
-                  ) : (
-                    <LocalFireDepartmentRoundedIcon />
-                  )
-                }
-              >
-                {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
-              </Button>
-            </Box>
+            {hasEvents && (
+              <Box className="map-switch-container">
+                <Button
+                  className="map-switch-btn"
+                  variant="contained"
+                  onClick={toggleMap}
+                  startIcon={
+                    showHeatmap ? (
+                      <HorizontalSplitRoundedIcon />
+                    ) : (
+                      <LocalFireDepartmentRoundedIcon />
+                    )
+                  }
+                >
+                  {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
+                </Button>
+              </Box>
+            )}
           </Box>
           <Box
             className="map__bar-chart-component"
@@ -402,6 +402,9 @@ const MapPage = () => {
             />
           </Box>
         </Box>
+      </Box>
+      <Box sx={{ marginTop: "32px" }}>
+        <Events selectedDate={selectedDate} />
       </Box>
     </Box>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import PropTypes from "prop-types";
 import {
   Table,
   TableBody,
@@ -33,6 +34,7 @@ import LoadingAnimation from "../common/LoadingAnimation.jsx";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
 import "./styles/events.css";
+import dayjs from "dayjs";
 
 const TITLE = "Events";
 
@@ -107,7 +109,7 @@ const getStatusText = (status) => {
   }
 };
 
-const Events = () => {
+const Events = ({ selectedDate }) => {
   const [events, setEvents] = useState([]);
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
@@ -124,9 +126,19 @@ const Events = () => {
   const navigate = useNavigate();
 
   const filteredEvents = applyFilters(
-    events.filter((event) =>
-      event.name.toLowerCase().includes(filter.toLowerCase()),
-    ),
+    events.filter((event) => {
+      if (selectedDate) {
+        const selectedDay = dayjs(selectedDate);
+        const assemblyStart = dayjs(event.assembly_start_date);
+        const disassemblyEnd = dayjs(event.disassembly_end_date);
+        return (
+          (selectedDay.isAfter(assemblyStart.subtract(1, "day")) ||
+            selectedDay.isSame(assemblyStart)) &&
+          selectedDay.isBefore(disassemblyEnd)
+        );
+      }
+      return event.name.toLowerCase().includes(filter.toLowerCase());
+    }),
     filters,
   );
 
@@ -399,103 +411,113 @@ const Events = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredEvents
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((event) => (
-                    <TableRow
-                      key={event.id}
-                      onClick={() => navigate(`/events/event/${event.id}`)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <TableCell className="event-name">
-                        <Box
-                          className="event-box"
-                          style={{
-                            backgroundColor: event.color,
-                            color: getContrastingTextColor(event.color),
-                            wordWrap: "break-word",
-                            maxWidth: "200px",
-                          }}
-                        >
-                          {event.name}
-                        </Box>
-                      </TableCell>
-                      <TableCell
-                        className="halls"
-                        style={{ padding: "0", paddingRight: "1rem" }}
+                {filteredEvents.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      No Events.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredEvents
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((event) => (
+                      <TableRow
+                        key={event.id}
+                        onClick={() => navigate(`/events/event/${event.id}`)}
+                        style={{ cursor: "pointer" }}
                       >
-                        <HallEntranceIcons
-                          color={event.color}
-                          ids={[...event.halls, ...event.entrances]}
-                        />
-                      </TableCell>
-                      <TableCell className="allocated-parking-lots">
-                        <Box
-                          className="parking-lot-container"
-                          display="flex"
-                          flexWrap="wrap"
-                          gap="5px"
-                          maxWidth="10rem"
-                        >
-                          {event.allocatedParkingLots &&
-                            event.allocatedParkingLots.map((lot) => (
-                              <Box
-                                key={lot}
-                                className="parking-lot"
-                                style={{
-                                  backgroundColor: "#6a91ce",
-                                  color: "white",
-                                  padding: "2px 5px",
-                                  borderRadius: "3px",
-                                  wordWrap: "break-word",
-                                }}
-                              >
-                                {lot}
-                              </Box>
-                            ))}
-                        </Box>
-                      </TableCell>
-                      <TableCell className="assembly">
-                        {`${formatDate(event.assembly_start_date)} -`}
-                        <br />
-                        {`${formatDate(event.assembly_end_date)}`}
-                      </TableCell>
-                      <TableCell className="runtime">
-                        {`${formatDate(event.runtime_start_date)} -`}
-                        <br />
-                        {`${formatDate(event.runtime_end_date)}`}
-                      </TableCell>
-                      <TableCell className="disassembly">
-                        {`${formatDate(event.disassembly_start_date)} -`}
-                        <br />
-                        {`${formatDate(event.disassembly_end_date)}`}
-                      </TableCell>
-                      <TableCell className="status">
-                        <Box
-                          className="status-box"
-                          display="flex"
-                          alignItems="center"
-                        >
-                          {getStatusCircle(event.status)}
-                          <Typography
-                            variant="body2"
-                            style={{ marginLeft: "8px" }}
+                        <TableCell className="event-name">
+                          <Box
+                            className="event-box"
+                            style={{
+                              backgroundColor: event.color,
+                              color: getContrastingTextColor(event.color),
+                              wordWrap: "break-word",
+                              maxWidth: "200px",
+                            }}
                           >
-                            {getStatusText(event.status)}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <IconButton
-                          onClick={() => navigate(`/events/event/${event.id}`)}
-                          edge="start"
-                          size="small"
+                            {event.name}
+                          </Box>
+                        </TableCell>
+                        <TableCell
+                          className="halls"
+                          style={{ padding: "0", paddingRight: "1rem" }}
                         >
-                          <ArrowForwardIosRoundedIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          <HallEntranceIcons
+                            color={event.color}
+                            ids={[...event.halls, ...event.entrances]}
+                          />
+                        </TableCell>
+                        <TableCell className="allocated-parking-lots">
+                          <Box
+                            className="parking-lot-container"
+                            display="flex"
+                            flexWrap="wrap"
+                            gap="5px"
+                            maxWidth="10rem"
+                          >
+                            {event.allocatedParkingLots &&
+                              event.allocatedParkingLots.map((lot) => (
+                                <Box
+                                  key={lot}
+                                  className="parking-lot"
+                                  style={{
+                                    backgroundColor: "#6a91ce",
+                                    color: "white",
+                                    padding: "2px 5px",
+                                    borderRadius: "3px",
+                                    wordWrap: "break-word",
+                                  }}
+                                >
+                                  {lot}
+                                </Box>
+                              ))}
+                          </Box>
+                        </TableCell>
+                        <TableCell className="assembly">
+                          {`${formatDate(event.assembly_start_date)} -`}
+                          <br />
+                          {`${formatDate(event.assembly_end_date)}`}
+                        </TableCell>
+                        <TableCell className="runtime">
+                          {`${formatDate(event.runtime_start_date)} -`}
+                          <br />
+                          {`${formatDate(event.runtime_end_date)}`}
+                        </TableCell>
+                        <TableCell className="disassembly">
+                          {`${formatDate(event.disassembly_start_date)} -`}
+                          <br />
+                          {`${formatDate(event.disassembly_end_date)}`}
+                        </TableCell>
+                        <TableCell className="status">
+                          <Box
+                            className="status-box"
+                            display="flex"
+                            alignItems="center"
+                          >
+                            {getStatusCircle(event.status)}
+                            <Typography
+                              variant="body2"
+                              style={{ marginLeft: "8px" }}
+                            >
+                              {getStatusText(event.status)}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <IconButton
+                            onClick={() =>
+                              navigate(`/events/event/${event.id}`)
+                            }
+                            edge="start"
+                            size="small"
+                          >
+                            <ArrowForwardIosRoundedIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -533,6 +555,10 @@ const Events = () => {
       )}
     </Box>
   );
+};
+
+Events.propTypes = {
+  selectedDate: PropTypes.string.isRequired,
 };
 
 export default Events;
