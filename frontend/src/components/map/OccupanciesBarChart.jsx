@@ -118,7 +118,7 @@ const ParkingLotBarChart = ({
 
         if (!isPercentage) {
           datasets.push({
-            label: "Used Capacity",
+            label: "Occupied",
             backgroundColor: COLOR_OCCUPIED,
             borderColor: COLOR_OCCUPIED,
             borderWidth: 1,
@@ -147,7 +147,7 @@ const ParkingLotBarChart = ({
           });
 
           datasets.push({
-            label: "Free Capacity",
+            label: "Free",
             backgroundColor: COLOR_FREE,
             borderColor: COLOR_FREE,
             borderWidth: 1,
@@ -170,7 +170,7 @@ const ParkingLotBarChart = ({
           });
         } else {
           datasets.push({
-            label: "Used Capacity",
+            label: "Occupied",
             backgroundColor: COLOR_OCCUPIED,
             borderColor: COLOR_OCCUPIED,
             borderWidth: 1,
@@ -199,7 +199,7 @@ const ParkingLotBarChart = ({
           });
 
           datasets.push({
-            label: "Free Capacity",
+            label: "Free",
             backgroundColor: COLOR_FREE,
             borderColor: COLOR_FREE,
             borderWidth: 1,
