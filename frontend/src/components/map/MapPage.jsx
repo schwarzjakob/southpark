@@ -8,12 +8,16 @@ import "./styles/map.css";
 import TimelineSlider from "./TimelineSlider.jsx";
 import EventsMap from "./EventsMap.jsx";
 import Heatmap from "./HeatMap.jsx";
-import LoadingAnimation from "../common/LoadingAnimation.jsx";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
-import HorizontalSplitRoundedIcon from "@mui/icons-material/HorizontalSplitRounded";
 import OccupanciesBarChart from "./OccupanciesBarChart.jsx";
-import MapIcon from "@mui/icons-material/MapRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import LoadingAnimation from "../common/LoadingAnimation.jsx";
+import {
+  LocalFireDepartmentRounded as LocalFireDepartmentRoundedIcon,
+  HorizontalSplitRounded as HorizontalSplitRoundedIcon,
+  MapRounded as MapIcon,
+  AddRounded as AddRoundedIcon,
+  TodayRounded as TodayRoundedIcon,
+  GarageRounded as GarageRoundedIcon,
+} from "@mui/icons-material";
 import axios from "axios";
 
 const TITLE = "Map";
@@ -65,7 +69,7 @@ const MapPage = () => {
         setReloading(false);
       }
     },
-    [initialLoading]
+    [initialLoading],
   );
 
   useEffect(() => {
@@ -99,19 +103,19 @@ const MapPage = () => {
     const filteredParkingLotsAllocations = data.parking_lots_allocations.filter(
       (allocation) => {
         return dayjs(allocation.date).isSame(selectedDay, "day");
-      }
+      },
     );
 
     const filteredParkingLotsCapacity = data.parking_lots_capacity.filter(
       (capacity) => {
         return dayjs(capacity.date).isSame(selectedDay, "day");
-      }
+      },
     );
 
     const filteredParkingLotsOccupancy = data.parking_lots_occupancy.filter(
       (occupancy) => {
         return dayjs(occupancy.date).isSame(selectedDay, "day");
-      }
+      },
     );
 
     return {
@@ -128,6 +132,10 @@ const MapPage = () => {
 
   const toggleMap = () => {
     setShowHeatmap(!showHeatmap);
+    if (!showHeatmap) {
+      setIsPercentage(true);
+    }
+    if (showHeatmap) setIsPercentage(false);
   };
 
   const formattedDate = new Date(selectedDate).toLocaleDateString("de-DE", {
@@ -141,6 +149,39 @@ const MapPage = () => {
   }
 
   const mapDataForSelectedDay = filterDataForSelectedDay(mapData, selectedDate);
+
+  const calculateParkingSpaceStats = (mapData) => {
+    const parkingLotOccupancy = mapData.parking_lots_occupancy;
+    const parkingLots = mapData.parking_lots_capacity;
+
+    let totalCapacity = 0;
+    let totalOccupied = 0;
+
+    if (parkingLots) {
+      parkingLots.forEach((lot) => {
+        totalCapacity += lot.capacity;
+      });
+    }
+
+    if (parkingLotOccupancy) {
+      parkingLotOccupancy.forEach((occupancy) => {
+        totalOccupied += occupancy.occupancy;
+      });
+    }
+
+    const totalFree = totalCapacity - totalOccupied;
+
+    return {
+      totalOccupied,
+      totalFree,
+      totalCapacity,
+      occupiedPercentage: (totalOccupied / totalCapacity) * 100,
+      freePercentage: (totalFree / totalCapacity) * 100,
+    };
+  };
+
+  const { totalOccupied, totalFree, occupiedPercentage, freePercentage } =
+    calculateParkingSpaceStats(mapDataForSelectedDay);
 
   return (
     <Box>
@@ -249,15 +290,40 @@ const MapPage = () => {
               <Box>
                 <Typography
                   sx={{
-                    fontSize: "0.8rem",
+                    fontSize: "1.2rem",
                     fontWeight: "bold",
                     color: "var(--textColor)",
                     padding: "0.3rem",
+                    display: "flex", // Use flex display
+                    alignItems: "center",
                   }}
                 >
-                  {"Parking Lot Utilization"} | {formattedDate}
+                  <Box
+                    component="span"
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      marginRight: "0.3rem",
+                    }}
+                  >
+                    <GarageRoundedIcon />
+                  </Box>
+                  Parking Space Occupation
+                  <Box
+                    component="span"
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      marginLeft: "0.3rem",
+                      marginRight: "0.3rem",
+                    }}
+                  >
+                    <TodayRoundedIcon />
+                  </Box>
+                  {formattedDate}
                 </Typography>
               </Box>
+
               <Box
                 className="switch-container switch-container-bar-chart"
                 sx={{
@@ -271,16 +337,59 @@ const MapPage = () => {
                   width: "100%",
                 }}
               >
-                <Typography sx={{ fontSize: "0.8rem" }}># Absolute</Typography>
+                <Typography
+                  sx={{
+                    fontSize: "1rem",
+                    minWidth: "160px",
+                    textAlign: "right",
+                  }}
+                >
+                  Absolute (Car Units)
+                </Typography>
                 <Switch
                   checked={isPercentage}
                   onChange={handleToggle}
                   className="switch"
                   size="small"
                 />
-                <Typography sx={{ fontSize: "0.8rem" }}>
-                  % Percentage
+                <Typography
+                  sx={{
+                    fontSize: "1rem",
+                    minWidth: "160px",
+                    textAlign: "left",
+                  }}
+                >
+                  {" "}
+                  Relative (%)
                 </Typography>
+              </Box>
+              <Box
+                sx={{
+                  width: "100%",
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 4,
+                }}
+              >
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ minWidth: "120px" }}>
+                    Occupied
+                  </Typography>
+                  <Typography variant="body1">
+                    {isPercentage
+                      ? `${occupiedPercentage.toFixed(2)}%`
+                      : totalOccupied}
+                  </Typography>
+                </Box>
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ minWidth: "120px" }}>
+                    Free
+                  </Typography>
+                  <Typography variant="body1">
+                    {isPercentage ? `${freePercentage.toFixed(2)}%` : totalFree}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
             <OccupanciesBarChart
