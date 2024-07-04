@@ -1,10 +1,5 @@
 import { useEffect } from "react";
-import {
-  MapContainer,
-  TileLayer,
-
-  useMap,
-} from "react-leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import PropTypes from "prop-types";
 import { Box, Button } from "@mui/material";
 import dayjs from "dayjs";
@@ -12,6 +7,7 @@ import MapLegendComponent from "./MapLegend.jsx";
 import ParkingPopup from "./EventsMapParkingLotPopup.jsx";
 import EntrancePopup from "./EntrancePopup.jsx";
 import HallPopup from "./HallPopup.jsx";
+import NoEventsOverlay from "./NoEventsOverlay";
 import "leaflet/dist/leaflet.css";
 import CenterFocusStrongRoundedIcon from "@mui/icons-material/CenterFocusStrongRounded";
 
@@ -53,6 +49,10 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
     ),
   );
+
+  if (uniqueFilteredEvents.length === 0) {
+    return <NoEventsOverlay />;
+  }
 
   const SetZoomLevel = ({ zoom }) => {
     const map = useMap();

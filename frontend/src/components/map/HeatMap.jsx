@@ -8,6 +8,7 @@ import MapLegendComponent from "./MapLegend.jsx";
 import HeatMapParkingLotPopup from "./HeatMapParkingLotPopup.jsx";
 import EntrancePopup from "./EntrancePopup.jsx";
 import HallPopup from "./HallPopup.jsx";
+import NoEventsOverlay from "./NoEventsOverlay";
 import "leaflet/dist/leaflet.css";
 
 const MAP_BOUNDS = [
@@ -143,40 +144,46 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
         selectedDate={selectedDate}
       />
 
-      {coordinates.entrances.map((entrance, index) => (
-        <EntrancePopup
-          key={entrance.name}
-          entrance={entrance}
-          index={index}
-          events={uniqueFilteredEvents}
-          GREYED_OUT={0.8}
-        />
-      ))}
+      {uniqueFilteredEvents.length === 0 && <NoEventsOverlay />}
 
-      {coordinates.halls.map((hall, index) => (
-        <HallPopup
-          key={hall.name}
-          hall={hall}
-          index={index}
-          events={uniqueFilteredEvents}
-          selectedDate={selectedDate}
-          selectedEventId={2}
-          GREYED_OUT={0.8}
-        />
-      ))}
+      {uniqueFilteredEvents.length > 0 && (
+        <>
+          {coordinates.entrances.map((entrance, index) => (
+            <EntrancePopup
+              key={entrance.name}
+              entrance={entrance}
+              index={index}
+              events={uniqueFilteredEvents}
+              GREYED_OUT={0.8}
+            />
+          ))}
 
-      {parkingLots.map((parkingLot, index) => (
-        <HeatMapParkingLotPopup
-          key={parkingLot.name}
-          parkingLot={parkingLot}
-          index={index}
-          parking_lots_occupancy={occupancy}
-          parking_lots_capacity={capacity}
-          parking_lots_allocations={allocations}
-          COLOR_OCCUPIED={COLOR_OCCUPIED}
-          COLOR_FREE={COLOR_FREE}
-        />
-      ))}
+          {coordinates.halls.map((hall, index) => (
+            <HallPopup
+              key={hall.name}
+              hall={hall}
+              index={index}
+              events={uniqueFilteredEvents}
+              selectedDate={selectedDate}
+              selectedEventId={2}
+              GREYED_OUT={0.8}
+            />
+          ))}
+
+          {parkingLots.map((parkingLot, index) => (
+            <HeatMapParkingLotPopup
+              key={parkingLot.name}
+              parkingLot={parkingLot}
+              index={index}
+              parking_lots_occupancy={occupancy}
+              parking_lots_capacity={capacity}
+              parking_lots_allocations={allocations}
+              COLOR_OCCUPIED={COLOR_OCCUPIED}
+              COLOR_FREE={COLOR_FREE}
+            />
+          ))}
+        </>
+      )}
     </MapContainer>
   );
 };

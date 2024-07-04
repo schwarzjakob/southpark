@@ -181,6 +181,18 @@ const MapPage = () => {
   const { totalOccupied, totalFree, occupiedPercentage, freePercentage } =
     calculateParkingSpaceStats(mapDataForSelectedDay);
 
+  const hasEvents = mapDataForSelectedDay.events_timeline.some(
+    (event) =>
+      dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
+      dayjs(selectedDate).isBetween(
+        event.assembly_start_date,
+        event.disassembly_end_date,
+        null,
+        "[]",
+      ) ||
+      dayjs(selectedDate).isSame(event.disassembly_end_date, "day"),
+  );
+
   return (
     <Box>
       <Box display="flex" flexDirection="column" gap={2}>
@@ -243,22 +255,24 @@ const MapPage = () => {
                 selectedEventId={selectedEventId}
               />
             )}
-            <Box className="map-switch-container">
-              <Button
-                className="map-switch-btn"
-                variant="contained"
-                onClick={toggleMap}
-                startIcon={
-                  showHeatmap ? (
-                    <HorizontalSplitRoundedIcon />
-                  ) : (
-                    <LocalFireDepartmentRoundedIcon />
-                  )
-                }
-              >
-                {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
-              </Button>
-            </Box>
+            {hasEvents && (
+              <Box className="map-switch-container">
+                <Button
+                  className="map-switch-btn"
+                  variant="contained"
+                  onClick={toggleMap}
+                  startIcon={
+                    showHeatmap ? (
+                      <HorizontalSplitRoundedIcon />
+                    ) : (
+                      <LocalFireDepartmentRoundedIcon />
+                    )
+                  }
+                >
+                  {showHeatmap ? "Switch to Events Map" : "Switch to Heatmap"}
+                </Button>
+              </Box>
+            )}
           </Box>
           <Box
             className="map__bar-chart-component"
