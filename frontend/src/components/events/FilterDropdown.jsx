@@ -2,12 +2,13 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import {
   IconButton,
-  Menu,
+  Popper,
   MenuItem,
   Checkbox,
   ListItemText,
   Box,
-  Divider,
+  Paper,
+  ClickAwayListener,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterListRounded";
 
@@ -15,16 +16,18 @@ const FilterDropdown = ({
   options,
   selectedOptions,
   onChange,
-  align = "left",
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
+    setOpen((prevOpen) => !prevOpen);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
+    setOpen(false);
   };
 
   const handleToggle = (option) => {
@@ -45,17 +48,10 @@ const FilterDropdown = ({
     columns.push(sortedOptions.slice(i, i + maxItemsPerColumn));
   }
 
-  const getTransformOrigin = () => {
-    switch (align) {
-      case "left":
-        return { vertical: "top", horizontal: 0 };
-      case "center":
-        return { vertical: "top", horizontal: "center" };
-      case "right":
-        return { vertical: "top", horizontal: "right" };
-      default:
-        return { vertical: "top", horizontal: 0 };
-    }
+  const getStatusText = (status) => {
+    return status
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
   return (
@@ -63,41 +59,36 @@ const FilterDropdown = ({
       <IconButton onClick={handleClick}>
         <FilterListIcon />
       </IconButton>
-      <Menu
+      <Popper
+        open={open}
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: align }}
-        transformOrigin={getTransformOrigin()}
-        style={{ position: "fixed !important" }}
+        placement="bottom-start"
+        style={{ zIndex: 1300 }}
       >
-        <Box display="flex">
-          {columns.map((column, columnIndex) => (
-            <Box key={`column-${columnIndex}`}>
-              {column.map((option, optionIndex) => (
-                <MenuItem
-                  key={`option-${columnIndex}-${optionIndex}`}
-                  onClick={() => handleToggle(option)}
-                  className="filter-dropdown-item"
-                >
-                  <Checkbox
-                    checked={selectedOptions.indexOf(option) > -1}
-                    value={option}
-                  />
-                  <ListItemText primary={option} />
-                </MenuItem>
+        <ClickAwayListener onClickAway={handleClose}>
+          <Paper>
+            <Box display="flex">
+              {columns.map((column, columnIndex) => (
+                <Box key={`column-${columnIndex}`}>
+                  {column.map((option, optionIndex) => (
+                    <MenuItem
+                      key={`option-${columnIndex}-${optionIndex}`}
+                      onClick={() => handleToggle(option)}
+                      className="filter-dropdown-item"
+                    >
+                      <Checkbox
+                        checked={selectedOptions.indexOf(option) > -1}
+                        value={option}
+                      />
+                      <ListItemText primary={getStatusText(option)} />
+                    </MenuItem>
+                  ))}
+                </Box>
               ))}
-              {columnIndex < columns.length - 1 && (
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  sx={{ backgroundColor: "lightgray", margin: "8px 0" }}
-                />
-              )}
             </Box>
-          ))}
-        </Box>
-      </Menu>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
     </>
   );
 };

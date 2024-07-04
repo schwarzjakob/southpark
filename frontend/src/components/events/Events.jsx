@@ -112,6 +112,7 @@ const Events = () => {
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [originalPage, setOriginalPage] = useState(0);
   const [rowsPerPage] = useState(10);
   const [filters, setFilters] = useState({
     entrances: [],
@@ -138,10 +139,30 @@ const Events = () => {
   };
 
   const handleFilterDropdownChange = (filterName, selectedOptions) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [filterName]: selectedOptions,
-    }));
+    setFilters((prevFilters) => {
+      const newFilters = {
+        ...prevFilters,
+        [filterName]: selectedOptions,
+      };
+
+      // Check if all filters are empty
+      const allFiltersEmpty = Object.values(newFilters).every(
+        (filter) => filter.length === 0,
+      );
+
+      if (allFiltersEmpty) {
+        // Restore original page
+        setPage(originalPage);
+      } else {
+        // Save original page if filters were previously empty and set page to 0
+        if (Object.values(prevFilters).every((filter) => filter.length === 0)) {
+          setOriginalPage(page);
+        }
+        setPage(0);
+      }
+
+      return newFilters;
+    });
   };
 
   const formatDate = (dateString) => {
@@ -207,6 +228,23 @@ const Events = () => {
       setIsInitialPageSet(true);
     }
   }, [loading, events, rowsPerPage, isInitialPageSet, getCurrentPage]);
+
+  const ensureValidPage = useCallback(
+    (filteredEvents) => {
+      const maxPage = Math.max(
+        0,
+        Math.ceil(filteredEvents.length / rowsPerPage) - 1,
+      );
+      if (page > maxPage) {
+        setPage(maxPage);
+      }
+    },
+    [page, rowsPerPage],
+  );
+
+  useEffect(() => {
+    ensureValidPage(filteredEvents);
+  }, [filteredEvents, ensureValidPage]);
 
   const hallAndEntranceOptions = [
     ...new Set([
