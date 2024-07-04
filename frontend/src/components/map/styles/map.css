@@ -8,7 +8,7 @@
 .leaflet-popup-content-wrapper {
   background: var(--color-pure-white);
   color: var(--textColor);
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
   margin: 0.25rem;
   line-height: 1;
@@ -20,6 +20,7 @@
   margin: 0.5rem !important;
   line-height: 1;
   min-width: 7rem;
+  width: auto !important;
 }
 
 .leaflet-popup-tip {
@@ -585,13 +586,13 @@
 }
 
 .status-assembly {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
 .status-disassembly {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .tags-parking-lots {

@@ -144,7 +144,7 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
           <span>Entrance</span>
         </div>
         <div className="popup-header-hall">
-          <span>Allocated Lot</span>s
+          <span>Allocated Lot</span>
         </div>
         {hallEvents.map((event, index) => {
           const textColor = getContrastingTextColor(event.event_color);
