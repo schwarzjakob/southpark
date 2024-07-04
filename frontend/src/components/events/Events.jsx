@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import {
   Table,
@@ -10,19 +10,17 @@ import {
   Paper,
   IconButton,
   Button,
-  TableSortLabel,
   Typography,
   Box,
   TextField,
   InputAdornment,
-  CircularProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
+import FilterDropdown from "./FilterDropdown";
+import HallEntranceIcons from "./HallEntranceIcons";
 import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import DoorSlidingRoundedIcon from "@mui/icons-material/DoorSlidingRounded";
-import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
@@ -30,10 +28,23 @@ import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CircleIcon from "@mui/icons-material/Circle";
-
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import LoadingAnimation from "../common/LoadingAnimation.jsx";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
 import "./styles/events.css";
 
 const TITLE = "Events";
+
+const getContrastingTextColor = (backgroundColor) => {
+  const hex = backgroundColor.replace("#", "");
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return luminance > 0.5 ? "black" : "white";
+};
 
 const getStatusCircle = (status) => {
   let color;
@@ -53,6 +64,34 @@ const getStatusCircle = (status) => {
   return <CircleIcon style={{ color }} />;
 };
 
+const applyFilters = (events, filters) => {
+  return events.filter((event) => {
+    const entrances = event.entrances || [];
+    const halls = event.halls || [];
+    const allocatedParkingLots = event.allocatedParkingLots || [];
+    const status = event.status || "unknown";
+
+    const entrancesMatch =
+      filters.entrances.length === 0 ||
+      filters.entrances.some((filter) => entrances.includes(filter));
+
+    const hallsMatch =
+      filters.halls.length === 0 ||
+      filters.halls.some((filter) => halls.includes(filter));
+
+    const parkingLotsMatch =
+      filters.parkingLots.length === 0 ||
+      filters.parkingLots.some((filter) =>
+        allocatedParkingLots.includes(filter),
+      );
+
+    const statusMatch =
+      filters.status.length === 0 || filters.status.includes(status);
+
+    return entrancesMatch && hallsMatch && parkingLotsMatch && statusMatch;
+  });
+};
+
 const getStatusText = (status) => {
   switch (status) {
     case "no_demands":
@@ -70,11 +109,88 @@ const getStatusText = (status) => {
 
 const Events = () => {
   const [events, setEvents] = useState([]);
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("name");
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [originalPage, setOriginalPage] = useState(0);
+  const [rowsPerPage] = useState(10);
+  const [filters, setFilters] = useState({
+    entrances: [],
+    halls: [],
+    parkingLots: [],
+    status: [],
+  });
+  const [isInitialPageSet, setIsInitialPageSet] = useState(false);
   const navigate = useNavigate();
+
+  const filteredEvents = applyFilters(
+    events.filter((event) =>
+      event.name.toLowerCase().includes(filter.toLowerCase()),
+    ),
+    filters,
+  );
+
+  const handleFilterChange = (event) => {
+    setFilter(event.target.value);
+  };
+
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleFilterDropdownChange = (filterName, selectedOptions) => {
+    setFilters((prevFilters) => {
+      const newFilters = {
+        ...prevFilters,
+        [filterName]: selectedOptions,
+      };
+
+      // Check if all filters are empty
+      const allFiltersEmpty = Object.values(newFilters).every(
+        (filter) => filter.length === 0,
+      );
+
+      if (allFiltersEmpty) {
+        // Restore original page
+        setPage(originalPage);
+      } else {
+        // Save original page if filters were previously empty and set page to 0
+        if (Object.values(prevFilters).every((filter) => filter.length === 0)) {
+          setOriginalPage(page);
+        }
+        setPage(0);
+      }
+
+      return newFilters;
+    });
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear().toString().slice(2);
+    return `${day}.${month}.${year}`;
+  };
+
+  const getCurrentPage = useCallback(() => {
+    const today = new Date();
+    const closestEventIndex = filteredEvents
+      .map((event, index) => ({
+        index,
+        start: new Date(event.assembly_start_date),
+        end: new Date(event.disassembly_end_date),
+      }))
+      .filter((event) => event.start <= today && today <= event.end)
+      .map((event) => event.index)
+      .sort(
+        (a, b) =>
+          Math.abs(today - filteredEvents[a].start) -
+          Math.abs(today - filteredEvents[b].start),
+      )[0];
+
+    return closestEventIndex !== undefined ? closestEventIndex : 0;
+  }, [filteredEvents]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,103 +222,45 @@ const Events = () => {
     fetchData();
   }, []);
 
-  const handleRequestSort = (property) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
+  useEffect(() => {
+    if (!loading && !isInitialPageSet) {
+      setPage(Math.floor(getCurrentPage() / rowsPerPage));
+      setIsInitialPageSet(true);
+    }
+  }, [loading, events, rowsPerPage, isInitialPageSet, getCurrentPage]);
 
-  const handleFilterChange = (event) => {
-    setFilter(event.target.value);
-  };
-
-  const filteredEvents = events.filter((event) =>
-    event.name.toLowerCase().includes(filter.toLowerCase()),
+  const ensureValidPage = useCallback(
+    (filteredEvents) => {
+      const maxPage = Math.max(
+        0,
+        Math.ceil(filteredEvents.length / rowsPerPage) - 1,
+      );
+      if (page > maxPage) {
+        setPage(maxPage);
+      }
+    },
+    [page, rowsPerPage],
   );
 
-  const sortedEvents = filteredEvents.sort((a, b) => {
-    if (orderBy === "name") {
-      return order === "asc"
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name);
-    } else if (orderBy === "entrance") {
-      return order === "asc"
-        ? a.entrances.join(", ").localeCompare(b.entrances.join(", "))
-        : b.entrances.join(", ").localeCompare(a.entrances.join(", "));
-    } else if (orderBy === "halls") {
-      return order === "asc"
-        ? a.halls.length - b.halls.length
-        : b.halls.length - a.halls.length;
-    } else if (orderBy === "assembly") {
-      return order === "asc"
-        ? a.assembly_start_date.localeCompare(b.assembly_start_date)
-        : b.assembly_start_date.localeCompare(a.assembly_start_date);
-    } else if (orderBy === "runtime") {
-      return order === "asc"
-        ? a.runtime_start_date.localeCompare(b.runtime_start_date)
-        : b.runtime_start_date.localeCompare(a.runtime_start_date);
-    } else if (orderBy === "disassembly") {
-      return order === "asc"
-        ? a.disassembly_start_date.localeCompare(b.disassembly_start_date)
-        : b.disassembly_start_date.localeCompare(a.disassembly_start_date);
-    } else if (orderBy === "status") {
-      return order === "asc"
-        ? a.status.localeCompare(b.status)
-        : b.status.localeCompare(a.status);
-    } else if (orderBy === "allocatedParkingLots") {
-      return order === "asc"
-        ? a.allocatedParkingLots
-            .map((pl) => pl.parking_lot_name)
-            .join(", ")
-            .localeCompare(
-              b.allocatedParkingLots
-                .map((pl) => pl.parking_lot_name)
-                .join(", "),
-            )
-        : b.allocatedParkingLots
-            .map((pl) => pl.parking_lot_name)
-            .join(", ")
-            .localeCompare(
-              a.allocatedParkingLots
-                .map((pl) => pl.parking_lot_name)
-                .join(", "),
-            );
-    }
+  useEffect(() => {
+    ensureValidPage(filteredEvents);
+  }, [filteredEvents, ensureValidPage]);
 
-    return 0;
-  });
+  const hallAndEntranceOptions = [
+    ...new Set([
+      ...events.flatMap((event) => event.halls),
+      ...events.flatMap((event) => event.entrances),
+    ]),
+  ];
 
-  const groupHallsByLetter = (halls) => {
-    return halls.reduce((acc, hall) => {
-      const letter = hall.charAt(0).toUpperCase();
-      if (!acc[letter]) {
-        acc[letter] = [];
-      }
-      acc[letter].push(hall);
-      return acc;
-    }, {});
-  };
+  const parkingLotOptions = [
+    ...new Set(events.flatMap((event) => event.allocatedParkingLots)),
+  ];
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear().toString().slice(2);
-    return `${day}.${month}.${year}`;
-  };
-
-  const getContrastingTextColor = (backgroundColor) => {
-    const hex = backgroundColor.replace("#", "");
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    return luminance > 0.5 ? "black" : "white";
-  };
+  const statusOptions = [...new Set(events.map((event) => event.status))];
 
   return (
-    <Box className="form-width">
+    <Box className="form-width event">
       <Box className="form-headline-button__container">
         <Box className="iconHeadline__container">
           <InsertInvitationRoundedIcon />
@@ -232,7 +290,7 @@ const Events = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <FilterAltIcon />
+                <SearchRoundedIcon />
               </InputAdornment>
             ),
           }}
@@ -240,15 +298,7 @@ const Events = () => {
         />
       </Box>
       {loading ? (
-        <Box
-          className="circular-loading_container"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="100%"
-        >
-          <CircularProgress />
-        </Box>
+        <LoadingAnimation />
       ) : (
         <Box>
           <TableContainer className="events-container" component={Paper}>
@@ -256,210 +306,229 @@ const Events = () => {
               <TableHead className="events-table__header">
                 <TableRow>
                   <TableCell>
-                    <Box className="header-icon-container">
+                    <Box className="header-icon-container events">
                       <InsertInvitationRoundedIcon
                         fontSize="small"
                         className="header-icon"
                       />
-                      <TableSortLabel
-                        active={orderBy === "name"}
-                        direction={orderBy === "name" ? order : "asc"}
-                        onClick={() => handleRequestSort("name")}
-                      >
-                        Event
-                      </TableSortLabel>
+                      Event
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box className="header-icon-container">
-                      <DoorSlidingRoundedIcon
-                        fontSize="small"
-                        className="header-icon"
-                      />
-                      <TableSortLabel
-                        active={orderBy === "entrance"}
-                        direction={orderBy === "entrance" ? order : "asc"}
-                        onClick={() => handleRequestSort("entrance")}
-                      >
-                        Entrance
-                      </TableSortLabel>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box className="header-icon-container">
+                    <Box className="header-icon-container events">
                       <OtherHousesRoundedIcon
                         fontSize="small"
                         className="header-icon"
                       />
-                      <TableSortLabel
-                        active={orderBy === "halls"}
-                        direction={orderBy === "halls" ? order : "asc"}
-                        onClick={() => handleRequestSort("halls")}
-                      >
-                        Halls
-                      </TableSortLabel>
+                      Entrances & Halls
+                      <FilterDropdown
+                        label="Halls & Entrances"
+                        options={hallAndEntranceOptions}
+                        selectedOptions={filters.halls}
+                        onChange={(selectedOptions) =>
+                          handleFilterDropdownChange("halls", selectedOptions)
+                        }
+                      />
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box className="header-icon-container">
+                    <Box className="header-icon-container events">
+                      <GarageIcon fontSize="small" className="header-icon" />
+                      Allocated Parking Spaces
+                      <FilterDropdown
+                        label="Allocated Parking Lots"
+                        options={parkingLotOptions}
+                        selectedOptions={filters.parkingLots}
+                        onChange={(selectedOptions) =>
+                          handleFilterDropdownChange(
+                            "parkingLots",
+                            selectedOptions,
+                          )
+                        }
+                      />
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="header-icon-container events">
                       <ArrowCircleUpRoundedIcon
                         fontSize="small"
                         className="header-icon"
                       />
-                      <TableSortLabel
-                        active={orderBy === "assembly"}
-                        direction={orderBy === "assembly" ? order : "asc"}
-                        onClick={() => handleRequestSort("assembly")}
-                      >
-                        Assembly
-                      </TableSortLabel>
+                      Assembly
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box className="header-icon-container">
+                    <Box className="header-icon-container events">
                       <PlayCircleFilledRoundedIcon
                         fontSize="small"
                         className="header-icon"
                       />
-                      <TableSortLabel
-                        active={orderBy === "runtime"}
-                        direction={orderBy === "runtime" ? order : "asc"}
-                        onClick={() => handleRequestSort("runtime")}
-                      >
-                        Runtime
-                      </TableSortLabel>
+                      Runtime
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box className="header-icon-container">
+                    <Box className="header-icon-container events">
                       <ArrowCircleDownRoundedIcon
                         fontSize="small"
                         className="header-icon"
                       />
-                      <TableSortLabel
-                        active={orderBy === "disassembly"}
-                        direction={orderBy === "disassembly" ? order : "asc"}
-                        onClick={() => handleRequestSort("disassembly")}
-                      >
-                        Disassembly
-                      </TableSortLabel>
+                      Disassembly
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box className="header-icon-container">
+                    <Box className="header-icon-container events">
                       <AssessmentRoundedIcon
                         fontSize="small"
                         className="header-icon"
                       />
-                      <TableSortLabel
-                        active={orderBy === "status"}
-                        direction={orderBy === "status" ? order : "asc"}
-                        onClick={() => handleRequestSort("status")}
-                      >
-                        Capacity Status
-                      </TableSortLabel>
+                      Capacity Status
+                      <FilterDropdown
+                        label="Capacity Status"
+                        options={statusOptions}
+                        selectedOptions={filters.status}
+                        onChange={(selectedOptions) =>
+                          handleFilterDropdownChange("status", selectedOptions)
+                        }
+                        align="right"
+                      />
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Box className="header-icon-container">
-                      <GarageIcon fontSize="small" className="header-icon" />
-                      <TableSortLabel
-                        active={orderBy === "allocatedParkingLots"}
-                        direction={
-                          orderBy === "allocatedParkingLots" ? order : "asc"
-                        }
-                        onClick={() =>
-                          handleRequestSort("allocatedParkingLots")
-                        }
-                      >
-                        Allocated Parking Lots
-                      </TableSortLabel>
-                    </Box>
-                  </TableCell>
-
                   <TableCell>
                     <p></p>
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedEvents.map((event) => (
-                  <TableRow
-                    key={event.id}
-                    onClick={() => navigate(`/events/event/${event.id}`)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <TableCell className="event-name">
-                      <Box
-                        className="event-box"
-                        style={{
-                          backgroundColor: event.color,
-                          color: getContrastingTextColor(event.color),
-                          wordWrap: "break-word",
-                          maxWidth: "200px",
-                        }}
-                      >
-                        {event.name}
-                      </Box>
-                    </TableCell>
-                    <TableCell className="entrances">
-                      {event.entrances.join(", ")}
-                    </TableCell>
-                    <TableCell className="halls">
-                      {Object.entries(groupHallsByLetter(event.halls)).map(
-                        ([letter, halls]) => (
-                          <Box key={letter}>{halls.join(", ")}</Box>
-                        ),
-                      )}
-                    </TableCell>
-                    <TableCell className="assembly">
-                      {`${formatDate(event.assembly_start_date)} -`}
-                      <br />
-                      {`${formatDate(event.assembly_end_date)}`}
-                    </TableCell>
-                    <TableCell className="runtime">
-                      {`${formatDate(event.runtime_start_date)} -`}
-                      <br />
-                      {`${formatDate(event.runtime_end_date)}`}
-                    </TableCell>
-                    <TableCell className="disassembly">
-                      {`${formatDate(event.disassembly_start_date)} -`}
-                      <br />
-                      {`${formatDate(event.disassembly_end_date)}`}
-                    </TableCell>
-                    <TableCell className="status">
-                      <Box
-                        className="status-box"
-                        display="flex"
-                        alignItems="center"
-                      >
-                        {getStatusCircle(event.status)}
-                        <Typography
-                          variant="body2"
-                          style={{ marginLeft: "8px" }}
+                {filteredEvents
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((event) => (
+                    <TableRow
+                      key={event.id}
+                      onClick={() => navigate(`/events/event/${event.id}`)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <TableCell className="event-name">
+                        <Box
+                          className="event-box"
+                          style={{
+                            backgroundColor: event.color,
+                            color: getContrastingTextColor(event.color),
+                            wordWrap: "break-word",
+                            maxWidth: "200px",
+                          }}
                         >
-                          {getStatusText(event.status)}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell className="allocated-parking-lots">
-                      {event.allocatedParkingLots &&
-                        event.allocatedParkingLots.join(", ")}
-                    </TableCell>
-                    <TableCell>
-                      <IconButton
-                        onClick={() => navigate(`/events/event/${event.id}`)}
-                        edge="start"
-                        size="small"
+                          {event.name}
+                        </Box>
+                      </TableCell>
+                      <TableCell
+                        className="halls"
+                        style={{ padding: "0", paddingRight: "1rem" }}
                       >
-                        <ArrowForwardIosRoundedIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <HallEntranceIcons
+                          color={event.color}
+                          ids={[...event.halls, ...event.entrances]}
+                        />
+                      </TableCell>
+                      <TableCell className="allocated-parking-lots">
+                        <Box
+                          className="parking-lot-container"
+                          display="flex"
+                          flexWrap="wrap"
+                          gap="5px"
+                          maxWidth="10rem"
+                        >
+                          {event.allocatedParkingLots &&
+                            event.allocatedParkingLots.map((lot) => (
+                              <Box
+                                key={lot}
+                                className="parking-lot"
+                                style={{
+                                  backgroundColor: "#6a91ce",
+                                  color: "white",
+                                  padding: "2px 5px",
+                                  borderRadius: "3px",
+                                  wordWrap: "break-word",
+                                }}
+                              >
+                                {lot}
+                              </Box>
+                            ))}
+                        </Box>
+                      </TableCell>
+                      <TableCell className="assembly">
+                        {`${formatDate(event.assembly_start_date)} -`}
+                        <br />
+                        {`${formatDate(event.assembly_end_date)}`}
+                      </TableCell>
+                      <TableCell className="runtime">
+                        {`${formatDate(event.runtime_start_date)} -`}
+                        <br />
+                        {`${formatDate(event.runtime_end_date)}`}
+                      </TableCell>
+                      <TableCell className="disassembly">
+                        {`${formatDate(event.disassembly_start_date)} -`}
+                        <br />
+                        {`${formatDate(event.disassembly_end_date)}`}
+                      </TableCell>
+                      <TableCell className="status">
+                        <Box
+                          className="status-box"
+                          display="flex"
+                          alignItems="center"
+                        >
+                          {getStatusCircle(event.status)}
+                          <Typography
+                            variant="body2"
+                            style={{ marginLeft: "8px" }}
+                          >
+                            {getStatusText(event.status)}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          onClick={() => navigate(`/events/event/${event.id}`)}
+                          edge="start"
+                          size="small"
+                        >
+                          <ArrowForwardIosRoundedIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
+          <Box
+            className="pagination-container"
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            paddingTop="1rem"
+          >
+            <Button
+              className="btn-events-pages"
+              color="primary"
+              onClick={() => handlePageChange(null, page - 1)}
+              disabled={page === 0}
+            >
+              <ArrowBackIcon />
+            </Button>
+            <Typography>
+              Page {page + 1} of{" "}
+              {Math.ceil(filteredEvents.length / rowsPerPage)}
+            </Typography>
+            <Button
+              className="btn-events-pages"
+              color="primary"
+              onClick={() => handlePageChange(null, page + 1)}
+              disabled={
+                page >= Math.ceil(filteredEvents.length / rowsPerPage) - 1
+              }
+            >
+              <ArrowForwardIcon />
+            </Button>
+          </Box>
         </Box>
       )}
     </Box>
