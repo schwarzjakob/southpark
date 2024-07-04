@@ -174,7 +174,7 @@ const HallEntranceIcons = ({ color, ids }) => {
               y={path.centerY}
               textAnchor="middle"
               fontSize="26px"
-              fontWeight="bold"
+              fontWeight="semi-bold"
               fill={
                 ids.includes(path.id) &&
                 path.id !== "North West" &&

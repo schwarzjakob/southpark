@@ -14,7 +14,6 @@ import {
   Box,
   TextField,
   InputAdornment,
-  CircularProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import FilterDropdown from "./FilterDropdown";
@@ -30,6 +29,7 @@ import GarageIcon from "@mui/icons-material/GarageRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import LoadingAnimation from "../common/LoadingAnimation.jsx";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
 import "./styles/events.css";
@@ -65,24 +65,30 @@ const getStatusCircle = (status) => {
 };
 
 const applyFilters = (events, filters) => {
-  console.log("Applying filters:", filters);
-  console.log("Events:", events);
-
   return events.filter((event) => {
-    return (
-      (filters.entrances.length === 0 ||
-        filters.entrances.some((filter) => event.entrances.includes(filter))) &&
-      (filters.halls.length === 0 ||
-        filters.halls.some(
-          (filter) =>
-            event.halls.includes(filter) || event.entrances.includes(filter),
-        )) &&
-      (filters.parkingLots.length === 0 ||
-        filters.parkingLots.some((filter) =>
-          event.allocatedParkingLots.includes(filter),
-        )) &&
-      (filters.status.length === 0 || filters.status.includes(event.status))
-    );
+    const entrances = event.entrances || [];
+    const halls = event.halls || [];
+    const allocatedParkingLots = event.allocatedParkingLots || [];
+    const status = event.status || "unknown";
+
+    const entrancesMatch =
+      filters.entrances.length === 0 ||
+      filters.entrances.some((filter) => entrances.includes(filter));
+
+    const hallsMatch =
+      filters.halls.length === 0 ||
+      filters.halls.some((filter) => halls.includes(filter));
+
+    const parkingLotsMatch =
+      filters.parkingLots.length === 0 ||
+      filters.parkingLots.some((filter) =>
+        allocatedParkingLots.includes(filter),
+      );
+
+    const statusMatch =
+      filters.status.length === 0 || filters.status.includes(status);
+
+    return entrancesMatch && hallsMatch && parkingLotsMatch && statusMatch;
   });
 };
 
@@ -208,6 +214,7 @@ const Events = () => {
       ...events.flatMap((event) => event.entrances),
     ]),
   ];
+
   const parkingLotOptions = [
     ...new Set(events.flatMap((event) => event.allocatedParkingLots)),
   ];
@@ -253,15 +260,7 @@ const Events = () => {
         />
       </Box>
       {loading ? (
-        <Box
-          className="circular-loading_container"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="100%"
-        >
-          <CircularProgress />
-        </Box>
+        <LoadingAnimation />
       ) : (
         <Box>
           <TableContainer className="events-container" component={Paper}>
@@ -352,6 +351,7 @@ const Events = () => {
                         onChange={(selectedOptions) =>
                           handleFilterDropdownChange("status", selectedOptions)
                         }
+                        align="right"
                       />
                     </Box>
                   </TableCell>

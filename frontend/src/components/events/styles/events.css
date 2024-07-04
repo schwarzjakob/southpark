@@ -1,10 +1,9 @@
-/* Events */
-
 .event-box {
-  border-radius: 6px;
-  padding: 4px 12px;
-  margin: 2px;
   display: inline-block;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  width: 100% !important;
+  text-align: center;
 }
 
 .header-icon-container {
@@ -19,7 +18,6 @@
 .event-filter {
   background-color: var(--color-pure-white) !important;
 }
-/* Add Event */
 
 .table-header-title {
   font-size: 1rem !important;
@@ -112,12 +110,6 @@
   border-radius: 3px;
 }
 
-.event-box {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 6px;
-}
-
 .time-span-date {
   margin: auto;
   font-weight: bold;
@@ -130,8 +122,6 @@
 .input__demand input {
   padding: 5px 10px !important;
 }
-
-/* Event Parking Space Allocation */
 
 .allocateParkingSpace-paper {
   padding: 1rem !important;
@@ -303,4 +293,8 @@
 .add-allocation-button.deactivated {
   background-color: var(--color-gray-200) !important;
   color: var(--textColor) !important;
+}
+
+.filter-dropdown-item {
+  padding: 0 0.5rem !important;
 }
