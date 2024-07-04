@@ -61,7 +61,6 @@
   padding: 1rem;
 }
 
-/* Event demands */
 .eventDemandTable-container {
   background-color: #f5f5f5;
 }
@@ -257,7 +256,6 @@
   justify-content: flex-end;
 }
 
-/* Pop up */
 .popup-title {
   margin-bottom: 0 !important;
 }

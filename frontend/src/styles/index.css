@@ -1,13 +1,170 @@
-/* 
-index.css:
-  - Generally used for global styles that affect the entire application.
-  - Contains styles that are applied globally, such as resets, typography, or layout adjustments.
-  - Helps centralize global styles, making it easier to manage and maintain consistent styling throughout the application.
-  - If the styles you provided are intended to be applied globally across your entire application, you can consider placing them in here. 
-*/
+html {
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+}
 
-/* font */
-/* @import url('https://fonts.googleapis.com/css2?family=Karla&family=Spectral&display=swap'); */
+body {
+  margin: 0;
+  padding: 0 !important;
+}
+
+main {
+  display: block;
+}
+
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+hr {
+  box-sizing: content-box;
+  height: 0;
+  overflow: visible;
+}
+
+pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+
+a {
+  background-color: transparent;
+}
+
+abbr[title] {
+  border-bottom: none;
+  text-decoration: underline;
+  text-decoration: underline dotted;
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+code,
+kbd,
+samp {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+img {
+  border-style: none;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+}
+
+button,
+input {
+  overflow: visible;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+button:-moz-focusring,
+[type="button"]:-moz-focusring,
+[type="reset"]:-moz-focusring,
+[type="submit"]:-moz-focusring {
+  outline: 1px dotted;
+}
+
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+legend {
+  box-sizing: border-box;
+  color: inherit;
+  display: table;
+  max-width: 100%;
+  padding: 0;
+  white-space: normal;
+}
+
+progress {
+  vertical-align: baseline;
+}
+
+textarea {
+  overflow: auto;
+}
+
+[type="checkbox"],
+[type="radio"] {
+  box-sizing: border-box;
+  padding: 0;
+}
+
+[type="number"]::-webkit-inner-spin-button,
+[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+[type="search"] {
+  outline-offset: -2px;
+}
+
+[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
+
+summary {
+  display: list-item;
+}
+
+template {
+  display: none;
+}
+
+[hidden] {
+  display: none;
+}
 
 *,
 ::after,
@@ -17,7 +174,7 @@ index.css:
 
 html {
   font-size: 100%;
-} /* 16px */
+}
 
 html,
 body {
@@ -26,7 +183,6 @@ body {
 }
 
 :root {
-  /* Color vars */
   --color-primary: #6a91ce;
   --color-secondary: #6a91ce;
   --color-navigation-bar: #6a91ce;
@@ -82,14 +238,10 @@ body {
   --color-gray-800: #333333;
   --color-gray-900: #1a1a1a;
   --color-parking-space: #4e75bc;
-
-  /* Font vars */
   --type-headline-font-family: Arial, Helvetica, sans-serif;
   --type-headline-spacing: 0.3px;
   --type-headline-weight: bold;
   --type-body-font-family: Arial, Helvetica, sans-serif;
-
-  /* Radius vars*/
   --radius-small-top-left: 6px;
   --radius-small-top-right: 6px;
   --radius-small-bottom-left: 6px;
@@ -133,12 +285,8 @@ body {
   --text-line-height-5xl: 48px;
   --text-line-height-6xl: 52px;
   --text-line-height-7xl: 60px;
-
-  /* Set the small text based on the parent */
   --smallText: 0.7em;
   --mediumText: 0.8em;
-
-  /* rest of the vars */
   --backgroundColor: var(--color-gray-50);
   --textColor: var(--color-gray-700);
   --borderRadius: 0.25rem;
@@ -146,7 +294,6 @@ body {
   --transition: 0.3s ease-in-out all;
   --max-width: 1120px;
   --fixed-width: 600px;
-
   --shadow-1: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-2: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-3: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -228,7 +375,6 @@ ul {
   object-fit: cover;
 }
 
-/* buttons */
 .btn {
   cursor: pointer;
   color: var(--color-pure-white);
@@ -240,12 +386,7 @@ ul {
   box-shadow: var(--shadow-1);
   transition: var(--transition);
   text-transform: capitalize;
-  /* vertical margin is respected */
   display: inline-block;
-  /* change when you want different layout */
-  /* display: block;
-  width: 200px;
-  margin: 0 auto; */
 }
 .btn:hover {
   background: var(--color-primary-700);
@@ -263,7 +404,6 @@ ul {
   width: 100%;
 }
 
-/* alerts */
 .alert {
   padding: 0.375rem 0.75rem;
   margin-bottom: 1rem;
@@ -278,8 +418,6 @@ ul {
   color: var(--color-signal-success);
   background: var(--color-signal-success-lightt);
 }
-
-/* form */
 
 .form-width {
   max-width: 1200px !important;
@@ -383,7 +521,6 @@ ul {
   margin-left: auto;
 }
 
-/* Table styling */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -436,7 +573,6 @@ table tfoot td:last-child {
   border-bottom-right-radius: var(--radius-small-bottom-right);
 }
 
-/* title */
 .title {
   text-align: center;
 }
@@ -452,8 +588,6 @@ table tfoot td:last-child {
   margin: 0 auto;
   margin-bottom: -1;
 }
-
-/* Mui Styling */
 
 .MuiInputBase-input:not(.search-input input) {
   background-color: var(--color-pure-white) !important;
@@ -507,7 +641,6 @@ a:not(.button, .chakra-linkbox__overlay, .css-183ssja):hover {
   font-size: var(--smallText) !important;
 }
 
-/* Loading animation */
 .circular-loading_container {
   display: flex;
   justify-content: center;

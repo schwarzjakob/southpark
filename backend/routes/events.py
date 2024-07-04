@@ -398,7 +398,6 @@ def edit_event(id):
         logger.debug(f"Received data for event update: {data}")
         data["id"] = id
 
-        # Convert date strings from the request to the correct format
         date_fields = [
             "assembly_start_date",
             "assembly_end_date",
@@ -411,16 +410,13 @@ def edit_event(id):
         for field in date_fields:
             if field in data:
                 try:
-                    # Attempt to parse date in original format
                     parsed_date = datetime.strptime(
                         data[field], "%a, %d %b %Y %H:%M:%S %Z"
                     )
                     data[field] = parsed_date.strftime("%Y-%m-%d")
                 except ValueError as ve:
-                    # Log error and original date
                     logger.debug(f"Failed to parse date {data[field]} with error: {ve}")
                     try:
-                        # Attempt to parse date in expected format
                         parsed_date = datetime.strptime(data[field], "%Y-%m-%d")
                         data[field] = parsed_date.strftime("%Y-%m-%d")
                     except ValueError as ve2:
@@ -434,7 +430,6 @@ def edit_event(id):
 
         logger.debug(f"Data after date conversion: {data}")
 
-        # Get the original event dates from the database
         original_event = get_data(
             """
             SELECT assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date
@@ -446,7 +441,6 @@ def edit_event(id):
 
         logger.debug(f"Original event dates: {original_event}")
 
-        # Calculate the difference in days
         def date_range(start_date, end_date):
             return set(
                 pd.date_range(start=start_date, end=end_date).strftime("%Y-%m-%d")
@@ -478,7 +472,6 @@ def edit_event(id):
         logger.debug(f"Dates to remove: {dates_to_remove}")
         logger.debug(f"Dates to add: {dates_to_add}")
 
-        # Update the event details
         update_event_query = text(
             """
             UPDATE public.event
@@ -495,7 +488,6 @@ def edit_event(id):
         )
         db.session.execute(update_event_query, data)
 
-        # Clear existing halls and entrances
         clear_halls_query = text("DELETE FROM hall_occupation WHERE event_id = :id")
         clear_entrances_query = text(
             "DELETE FROM entrance_occupation WHERE event_id = :id"
@@ -504,7 +496,6 @@ def edit_event(id):
         db.session.execute(clear_halls_query, {"id": id})
         db.session.execute(clear_entrances_query, {"id": id})
 
-        # Insert new halls
         insert_halls_query = text(
             """
             INSERT INTO hall_occupation (event_id, hall_id, date)
@@ -518,7 +509,6 @@ def edit_event(id):
                 insert_halls_query, {"event_id": id, "hall_name": hall_name}
             )
 
-        # Insert new entrances
         insert_entrances_query = text(
             """
             INSERT INTO entrance_occupation (event_id, entrance_id, date)
@@ -532,7 +522,6 @@ def edit_event(id):
                 insert_entrances_query, {"event_id": id, "entrance_name": entrance_name}
             )
 
-        # Delete visitor demands only for removed dates
         if dates_to_remove:
             delete_demands_query = text(
                 "DELETE FROM visitor_demand WHERE event_id = :event_id AND date IN :dates"
@@ -541,7 +530,6 @@ def edit_event(id):
                 delete_demands_query, {"event_id": id, "dates": tuple(dates_to_remove)}
             )
 
-            # Delete parking lot allocations for removed dates
             delete_allocations_query = text(
                 "DELETE FROM public.parking_lot_allocation WHERE event_id = :event_id AND date IN :dates"
             )
@@ -550,7 +538,6 @@ def edit_event(id):
                 {"event_id": id, "dates": tuple(dates_to_remove)},
             )
 
-        # Update visitor demands and allocations for changed phases
         for date in new_dates - dates_to_add:
             date_obj = datetime.strptime(date, "%Y-%m-%d")
             if date_obj < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):

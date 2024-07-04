@@ -74,6 +74,12 @@ const ParkingPopup = ({
     );
   });
 
+  const totalCapacity = allocations.reduce(
+    (sum, allocation) => sum + allocation.allocated_capacity,
+    0,
+  );
+  const isFullyAllocated = totalCapacity === parkingLotCapacity;
+
   const gradientId = `gradient-${index}-${parkingLot.id}`;
 
   if (!allocations || allocations.length === 0) {
@@ -179,13 +185,22 @@ const ParkingPopup = ({
               <div className="popup-header">Event</div>
               <div className="popup-header car-units">Car units</div>
               <div className="popup-header">Percentage</div>
+
               {allocations.map((allocation, index) => {
                 const textColor = getContrastingTextColor(
                   allocation.event_color,
                 );
+                const isLastElement = index === allocations.length - 1;
+
                 return (
                   <React.Fragment key={index}>
-                    <div className="details-link_container event">
+                    <div
+                      className={`details-link_container event ${
+                        isLastElement && isFullyAllocated
+                          ? "border-round-left"
+                          : ""
+                      }`}
+                    >
                       <a
                         href={`/events/event/${allocation.event_id}`}
                         style={{
@@ -207,7 +222,11 @@ const ParkingPopup = ({
                       {allocation.allocated_capacity}
                     </div>
                     <div
-                      className="popup-table-cell"
+                      className={`popup-table-cell ${
+                        isLastElement && isFullyAllocated
+                          ? "border-round-right"
+                          : ""
+                      }`}
                       style={{
                         backgroundColor: allocation.event_color,
                         color: textColor,
@@ -222,6 +241,7 @@ const ParkingPopup = ({
                   </React.Fragment>
                 );
               })}
+
               {freeCapacityPercentage > 0 && (
                 <React.Fragment>
                   <div className="popup-table-cell-footer capacity">

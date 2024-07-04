@@ -1,4 +1,3 @@
-/* Map Component */
 .leaflet-container {
   height: 100%;
   width: 100%;
@@ -6,20 +5,31 @@
   overflow: hidden;
 }
 
-/* Map Popup Styling */
 .leaflet-popup-content-wrapper {
   background: var(--color-pure-white);
   color: var(--textColor);
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
   margin: 0.25rem;
-  max-width: 400px;
   line-height: 1;
-}
-
-.leaflet-popup-content-wrapper {
   padding: 0.5rem 0.5rem;
   font-size: 11px;
+}
+
+.leaflet-popup-content {
+  margin: 0.5rem !important;
+  line-height: 1;
+  min-width: 7rem;
+  width: auto !important;
+}
+
+.leaflet-popup-tip {
+  display: none;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  top: 0.7rem !important;
+  right: 0.7rem !important;
 }
 
 .popup-table {
@@ -27,6 +37,51 @@
   grid-template-columns: 2fr 1fr 1fr;
   text-align: left;
   justify-content: center;
+}
+
+.popup-header {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  padding: 5px;
+  font-weight: bold;
+  padding: 0.3rem 0.5rem;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.popup-header-hall {
+  background-color: var(--color-primary);
+  color: var(--color-pure-white);
+  padding: 5px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.popup-header-hall span {
+  padding: 0.3rem 0.5rem;
+  margin: 0 !important;
+}
+
+.popup-header:first-child,
+.popup-header-hall:first-child {
+  border-top-left-radius: 6px;
+}
+
+.popup-header:nth-child(3),
+.popup-header-hall:nth-child(4) {
+  border-top-right-radius: 6px;
+}
+
+.popup-table-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  word-break: keep-all;
+  white-space: nowrap;
+  padding: 0.2rem 0.5rem;
 }
 
 .popup-table-entrance {
@@ -38,14 +93,6 @@
   overflow: hidden;
 }
 
-.popup-header {
-  background-color: var(--color-primary);
-  color: var(--color-pure-white);
-  padding: 5px;
-  font-weight: bold;
-  padding: 0.3rem 0.5rem;
-}
-
 .popup-header-entrance {
   background-color: var(--color-primary);
   color: var(--color-pure-white);
@@ -55,20 +102,14 @@
   border-radius: 6px 6px 0 0;
 }
 
-.popup-header:first-child {
-  border-top-left-radius: 6px;
-}
-
-.popup-header:nth-child(3) {
-  border-top-right-radius: 6px;
-}
-
-.popup-table-cell {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  word-break: break-all;
-  padding: 0.2rem 0.5rem;
+.popup-table-hall {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 3fr;
+  text-align: left;
+  justify-content: center;
+  min-width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .popup-table-entrance .details-link_container:last-child {
@@ -76,23 +117,54 @@
   border-bottom-right-radius: 6px;
 }
 
-.leaflet-popup-tip {
-  display: none;
+.popup-title-container {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
 }
 
-.leaflet-popup-content {
-  margin: 0.7rem !important;
-  max-width: 400px;
-  line-height: 1;
-  min-width: 7rem;
+.popup-title-container.hall {
+  margin-bottom: 0.5rem !important;
 }
-
 .popup-title {
   font-size: 1.2rem;
   display: flex;
 }
+
 .popup-title span {
   margin-bottom: 0.5rem !important;
+}
+
+.details-link_container a {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.details-link_container.event a {
+  height: 100%;
+  padding: 0.2rem 0.5rem;
+  word-break: keep-all;
+}
+
+.details-link_container svg {
+  width: 20px !important;
+  color: var(--color-primary);
+  margin-right: 5px;
+}
+
+.popup-table-cell-footer {
+  padding: 0.2rem 0.5rem;
+  background-color: var(--color-gray-150);
+}
+
+.popup-table-cell-footer.capacity {
+  border-bottom-left-radius: 5px;
+}
+
+.popup-table-cell-footer.percentage,
+.popup-table-cell-footer.lots {
+  border-bottom-right-radius: 5px;
 }
 
 .cap h4 {
@@ -110,11 +182,6 @@
   margin-bottom: 0.5rem;
 }
 
-.leaflet-zoom-animated .leaflet-interactive {
-  transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out,
-    fill-opacity 0.2s ease-in-out, stroke-opacity 0.2s ease-in-out;
-}
-
 .tags-halls,
 .tags-entrances,
 .tags-parking-lots {
@@ -122,13 +189,11 @@
   font-size: 10px;
   line-height: 1;
 }
+
 .tags-entrances {
   white-space: pre-wrap;
   text-align: center;
   font-size: 8px;
-}
-.leaflet-left {
-  left: auto !important;
 }
 
 .leaflet-left {
@@ -173,7 +238,6 @@
   margin: 0 !important;
 }
 
-/* Map Legend */
 .legend {
   position: absolute;
   bottom: 10px;
@@ -189,6 +253,7 @@
   background-clip: padding-box;
   border-radius: 4px !important;
 }
+
 .legend-item {
   display: flex;
   align-items: center;
@@ -229,10 +294,6 @@
   transition: color 0.3s ease-in-out;
 }
 
-.legend-icons {
-  display: none !important;
-}
-
 .legend-runtime,
 .legend-assembly,
 .legend-disassembly {
@@ -263,7 +324,6 @@
   transition: fill 0.3s ease-in-out;
 }
 
-/* Bar Chart */
 .chart-container {
   display: flex;
   flex-direction: column;
@@ -322,12 +382,6 @@
   height: 100%;
 }
 
-.leaflet-container a.leaflet-popup-close-button {
-  top: 0.7rem !important;
-  right: 0.7rem !important;
-}
-
-/* Timeline Component */
 .timeline-wrapper {
   overflow-x: hidden;
   display: flex;
@@ -495,6 +549,14 @@
   font-weight: bold !important;
 }
 
+.timeline-date:not(.selected):nth-child(2n) {
+  background-color: var(--color-gray-100) !important;
+}
+
+.timeline-date:nth-child(2n + 1):not(.selected) {
+  background-color: var(--color-gray-200) !important;
+}
+
 .button-primary {
   border: none;
   margin: 1rem 0;
@@ -523,81 +585,19 @@
   margin: 0px 0;
 }
 
-.timeline-date:not(.selected):nth-child(2n) {
-  background-color: var(--color-gray-100) !important;
-}
-
-.timeline-date:nth-child(2n + 1):not(.selected) {
-  background-color: var(--color-gray-200) !important;
-}
-
 .status-assembly {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
 .status-disassembly {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .tags-parking-lots {
   background-color: var(--color-parking-space);
   color: white;
-}
-
-.details-link_container a {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  word-break: break-all;
-}
-
-.popup-table-cell-footer {
-  padding: 0.2rem 0.5rem;
-  background-color: var(--color-gray-150);
-}
-
-.popup-table-cell-footer.capacity {
-  border-bottom-left-radius: 5px;
-}
-
-.popup-table-cell-footer.percentage {
-  border-bottom-right-radius: 5px;
-}
-
-.popup-header.car-units {
-  min-width: 5rem;
-}
-
-.details-link_container.event a {
-  padding: 0.2rem 0.5rem;
-}
-
-.details-link_container svg {
-  width: 20px !important;
-  color: var(--color-primary);
-  margin-right: 5px;
-}
-
-.timeline-slider.days {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-}
-
-.timeline-slider-container {
-  overflow: hidden;
-  position: relative;
-}
-
-.event-bar__label {
-  display: flex;
-  justify-content: center;
-}
-
-.timeline-year.selected,
-.timeline-months.selected {
-  border-radius: 3px;
 }
 
 .tags-parking-lots {
