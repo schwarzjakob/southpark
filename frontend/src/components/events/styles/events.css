@@ -296,3 +296,19 @@
 .filter-dropdown-item {
   padding: 0 0.5rem !important;
 }
+
+@keyframes highlightFade {
+  0% {
+    background-color: #ff434375;
+  }
+  75% {
+    background-color: #ff434375;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.allocation-table-row.highlight {
+  animation: highlightFade 2s ease-out forwards;
+}

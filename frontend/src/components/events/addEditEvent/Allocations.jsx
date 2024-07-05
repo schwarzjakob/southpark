@@ -31,10 +31,11 @@ import { useNavigate } from "react-router-dom";
 
 const TITLE = "Event Allocations";
 
-const Allocations = ({ eventId, isEditingDemands }) => {
+const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
   Allocations.propTypes = {
     eventId: PropTypes.string.isRequired,
     isEditingDemands: PropTypes.func.isRequired,
+    selectedDate: PropTypes.string, // Add selectedDate as a prop
   };
 
   const [allocations, setAllocations] = useState([]);
@@ -151,6 +152,28 @@ const Allocations = ({ eventId, isEditingDemands }) => {
     borderTop: "1px solid rgba(128, 128, 128, 0.5)",
     borderBottom: "1px solid rgba(128, 128, 128, 0.5)",
   };
+
+  useEffect(() => {
+    if (selectedDate) {
+      const dateStr = formatDate(selectedDate);
+      setTimeout(() => {
+        const tableContainer = document.querySelector(
+          ".allocations-table__container",
+        );
+        if (tableContainer) {
+          tableContainer.scrollTop = 0;
+        }
+
+        const targetRow = document.querySelector(
+          `.allocation-table-row[data-date="${dateStr}"]`,
+        );
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+          targetRow.classList.add("highlight");
+        }
+      }, 0);
+    }
+  }, [selectedDate, allocations]);
 
   if (loading) {
     return (

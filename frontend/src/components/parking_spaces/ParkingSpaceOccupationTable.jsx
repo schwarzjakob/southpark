@@ -438,7 +438,9 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
                         key={allocation.id}
                         hover
                         onClick={() =>
-                          navigate(`/events/event/${allocation.event_id}`)
+                          navigate(`/events/event/${allocation.event_id}`, {
+                            state: { selectedDate: allocation.date },
+                          })
                         }
                         style={{ cursor: "pointer" }}
                         className="allocation-table-row"
