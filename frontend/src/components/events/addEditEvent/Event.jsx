@@ -353,7 +353,7 @@ const Event = () => {
       <Allocations
         isEditingDemands={isEditingDemands}
         eventId={id}
-        selectedDate={location.state?.selectedDate} // Pass selectedDate here
+        selectedDate={location.state?.selectedDate}
       />
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Box display="flex" justifyContent="space-between">

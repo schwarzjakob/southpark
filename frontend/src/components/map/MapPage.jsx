@@ -294,7 +294,7 @@ const MapPage = () => {
                     fontWeight: "bold",
                     color: "var(--textColor)",
                     padding: "0.3rem",
-                    display: "flex", // Use flex display
+                    display: "flex",
                     alignItems: "center",
                   }}
                 >
