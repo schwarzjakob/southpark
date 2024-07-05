@@ -35,7 +35,7 @@ const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
   Allocations.propTypes = {
     eventId: PropTypes.string.isRequired,
     isEditingDemands: PropTypes.func.isRequired,
-    selectedDate: PropTypes.string, // Add selectedDate as a prop
+    selectedDate: PropTypes.string,
   };
 
   const [allocations, setAllocations] = useState([]);

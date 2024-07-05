@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
-import "./styles/map.css"; // Create this file for styling
+import "./styles/map.css";
 
 const noEventsMessages = [
   "🚁 The parking drones are taking a break",

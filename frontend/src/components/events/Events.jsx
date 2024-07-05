@@ -126,24 +126,31 @@ const Events = ({ selectedDate }) => {
   const navigate = useNavigate();
 
   const filteredEvents = applyFilters(
-    events.filter((event) => {
-      if (selectedDate) {
-        const selectedDay = dayjs(selectedDate);
-        const assemblyStart = dayjs(event.assembly_start_date);
-        const disassemblyEnd = dayjs(event.disassembly_end_date);
-        return (
-          (selectedDay.isAfter(assemblyStart.subtract(1, "day")) ||
-            selectedDay.isSame(assemblyStart)) &&
-          selectedDay.isBefore(disassemblyEnd)
-        );
-      }
-      return event.name.toLowerCase().includes(filter.toLowerCase());
-    }),
+    events
+      .filter((event) => {
+        if (selectedDate) {
+          const selectedDay = dayjs(selectedDate);
+          const assemblyStart = dayjs(event.assembly_start_date);
+          const disassemblyEnd = dayjs(event.disassembly_end_date);
+          return (
+            (selectedDay.isAfter(assemblyStart.subtract(1, "day")) ||
+              selectedDay.isSame(assemblyStart)) &&
+            selectedDay.isBefore(disassemblyEnd)
+          );
+        }
+        return true;
+      })
+      .filter((event) => {
+        return event.name.toLowerCase().includes(filter.toLowerCase());
+      }),
     filters,
   );
 
   const handleFilterChange = (event) => {
-    setFilter(event.target.value);
+    const newFilter = event.target.value;
+    setFilter(newFilter);
+
+    setPage(0);
   };
 
   const handlePageChange = (event, newPage) => {
@@ -157,16 +164,13 @@ const Events = ({ selectedDate }) => {
         [filterName]: selectedOptions,
       };
 
-      // Check if all filters are empty
       const allFiltersEmpty = Object.values(newFilters).every(
         (filter) => filter.length === 0,
       );
 
       if (allFiltersEmpty) {
-        // Restore original page
         setPage(originalPage);
       } else {
-        // Save original page if filters were previously empty and set page to 0
         if (Object.values(prevFilters).every((filter) => filter.length === 0)) {
           setOriginalPage(page);
         }
