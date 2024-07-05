@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -42,6 +42,7 @@ const Event = () => {
   const [originalEvent, setOriginalEvent] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [events] = useState([]);
   const [selectedDate, setSelectedDate] = useState(INITIAL_DATE);
   const [isEditingDemands, setIsEditingDemands] = useState(false);
@@ -101,6 +102,12 @@ const Event = () => {
 
     fetchEvent();
   }, [id]);
+
+  useEffect(() => {
+    if (location.state?.selectedDate) {
+      setSelectedDate(location.state.selectedDate);
+    }
+  }, [location.state]);
 
   const hasUnsavedChanges = useCallback(() => {
     return JSON.stringify(event) !== JSON.stringify(originalEvent);
@@ -343,7 +350,11 @@ const Event = () => {
         setIsEditingDemands={setIsEditingDemands}
         style={{ marginBottom: "32px" }}
       />
-      <Allocations isEditingDemands={isEditingDemands} eventId={id} />
+      <Allocations
+        isEditingDemands={isEditingDemands}
+        eventId={id}
+        selectedDate={location.state?.selectedDate} // Pass selectedDate here
+      />
       <Box display="flex" justifyContent="space-between" mt={2}>
         <Box display="flex" justifyContent="space-between">
           <Button
