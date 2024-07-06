@@ -5,6 +5,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import EventIcon from "@mui/icons-material/Event";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import axios from "axios";
+import dayjs from "dayjs"; // Import dayjs
 
 function SearchAppBar() {
   const [query, setQuery] = useState("");
@@ -127,13 +128,11 @@ function SearchAppBar() {
                         {result.name}
                       </Typography>
                       <Typography variant="body2">
-                        {new Date(
-                          result.assembly_start_date
-                        ).toLocaleDateString()}{" "}
+                        {dayjs(result.assembly_start_date).format("DD.MM.YYYY")}{" "}
                         -{" "}
-                        {new Date(
-                          result.disassembly_end_date
-                        ).toLocaleDateString()}
+                        {dayjs(result.disassembly_end_date).format(
+                          "DD.MM.YYYY",
+                        )}
                       </Typography>
                     </Box>
                   </Box>
