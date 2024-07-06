@@ -24,7 +24,7 @@ const getContrastingTextColor = (backgroundColor) => {
 const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
   const transformedCoords = transformCoordinates(entrance.coordinates);
   const entranceEvents = events.filter((event) =>
-    event.event_entrance ? event.event_entrance.includes(entrance.name) : false,
+    event.event_entrance ? event.event_entrance.includes(entrance.id) : false,
   );
 
   const tooltipOffset = (() => {
