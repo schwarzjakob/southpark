@@ -178,8 +178,13 @@ const MapPage = () => {
     };
   };
 
-  const { totalOccupied, totalFree, occupiedPercentage, freePercentage } =
-    calculateParkingSpaceStats(mapDataForSelectedDay);
+  const {
+    totalOccupied,
+    totalFree,
+    totalCapacity,
+    occupiedPercentage,
+    freePercentage,
+  } = calculateParkingSpaceStats(mapDataForSelectedDay);
 
   const hasEvents = mapDataForSelectedDay.events_timeline.some(
     (event) =>
@@ -290,8 +295,8 @@ const MapPage = () => {
               <Box>
                 <Typography
                   sx={{
-                    fontSize: "1.2rem",
-                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    // fontWeight: "bold",
                     color: "var(--textColor)",
                     padding: "0.3rem",
                     display: "flex",
@@ -344,7 +349,7 @@ const MapPage = () => {
                     textAlign: "right",
                   }}
                 >
-                  Absolute (Car Units)
+                  Car Units
                 </Typography>
                 <Switch
                   checked={isPercentage}
@@ -360,34 +365,60 @@ const MapPage = () => {
                   }}
                 >
                   {" "}
-                  Relative (%)
+                  Relative
                 </Typography>
               </Box>
               <Box
+                className="switch-container switch-container-numbers"
                 sx={{
                   width: "100%",
-                  mt: 2,
                   display: "flex",
                   justifyContent: "center",
-                  gap: 4,
+                  gap: "0.8rem",
+                  padding: "0.3rem",
                 }}
               >
                 <Box textAlign="center">
-                  <Typography variant="h6" sx={{ minWidth: "120px" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ minWidth: "100px", fontSize: "1rem" }}
+                  >
                     Occupied
                   </Typography>
-                  <Typography variant="body1">
-                    {isPercentage
-                      ? `${occupiedPercentage.toFixed(2)}%`
-                      : totalOccupied}
+                  <Typography
+                    variant="body1"
+                    sx={{ minWidth: "80px", fontSize: "0.8rem" }}
+                  >
+                    {totalOccupied} ({occupiedPercentage.toFixed(2)}%)
                   </Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="h6" sx={{ minWidth: "120px" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ minWidth: "80px", fontSize: "1rem" }}
+                  >
                     Free
                   </Typography>
-                  <Typography variant="body1">
-                    {isPercentage ? `${freePercentage.toFixed(2)}%` : totalFree}
+                  <Typography
+                    variant="body1"
+                    sx={{ minWidth: "80px", fontSize: "0.8rem" }}
+                  >
+                    {totalFree} ({freePercentage.toFixed(2)}%)
+                  </Typography>
+                </Box>
+
+                <Box textAlign="center">
+                  <Typography
+                    variant="h6"
+                    sx={{ minWidth: "80px", fontSize: "1rem" }}
+                  >
+                    Total
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{ minWidth: "80px", fontSize: "0.8rem" }}
+                  >
+                    {totalCapacity} (100%)
                   </Typography>
                 </Box>
               </Box>
