@@ -177,7 +177,7 @@ const HallEntranceIcons = ({ color, hallIds = [], entranceIds = [] }) => {
     },
     {
       id: 3,
-      name: "North",
+      name: "N",
       type: "entrance",
       d: "M273 161L273 201L293 201L293 161z",
       centerX: 283,
@@ -185,7 +185,7 @@ const HallEntranceIcons = ({ color, hallIds = [], entranceIds = [] }) => {
     },
     {
       id: 4,
-      name: "N",
+      name: "NE",
       type: "entrance",
       d: "M393 189L393 202L423 202L423 196L407 189z",
       centerX: 408,
