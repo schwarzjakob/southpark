@@ -25,7 +25,7 @@ import InfoHoverComponent from "../common/InfoHover.jsx";
 import InfoTextComponent from "../common/InfoText.jsx";
 
 const TITLE = "Capacity Utilization Heatmap";
-const LABEL_OVER100_TITLE = "TAKE ACTION";
+const LABEL_OVER100_TITLE = "CRITICAL";
 const LABEL_80TO100_TITLE = "MONITOR";
 const TABLE_LABEL = "Days with Utilization Rate";
 const LABEL_OVER100 = "above 100%";
@@ -58,7 +58,7 @@ const MonthlyDemandTable = ({
   const fetchData = useCallback(async () => {
     try {
       const response = await axios.get(
-        `/api/dashboard/capacity_utilization_critical_days/${selectedYear}`
+        `/api/dashboard/capacity_utilization_critical_days/${selectedYear}`,
       );
       setData(response.data);
     } catch (error) {
@@ -88,7 +88,7 @@ const MonthlyDemandTable = ({
   }
 
   const months = Array.from({ length: 12 }, (_, i) =>
-    dayjs().month(i).format("MMM")
+    dayjs().month(i).format("MMM"),
   );
 
   const getMonthlyCounts = (month, type) => {
@@ -204,7 +204,7 @@ const MonthlyDemandTable = ({
                   .padStart(2, "0")}`;
                 const above100Count = getMonthlyCounts(
                   monthString,
-                  "above_100"
+                  "above_100",
                 );
                 const above100Style = above100Count > 0 ? over100Styles : {};
 
@@ -272,7 +272,7 @@ const MonthlyDemandTable = ({
                   .padStart(2, "0")}`;
                 const between80and100Count = getMonthlyCounts(
                   monthString,
-                  "between_80_and_100"
+                  "between_80_and_100",
                 );
                 const between80and100Style =
                   between80and100Count > 0 ? between80and100Styles : {};
