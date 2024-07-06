@@ -68,8 +68,8 @@ const getStatusCircle = (status) => {
 
 const applyFilters = (events, filters) => {
   return events.filter((event) => {
-    const entrances = event.entrances || [];
-    const halls = event.halls || [];
+    const entrances = event.entrances.map((e) => e.name) || [];
+    const halls = event.halls.map((h) => h.name) || [];
     const allocatedParkingLots = event.allocatedParkingLots || [];
     const status = event.status || "unknown";
 
@@ -158,11 +158,31 @@ const Events = ({ selectedDate }) => {
   };
 
   const handleFilterDropdownChange = (filterName, selectedOptions) => {
+    console.log("selectedOptions", selectedOptions);
     setFilters((prevFilters) => {
-      const newFilters = {
-        ...prevFilters,
-        [filterName]: selectedOptions,
-      };
+      let newFilters;
+      if (filterName === "hallsAndEntrances") {
+        const halls = selectedOptions.filter((option) =>
+          events.some((event) =>
+            event.halls.map((h) => h.name).includes(option),
+          ),
+        );
+        const entrances = selectedOptions.filter((option) =>
+          events.some((event) =>
+            event.entrances.map((e) => e.name).includes(option),
+          ),
+        );
+        newFilters = {
+          ...prevFilters,
+          halls,
+          entrances,
+        };
+      } else {
+        newFilters = {
+          ...prevFilters,
+          [filterName]: selectedOptions,
+        };
+      }
 
       const allFiltersEmpty = Object.values(newFilters).every(
         (filter) => filter.length === 0,
@@ -264,8 +284,8 @@ const Events = ({ selectedDate }) => {
 
   const hallAndEntranceOptions = [
     ...new Set([
-      ...events.flatMap((event) => event.halls),
-      ...events.flatMap((event) => event.entrances),
+      ...events.flatMap((event) => event.halls.map((h) => h.name)),
+      ...events.flatMap((event) => event.entrances.map((e) => e.name)),
     ]),
   ];
 
@@ -340,9 +360,15 @@ const Events = ({ selectedDate }) => {
                       <FilterDropdown
                         label="Halls & Entrances"
                         options={hallAndEntranceOptions}
-                        selectedOptions={filters.halls}
+                        selectedOptions={[
+                          ...filters.halls,
+                          ...filters.entrances,
+                        ]}
                         onChange={(selectedOptions) =>
-                          handleFilterDropdownChange("halls", selectedOptions)
+                          handleFilterDropdownChange(
+                            "hallsAndEntrances",
+                            selectedOptions,
+                          )
                         }
                       />
                     </Box>
@@ -449,9 +475,11 @@ const Events = ({ selectedDate }) => {
                         >
                           <HallEntranceIcons
                             color={event.color}
-                            ids={[...event.halls, ...event.entrances]}
+                            hallIds={event.halls.map((h) => h.id)}
+                            entranceIds={event.entrances.map((e) => e.id)}
                           />
                         </TableCell>
+
                         <TableCell className="allocated-parking-lots">
                           <Box
                             className="parking-lot-container"
@@ -562,7 +590,7 @@ const Events = ({ selectedDate }) => {
 };
 
 Events.propTypes = {
-  selectedDate: PropTypes.string.isRequired,
+  selectedDate: PropTypes.string,
 };
 
 export default Events;

@@ -12,11 +12,7 @@ import {
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterListRounded";
 
-const FilterDropdown = ({
-  options,
-  selectedOptions,
-  onChange,
-}) => {
+const FilterDropdown = ({ options, selectedOptions, onChange }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
 

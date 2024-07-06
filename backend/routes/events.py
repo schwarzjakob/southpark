@@ -17,8 +17,18 @@ def get_events():
     try:
         query_events = """
             SELECT e.id, e.name, e.assembly_start_date, e.assembly_end_date, e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, e.disassembly_end_date, e.color,
-            ARRAY(SELECT DISTINCT h.name FROM hall h INNER JOIN hall_occupation ho ON h.id = ho.hall_id WHERE ho.event_id = e.id) AS halls,
-            ARRAY(SELECT DISTINCT en.name FROM entrance en INNER JOIN entrance_occupation eo ON en.id = eo.entrance_id WHERE eo.event_id = e.id) AS entrances
+            ARRAY(
+                SELECT DISTINCT jsonb_build_object('id', h.id, 'name', h.name)
+                FROM hall h
+                INNER JOIN hall_occupation ho ON h.id = ho.hall_id
+                WHERE ho.event_id = e.id
+            ) AS halls,
+            ARRAY(
+                SELECT DISTINCT jsonb_build_object('id', en.id, 'name', en.name)
+                FROM entrance en
+                INNER JOIN entrance_occupation eo ON en.id = eo.entrance_id
+                WHERE eo.event_id = e.id
+            ) AS entrances
             FROM event e
             ORDER BY e.runtime_start_date
         """
