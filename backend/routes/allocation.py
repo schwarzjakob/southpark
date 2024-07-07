@@ -37,29 +37,70 @@ def generate_recommendations(event_data):
 
     recommendations = recommendation_engine(event_data)
     recommendations_adjusted = adjust_recommendations(recommendations)
+    logger.info(f"Generated recommendations: {recommendations_adjusted}")
     return recommendations_adjusted
+
+
+def fetch_daily_demands(event_id, start_date, end_date, phase):
+    query = f"""
+        SELECT date, car_demand, bus_demand, truck_demand
+        FROM visitor_demand
+        WHERE event_id = {event_id} AND status = '{phase}' AND date BETWEEN '{start_date}' AND '{end_date}'
+    """
+
+    demands = get_data(query).to_dict(orient="records")
+    logger.info(f"Fetched daily demands for event {event_id}, phase {phase}: {demands}")
+    return {d["date"].strftime("%Y-%m-%d"): d for d in demands}
 
 
 def apply_recommendations(event_data, recommendations):
     allocations = []
 
-    def add_allocation(phase, vehicle_type):
-        for item in recommendations[phase].get(vehicle_type, []):
-            allocation = {
-                "event_id": event_data["id"],
-                "parking_lot_id": item["parking_lot_id"],
-                "date": date.strftime("%Y-%m-%d"),
-                "allocated_cars": 0,
-                "allocated_trucks": 0,
-                "allocated_buses": 0,
-            }
+    def add_allocation(date, vehicle_type, demand, capacities):
+        remaining_demand = demand
+        for item in capacities:
+            if remaining_demand <= 0:
+                break
+
+            allocation = next(
+                (
+                    a
+                    for a in allocations
+                    if a["parking_lot_id"] == item["parking_lot_id"]
+                    and a["date"] == date.strftime("%Y-%m-%d")
+                ),
+                None,
+            )
+            if not allocation:
+                allocation = {
+                    "event_id": event_data["id"],
+                    "parking_lot_id": item["parking_lot_id"],
+                    "date": date.strftime("%Y-%m-%d"),
+                    "allocated_cars": 0,
+                    "allocated_trucks": 0,
+                    "allocated_buses": 0,
+                }
+                allocations.append(allocation)
+
+            available_capacity = item["capacity"]
             if vehicle_type == "cars":
-                allocation["allocated_cars"] = int(item["capacity"])
+                current_allocation = allocation["allocated_cars"]
             elif vehicle_type == "trucks":
-                allocation["allocated_trucks"] = int(item["capacity"])
+                current_allocation = allocation["allocated_trucks"]
             elif vehicle_type == "buses":
-                allocation["allocated_buses"] = int(item["capacity"])
-            allocations.append(allocation)
+                current_allocation = allocation["allocated_buses"]
+
+            capacity_to_allocate = min(
+                available_capacity - current_allocation, remaining_demand
+            )
+            remaining_demand -= capacity_to_allocate
+
+            if vehicle_type == "cars":
+                allocation["allocated_cars"] += capacity_to_allocate
+            elif vehicle_type == "trucks":
+                allocation["allocated_trucks"] += capacity_to_allocate
+            elif vehicle_type == "buses":
+                allocation["allocated_buses"] += capacity_to_allocate
 
     phase_dates = {
         "assembly": {
@@ -77,17 +118,36 @@ def apply_recommendations(event_data, recommendations):
     }
 
     for phase in ["assembly", "runtime", "disassembly"]:
+        daily_demands = fetch_daily_demands(
+            event_data["id"],
+            phase_dates[phase]["start_date"],
+            phase_dates[phase]["end_date"],
+            phase,
+        )
         for date in pd.date_range(
             phase_dates[phase]["start_date"], phase_dates[phase]["end_date"]
         ):
-            add_allocation(phase, "cars")
-            add_allocation(phase, "trucks")
-            add_allocation(phase, "buses")
+            date_str = date.strftime("%Y-%m-%d")
+            if date_str in daily_demands:
+                demand = daily_demands[date_str]
+                add_allocation(
+                    date, "cars", demand["car_demand"], recommendations[phase]["cars"]
+                )
+                add_allocation(
+                    date,
+                    "trucks",
+                    demand["truck_demand"],
+                    recommendations[phase]["trucks"],
+                )
+                add_allocation(
+                    date, "buses", demand["bus_demand"], recommendations[phase]["buses"]
+                )
 
+    logger.info(f"Generated allocations: {allocations}")
     return allocations
 
 
-def save_allocations_to_db(allocations):
+def save_allocations_to_db(allocations, current_event, total_events):
     try:
         for allocation in allocations:
             allocation["allocated_cars"] = int(allocation["allocated_cars"])
@@ -111,7 +171,7 @@ def save_allocations_to_db(allocations):
             db.session.execute(insert_query, allocation)
 
         db.session.commit()
-        logger.info("Allocations saved successfully")
+        logger.info(f"Allocations saved successfully ({current_event}/{total_events})")
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error saving allocations: {e}")
@@ -121,12 +181,15 @@ def save_allocations_to_db(allocations):
 def allocate_parking_spaces():
     try:
         events = fetch_all_events()
-        for event in events:
+        total_events = len(events)
+        for i, event in enumerate(events, start=1):
             logger.info(f"Processing event: {event['name']} (ID: {event['id']})")
             recommendations = generate_recommendations(event)
             allocations = apply_recommendations(event, recommendations)
-            save_allocations_to_db(allocations)
-            logger.info(f"Allocations for event {event['name']} completed")
+            if allocations:
+                save_allocations_to_db(allocations, i, total_events)
+            else:
+                logger.warning(f"No allocations generated for event {event['id']}")
         return jsonify({"message": "Allocation process completed successfully"}), 200
     except Exception as e:
         logger.error(f"Error running allocation: {e}")
