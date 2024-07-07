@@ -44,10 +44,13 @@ const TimelineSlider = ({
         const today = dayjs(centerDate);
         const halfNumberOfDays = Math.floor(numberOfDays / 2);
         return Array.from({ length: numberOfDays }, (_, i) =>
-          today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD")
+          today.add(i - halfNumberOfDays, "day").format("YYYY-MM-DD"),
         );
       };
-      setDays(generateDays(selectedDate, calculateNumberOfDays() + BUFFER * 2));
+      const numberOfDays = calculateNumberOfDays() + BUFFER * 2;
+      const generatedDays = generateDays(selectedDate, numberOfDays);
+      console.log("Generated days:", generatedDays); // Debugging
+      setDays(generatedDays);
     };
 
     updateDays();
@@ -71,7 +74,7 @@ const TimelineSlider = ({
               dayjs(eventStart).isBetween(e.start, e.end, "day", "[]") ||
               dayjs(eventEnd).isBetween(e.start, e.end, "day", "[]") ||
               dayjs(e.start).isBetween(eventStart, eventEnd, "day", "[]") ||
-              dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]")
+              dayjs(e.end).isBetween(eventStart, eventEnd, "day", "[]"),
           )
         ) {
           rows[i].push({ start: eventStart, end: eventEnd, event });
@@ -93,7 +96,7 @@ const TimelineSlider = ({
     const newDate = dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD"))
+      prevDays.map((day) => dayjs(day).subtract(1, "day").format("YYYY-MM-DD")),
     );
   }, [selectedDate, setSelectedDate]);
 
@@ -101,7 +104,7 @@ const TimelineSlider = ({
     const newDate = dayjs(selectedDate).add(1, "day").format("YYYY-MM-DD");
     setSelectedDate(newDate);
     setDays((prevDays) =>
-      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD"))
+      prevDays.map((day) => dayjs(day).add(1, "day").format("YYYY-MM-DD")),
     );
   }, [selectedDate, setSelectedDate]);
 
@@ -187,7 +190,7 @@ const TimelineSlider = ({
           dayjs(event.assembly_start_date).startOf("day"),
           dayjs(event.disassembly_end_date).endOf("day"),
           "day",
-          "[]"
+          "[]",
         )
       ) {
         uniqueEvents[event.event_id] = event;
@@ -196,7 +199,7 @@ const TimelineSlider = ({
     const dayEvents = Object.values(uniqueEvents);
     const maxRow = Math.max(...dayEvents.map((event) => event.row), 0);
     const filledRows = Array.from({ length: maxRow + 1 }, (_, index) =>
-      dayEvents.find((event) => event.row === index)
+      dayEvents.find((event) => event.row === index),
     );
     filledRows.sort((a, b) => (a?.row ?? -1) - (b?.row ?? -1));
 
@@ -238,13 +241,31 @@ const TimelineSlider = ({
       const phaseSegments = phases.map((phase, idx) => {
         const phaseStart = dayjs(phase.startDate);
         const phaseEnd = dayjs(phase.endDate);
-        const startIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseStart, "day")
+        let startIndex = days.findIndex((d) =>
+          dayjs(d).isSame(phaseStart, "day"),
         );
-        const endIndex = days.findIndex((d) =>
-          dayjs(d).isSame(phaseEnd, "day")
-        );
-        if (startIndex === -1 || endIndex === -1) return null;
+        let endIndex = days.findIndex((d) => dayjs(d).isSame(phaseEnd, "day"));
+
+        if (startIndex === -1) {
+          if (phaseStart.isAfter(dayjs(days[days.length - 1]))) {
+            startIndex = days.length - 1;
+          } else if (phaseStart.isBefore(dayjs(days[0]))) {
+            startIndex = 0;
+          }
+        }
+
+        if (endIndex === -1) {
+          if (phaseEnd.isAfter(dayjs(days[days.length - 1]))) {
+            endIndex = days.length - 1;
+          } else if (phaseEnd.isBefore(dayjs(days[0]))) {
+            endIndex = 0;
+          }
+        }
+
+        console.log(
+          `Event: ${event.event_id}, Phase: ${idx}, Start Index: ${startIndex}, End Index: ${endIndex}`,
+        ); // Debugging
+
         const labelText =
           dayjs(day).isSame(event.runtime_start_date, "day") && idx === 1
             ? event.event_name
@@ -255,10 +276,10 @@ const TimelineSlider = ({
           endIndex,
           phase.opacity,
           labelText,
-          phase.className
+          phase.className,
         );
       });
-      return phaseSegments;
+      return <>{phaseSegments}</>;
     });
   };
 
@@ -268,7 +289,7 @@ const TimelineSlider = ({
     endIndex,
     opacity,
     labelText,
-    additionalClass = ""
+    additionalClass = "",
   ) => {
     const left = startIndex * 45;
     const width = (endIndex - startIndex + 1) * 45;
