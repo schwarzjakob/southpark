@@ -25,7 +25,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ChartDataLabels
+  ChartDataLabels,
 );
 
 const NO_DATA_MESSAGE = "No data available for the selected day.";
@@ -67,10 +67,10 @@ const ParkingLotBarChart = ({
 
       setChartData(null);
 
-      const parkingLotOccupancy = mapData.parking_lots_occupancy;
-      const parkingLots = mapData.parking_lots_capacity;
+      const parkingLotOccupancy = mapData?.parking_lots_occupancy || [];
+      const parkingLots = mapData?.parking_lots_capacity || [];
 
-      if (parkingLots) {
+      if (parkingLots.length > 0) {
         const sortedParkingLots = [...parkingLots]
           .map((lot) => ({
             ...lot,
@@ -93,10 +93,11 @@ const ParkingLotBarChart = ({
           ? Array(sortedParkingLots.length).fill(100)
           : [...sortedParkingLots.map((item) => item.capacity)];
 
-        if (parkingLotOccupancy && parkingLotOccupancy.length > 0) {
+        if (parkingLotOccupancy.length > 0) {
           parkingLotOccupancy.forEach((item) => {
             const index = sortedParkingLots.findIndex(
-              (lot) => lot.name.replace(" (ext.)", "") === item.parking_lot_name
+              (lot) =>
+                lot.name.replace(" (ext.)", "") === item.parking_lot_name,
             );
             if (index >= 0) {
               const totalCapacity = sortedParkingLots[index].capacity;
@@ -270,7 +271,7 @@ const ParkingLotBarChart = ({
           label: function (context) {
             const index = context.dataIndex;
             const totalCapacity =
-              mapData.parking_lots_capacity[index]?.capacity || 0;
+              mapData?.parking_lots_capacity[index]?.capacity || 0;
             const value = context.raw;
             const label = context.dataset.label;
 
