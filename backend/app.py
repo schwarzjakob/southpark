@@ -23,20 +23,23 @@ def create_app():
     from routes.map import map_bp
     from routes.parking import parking_bp
     from routes.recommendation import recommendation_bp
+    from routes.allocation import allocation_bp
 
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(events_bp, url_prefix='/events')
-    app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
-    app.register_blueprint(map_bp, url_prefix='/map')
-    app.register_blueprint(parking_bp, url_prefix='/parking')
-    app.register_blueprint(data_bp, url_prefix='/data')
-    app.register_blueprint(recommendation_bp, url_prefix='/recommendation')
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(events_bp, url_prefix="/events")
+    app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
+    app.register_blueprint(map_bp, url_prefix="/map")
+    app.register_blueprint(parking_bp, url_prefix="/parking")
+    app.register_blueprint(data_bp, url_prefix="/data")
+    app.register_blueprint(recommendation_bp, url_prefix="/recommendation")
+    app.register_blueprint(allocation_bp, url_prefix="/allocation")
 
     with app.app_context():
         for rule in app.url_map.iter_rules():
-            print(f'{rule.endpoint}: {rule}')
+            print(f"{rule.endpoint}: {rule}")
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()
