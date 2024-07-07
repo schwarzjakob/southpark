@@ -12,9 +12,37 @@ logger = logging.getLogger(__name__)
 
 allocation_bp = Blueprint("allocation", __name__)
 
+# Configuration
+run_all_allocations = (
+    False  # Set to True to run all allocations, False to run only remaining allocations
+)
+specific_event_ids = (
+    []
+)  # List of specific event IDs to run (seperate, by comma), empty means all/remaining depending on run_all_allocations
 
-def fetch_all_events():
+
+def fetch_remaining_event_ids():
     query = """
+        SELECT DISTINCT v.event_id
+        FROM public.visitor_demand v
+        LEFT JOIN (
+            SELECT event_id, date, SUM(allocated_capacity) AS total_allocated_capacity
+            FROM public.parking_lot_allocation
+            GROUP BY event_id, date
+        ) pa ON v.event_id = pa.event_id AND v.date = pa.date
+        WHERE v.demand != COALESCE(pa.total_allocated_capacity, 0);
+    """
+    remaining_events = get_data(query).to_dict(orient="records")
+    return [event["event_id"] for event in remaining_events]
+
+
+def fetch_all_events(event_ids=None):
+    if event_ids:
+        event_condition = f"WHERE e.id IN ({', '.join(map(str, event_ids))})"
+    else:
+        event_condition = ""
+
+    query = f"""
         SELECT e.id, e.name, e.assembly_start_date, e.assembly_end_date, e.runtime_start_date, e.runtime_end_date, e.disassembly_start_date, e.disassembly_end_date,
         ARRAY(SELECT hall_id FROM hall_occupation WHERE event_id = e.id) AS hall_ids,
         COALESCE((SELECT MAX(car_demand) FROM visitor_demand WHERE event_id = e.id AND status = 'assembly'), 0) AS assembly_demand_cars,
@@ -27,6 +55,7 @@ def fetch_all_events():
         COALESCE((SELECT MAX(bus_demand) FROM visitor_demand WHERE event_id = e.id AND status = 'disassembly'), 0) AS disassembly_demand_buses,
         COALESCE((SELECT MAX(truck_demand) FROM visitor_demand WHERE event_id = e.id AND status = 'disassembly'), 0) AS disassembly_demand_trucks
         FROM event e
+        {event_condition}
     """
     events = get_data(query).to_dict(orient="records")
     return events
@@ -47,7 +76,6 @@ def fetch_daily_demands(event_id, start_date, end_date, phase):
         FROM visitor_demand
         WHERE event_id = {event_id} AND status = '{phase}' AND date BETWEEN '{start_date}' AND '{end_date}'
     """
-
     demands = get_data(query).to_dict(orient="records")
     logger.info(f"Fetched daily demands for event {event_id}, phase {phase}: {demands}")
     return {d["date"].strftime("%Y-%m-%d"): d for d in demands}
@@ -149,11 +177,22 @@ def apply_recommendations(event_data, recommendations):
 
 def save_allocations_to_db(allocations, current_event, total_events):
     try:
+        # Delete existing allocations for the event being processed
+        if allocations:
+            delete_query = text(
+                """
+                DELETE FROM public.parking_lot_allocation
+                WHERE event_id = :event_id
+                """
+            )
+            db.session.execute(delete_query, {"event_id": allocations[0]["event_id"]})
+
         for allocation in allocations:
             allocation["allocated_cars"] = int(allocation["allocated_cars"])
             allocation["allocated_trucks"] = int(allocation["allocated_trucks"])
             allocation["allocated_buses"] = int(allocation["allocated_buses"])
 
+            # Insert new allocation
             insert_query = text(
                 """
                 INSERT INTO public.parking_lot_allocation (
@@ -180,7 +219,14 @@ def save_allocations_to_db(allocations, current_event, total_events):
 @allocation_bp.route("/allocate", methods=["POST"])
 def allocate_parking_spaces():
     try:
-        events = fetch_all_events()
+        if specific_event_ids:
+            event_ids = specific_event_ids
+        elif run_all_allocations:
+            event_ids = None  # Fetch all events
+        else:
+            event_ids = fetch_remaining_event_ids()  # Fetch remaining events
+
+        events = fetch_all_events(event_ids)
         total_events = len(events)
         for i, event in enumerate(events, start=1):
             logger.info(f"Processing event: {event['name']} (ID: {event['id']})")
