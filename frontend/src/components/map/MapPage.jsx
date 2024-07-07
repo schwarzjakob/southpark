@@ -51,7 +51,7 @@ const MapPage = () => {
       }
       try {
         const { data } = await axios.get(`/api/map/map_data/${date}`);
-        setMapData(data);
+        setMapData(data || {});
 
         const start = dayjs(date).subtract(365, "days");
         const end = dayjs(date).add(365, "days");
@@ -96,6 +96,9 @@ const MapPage = () => {
   }, [fetchMapData, selectedDate, reloading]);
 
   const filterDataForSelectedDay = (data, date) => {
+    if (!data || !data.parking_lots_allocations) {
+      return data;
+    }
     const selectedDay = dayjs(date);
 
     const filteredParkingLotsAllocations = data.parking_lots_allocations.filter(
@@ -149,6 +152,20 @@ const MapPage = () => {
   const mapDataForSelectedDay = filterDataForSelectedDay(mapData, selectedDate);
 
   const calculateParkingSpaceStats = (mapData) => {
+    if (
+      !mapData ||
+      !mapData.parking_lots_occupancy ||
+      !mapData.parking_lots_capacity
+    ) {
+      return {
+        totalOccupied: 0,
+        totalFree: 0,
+        totalCapacity: 0,
+        occupiedPercentage: 0,
+        freePercentage: 0,
+      };
+    }
+
     const parkingLotOccupancy = mapData.parking_lots_occupancy;
     const parkingLots = mapData.parking_lots_capacity;
 
@@ -186,7 +203,7 @@ const MapPage = () => {
     freePercentage,
   } = calculateParkingSpaceStats(mapDataForSelectedDay);
 
-  const hasEvents = mapDataForSelectedDay.events_timeline.some(
+  const hasEvents = mapDataForSelectedDay?.events_timeline?.some(
     (event) =>
       dayjs(selectedDate).isSame(event.assembly_start_date, "day") ||
       dayjs(selectedDate).isBetween(
