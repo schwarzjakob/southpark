@@ -66,7 +66,9 @@ def generate_recommendations(event_data):
 
     recommendations = recommendation_engine(event_data)
     recommendations_adjusted = adjust_recommendations(recommendations)
-    logger.info(f"Generated recommendations: {recommendations_adjusted}")
+    logger.info(
+        f"Generated recommendations for event {event_data['name']} (ID: {event_data['id']})"
+    )
     return recommendations_adjusted
 
 
@@ -77,12 +79,12 @@ def fetch_daily_demands(event_id, start_date, end_date, phase):
         WHERE event_id = {event_id} AND status = '{phase}' AND date BETWEEN '{start_date}' AND '{end_date}'
     """
     demands = get_data(query).to_dict(orient="records")
-    logger.info(f"Fetched daily demands for event {event_id}, phase {phase}: {demands}")
     return {d["date"].strftime("%Y-%m-%d"): d for d in demands}
 
 
 def apply_recommendations(event_data, recommendations):
     allocations = []
+    total_demands = {}
 
     def add_allocation(date, vehicle_type, demand, capacities):
         remaining_demand = demand
@@ -158,6 +160,11 @@ def apply_recommendations(event_data, recommendations):
             date_str = date.strftime("%Y-%m-%d")
             if date_str in daily_demands:
                 demand = daily_demands[date_str]
+                total_demands[date_str] = (
+                    demand["car_demand"]
+                    + demand["bus_demand"] * 3
+                    + demand["truck_demand"] * 4
+                )
                 add_allocation(
                     date, "cars", demand["car_demand"], recommendations[phase]["cars"]
                 )
@@ -171,8 +178,7 @@ def apply_recommendations(event_data, recommendations):
                     date, "buses", demand["bus_demand"], recommendations[phase]["buses"]
                 )
 
-    logger.info(f"Generated allocations: {allocations}")
-    return allocations
+    return allocations, total_demands
 
 
 def save_allocations_to_db(allocations, current_event, total_events):
@@ -216,6 +222,24 @@ def save_allocations_to_db(allocations, current_event, total_events):
         logger.error(f"Error saving allocations: {e}")
 
 
+def log_allocation_dataframe(event_data, allocations, total_demands):
+    df = pd.DataFrame(allocations)
+    df_summary = df.groupby("date").sum()[
+        ["allocated_cars", "allocated_trucks", "allocated_buses"]
+    ]
+    df_summary["total_allocated"] = (
+        df_summary["allocated_cars"]
+        + df_summary["allocated_trucks"] * 4
+        + df_summary["allocated_buses"] * 3
+    )
+    df_summary.reset_index(inplace=True)
+    df_summary["total_demand"] = df_summary["date"].map(total_demands)
+
+    logger.info(
+        f"\n{event_data['name']} ({event_data['id']}) Allocation Summary:\n{df_summary}"
+    )
+
+
 @allocation_bp.route("/allocate", methods=["POST"])
 def allocate_parking_spaces():
     try:
@@ -231,8 +255,9 @@ def allocate_parking_spaces():
         for i, event in enumerate(events, start=1):
             logger.info(f"Processing event: {event['name']} (ID: {event['id']})")
             recommendations = generate_recommendations(event)
-            allocations = apply_recommendations(event, recommendations)
+            allocations, total_demands = apply_recommendations(event, recommendations)
             if allocations:
+                log_allocation_dataframe(event, allocations, total_demands)
                 save_allocations_to_db(allocations, i, total_events)
             else:
                 logger.warning(f"No allocations generated for event {event['id']}")
