@@ -1,9 +1,11 @@
 import os
-from flask import Flask
+
+from config import Config
 from dotenv import load_dotenv
 from extensions import db, migrate
-from config import Config
+from flask import Flask
 from flask_cors import CORS
+
 
 def create_app():
     app = Flask(__name__)
@@ -15,11 +17,11 @@ def create_app():
     migrate.init_app(app, db)
 
     from routes.auth import auth_bp
-    from routes.events import events_bp
     from routes.dashboard import dashboard_bp
+    from routes.data import data_bp
+    from routes.events import events_bp
     from routes.map import map_bp
     from routes.parking import parking_bp
-    from routes.data import data_bp
     from routes.recommendation import recommendation_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
