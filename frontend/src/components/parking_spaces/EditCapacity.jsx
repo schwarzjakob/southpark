@@ -242,12 +242,25 @@ const EditParkingSpaceCapacity = () => {
   };
 
   const handleDelete = async () => {
+    const token = localStorage.getItem("token");
+
     try {
-      await axios.delete(`/api/parking/capacities/${capacityId}`);
+      await axios.delete(`/api/parking/capacities/${capacityId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
-      console.error("Error deleting capacity:", error);
-      setError("Error deleting capacity.");
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else {
+        console.error("Error deleting capacity:", error);
+        setError("Error deleting capacity.");
+      }
     }
   };
 
