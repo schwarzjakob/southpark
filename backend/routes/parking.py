@@ -200,6 +200,7 @@ def get_parking_space_capacities(parking_lot_id):
 
 
 @parking_bp.route("/capacities/<int:parking_lot_id>", methods=["POST"])
+@check_edit_rights
 def add_parking_space_capacity(parking_lot_id):
     try:
         data = request.json
@@ -256,6 +257,7 @@ def add_parking_space_capacity(parking_lot_id):
 
 
 @parking_bp.route("/capacities/<int:capacity_id>", methods=["PUT"])
+@check_edit_rights
 def edit_parking_space_capacity(capacity_id):
     try:
         data = request.get_json()
@@ -289,6 +291,7 @@ def edit_parking_space_capacity(capacity_id):
 
 
 @parking_bp.route("/capacities/<int:capacity_id>", methods=["DELETE"])
+@check_edit_rights
 def delete_parking_space_capacity(capacity_id):
     try:
         query = """
