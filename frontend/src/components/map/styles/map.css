@@ -590,6 +590,11 @@
   padding: 0 0.5rem;
 }
 
+.timeline-year.selected,
+.timeline-months.selected {
+  border-radius: 4px;
+}
+
 .event-row {
   height: 20px;
   width: 100%;
