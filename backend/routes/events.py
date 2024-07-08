@@ -984,6 +984,7 @@ def allocate_demands():
         return jsonify({"error": str(e)}), 500
 
 @events_bp.route("/allocations", methods=["DELETE"])
+@check_edit_rights
 def delete_allocations_for_dates():
     try:
         data = request.json
