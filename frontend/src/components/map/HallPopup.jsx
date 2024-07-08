@@ -141,17 +141,35 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
           <span>Status</span>
         </div>
         <div className="popup-header-hall">
-          <span>Entrance</span>
+          <span>Entrances</span>
         </div>
         <div className="popup-header-hall">
-          <span>Allocated Lot</span>
+          <span>Allocated Spaces</span>
         </div>
         {hallEvents.map((event, index) => {
           const textColor = getContrastingTextColor(event.event_color);
           const status = getEventStatus(event, selectedDate);
           const parkingLots = event[`${status}_parking_lots`] || "None";
-          const entrances = event.event_entrance || "None";
           const isLastElement = index === hallEvents.length - 1;
+
+          console.log(parkingLots);
+
+          const entranceMapping = {
+            1: "West",
+            2: "North West",
+            3: "North",
+            4: "North East",
+            5: "East",
+          };
+
+          const entrances = event.event_entrance
+            ? event.event_entrance
+                .split(", ")
+                .map((entrance) => entranceMapping[entrance] || entrance)
+                .join(", ")
+            : "None";
+
+          console.log(entrances);
 
           return (
             <React.Fragment key={index}>
@@ -163,6 +181,7 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                   display: "flex",
                   alignItems: "center",
                   backgroundColor: event.event_color,
+                  padding: "0.3rem 0.5rem",
                   color: textColor,
                 }}
               >
@@ -177,19 +196,19 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  textAlign: "center",
                   backgroundColor: event.event_color,
+                  padding: "0.3rem 0.5rem",
                   color: textColor,
                 }}
               >
-                {status}
+                {status.charAt(0).toUpperCase() + status.slice(1)}
               </div>
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  textAlign: "center",
                   backgroundColor: event.event_color,
+                  padding: "0.3rem 0.5rem",
                   color: textColor,
                 }}
               >
@@ -202,8 +221,8 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  textAlign: "center",
                   backgroundColor: event.event_color,
+                  padding: "0.3rem 0.5rem",
                   color: textColor,
                 }}
               >
