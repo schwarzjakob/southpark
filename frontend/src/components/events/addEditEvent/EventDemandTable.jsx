@@ -82,6 +82,15 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       }
     };
 
+    const fetchAllocations = async () => {
+      try {
+        const response = await axios.get(`/api/events/allocations/${eventId}`);
+        setAllocations(response.data);
+      } catch (error) {
+        console.error("Error fetching allocations data:", error);
+      }
+    };
+
     const fetchDailyStatus = async () => {
       try {
         const response = await axios.get(`/api/events/events_status_daily`, {
