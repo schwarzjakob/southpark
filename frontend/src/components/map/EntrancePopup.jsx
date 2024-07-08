@@ -150,6 +150,7 @@ const EntrancePopup = ({ entrance, index, events, GREYED_OUT }) => {
                         style={{
                           backgroundColor: event.event_color,
                           color: textColor,
+                          padding: "0.3rem 0.5rem",
                         }}
                       >
                         <LinkRoundedIcon style={{ color: textColor }} />
