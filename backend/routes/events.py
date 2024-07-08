@@ -771,6 +771,7 @@ def get_event_allocations(eventid):
 
 
 @events_bp.route("/demands/<int:event_id>", methods=["PUT"])
+@check_edit_rights
 def update_event_demands(event_id):
     try:
         data = request.json

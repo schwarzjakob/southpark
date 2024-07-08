@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import PropTypes from "prop-types";
 import {
   Box,
   Typography,
@@ -22,6 +23,15 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
+import PermissionPopup from "../../common/PermissionPopup.jsx";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
+import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
+import CircleIcon from "@mui/icons-material/Circle";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
   DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
@@ -30,19 +40,6 @@ import {
   NumbersRounded as NumbersRoundedIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
-import {
-  ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
-  PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
-  ArrowCircleDownRounded as ArrowCircleDownRoundedIcon,
-  FunctionsRounded as FunctionsRoundedIcon,
-  LocalParkingRounded as LocalParkingRoundedIcon,
-  Circle as CircleIcon,
-  SaveRounded as SaveRoundedIcon,
-  ClearRounded as ClearRoundedIcon,
-  InfoOutlined as InfoOutlinedIcon,
-} from "@mui/icons-material";
-
-import PropTypes from "prop-types";
 
 const TITLE = "Event Demands";
 
@@ -62,6 +59,10 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const [editedDemands, setEditedDemands] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [datesToDelete, setDatesToDelete] = useState([]);
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
+  });
 
   useEffect(() => {
     const fetchDemands = async () => {
@@ -117,12 +118,12 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
   const handleEditChange = (id, field, value) => {
     setEditedDemands((prevEditedDemands) =>
       prevEditedDemands.map((demand) =>
-        demand.id === id ? { ...demand, [field]: Number(value) } : demand,
-      ),
+        demand.id === id ? { ...demand, [field]: Number(value) } : demand
+      )
     );
   };
-
   const handleSave = async () => {
+    const token = localStorage.getItem("token");
     const modifiedDates = editedDemands
       .filter((demand, index) => {
         const originalDemand = demands[index] || {};
@@ -136,7 +137,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
     const allocationsToDelete = Array.isArray(allocations)
       ? allocations.filter((allocation) =>
-          modifiedDates.includes(allocation.date),
+          modifiedDates.includes(allocation.date)
         )
       : [];
 
@@ -144,13 +145,17 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       setDatesToDelete(modifiedDates);
       setOpenDialog(true);
     } else {
-      await saveDemands();
+      await saveDemands(token);
     }
   };
 
-  const saveDemands = async () => {
+  const saveDemands = async (token) => {
     try {
-      await axios.put(`/api/events/demands/${eventId}`, editedDemands);
+      await axios.put(`/api/events/demands/${eventId}`, editedDemands, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setEditMode(false);
       setIsEditingDemands(false);
       setDemands(editedDemands);
@@ -158,19 +163,37 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       await fetchAllocations();
       await fetchDemands();
     } catch (error) {
-      console.error("Error saving demands data:", error);
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else {
+        console.error("Error saving demands data:", error);
+      }
     }
   };
 
   const handleConfirmSave = async () => {
+    const token = localStorage.getItem("token");
     try {
       await axios.delete(`/api/events/allocations`, {
         data: { event_id: eventId, dates: datesToDelete },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      await saveDemands();
+      await saveDemands(token);
       setOpenDialog(false);
     } catch (error) {
-      console.error("Error deleting allocations:", error);
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else {
+        console.error("Error deleting allocations:", error);
+      }
     }
   };
 
@@ -214,7 +237,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       const totalDemand =
         demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
       const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date),
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
       );
       const dailyStatus = dailyStatuses.find(
         (status) => formatDate(status.date) === formatDate(demand.date),
@@ -302,7 +325,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const getAllocatedTotal = (demandDate) => {
     const demand = editedDemands.find(
-      (d) => formatDate(d.date) === formatDate(demandDate),
+      (d) => formatDate(d.date) === formatDate(demandDate)
     );
     if (!demand) return `0/0`;
 
@@ -314,12 +337,12 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     if (!Array.isArray(allocations)) return `0/${demandTotal}`;
 
     const allocationsForDate = allocations.filter(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
+      (alloc) => formatDate(alloc.date) === formatDate(demandDate)
     );
 
     const totalAllocated = allocationsForDate.reduce(
       (acc, alloc) => acc + alloc.allocated_capacity,
-      0,
+      0
     );
 
     return `${totalAllocated}/${demandTotal}`;
@@ -589,7 +612,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "car_demand",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />
@@ -610,7 +633,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "bus_demand",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />
@@ -630,7 +653,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                                 handleEditChange(
                                   demand.id,
                                   "truck_demand",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />
@@ -700,6 +723,11 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };
