@@ -32,6 +32,7 @@ import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
   DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
@@ -240,7 +241,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
         (alloc) => formatDate(alloc.date) === formatDate(demand.date)
       );
       const dailyStatus = dailyStatuses.find(
-        (status) => formatDate(status.date) === formatDate(demand.date),
+        (status) => formatDate(status.date) === formatDate(demand.date)
       );
 
       let status = "no_demands";
@@ -668,15 +669,15 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
-                                  formatDate(demand.date),
-                              )?.status,
+                                  formatDate(demand.date)
+                              )?.status
                             )}
                             {getStatusLabel(
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
-                                  formatDate(demand.date),
-                              )?.status,
+                                  formatDate(demand.date)
+                              )?.status
                             )}
                           </Box>
                         </TableCell>
