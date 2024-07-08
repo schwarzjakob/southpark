@@ -82,7 +82,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       }
     };
 
-    const fetchAllocations = async () => {
+    const fetchDailyStatus = async () => {
       try {
         const response = await axios.get(`/api/events/events_status_daily`, {
           params: { event_id: eventId },
@@ -93,10 +93,11 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
           setDailyStatuses([]);
         }
       } catch (error) {
-        console.error("Error fetching allocations data:", error);
+        console.error("Error fetching daily status data:", error);
       }
     };
 
+<<<<<<< HEAD
     const fetchDailyStatus = async () => {
       try {
         const response = await axios.get(`/api/events/events_status_daily`, {
@@ -113,6 +114,9 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     };
 
     fetchAllocations(), fetchDemands();
+=======
+    fetchDemands();
+>>>>>>> 44295e6 (Fix #134 inconsistent status labels)
     fetchDailyStatus();
   }, [eventId]);
 
@@ -241,6 +245,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const updateStatuses = () => {
     const updatedDemands = demands.map((demand) => {
+<<<<<<< HEAD
       const totalDemand =
         demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
       const allocation = allocations.find(
@@ -249,10 +254,16 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       const dailyStatus = dailyStatuses.find(
         (status) => formatDate(status.date) === formatDate(demand.date)
       );
+=======
+      const dailyStatus = dailyStatuses.find(
+        (status) => formatDate(status.date) === formatDate(demand.date),
+      );
+>>>>>>> 44295e6 (Fix #134 inconsistent status labels)
 
       let status = "no_demands";
       if (dailyStatus) {
         status = dailyStatus.status;
+<<<<<<< HEAD
       } else if (totalDemand === 0) {
         status = "no_demands";
       } else if (!allocation || allocation.allocated_capacity === 0) {
@@ -264,7 +275,10 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
         } else {
           status = "partially_allocated";
         }
+=======
+>>>>>>> 44295e6 (Fix #134 inconsistent status labels)
       }
+
       return { ...demand, status };
     });
     setDemands(updatedDemands);
@@ -697,15 +711,25 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
+<<<<<<< HEAD
                                   formatDate(demand.date)
                               )?.status
+=======
+                                  formatDate(demand.date),
+                              )?.status,
+>>>>>>> 44295e6 (Fix #134 inconsistent status labels)
                             )}
                             {getStatusLabel(
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
+<<<<<<< HEAD
                                   formatDate(demand.date)
                               )?.status
+=======
+                                  formatDate(demand.date),
+                              )?.status,
+>>>>>>> 44295e6 (Fix #134 inconsistent status labels)
                             )}
                           </Box>
                         </TableCell>
