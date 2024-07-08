@@ -8,6 +8,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Paper,
   IconButton,
   Button,
@@ -19,20 +20,23 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import FilterDropdown from "./FilterDropdown";
 import HallEntranceIcons from "./HallEntranceIcons";
-import InsertInvitationRoundedIcon from "@mui/icons-material/InsertInvitationRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
-import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
-import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
-import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
-import GarageIcon from "@mui/icons-material/GarageRounded";
-import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import CircleIcon from "@mui/icons-material/Circle";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import LoadingAnimation from "../common/LoadingAnimation.jsx";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import OtherHousesRoundedIcon from "@mui/icons-material/OtherHousesRounded";
+import LoadingAnimation from "../common/LoadingAnimation";
+import {
+  InsertInvitationRounded as InsertInvitationRoundedIcon,
+  AddRounded as AddRoundedIcon,
+  SearchRounded as SearchRoundedIcon,
+  ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
+  PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
+  ArrowCircleDownRounded as ArrowCircleDownRoundedIcon,
+  AssessmentRounded as AssessmentRoundedIcon,
+  GarageRounded as GarageIcon,
+  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
+  Circle as CircleIcon,
+  ArrowForward as ArrowForwardIcon,
+  ArrowBack as ArrowBackIcon,
+  OtherHousesRounded as OtherHousesRoundedIcon,
+  InfoOutlined as InfoOutlinedIcon,
+} from "@mui/icons-material";
 import "./styles/events.css";
 import dayjs from "dayjs";
 
@@ -424,6 +428,33 @@ const Events = ({ selectedDate }) => {
                         className="header-icon"
                       />
                       Capacity Status
+                      <Tooltip
+                        title={
+                          <>
+                            Fully allocated: All demands are allocated.
+                            <br />
+                            Demands to allocate: Some demands need to be
+                            allocated.
+                            <br />
+                            Not enough capacity: There is not enough capacity to
+                            meet the demands for all events on at least one day
+                            of this event.
+                            <br />
+                            Demands missing: No demands have been recorded.
+                          </>
+                        }
+                        arrow
+                      >
+                        <IconButton
+                          size="small"
+                          className="infoHover__Container"
+                        >
+                          <InfoOutlinedIcon
+                            fontSize="small"
+                            className="infoHover__Icon"
+                          />
+                        </IconButton>
+                      </Tooltip>
                       <FilterDropdown
                         label="Capacity Status"
                         options={statusOptions}
