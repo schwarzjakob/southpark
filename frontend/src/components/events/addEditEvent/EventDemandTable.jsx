@@ -106,36 +106,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       }
     };
 
-    const fetchDailyStatus = async () => {
-      try {
-        const response = await axios.get(`/api/events/events_status_daily`, {
-          params: { event_id: eventId },
-        });
-        if (response.status === 200) {
-          setDailyStatuses(response.data);
-        } else {
-          setDailyStatuses([]);
-        }
-      } catch (error) {
-        console.error("Error fetching daily status data:", error);
-      }
-    };
-
-    const fetchDailyStatus = async () => {
-      try {
-        const response = await axios.get(`/api/events/events_status_daily`, {
-          params: { event_id: eventId },
-        });
-        if (response.status === 200) {
-          setDailyStatuses(response.data);
-        } else {
-          setDailyStatuses([]);
-        }
-      } catch (error) {
-        console.error("Error fetching daily status data:", error);
-      }
-    };
-
     fetchAllocations(), fetchDemands();
     fetchDailyStatus();
   }, [eventId]);
