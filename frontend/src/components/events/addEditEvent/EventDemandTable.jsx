@@ -23,14 +23,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import {
-  DateRangeRounded as DateRangeRoundedIcon,
-  DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
-  AirportShuttleRounded as AirportShuttleRoundedIcon,
-  LocalShippingRounded as LocalShippingRoundedIcon,
-  NumbersRounded as NumbersRoundedIcon,
-  Edit as EditIcon,
-} from "@mui/icons-material";
+import PermissionPopup from "../../common/PermissionPopup.jsx";
 import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
@@ -39,6 +32,25 @@ import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
+import {
+  DateRangeRounded as DateRangeRoundedIcon,
+  DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
+  AirportShuttleRounded as AirportShuttleRoundedIcon,
+  LocalShippingRounded as LocalShippingRoundedIcon,
+  NumbersRounded as NumbersRoundedIcon,
+  Edit as EditIcon,
+} from "@mui/icons-material";
+import {
+  ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
+  PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
+  ArrowCircleDownRounded as ArrowCircleDownRoundedIcon,
+  FunctionsRounded as FunctionsRoundedIcon,
+  LocalParkingRounded as LocalParkingRoundedIcon,
+  Circle as CircleIcon,
+  SaveRounded as SaveRoundedIcon,
+  ClearRounded as ClearRoundedIcon,
+  InfoOutlined as InfoOutlinedIcon,
+} from "@mui/icons-material";
 
 import PropTypes from "prop-types";
 
@@ -235,8 +247,13 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const updateStatuses = () => {
     const updatedDemands = demands.map((demand) => {
+      const totalDemand =
+        demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
+      const allocation = allocations.find(
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date),
+      );
       const dailyStatus = dailyStatuses.find(
-        (status) => formatDate(status.date) === formatDate(demand.date),
+        (status) => formatDate(status.date) === formatDate(demand.date)
       );
 >>>>>>> 44295e6 (Fix #134 inconsistent status labels)
 
@@ -633,25 +650,15 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
-<<<<<<< HEAD
-                                  formatDate(demand.date)
-                              )?.status
-=======
                                   formatDate(demand.date),
                               )?.status,
->>>>>>> 44295e6 (Fix #134 inconsistent status labels)
                             )}
                             {getStatusLabel(
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
-<<<<<<< HEAD
-                                  formatDate(demand.date)
-                              )?.status
-=======
                                   formatDate(demand.date),
                               )?.status,
->>>>>>> 44295e6 (Fix #134 inconsistent status labels)
                             )}
                           </Box>
                         </TableCell>
