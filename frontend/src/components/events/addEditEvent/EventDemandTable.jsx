@@ -237,7 +237,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       const totalDemand =
         demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
       const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date),
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
       );
       const dailyStatus = dailyStatuses.find(
         (status) => formatDate(status.date) === formatDate(demand.date),
