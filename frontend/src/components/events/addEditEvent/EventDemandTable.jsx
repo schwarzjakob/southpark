@@ -6,7 +6,6 @@ import {
   Typography,
   Paper,
   IconButton,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -14,7 +13,6 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
-  Tooltip,
   Tooltip,
   Button,
   TextField,
@@ -54,7 +52,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const [demands, setDemands] = useState([]);
   const [allocations, setAllocations] = useState([]);
-  const [, setDailyStatuses] = useState([]);
+  const [dailyStatuses, setDailyStatuses] = useState([]);
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("date");
   const [notification, setNotification] = useState("");
@@ -246,7 +244,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       const totalDemand =
         demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
       const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date),
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
       );
       const dailyStatus = dailyStatuses.find(
         (status) => formatDate(status.date) === formatDate(demand.date)
@@ -255,18 +253,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       let status = "no_demands";
       if (dailyStatus) {
         status = dailyStatus.status;
-      } else if (totalDemand === 0) {
-        status = "no_demands";
-      } else if (!allocation || allocation.allocated_capacity === 0) {
-        status = "not_allocated";
-      } else {
-        const ratio = allocation.allocated_capacity / totalDemand;
-        if (ratio === 1) {
-          status = "allocated";
-        } else {
-          status = "partially_allocated";
-        }
-      }
       } else if (totalDemand === 0) {
         status = "no_demands";
       } else if (!allocation || allocation.allocated_capacity === 0) {
