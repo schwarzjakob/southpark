@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from utils.helpers import get_data
 import logging
+from functools import wraps
+from routes.auth import check_edit_rights
 
 parking_bp = Blueprint("parking", __name__)
 logger = logging.getLogger(__name__)
@@ -54,6 +56,7 @@ def get_parking_space(id):
 
 
 @parking_bp.route("/space", methods=["POST"])
+@check_edit_rights
 def add_parking_space():
     try:
         data = request.json
@@ -110,6 +113,7 @@ def add_parking_space():
 
 
 @parking_bp.route("/space/<int:id>", methods=["PUT"])
+@check_edit_rights
 def edit_parking_space(id):
     try:
         data = request.json

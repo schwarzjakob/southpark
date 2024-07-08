@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Switch } from "antd";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -12,7 +13,7 @@ import {
   InputLabel,
   FormControl,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import PermissionPopup from "../common/PermissionPopup.jsx";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
 import WcRoundedIcon from "@mui/icons-material/WcRounded";
@@ -22,8 +23,7 @@ import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
-import CustomBreadcrumbs from "../common/BreadCrumbs.jsx"; 
-
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Add Parking Lot";
@@ -36,6 +36,10 @@ const AddParkingSpace = () => {
     service_shelter: false,
     pricing: "low",
     external: false,
+  });
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
   });
 
   const [error, setError] = useState("");
@@ -66,12 +70,22 @@ const AddParkingSpace = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token"); 
     try {
-      const response = await axios.post("/api/parking/space", parkingSpace);
+      const response = await axios.post("/api/parking/space", parkingSpace, {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+        },
+      });
       const parkingLotId = response.data.id;
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
-      if (error.response && error.response.status === 400) {
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else if (error.response && error.response.status === 400) {
         setError("Parking space with this name already exists.");
       } else {
         console.error("Error adding parking space:", error);
@@ -211,6 +225,11 @@ const AddParkingSpace = () => {
           </Box>
         </form>
       </Paper>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };
