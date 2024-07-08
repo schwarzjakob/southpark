@@ -16,7 +16,6 @@ def get_events_parking_lots_allocation():
         JSON response with the fetched data or an error message if an exception is raised.
     """
     try:
-        logger.info("Fetching events parking lots allocation data from the database.")
         query = """
         SELECT
             event_id,
@@ -36,12 +35,10 @@ def get_events_parking_lots_allocation():
         df_events_parking_lots_allocation = get_data(query)
         df_events_parking_lots_allocation["id"] = (
             df_events_parking_lots_allocation.index
-        )  # Add unique ID
+        )  
         if df_events_parking_lots_allocation.empty:
-            logger.info("No data available.")
             return jsonify({"message": "No data found"}), 204
         print(df_events_parking_lots_allocation)
-        logger.info("Events parking lots allocation data fetched successfully.")
         return jsonify(df_events_parking_lots_allocation.to_dict(orient="records")), 200
     except Exception as e:
         logger.error("Failed to fetch data from database", exc_info=True)
@@ -62,7 +59,6 @@ def search():
         if not query_param:
             return jsonify([])
 
-        logger.info("Searching for events and parking spaces matching query: %s", query_param)
         search_query = """
         SELECT 'event' AS type, id, name, color, assembly_start_date, disassembly_end_date
         FROM event
@@ -75,10 +71,8 @@ def search():
 
         results = get_data(search_query, {"query": f"%{query_param}%"})
         if results.empty:
-            logger.info("No matching data found.")
             return jsonify({"message": "No data found"}), 204
 
-        logger.info("Search results fetched successfully.")
         return jsonify(results.to_dict(orient="records")), 200
     except Exception as e:
         logger.error("Failed to fetch search results from database", exc_info=True)

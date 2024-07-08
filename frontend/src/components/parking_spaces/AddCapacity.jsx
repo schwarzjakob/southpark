@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import dayjs from "dayjs";
+import DateRangePicker from "../controls/DateRangePicker";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
+import PermissionPopup from "../common/PermissionPopup.jsx";
 import {
   Box,
   Typography,
@@ -10,8 +15,9 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Alert,
 } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+
 import {
   DirectionsCarFilledRounded as DirectionsCarFilledIcon,
   LocalParkingRounded as LocalParkingRoundedIcon,
@@ -19,12 +25,9 @@ import {
   LocalShippingRounded as LocalShippingRoundedIcon,
   DateRangeRounded as DateRangeRoundedIcon,
   SaveRounded as SaveRoundedIcon,
+  AddBox as AddBoxIcon,
+  ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
-import AddBoxIcon from "@mui/icons-material/AddBox";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import dayjs from "dayjs";
-import DateRangePicker from "../controls/DateRangePicker";
-import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Add Capacity";
@@ -49,6 +52,10 @@ const AddParkingSpaceCapacity = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const parkingLotId = searchParams.get("parkinglotId");
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
+  });
 
   useEffect(() => {
     const fetchParkingLot = async () => {
@@ -146,6 +153,7 @@ const AddParkingSpaceCapacity = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
 
     const overlappingCapacities = checkForOverlaps();
 
@@ -178,17 +186,32 @@ const AddParkingSpaceCapacity = () => {
       : null;
 
     try {
-      await axios.post(`/api/parking/capacities/${parkingLotId}`, {
-        ...capacity,
-        valid_from: updatedValidFrom,
-        valid_to: updatedValidTo,
-      });
+      await axios.post(
+        `/api/parking/capacities/${parkingLotId}`,
+        {
+          ...capacity,
+          valid_from: updatedValidFrom,
+          valid_to: updatedValidTo,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
-      console.error("Error adding capacity:", error);
-      const errorMessage =
-        error.response?.data?.error || "Error adding capacity.";
-      setError(errorMessage);
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else {
+        console.error("Error adding capacity:", error);
+        const errorMessage =
+          error.response?.data?.error || "Error adding capacity.";
+        setError(errorMessage);
+      }
     }
   };
 
@@ -214,11 +237,7 @@ const AddParkingSpaceCapacity = () => {
             {TITLE}
           </Typography>
         </Box>
-        {error && (
-          <Typography color="error" variant="body1">
-            {error}
-          </Typography>
-        )}
+        {error && <Alert severity="error">{error}</Alert>}
         <Box mb={2} display="flex" gap="10px" alignItems="center">
           <Typography variant="h6" className="parking-lot-box">
             {parkingLot.name}
@@ -326,6 +345,11 @@ const AddParkingSpaceCapacity = () => {
           </Box>
         </form>
       </Paper>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };

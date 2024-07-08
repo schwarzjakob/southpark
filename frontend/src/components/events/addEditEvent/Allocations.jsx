@@ -34,7 +34,7 @@ const TITLE = "Event Allocations";
 const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
   Allocations.propTypes = {
     eventId: PropTypes.string.isRequired,
-    isEditingDemands: PropTypes.func.isRequired,
+    isEditingDemands: PropTypes.bool.isRequired,
     selectedDate: PropTypes.string,
   };
 
@@ -124,7 +124,7 @@ const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
 
   const groupedAllocations = sortedAllocations.reduce((acc, allocation) => {
     const demand = demands.find(
-      (d) => formatDate(d.date) === formatDate(allocation.date),
+      (d) => formatDate(d.date) === formatDate(allocation.date)
     );
     const phase = demand ? demand.status : "other";
     if (!acc[phase]) {
@@ -158,14 +158,14 @@ const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
       const dateStr = formatDate(selectedDate);
       setTimeout(() => {
         const tableContainer = document.querySelector(
-          ".allocations-table__container",
+          ".allocations-table__container"
         );
         if (tableContainer) {
           tableContainer.scrollTop = 0;
         }
 
         const targetRow = document.querySelector(
-          `.allocation-table-row[data-date="${dateStr}"]`,
+          `.allocation-table-row[data-date="${dateStr}"]`
         );
         if (targetRow) {
           targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -367,7 +367,7 @@ const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
                                     `/parking_space/${allocation.parking_lot_id}`,
                                     {
                                       state: { selectedDate: allocation.date },
-                                    },
+                                    }
                                   )
                                 }
                                 style={{ cursor: "pointer" }}
@@ -396,7 +396,7 @@ const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
                                     allocation.allocated_buses * 3 +
                                     allocation.allocated_trucks * 4}
                                 </TableCell>
-                              </TableRow>,
+                              </TableRow>
                             );
 
                             if (shouldSumRow) {
@@ -426,43 +426,43 @@ const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
                                     {groupedAllocations[phase]
                                       .filter(
                                         (alloc) =>
-                                          alloc.date === allocation.date,
+                                          alloc.date === allocation.date
                                       )
                                       .reduce(
                                         (sum, alloc) =>
                                           sum + alloc.allocated_cars,
-                                        0,
+                                        0
                                       )}
                                   </TableCell>
                                   <TableCell>
                                     {groupedAllocations[phase]
                                       .filter(
                                         (alloc) =>
-                                          alloc.date === allocation.date,
+                                          alloc.date === allocation.date
                                       )
                                       .reduce(
                                         (sum, alloc) =>
                                           sum + alloc.allocated_buses,
-                                        0,
+                                        0
                                       )}
                                   </TableCell>
                                   <TableCell>
                                     {groupedAllocations[phase]
                                       .filter(
                                         (alloc) =>
-                                          alloc.date === allocation.date,
+                                          alloc.date === allocation.date
                                       )
                                       .reduce(
                                         (sum, alloc) =>
                                           sum + alloc.allocated_trucks,
-                                        0,
+                                        0
                                       )}
                                   </TableCell>
                                   <TableCell>
                                     {groupedAllocations[phase]
                                       .filter(
                                         (alloc) =>
-                                          alloc.date === allocation.date,
+                                          alloc.date === allocation.date
                                       )
                                       .reduce(
                                         (sum, alloc) =>
@@ -470,20 +470,20 @@ const Allocations = ({ eventId, isEditingDemands, selectedDate }) => {
                                           alloc.allocated_cars +
                                           alloc.allocated_buses * 3 +
                                           alloc.allocated_trucks * 4,
-                                        0,
+                                        0
                                       )}
                                   </TableCell>
-                                </TableRow>,
+                                </TableRow>
                               );
                             }
                             return acc;
                           },
-                          [],
+                          []
                         )}
                       </>
                     )}
                   </React.Fragment>
-                ),
+                )
               )
             )}
           </TableBody>

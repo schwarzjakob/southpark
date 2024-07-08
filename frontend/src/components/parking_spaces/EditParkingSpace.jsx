@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { Switch } from "antd";
 import {
@@ -12,7 +13,7 @@ import {
   InputLabel,
   FormControl,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import PermissionPopup from "../common/PermissionPopup.jsx";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import RoofingRoundedIcon from "@mui/icons-material/RoofingRounded";
 import WcRoundedIcon from "@mui/icons-material/WcRounded";
@@ -36,6 +37,10 @@ const EditParkingSpace = () => {
     service_shelter: false,
     pricing: "low",
     external: false,
+  });
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
   });
 
   const [originalParkingSpace, setOriginalParkingSpace] = useState(null);
@@ -111,11 +116,21 @@ const EditParkingSpace = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
     try {
-      await axios.put(`/api/parking/space/${id}`, parkingSpace);
+      await axios.put(`/api/parking/space/${id}`, parkingSpace, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       navigate(`/parking_space/${id}`);
     } catch (error) {
-      if (error.response && error.response.status === 400) {
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else if (error.response && error.response.status === 400) {
         setError("Parking space with this name already exists.");
       } else {
         console.error("Error updating parking space:", error);
@@ -123,6 +138,12 @@ const EditParkingSpace = () => {
       }
     }
   };
+
+  <PermissionPopup
+    open={permissionError.open}
+    onClose={() => setPermissionError({ ...permissionError, open: false })}
+    message={permissionError.message}
+  />;
 
   const breadcrumbLinks = [
     { label: "Parking Spaces", path: "/parking_spaces" },
@@ -274,6 +295,11 @@ const EditParkingSpace = () => {
           </Box>
         </form>
       </Paper>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };

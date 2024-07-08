@@ -51,21 +51,18 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
     const fetchAllocations = async () => {
       try {
         const response = await axios.get(
-          `/api/parking/occupations/${parkingLotId}`,
+          `/api/parking/occupations/${parkingLotId}`
         );
-        if (response.status === 204) {
+        if (response.status === 204 || !response.data.length) {
           console.log("No allocations found for this parking lot.");
-          setAllocations([{}]);
+          setAllocations([]);
         } else {
-          setAllocations(response.data.length ? response.data : [{}]);
-          filterAllocations(
-            response.data.length ? response.data : [{}],
-            selectedYear,
-            selectedMonth,
-          );
+          setAllocations(response.data);
+          filterAllocations(response.data, selectedYear, selectedMonth);
         }
       } catch (error) {
         console.error("Error fetching allocations data:", error);
+        setAllocations([]);
       }
     };
 
@@ -96,14 +93,14 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
 
       setTimeout(() => {
         const tableContainer = document.querySelector(
-          ".parkingSpaces-container",
+          ".parkingSpaces-container"
         );
         if (tableContainer) {
           tableContainer.scrollTop = 0;
         }
 
         const targetRow = document.querySelector(
-          `.allocation-table-row[data-date="${dateStr}"]`,
+          `.allocation-table-row[data-date="${dateStr}"]`
         );
         if (targetRow) {
           targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -122,7 +119,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
       return allocationDate.isBetween(startOfMonth, endOfMonth, "day", "[]");
     });
 
-    setFilteredAllocations(filtered);
+    setFilteredAllocations(filtered.length ? filtered : []);
   };
 
   const handleRequestSort = (property) => {
@@ -154,6 +151,10 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
   };
 
   const getContrastingTextColor = (backgroundColor) => {
+    if (!backgroundColor) {
+      return "inherit"; 
+    }
+
     const hex = backgroundColor.replace("#", "");
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
@@ -198,7 +199,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
   }, {});
 
   const months = Array.from({ length: 12 }, (_, i) =>
-    dayjs().month(i).format("MMM"),
+    dayjs().month(i).format("MMM")
   );
 
   return (
@@ -384,23 +385,23 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
                 const dateAllocations = groupedAllocations[date];
                 const totalAllocatedCars = dateAllocations.reduce(
                   (sum, alloc) => sum + alloc.allocated_cars,
-                  0,
+                  0
                 );
                 const totalAllocatedBuses = dateAllocations.reduce(
                   (sum, alloc) => sum + alloc.allocated_buses,
-                  0,
+                  0
                 );
                 const totalAllocatedTrucks = dateAllocations.reduce(
                   (sum, alloc) => sum + alloc.allocated_trucks,
-                  0,
+                  0
                 );
                 const totalAllocatedCapacity = dateAllocations.reduce(
                   (sum, alloc) => sum + alloc.allocated_capacity,
-                  0,
+                  0
                 );
                 const totalCapacity = dateAllocations.reduce(
                   (sum, alloc) => sum + alloc.total_capacity,
-                  0,
+                  0
                 );
 
                 let occupancyPercentage =
@@ -457,7 +458,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
                             style={{
                               backgroundColor: allocation.event_color,
                               color: getContrastingTextColor(
-                                allocation.event_color,
+                                allocation.event_color
                               ),
                               wordWrap: "break-word",
                               maxWidth: "200px",
@@ -486,7 +487,7 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
                           style={{
                             background: "rgba(128, 128, 128, 75)",
                             color: getContrastingTextColor(
-                              "rgba(128, 128, 128, 75)",
+                              "rgba(128, 128, 128, 75)"
                             ),
                             wordWrap: "break-word",
                             maxWidth: "200px",

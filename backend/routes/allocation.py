@@ -5,21 +5,20 @@ from flask import Blueprint, jsonify
 from extensions import db
 from utils.helpers import get_data
 import logging
+from functools import wraps
+from routes.auth import check_edit_rights
 
-# Setup logging configuration
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 allocation_bp = Blueprint("allocation", __name__)
 
-# Configuration
 run_all_allocations = (
-    False  # Set to True to run all allocations, False to run only remaining allocations
+    False 
 )
 specific_event_ids = (
     []
-)  # List of specific event IDs to run (seperate, by comma), empty means all/remaining depending on run_all_allocations
-
+)  
 
 def fetch_remaining_event_ids():
     query = """
@@ -66,9 +65,6 @@ def generate_recommendations(event_data):
 
     recommendations = recommendation_engine(event_data)
     recommendations_adjusted = adjust_recommendations(recommendations)
-    logger.info(
-        f"Generated recommendations for event {event_data['name']} (ID: {event_data['id']})"
-    )
     return recommendations_adjusted
 
 
@@ -183,7 +179,6 @@ def apply_recommendations(event_data, recommendations):
 
 def save_allocations_to_db(allocations, current_event, total_events):
     try:
-        # Delete existing allocations for the event being processed
         if allocations:
             delete_query = text(
                 """
@@ -198,7 +193,6 @@ def save_allocations_to_db(allocations, current_event, total_events):
             allocation["allocated_trucks"] = int(allocation["allocated_trucks"])
             allocation["allocated_buses"] = int(allocation["allocated_buses"])
 
-            # Insert new allocation
             insert_query = text(
                 """
                 INSERT INTO public.parking_lot_allocation (
@@ -216,7 +210,6 @@ def save_allocations_to_db(allocations, current_event, total_events):
             db.session.execute(insert_query, allocation)
 
         db.session.commit()
-        logger.info(f"Allocations saved successfully ({current_event}/{total_events})")
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error saving allocations: {e}")
@@ -235,10 +228,6 @@ def log_allocation_dataframe(event_data, allocations, total_demands):
     df_summary.reset_index(inplace=True)
     df_summary["total_demand"] = df_summary["date"].map(total_demands)
 
-    logger.info(
-        f"\n{event_data['name']} ({event_data['id']}) Allocation Summary:\n{df_summary}"
-    )
-
 
 @allocation_bp.route("/allocate", methods=["POST"])
 def allocate_parking_spaces():
@@ -246,14 +235,13 @@ def allocate_parking_spaces():
         if specific_event_ids:
             event_ids = specific_event_ids
         elif run_all_allocations:
-            event_ids = None  # Fetch all events
+            event_ids = None  
         else:
-            event_ids = fetch_remaining_event_ids()  # Fetch remaining events
+            event_ids = fetch_remaining_event_ids()  
 
         events = fetch_all_events(event_ids)
         total_events = len(events)
         for i, event in enumerate(events, start=1):
-            logger.info(f"Processing event: {event['name']} (ID: {event['id']})")
             recommendations = generate_recommendations(event)
             allocations, total_demands = apply_recommendations(event, recommendations)
             if allocations:

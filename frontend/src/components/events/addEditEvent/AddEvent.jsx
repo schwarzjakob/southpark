@@ -31,6 +31,7 @@ import dayjs from "dayjs";
 import InfoHover from "../../common/InfoHover.jsx";
 import DateRangePicker from "../../controls/DateRangePicker.jsx";
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
+import PermissionPopup from "../../common/PermissionPopup.jsx";
 import "../styles/events.css";
 
 const TITLE = "Add Event";
@@ -54,6 +55,10 @@ const AddEvent = () => {
     open: false,
     message: "",
     severity: "info",
+  });
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
   });
   const [occupiedHalls, setOccupiedHalls] = useState([]);
 
@@ -201,6 +206,7 @@ const AddEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem("token"); 
       const eventData = {
         name: event.name,
         assembly_start_date: event.assembly_start_date,
@@ -213,7 +219,11 @@ const AddEvent = () => {
         halls: event.halls,
         entrances: event.entrances,
       };
-      const response = await axios.post("/api/events/event", eventData);
+      const response = await axios.post("/api/events/event", eventData, {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+        },
+      });
       const event_id = response.data.id;
       setFeedback({
         open: true,
@@ -222,12 +232,19 @@ const AddEvent = () => {
       });
       navigate(`/events/event/${event_id}`);
     } catch (error) {
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else {
+        setFeedback({
+          open: true,
+          message: "Error adding event.",
+          severity: "error",
+        });
+      }
       console.error("Error adding event:", error);
-      setFeedback({
-        open: true,
-        message: "Error adding event.",
-        severity: "error",
-      });
     }
   };
 
@@ -597,6 +614,11 @@ const AddEvent = () => {
           {feedback.message}
         </Alert>
       </Snackbar>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };

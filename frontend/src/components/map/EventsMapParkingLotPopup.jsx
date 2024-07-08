@@ -28,14 +28,13 @@ const ParkingPopup = ({
   index,
   parking_lots_allocations,
   parking_lots_capacity,
-  utilization_type, // Receive utilization_type
+  utilization_type, 
   GREYED_OUT,
 }) => {
   const transformedCoords = transformCoordinates(parkingLot.coordinates);
-  const isUnderConstruction = utilization_type === "construction"; // Check if under construction
+  const isUnderConstruction = utilization_type === "construction"; 
 
   if (isUnderConstruction) {
-    // Define the fill pattern for under construction
     const fillPattern = "url(#diagonal-stripe-2)";
 
     return (
@@ -344,7 +343,7 @@ ParkingPopup.propTypes = {
   index: PropTypes.number.isRequired,
   parking_lots_allocations: PropTypes.array.isRequired,
   parking_lots_capacity: PropTypes.array.isRequired,
-  utilization_type: PropTypes.string.isRequired, // Ensure utilization_type is required
+  utilization_type: PropTypes.string.isRequired, 
   GREYED_OUT: PropTypes.number.isRequired,
 };
 
