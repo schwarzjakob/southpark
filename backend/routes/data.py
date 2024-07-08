@@ -36,7 +36,7 @@ def get_events_parking_lots_allocation():
         df_events_parking_lots_allocation = get_data(query)
         df_events_parking_lots_allocation["id"] = (
             df_events_parking_lots_allocation.index
-        )  # Add unique ID
+        )  
         if df_events_parking_lots_allocation.empty:
             logger.info("No data available.")
             return jsonify({"message": "No data found"}), 204
