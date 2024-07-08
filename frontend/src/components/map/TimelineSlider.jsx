@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -37,7 +37,6 @@ const TimelineSlider = ({
   const [events, setEvents] = useState([]);
   const [eventRows, setEventRows] = useState([]);
 
-  // Memoized function to generate days
   const generateDays = useCallback((centerDate, numberOfDays) => {
     const today = dayjs(centerDate);
     const halfNumberOfDays = Math.floor(numberOfDays / 2);
@@ -91,8 +90,6 @@ const TimelineSlider = ({
         event.row = rows.length - 1;
       }
     });
-
-    // No need to filter out empty rows as the logic should prevent them
 
     setEventRows(rows);
   }, [mapData]);
@@ -149,7 +146,7 @@ const TimelineSlider = ({
 
       return (
         <Box
-          key={`${event.event_id}-${startIndex}`}
+          key={`${event.event_id}-${startIndex}-${endIndex}-${additionalClass}`}
           className={`event-row ${additionalClass}`}
           sx={{
             height: "22px",
@@ -238,6 +235,7 @@ const TimelineSlider = ({
             className: "status-disassembly",
           },
         ];
+
         const phaseSegments = phases.map((phase, idx) => {
           const phaseStart = dayjs(phase.startDate);
           const phaseEnd = dayjs(phase.endDate);
@@ -268,6 +266,7 @@ const TimelineSlider = ({
             dayjs(day).isSame(event.runtime_start_date, "day") && idx === 1
               ? event.event_name
               : null;
+
           return renderEventSegments(
             event,
             startIndex,
@@ -277,7 +276,10 @@ const TimelineSlider = ({
             phase.className,
           );
         });
-        return <>{phaseSegments}</>;
+
+        return (
+          <React.Fragment key={event.event_id}>{phaseSegments}</React.Fragment>
+        );
       });
     },
     [days, events, renderEventSegments],
@@ -329,7 +331,7 @@ const TimelineSlider = ({
       const isSelected = index === selectedMonth;
       return (
         <Typography
-          key={month}
+          key={`${month}-${index}`}
           variant="body2"
           className={`timeline-months ${isSelected ? "selected" : ""}`}
           onClick={() => handleMonthClick(index)}
@@ -399,7 +401,7 @@ const TimelineSlider = ({
               >
                 {days.map((day) => (
                   <Box
-                    key={day + selectedDate}
+                    key={`${day}-${selectedDate}`}
                     className={`timeline-date ${
                       day === selectedDate ? "selected" : ""
                     }`}
