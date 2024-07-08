@@ -6,11 +6,11 @@ from utils.helpers import get_data
 import pandas as pd
 from sqlalchemy import text
 from datetime import datetime, timedelta
-
+from functools import wraps
+from routes.auth import check_edit_rights
 
 events_bp = Blueprint("events", __name__)
 logger = logging.getLogger(__name__)
-
 
 @events_bp.route("/events", methods=["GET"])
 def get_events():
@@ -66,7 +66,6 @@ def get_events():
                     parking_lot["parking_lot_name"]
                 )
 
-        # Add status to each event
         for event in event_map.values():
             if "assembly_demand" not in event:
                 event["status"] = "no_demands"
@@ -189,13 +188,11 @@ def get_event_status():
         df = pd.read_sql_query(query, db.engine)
         events_status = df.to_dict(orient="records")
 
-        # Print the table for debugging
         logger.info("Event Status Table:")
         for row in events_status:
             if row["event_id"] == 13:
                 logger.info(row)
 
-        # Determine the status for each event based on the priority
         event_status_summary = {}
 
         for row in events_status:
@@ -209,7 +206,6 @@ def get_event_status():
                     "status": "ok",
                 }
 
-            # Update status based on priority
             if status == "not_enough_capacity":
                 event_status_summary[event_id]["status"] = "not_enough_capacity"
             elif (
@@ -409,6 +405,7 @@ def get_occupied_halls_without_event(event_id):
 
 
 @events_bp.route("/event", methods=["POST"])
+@check_edit_rights
 def add_event():
     try:
         data = request.json
@@ -423,7 +420,6 @@ def add_event():
             "color": data["color"],
         }
 
-        # Insert the event
         event_query = """
             INSERT INTO public.event (name, assembly_start_date, assembly_end_date, runtime_start_date, runtime_end_date, disassembly_start_date, disassembly_end_date, color)
             VALUES (:name, :assembly_start_date, :assembly_end_date, :runtime_start_date, :runtime_end_date, :disassembly_start_date, :disassembly_end_date, :color)
@@ -432,14 +428,13 @@ def add_event():
         result = db.session.execute(text(event_query), event_data)
         event_id = result.fetchone()[0]
 
-        # Insert halls
         if "halls" in data:
             hall_ids = db.session.execute(
                 text("SELECT id FROM hall WHERE name IN :names"),
                 {"names": tuple(data["halls"])},
             ).fetchall()
             for hall_id in hall_ids:
-                hall_id = hall_id[0]  # fetchall() returns a list of tuples
+                hall_id = hall_id[0]  
                 current_date = datetime.strptime(
                     data["assembly_start_date"], "%Y-%m-%d"
                 )
@@ -459,14 +454,13 @@ def add_event():
                     )
                     current_date += timedelta(days=1)
 
-        # Insert entrances
         if "entrances" in data:
             entrance_ids = db.session.execute(
                 text("SELECT id FROM entrance WHERE name IN :names"),
                 {"names": tuple(data["entrances"])},
             ).fetchall()
             for entrance_id in entrance_ids:
-                entrance_id = entrance_id[0]  # fetchall() returns a list of tuples
+                entrance_id = entrance_id[0]  
                 current_date = datetime.strptime(
                     data["assembly_start_date"], "%Y-%m-%d"
                 )
@@ -486,7 +480,6 @@ def add_event():
                     )
                     current_date += timedelta(days=1)
 
-        # Initialize visitor demand with zero values for each day within the event period
         current_date = datetime.strptime(data["assembly_start_date"], "%Y-%m-%d")
         end_date = datetime.strptime(data["disassembly_end_date"], "%Y-%m-%d")
         while current_date <= end_date:
@@ -682,7 +675,6 @@ def edit_event(id):
                 {"event_id": id, "date": date, "status": new_status},
             )
 
-        # Add visitor demands for new dates
         for date in dates_to_add:
             date_obj = datetime.strptime(date, "%Y-%m-%d")
             if date_obj < datetime.strptime(data["runtime_start_date"], "%Y-%m-%d"):
@@ -896,13 +888,11 @@ def allocate_demands():
         if not event_id:
             return jsonify({"error": "Event ID must be provided"}), 400
 
-        # Print the dataframe of received allocations to the terminal
         if allocations:
             allocations_df = pd.DataFrame(allocations)
             print("Received allocations:")
             print(allocations_df)
 
-        # Delete existing allocations for the entire event
         delete_event_query = text(
             """
             DELETE FROM public.parking_lot_allocation
@@ -919,7 +909,6 @@ def allocate_demands():
             )
 
         for allocation in allocations:
-            # Check parking lot capacity
             capacity_query = text(
                 """
                 SELECT capacity - COALESCE(SUM(allocated_capacity), 0) AS free_capacity
@@ -940,7 +929,7 @@ def allocate_demands():
             if result is not None:
                 free_capacity = result[
                     0
-                ]  # Accessing the first element of the result tuple
+                ]  
             else:
                 free_capacity = 0
 
@@ -951,7 +940,6 @@ def allocate_demands():
             )
 
             if free_capacity < allocated_capacity:
-                # Fetch the parking lot name corresponding to allocation['parking_lot_id']
                 parking_lot_name_query = text(
                     """
                     SELECT name FROM public.parking_lot WHERE id = :parking_lot_id
@@ -977,7 +965,6 @@ def allocate_demands():
                 )
 
         for allocation in allocations:
-            # Insert new allocation
             insert_query = text(
                 """
                 INSERT INTO public.parking_lot_allocation (
