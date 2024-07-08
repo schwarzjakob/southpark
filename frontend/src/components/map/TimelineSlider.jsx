@@ -9,7 +9,7 @@ import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 
 const ROW_HEIGHT = 24;
-const OFFSET = 48; // Adjust as necessary to reduce extra space
+const OFFSET = 48;
 const BUFFER = 10;
 const MONTHS = [
   "Jan",

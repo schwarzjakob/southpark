@@ -184,7 +184,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
                 parking_lots_occupancy={occupancy}
                 parking_lots_capacity={capacity}
                 parking_lots_allocations={allocations}
-                utilization_type={utilizationType} // Pass utilization_type
+                utilization_type={utilizationType} 
                 COLOR_OCCUPIED={COLOR_OCCUPIED}
                 COLOR_FREE={COLOR_FREE}
               />
