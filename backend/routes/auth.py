@@ -234,7 +234,6 @@ def update_password():
 @auth_bp.route("/log", methods=["POST"])
 def log_activity():
     data = request.get_json()
-    logger.debug(f"Received log data: {data}")
 
     user_name = data.get("user_name")
     email = data.get("email")
@@ -242,17 +241,12 @@ def log_activity():
     session_id = data.get("session_id")
     page_accessed = data.get("page_accessed")
 
-    logger.debug(
-        f"Extracted data - user_name: {user_name}, email: {email}, ip_address: {ip_address}, session_id: {session_id}, page_accessed: {page_accessed}"
-    )
-
     if not email:
         logger.error("Email is missing")
         return jsonify({"message": "Email is missing"}), 400
 
     try:
         log_user_activity(user_name, email, ip_address, session_id, page_accessed)
-        logger.info("Activity logged successfully")
         return jsonify({"message": "Activity logged"}), 200
 
     except Exception as e:
