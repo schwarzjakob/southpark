@@ -1,9 +1,11 @@
 import os
+
 from config import Config
 from dotenv import load_dotenv
 from extensions import db, migrate
 from flask import Flask
 from flask_cors import CORS
+
 
 def create_app():
     app = Flask(__name__)
@@ -21,6 +23,7 @@ def create_app():
     from routes.map import map_bp
     from routes.parking import parking_bp
     from routes.recommendation import recommendation_bp
+    from routes.allocation import allocation_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(events_bp, url_prefix="/events")
@@ -29,12 +32,14 @@ def create_app():
     app.register_blueprint(parking_bp, url_prefix="/parking")
     app.register_blueprint(data_bp, url_prefix="/data")
     app.register_blueprint(recommendation_bp, url_prefix="/recommendation")
+    app.register_blueprint(allocation_bp, url_prefix="/allocation")
 
     with app.app_context():
         for rule in app.url_map.iter_rules():
             print(f"{rule.endpoint}: {rule}")
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()
