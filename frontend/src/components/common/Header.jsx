@@ -126,7 +126,7 @@ function Header() {
               }`}
             >
               <Typography variant="body1" className="nav-button-text">
-                Parking Spaces
+                Parking spaces
               </Typography>
             </Button>
             <Button
@@ -139,7 +139,7 @@ function Header() {
               }`}
             >
               <Typography variant="body1" className="nav-button-text">
-                Teams
+                About us
               </Typography>
             </Button>
             <SearchAppBar />

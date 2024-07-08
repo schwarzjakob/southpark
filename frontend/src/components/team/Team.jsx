@@ -26,60 +26,61 @@ const ABOUT_PROJECT = {
   headline: "About the Project",
   subheadings: [
     {
-      title: "Project SouthPark: Revolutionizing Event Parking Management",
+      title: "Project SouthPark: Innovating Event Parking Management",
       description:
-        "Project SouthPark is a pioneering collaboration between Messe München and students from the esteemed MMT program at LMU Munich. This initiative is all about crafting a cutting-edge Minimum Viable Product (MVP) to revolutionize parking space allocation during high-traffic events. Our mission is to create a seamless, efficient, and user-friendly Parking Space Management System (PSMS) that not only meets but exceeds the logistical demands of Messe München's premier events. By integrating advanced technology with practical insights, we aim to set new standards in event logistics, ensuring a smooth and hassle-free experience for all attendees.",
+        "Project SouthPark is a collaborative initiative between Messe München and students from the MMT program at LMU Munich. Our goal is to create a state-of-the-art MVP that transforms parking space allocation during high-traffic events. We are committed to delivering a seamless, efficient, and user-friendly PSMS that meets the logistical needs of Messe München’s major events.",
     },
     {
       title: "Hands-On Learning and Real-World Impact",
       description:
-        "For the talented students involved, Project SouthPark is a unique hands-on learning experience. It bridges academic theory with real-world application, providing an invaluable opportunity to tackle genuine challenges in event management. Students gain practical skills and insights that are directly applicable to their future careers, while Messe München benefits from innovative solutions to streamline their event logistics. This partnership exemplifies how academia and industry can work together to achieve remarkable results, making this collaboration a true win-win.",
+        "For the students involved, Project SouthPark offers a hands-on learning experience that bridges academic theory with practical application. This project allows us to tackle real-world challenges in event management, providing valuable skills for our future careers. Messe München gains innovative solutions to streamline their event logistics, making this partnership beneficial for both parties.",
     },
     {
       title: "Innovative Solutions for Complex Challenges",
       description:
-        "At the heart of Project SouthPark is the development of innovative solutions to address the complex challenges of parking space management during high-traffic events. Our team leverages cutting-edge technologies and methodologies to design a system that is both robust and flexible. By focusing on user experience, operational efficiency, and scalability, we ensure that our solutions can adapt to the evolving needs of Messe München. This forward-thinking approach not only solves current logistical issues but also prepares Messe München for future growth and success.",
+        "The core of Project SouthPark lies in developing innovative solutions to manage parking spaces during high-traffic events. Our team uses advanced technologies and methodologies to design a robust, flexible system. By prioritizing user experience, operational efficiency, and scalability, we ensure our solutions meet the evolving needs of Messe München and support future growth.",
     },
     {
       title: "A Commitment to Excellence and Sustainability",
       description:
-        "Excellence and sustainability are core values of Project SouthPark. We are committed to delivering a high-quality Parking Space Management System that not only enhances operational efficiency but also promotes sustainable practices. By optimizing parking space usage and reducing congestion, we contribute to a more environmentally friendly event management process. Our dedication to excellence ensures that every aspect of the project is meticulously planned and executed, providing Messe München with a reliable and effective solution for their event logistics needs.",
+        "Excellence and sustainability are fundamental to Project SouthPark. Our goal is to deliver a high-quality PSMS that enhances operational efficiency while promoting sustainable practices. By optimizing parking space usage and reducing congestion, we aim to create a more environmentally friendly event management process. Our commitment to excellence ensures that every aspect of the project is thoroughly planned and executed.",
     },
     {
       title: "About the Program",
       description:
-        "The Management & Digital Technologies (MMT) program at Ludwig Maximilian University of Munich (LMU) offers a unique blend of management studies and digital technology education. The Professorship of Digital Services and Sustainability, led by Prof. Dr. Johann Kranz, is dedicated to exploring the intersection of digital innovation and sustainability. The summer term 2024 course, 'Management & Digital Technologies II - Digital Innovation Lab,' provides students with hands-on experience in applying web technologies to solve real-world business problems. This course emphasizes the application of the agile SCRUM methodology, enabling students to manage and organize software development projects effectively while fostering a start-up-like atmosphere of collaboration and innovation.",
+        "The Management & Digital Technologies (MMT) program at LMU Munich blends management studies with digital technology education. Led by Prof. Dr. Johann Kranz, the Professorship of Digital Services and Sustainability explores digital innovation and sustainability. The 'Management & Digital Technologies II - Digital Innovation Lab' course provides students with hands-on experience in applying web technologies to solve real-world business problems using agile methodologies.",
     },
   ],
 };
 const TEAM_MEMBERS = [
   {
-    name: "Nichole Chen",
-    img: tuong,
-    position: "Mastermind of User Experience & Interface Design",
-    linkedIn: "https://www.linkedin.com/in/pei-lin-chen-658836184/",
-    email: "mailto:pei.chen@campus.lmu.de",
-  },
-  {
     name: "Jakob Schwarz",
     img: tolkien,
-    position: "Architect of Backend Solutions & Data Management",
+    position: "Full Stack Innovator & Backend Guru",
     linkedIn: "https://www.linkedin.com/in/schwarzjakob/",
     email: "mailto:jakob.schwarz@campus.lmu.de",
   },
   {
-    name: "Sven Tiefenthaler",
-    img: eric,
-    position: "Optimization Algorithm Wizard",
-    linkedIn: "https://www.linkedin.com/in/sven-tiefenthaler-a7617221b/",
-    email: "mailto:s.tiefenthaler@campus.lmu.de",
-  },
-  {
     name: "Timon Tirtey",
     img: kenny,
-    position: "Frontend Development Guru",
+    position: "Full Stack Innovator & UI/UX Master",
     linkedIn: "https://www.linkedin.com/in/timontirtey/",
     email: "mailto:t.tirtey@campus.lmu.de",
+  },
+  {
+    name: "Nichole Chen",
+    img: tuong,
+    position: "Dev Innovator & Review Champion",
+    linkedIn: "https://www.linkedin.com/in/pei-lin-chen-658836184/",
+    email: "mailto:pei.chen@campus.lmu.de",
+  },
+
+  {
+    name: "Sven Tiefenthaler",
+    img: eric,
+    position: "Data Innovator & Optimization Wizard",
+    linkedIn: "https://www.linkedin.com/in/sven-tiefenthaler-a7617221b/",
+    email: "mailto:s.tiefenthaler@campus.lmu.de",
   },
 ];
 
@@ -88,7 +89,7 @@ const renderTeam = () => {
     <Container className="outer-container">
       <Grid container className="inner-container">
         <Grid item xs={12} md={4} className="headings-container">
-          <Typography variant="h2" className="heading-text">
+          <Typography variant="h3" className="heading-text">
             {CONTENT.headline}
           </Typography>
 

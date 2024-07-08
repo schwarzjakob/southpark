@@ -37,6 +37,7 @@ h6.page-title a:hover {
 
 .nav-button-text {
   font-size: 0.875rem !important;
+  text-transform: none;
 }
 
 @media (max-width: 1100px) {

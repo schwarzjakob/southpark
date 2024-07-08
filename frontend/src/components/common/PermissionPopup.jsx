@@ -23,7 +23,7 @@ const ProgressBar = styled("div")({
   width: "100%",
   borderBottomLeftRadius: "0px",
   borderBottomRightRadius: "0px",
-  animation: "slide 10s linear forwards",
+  animation: "slide 5s linear forwards",
   "@keyframes slide": {
     from: { width: "100%" },
     to: { width: "0%" },
@@ -38,7 +38,7 @@ const PermissionPopup = ({ open, onClose, message }) => {
       setShowPopup(true);
       const timer = setTimeout(() => {
         setShowPopup(false);
-      }, 10000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [open, onClose]);
