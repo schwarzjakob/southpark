@@ -22,7 +22,14 @@ const getContrastingTextColor = (backgroundColor) => {
   return luminance > 0.5 ? "black" : "white";
 };
 
-const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
+const HallPopup = ({
+  hall,
+  index,
+  events,
+  parking_lots_allocations,
+  GREYED_OUT,
+  selectedDate,
+}) => {
   const transformedCoords = transformCoordinates(hall.coordinates);
   const hallEvents = events.filter((event) =>
     event.halls ? event.halls.split(", ").includes(hall.name) : false,
@@ -149,10 +156,7 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
         {hallEvents.map((event, index) => {
           const textColor = getContrastingTextColor(event.event_color);
           const status = getEventStatus(event, selectedDate);
-          const parkingLots = event[`${status}_parking_lots`] || "None";
           const isLastElement = index === hallEvents.length - 1;
-
-          console.log(parkingLots);
 
           const entranceMapping = {
             1: "West",
@@ -169,7 +173,11 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                 .join(", ")
             : "None";
 
-          console.log(entrances);
+          const eventParkingLots =
+            parking_lots_allocations
+              .filter((allocation) => allocation.event_id === event.event_id)
+              .map((allocation) => allocation.parking_lot_name)
+              .join(", ") || "None";
 
           return (
             <React.Fragment key={index}>
@@ -210,6 +218,7 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                   backgroundColor: event.event_color,
                   padding: "0.3rem 0.5rem",
                   color: textColor,
+                  minWidth: "5rem",
                 }}
               >
                 {entrances}
@@ -224,9 +233,12 @@ const HallPopup = ({ hall, index, events, GREYED_OUT, selectedDate }) => {
                   backgroundColor: event.event_color,
                   padding: "0.3rem 0.5rem",
                   color: textColor,
+                  flexWrap: "wrap",
+                  whiteSpace: "wrap",
+                  minWidth: "5rem",
                 }}
               >
-                {parkingLots}
+                {eventParkingLots}
               </div>
             </React.Fragment>
           );
@@ -272,6 +284,7 @@ HallPopup.propTypes = {
   hall: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
   events: PropTypes.array.isRequired,
+  parking_lots_allocations: PropTypes.array.isRequired,
   selectedEventId: PropTypes.number,
   GREYED_OUT: PropTypes.number.isRequired,
   selectedDate: PropTypes.string.isRequired,
