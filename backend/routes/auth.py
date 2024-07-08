@@ -1,22 +1,47 @@
 import datetime
 import logging
 import re
-
 import jwt
 from extensions import db
 from flask import Blueprint, jsonify, request
-from models import User, UserLog
 from utils.helpers import log_user_activity
 from werkzeug.security import check_password_hash, generate_password_hash
+from models import User 
+from functools import wraps
 
 auth_bp = Blueprint("auth", __name__)
 logger = logging.getLogger(__name__)
 
 SECRET_KEY = "XP&O%<w}?g,uqY[lM/s/kc=?wU2Mj$"
 
-# Predefined access tokens for demonstration purposes
 ACCESS_TOKENS = {"MMT"}
 
+
+def check_edit_rights(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        print(f"Authorization Header: {auth_header}")
+        if not auth_header:
+            return jsonify({"message": "Authorization header is missing!"}), 403
+        try:
+            token = auth_header.split()[1]
+            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            user = User.query.filter_by(username=data["username"]).first()
+            if not user:
+                return jsonify({"message": "User not found"}), 404
+            if not hasattr(user, 'edit_rights'):
+                return jsonify({"message": "User does not have edit rights attribute"}), 403
+            if not user.edit_rights:
+                return jsonify({"message": "No permission"}), 403
+        except jwt.ExpiredSignatureError:
+            return jsonify({"message": "Token has expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"message": "Invalid token"}), 401
+        except Exception as e:
+            return jsonify({"message": "Internal server error"}), 500
+        return f(*args, **kwargs)
+    return decorated_function
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
@@ -58,15 +83,31 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully"}), 201
+    token = jwt.encode(
+        {
+            "username": new_user.username,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        },
+        SECRET_KEY,
+        algorithm="HS256",
+    )
+
+    session_id = token  
+    log_user_activity(new_user.username, new_user.email, request.remote_addr, session_id, "/register")
+
+    new_user.token = token
+    db.session.commit()
+
+    return jsonify({"message": "User registered and logged in successfully", "token": token, "username": new_user.username, "email": new_user.email}), 201
+
 
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    identifier = data.get("identifier")  # This can be either username or email
+    identifier = data.get("identifier")  
     password = data.get("password")
-    ip_address = data.get("ip_address")  # Get the IP address from the request body
+    ip_address = data.get("ip_address") 
 
     user = User.query.filter(
         (User.username == identifier) | (User.email == identifier)
@@ -84,10 +125,9 @@ def login():
         algorithm="HS256",
     )
 
-    session_id = token  # Using the token as the session ID for simplicity
+    session_id = token  
     log_user_activity(user.username, user.email, ip_address, session_id, "/login")
 
-    # Save the token in the database
     user.token = token
     db.session.commit()
 
