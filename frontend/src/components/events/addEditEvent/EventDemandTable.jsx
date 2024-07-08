@@ -23,16 +23,6 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import PermissionPopup from "../../common/PermissionPopup.jsx";
-import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
-import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
-import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
-import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
-import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
-import CircleIcon from "@mui/icons-material/Circle";
-import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
-import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
   DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
@@ -41,6 +31,16 @@ import {
   NumbersRounded as NumbersRoundedIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
+import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
+import CircleIcon from "@mui/icons-material/Circle";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
+
+import PropTypes from "prop-types";
 
 const TITLE = "Event Demands";
 
@@ -82,6 +82,15 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       }
     };
 
+    const fetchAllocations = async () => {
+      try {
+        const response = await axios.get(`/api/events/allocations/${eventId}`);
+        setAllocations(response.data);
+      } catch (error) {
+        console.error("Error fetching allocations data:", error);
+      }
+    };
+
     const fetchDailyStatus = async () => {
       try {
         const response = await axios.get(`/api/events/events_status_daily`, {
@@ -97,26 +106,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       }
     };
 
-<<<<<<< HEAD
-    const fetchDailyStatus = async () => {
-      try {
-        const response = await axios.get(`/api/events/events_status_daily`, {
-          params: { event_id: eventId },
-        });
-        if (response.status === 200) {
-          setDailyStatuses(response.data);
-        } else {
-          setDailyStatuses([]);
-        }
-      } catch (error) {
-        console.error("Error fetching daily status data:", error);
-      }
-    };
-
-    fetchAllocations(), fetchDemands();
-=======
     fetchDemands();
->>>>>>> 44295e6 (Fix #134 inconsistent status labels)
     fetchDailyStatus();
   }, [eventId]);
 
@@ -245,16 +235,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const updateStatuses = () => {
     const updatedDemands = demands.map((demand) => {
-<<<<<<< HEAD
-      const totalDemand =
-        demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
-      const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
-      );
-      const dailyStatus = dailyStatuses.find(
-        (status) => formatDate(status.date) === formatDate(demand.date)
-      );
-=======
       const dailyStatus = dailyStatuses.find(
         (status) => formatDate(status.date) === formatDate(demand.date),
       );
@@ -263,20 +243,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       let status = "no_demands";
       if (dailyStatus) {
         status = dailyStatus.status;
-<<<<<<< HEAD
-      } else if (totalDemand === 0) {
-        status = "no_demands";
-      } else if (!allocation || allocation.allocated_capacity === 0) {
-        status = "not_allocated";
-      } else {
-        const ratio = allocation.allocated_capacity / totalDemand;
-        if (ratio === 1) {
-          status = "allocated";
-        } else {
-          status = "partially_allocated";
-        }
-=======
->>>>>>> 44295e6 (Fix #134 inconsistent status labels)
       }
 
       return { ...demand, status };
@@ -571,50 +537,6 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     className="header-icon"
                   />
                   Status
-                  <Tooltip
-                    title={
-                      <>
-                        Fully allocated: All demands are allocated.
-                        <br />
-                        Demands to allocate: Some demands need to be allocated.
-                        <br />
-                        Not enough capacity: There is not enough capacity to
-                        meet the demands for all events on this day.
-                        <br />
-                        Demands missing: No demands have been recorded.
-                      </>
-                    }
-                    arrow
-                  >
-                    <IconButton size="small" className="infoHover__Container">
-                      <InfoOutlinedIcon
-                        fontSize="small"
-                        className="infoHover__Icon"
-                      />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip
-                    title={
-                      <>
-                        Fully allocated: All demands are allocated.
-                        <br />
-                        Demands to allocate: Some demands need to be allocated.
-                        <br />
-                        Not enough capacity: There is not enough capacity to
-                        meet the demands for all events on this day.
-                        <br />
-                        Demands missing: No demands have been recorded.
-                      </>
-                    }
-                    arrow
-                  >
-                    <IconButton size="small" className="infoHover__Container">
-                      <InfoOutlinedIcon
-                        fontSize="small"
-                        className="infoHover__Icon"
-                      />
-                    </IconButton>
-                  </Tooltip>
                 </Box>
               </TableCell>
             </TableRow>
