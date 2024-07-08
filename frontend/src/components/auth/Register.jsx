@@ -61,9 +61,17 @@ const Register = () => {
       });
       setMessage(response.data.message);
       setSeverity("success");
+
+      const { token } = response.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("auth", "true");
+      localStorage.setItem("user", response.data.username);
+      localStorage.setItem("email", response.data.email);
+      window.dispatchEvent(new Event("authChange"));
+
       setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+        navigate("/", { replace: true });
+      }, 1000);
     } catch (error) {
       setMessage(error.response.data.message || "Registration failed");
       setSeverity("error");
