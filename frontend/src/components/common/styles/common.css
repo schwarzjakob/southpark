@@ -314,3 +314,11 @@ h6.page-title a:hover {
 .results-name {
   overflow-wrap: anywhere;
 }
+
+.popup_no-permission {
+  align-items: baseline !important;
+  margin-top: 2rem;
+  margin-right: 2rem;
+  left: auto !important;
+  right: 0 !important;
+}
