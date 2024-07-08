@@ -135,6 +135,7 @@
   display: flex;
   gap: 0.5rem;
   width: 100%;
+  min-width: 150px;
 }
 
 .popup-title-container.hall {

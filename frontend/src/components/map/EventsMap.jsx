@@ -135,16 +135,25 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
         />
       ))}
 
-      {coordinates.parking_lots.map((parkingLot, index) => (
-        <ParkingPopup
-          key={parkingLot.name}
-          parkingLot={parkingLot}
-          index={index}
-          parking_lots_allocations={parking_lots_allocations}
-          parking_lots_capacity={parking_lots_capacity}
-          GREYED_OUT={GREYED_OUT}
-        />
-      ))}
+      {coordinates.parking_lots.map((parkingLot, index) => {
+        const parkingLotCapacity = parking_lots_capacity.find(
+          (capacity) => capacity.id === parkingLot.id,
+        );
+
+        const utilizationType = parkingLotCapacity?.utilization_type || "other";
+
+        return (
+          <ParkingPopup
+            key={parkingLot.name}
+            parkingLot={parkingLot}
+            index={index}
+            parking_lots_allocations={parking_lots_allocations}
+            parking_lots_capacity={parking_lots_capacity}
+            utilization_type={utilizationType}
+            GREYED_OUT={GREYED_OUT}
+          />
+        );
+      })}
     </MapContainer>
   );
 };

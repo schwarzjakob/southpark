@@ -2,6 +2,8 @@ import React from "react";
 import { Polygon, Tooltip, Popup } from "react-leaflet";
 import PropTypes from "prop-types";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
+import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
+import { Box } from "@mui/material";
 
 const transformCoordinates = (originalCoords) => {
   const transformedCoords = [];
@@ -46,10 +48,81 @@ const HeatMapParkingLotPopup = ({
   parkingLot,
   parking_lots_allocations,
   parking_lots_capacity,
+  utilization_type,
   COLOR_OCCUPIED,
   COLOR_FREE,
 }) => {
+  console.log("Utilization Type: ", utilization_type);
   const transformedCoords = transformCoordinates(parkingLot.coordinates);
+  const isUnderConstruction = utilization_type === "construction";
+
+  if (isUnderConstruction) {
+    const fillPattern = "url(#diagonal-stripe-2)";
+
+    return (
+      <React.Fragment key={parkingLot.name}>
+        <svg style={{ height: 0 }}>
+          <defs>
+            <pattern
+              id="diagonal-stripe-2"
+              width="10"
+              height="10"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)"
+            >
+              <rect width="5" height="10" fill="#dea731" />
+              <rect x="5" width="5" height="10" fill="black" />
+            </pattern>
+          </defs>
+        </svg>
+        <Polygon
+          positions={transformedCoords}
+          className={`parking-lots parking-lot-${parkingLot.name}`}
+          pathOptions={{
+            fillColor: fillPattern,
+            fillOpacity: 1,
+            weight: 2,
+            color: "transparent",
+          }}
+        >
+          <Tooltip
+            direction="center"
+            offset={[0, 0]}
+            permanent
+            className="tags-parking-lots"
+          >
+            <span>{parkingLot.name}</span>
+          </Tooltip>
+          <Popup autoPan={false}>
+            <div className="popup-title-container">
+              <div className="popup-title">
+                <span>{parkingLot.name}</span>
+              </div>
+              <div className="details-link_container">
+                <a href={`/parking_space/${parkingLot.id}`}>
+                  <LinkRoundedIcon />
+                  Details
+                </a>
+              </div>
+            </div>
+            <div className="construction-info">
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <EngineeringRoundedIcon sx={{ marginRight: "0.3rem" }} />
+                <Box>Under Construction!</Box>
+              </Box>
+            </div>
+          </Popup>
+        </Polygon>
+      </React.Fragment>
+    );
+  }
+
   const parkingLotCapacity =
     parking_lots_capacity.find((capacity) => capacity.id === parkingLot.id)
       ?.capacity || 0;
@@ -225,6 +298,7 @@ HeatMapParkingLotPopup.propTypes = {
   index: PropTypes.number.isRequired,
   parking_lots_allocations: PropTypes.array.isRequired,
   parking_lots_capacity: PropTypes.array.isRequired,
+  utilization_type: PropTypes.string.isRequired,
   COLOR_OCCUPIED: PropTypes.string.isRequired,
   COLOR_FREE: PropTypes.string.isRequired,
 };
