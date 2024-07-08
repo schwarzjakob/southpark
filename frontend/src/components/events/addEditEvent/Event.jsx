@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import axios from "axios";
+import dayjs from "dayjs";
+import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
+import EventDemandTable from "./EventDemandTable.jsx";
+import EventMapSection from "./EventMapSection.jsx";
+import Allocations from "./Allocations.jsx";
 import {
   Box,
   Typography,
@@ -15,12 +20,6 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
-import EventDemandTable from "./EventDemandTable.jsx";
-import EventMapSection from "./EventMapSection.jsx";
-import Allocations from "./Allocations.jsx";
-import "../../map/styles/map.css";
-import "../styles/events.css";
 import {
   ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
   PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
@@ -30,7 +29,8 @@ import {
   ArrowBack as ArrowBackIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
 } from "@mui/icons-material";
-import dayjs from "dayjs";
+import "../../map/styles/map.css";
+import "../styles/events.css";
 
 const TITLE = "Event Details";
 const INITIAL_DATE = "2000-01-01";
