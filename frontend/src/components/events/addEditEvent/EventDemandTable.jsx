@@ -32,6 +32,7 @@ import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
   DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
