@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Paper,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -13,7 +12,6 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
-  Tooltip,
   Button,
   TextField,
   Alert,
@@ -32,7 +30,6 @@ import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   DateRangeRounded as DateRangeRoundedIcon,
   DirectionsCarFilledRounded as DirectionsCarFilledRoundedIcon,
@@ -41,19 +38,6 @@ import {
   NumbersRounded as NumbersRoundedIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
-import {
-  ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
-  PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
-  ArrowCircleDownRounded as ArrowCircleDownRoundedIcon,
-  FunctionsRounded as FunctionsRoundedIcon,
-  LocalParkingRounded as LocalParkingRoundedIcon,
-  Circle as CircleIcon,
-  SaveRounded as SaveRoundedIcon,
-  ClearRounded as ClearRoundedIcon,
-  InfoOutlined as InfoOutlinedIcon,
-} from "@mui/icons-material";
-
-import PropTypes from "prop-types";
 
 const TITLE = "Event Demands";
 
@@ -119,7 +103,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       }
     };
 
-    fetchDemands();
+    fetchAllocations(), fetchDemands();
     fetchDailyStatus();
   }, [eventId]);
 
@@ -245,24 +229,32 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       console.error("Error fetching demands data:", error);
     }
   };
-
   const updateStatuses = () => {
     const updatedDemands = demands.map((demand) => {
       const totalDemand =
         demand.car_demand + 4 * demand.truck_demand + 3 * demand.bus_demand;
       const allocation = allocations.find(
-        (alloc) => formatDate(alloc.date) === formatDate(demand.date),
+        (alloc) => formatDate(alloc.date) === formatDate(demand.date)
       );
       const dailyStatus = dailyStatuses.find(
         (status) => formatDate(status.date) === formatDate(demand.date)
       );
->>>>>>> 44295e6 (Fix #134 inconsistent status labels)
 
       let status = "no_demands";
       if (dailyStatus) {
         status = dailyStatus.status;
+      } else if (totalDemand === 0) {
+        status = "no_demands";
+      } else if (!allocation || allocation.allocated_capacity === 0) {
+        status = "not_allocated";
+      } else {
+        const ratio = allocation.allocated_capacity / totalDemand;
+        if (ratio === 1) {
+          status = "allocated";
+        } else {
+          status = "partially_allocated";
+        }
       }
-
       return { ...demand, status };
     });
     setDemands(updatedDemands);
@@ -651,15 +643,15 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
-                                  formatDate(demand.date),
-                              )?.status,
+                                  formatDate(demand.date)
+                              )?.status
                             )}
                             {getStatusLabel(
                               dailyStatuses.find(
                                 (status) =>
                                   formatDate(status.date) ===
-                                  formatDate(demand.date),
-                              )?.status,
+                                  formatDate(demand.date)
+                              )?.status
                             )}
                           </Box>
                         </TableCell>
