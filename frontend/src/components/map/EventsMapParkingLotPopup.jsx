@@ -1,7 +1,9 @@
 import React from "react";
 import { Polygon, Tooltip, Popup } from "react-leaflet";
 import PropTypes from "prop-types";
+import { Box } from "@mui/material";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
+import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
 
 const transformCoordinates = (originalCoords) => {
   const transformedCoords = [];
@@ -26,9 +28,81 @@ const ParkingPopup = ({
   index,
   parking_lots_allocations,
   parking_lots_capacity,
+  utilization_type, // Receive utilization_type
   GREYED_OUT,
 }) => {
   const transformedCoords = transformCoordinates(parkingLot.coordinates);
+  const isUnderConstruction = utilization_type === "construction"; // Check if under construction
+
+  if (isUnderConstruction) {
+    // Define the fill pattern for under construction
+    const fillPattern = "url(#diagonal-stripe-2)";
+
+    return (
+      <React.Fragment key={parkingLot.name}>
+        <svg style={{ height: 0 }}>
+          <defs>
+            <pattern
+              id="diagonal-stripe-2"
+              width="10"
+              height="10"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)"
+            >
+              <rect width="5" height="10" fill="#dea731" />
+              <rect x="5" width="5" height="10" fill="black" />
+            </pattern>
+          </defs>
+        </svg>
+
+        <Polygon
+          positions={transformedCoords}
+          className={`parking-lots parking-lot-${parkingLot.name}`}
+          pathOptions={{
+            fillColor: fillPattern,
+            fillOpacity: 1,
+            weight: 2,
+            color: "transparent",
+          }}
+        >
+          <Tooltip
+            direction="center"
+            offset={[0, 0]}
+            permanent
+            className="tags-parking-lots"
+          >
+            <span>{parkingLot.name}</span>
+          </Tooltip>
+          <Popup autoPan={false}>
+            <div className="popup-title-container">
+              <div className="popup-title">
+                <span>{parkingLot.name}</span>
+              </div>
+              <div className="details-link_container">
+                <a href={`/parking_space/${parkingLot.id}`}>
+                  <LinkRoundedIcon />
+                  Details
+                </a>
+              </div>
+            </div>
+            <div className="construction-info">
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <EngineeringRoundedIcon sx={{ marginRight: "0.3rem" }} />
+                <Box>Under Construction!</Box>
+              </Box>
+            </div>
+          </Popup>
+        </Polygon>
+      </React.Fragment>
+    );
+  }
+
   const allocations = parking_lots_allocations.filter(
     (allocation) => allocation.parking_lot_id === parkingLot.id,
   );
@@ -126,12 +200,10 @@ const ParkingPopup = ({
                   <strong>Free Capacity</strong>
                 </div>
                 <div className="popup-table-cell-footer">
-                  <strong>
-                    {Math.round(freeCapacityPercentage * parkingLotCapacity)}
-                  </strong>
+                  <strong>100%</strong>
                 </div>
                 <div className="popup-table-cell-footer percentage">
-                  <strong>{(freeCapacityPercentage * 100).toFixed(2)}%</strong>
+                  <strong>100%</strong>
                 </div>
               </React.Fragment>
             </div>
@@ -272,6 +344,7 @@ ParkingPopup.propTypes = {
   index: PropTypes.number.isRequired,
   parking_lots_allocations: PropTypes.array.isRequired,
   parking_lots_capacity: PropTypes.array.isRequired,
+  utilization_type: PropTypes.string.isRequired, // Ensure utilization_type is required
   GREYED_OUT: PropTypes.number.isRequired,
 };
 

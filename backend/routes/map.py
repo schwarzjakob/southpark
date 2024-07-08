@@ -7,6 +7,7 @@ from utils.helpers import get_data
 map_bp = Blueprint("map", __name__)
 logger = logging.getLogger(__name__)
 
+
 @map_bp.route("/map_data/<date>", methods=["GET"])
 def get_map_data(date):
     try:
@@ -51,6 +52,7 @@ def get_map_data(date):
             pl.name AS name, 
             pl.external AS external, 
             plc.capacity AS capacity,
+            plc.utilization_type AS utilization_type,
             dates.date
         FROM 
             public.parking_lot pl
@@ -59,7 +61,7 @@ def get_map_data(date):
         CROSS JOIN 
             generate_series('{start_date}', '{end_date}', '1 day'::interval) AS dates(date)
         WHERE 
-            plc.valid_from <= dates.date AND plc.valid_to >= dates.date AND plc.utilization_type = 'parking'
+            plc.valid_from <= dates.date AND plc.valid_to >= dates.date
         ORDER BY 
             pl.id, dates.date;
         """
@@ -109,7 +111,9 @@ def get_map_data(date):
         ORDER BY 
             pa.parking_lot_id, pa.event_id, pa.date;
         """
-        print("Executing query_parking_lots_allocations:", query_parking_lots_allocations)
+        print(
+            "Executing query_parking_lots_allocations:", query_parking_lots_allocations
+        )
         df_parking_lots_allocations = get_data(query_parking_lots_allocations)
         print("Query result:", df_parking_lots_allocations)
         parking_lots_allocations = df_parking_lots_allocations.to_dict(orient="records")

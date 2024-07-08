@@ -28,18 +28,13 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
     parking_lots_capacity = [],
     parking_lots_allocations = [],
   } = mapData || {};
-  const [, setHalls] = useState([]);
-  const [parkingLots, setParkingLots] = useState([]);
-  const [, setEntrances] = useState([]);
+
   const [events, setEvents] = useState([]);
   const [occupancy, setOccupancy] = useState([]);
   const [capacity, setCapacity] = useState([]);
   const [allocations, setAllocations] = useState([]);
 
   useEffect(() => {
-    setHalls(coordinates.halls);
-    setParkingLots(coordinates.parking_lots);
-    setEntrances(coordinates.entrances);
     setEvents(events_timeline);
     setCapacity(parking_lots_capacity);
     setAllocations(parking_lots_allocations);
@@ -51,6 +46,9 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
       return {
         ...occ,
         total_capacity: capacityData ? capacityData.capacity : 0,
+        utilization_type: capacityData
+          ? capacityData.utilization_type
+          : "other",
       };
     });
     setOccupancy(combinedData);
@@ -170,18 +168,28 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
             />
           ))}
 
-          {parkingLots.map((parkingLot, index) => (
-            <HeatMapParkingLotPopup
-              key={parkingLot.name}
-              parkingLot={parkingLot}
-              index={index}
-              parking_lots_occupancy={occupancy}
-              parking_lots_capacity={capacity}
-              parking_lots_allocations={allocations}
-              COLOR_OCCUPIED={COLOR_OCCUPIED}
-              COLOR_FREE={COLOR_FREE}
-            />
-          ))}
+          {coordinates.parking_lots.map((parkingLot, index) => {
+            const parkingLotCapacity = parking_lots_capacity.find(
+              (capacity) => capacity.id === parkingLot.id,
+            );
+
+            const utilizationType =
+              parkingLotCapacity?.utilization_type || "other";
+
+            return (
+              <HeatMapParkingLotPopup
+                key={parkingLot.name}
+                parkingLot={parkingLot}
+                index={index}
+                parking_lots_occupancy={occupancy}
+                parking_lots_capacity={capacity}
+                parking_lots_allocations={allocations}
+                utilization_type={utilizationType} // Pass utilization_type
+                COLOR_OCCUPIED={COLOR_OCCUPIED}
+                COLOR_FREE={COLOR_FREE}
+              />
+            );
+          })}
         </>
       )}
     </MapContainer>
