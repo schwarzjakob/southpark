@@ -36,6 +36,7 @@ import dayjs from "dayjs";
 import InfoHover from "../../common/InfoHover.jsx";
 import DateRangePicker from "../../controls/DateRangePicker.jsx";
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
+import PermissionPopup from "../../common/PermissionPopup.jsx";
 import "../styles/events.css";
 
 const TITLE = "Edit Event";
@@ -63,7 +64,10 @@ const EditEvent = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitCallback, setSubmitCallback] = useState(null);
   const [occupiedHalls, setOccupiedHalls] = useState([]);
-
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
+  });
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -211,6 +215,8 @@ const EditEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const token = localStorage.getItem("token");
+
     const dateChangedPhases = (originalDate, newDate) => {
       if (!originalDate || !newDate) return false;
 
@@ -254,7 +260,11 @@ const EditEvent = () => {
       setDialogOpen(true);
       setSubmitCallback(() => async () => {
         try {
-          await axios.put(`/api/events/event/${id}`, event);
+          await axios.put(`/api/events/event/${id}`, event, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           setFeedback({
             open: true,
             message:
@@ -263,17 +273,28 @@ const EditEvent = () => {
           });
           navigate(`/events/event/${id}`);
         } catch (error) {
-          console.error("Error updating event:", error);
-          setFeedback({
-            open: true,
-            message: "Error updating event.",
-            severity: "error",
-          });
+          if (error.response && error.response.status === 403) {
+            setPermissionError({
+              open: true,
+              message: "You do not have permission to perform this action.",
+            });
+          } else {
+            console.error("Error updating event:", error);
+            setFeedback({
+              open: true,
+              message: "Error updating event.",
+              severity: "error",
+            });
+          }
         }
       });
     } else {
       try {
-        await axios.put(`/api/events/event/${id}`, event);
+        await axios.put(`/api/events/event/${id}`, event, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setFeedback({
           open: true,
           message: "Event updated successfully.",
@@ -281,12 +302,19 @@ const EditEvent = () => {
         });
         navigate(`/events/event/${id}`);
       } catch (error) {
-        console.error("Error updating event:", error);
-        setFeedback({
-          open: true,
-          message: "Error updating event.",
-          severity: "error",
-        });
+        if (error.response && error.response.status === 403) {
+          setPermissionError({
+            open: true,
+            message: "You do not have permission to perform this action.",
+          });
+        } else {
+          console.error("Error updating event:", error);
+          setFeedback({
+            open: true,
+            message: "Error updating event.",
+            severity: "error",
+          });
+        }
       }
     }
   };
@@ -693,6 +721,11 @@ const EditEvent = () => {
           {feedback.message}
         </Alert>
       </Snackbar>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };

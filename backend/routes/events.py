@@ -513,6 +513,7 @@ def add_event():
 
 
 @events_bp.route("/event/<int:id>", methods=["PUT"])
+@check_edit_rights
 def edit_event(id):
     try:
         data = request.json
