@@ -164,6 +164,7 @@ const Heatmap = ({ selectedDate, zoom, mapData }) => {
               events={uniqueFilteredEvents}
               selectedDate={selectedDate}
               selectedEventId={2}
+              parking_lots_allocations={parking_lots_allocations}
               GREYED_OUT={0.8}
             />
           ))}

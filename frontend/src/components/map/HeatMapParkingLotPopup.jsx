@@ -52,7 +52,6 @@ const HeatMapParkingLotPopup = ({
   COLOR_OCCUPIED,
   COLOR_FREE,
 }) => {
-  console.log("Utilization Type: ", utilization_type);
   const transformedCoords = transformCoordinates(parkingLot.coordinates);
   const isUnderConstruction = utilization_type === "construction";
 
@@ -141,19 +140,6 @@ const HeatMapParkingLotPopup = ({
     : 0;
 
   const fillColor = calculateColor(occupancyRatio, COLOR_OCCUPIED, COLOR_FREE);
-
-  console.log(
-    "Parking Lot: ",
-    parkingLot.id,
-    " Parking Lot Capacity: ",
-    parkingLotCapacity,
-    " Total Allocated: ",
-    totalAllocated,
-    " Occupancy Ratio: ",
-    occupancyRatio,
-    " Fill Color: ",
-    fillColor,
-  );
 
   const getPopupContent = () => {
     if (!allocations || allocations.length === 0) {

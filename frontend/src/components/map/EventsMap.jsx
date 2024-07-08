@@ -121,6 +121,7 @@ const EventsMap = ({ selectedDate, zoom, selectedEventId, mapData }) => {
           events={uniqueFilteredEvents}
           selectedDate={selectedDate}
           selectedEventId={selectedEventId}
+          parking_lots_allocations={parking_lots_allocations}
           GREYED_OUT={GREYED_OUT}
         />
       ))}
