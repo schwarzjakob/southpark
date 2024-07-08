@@ -188,11 +188,6 @@ def get_event_status():
         df = pd.read_sql_query(query, db.engine)
         events_status = df.to_dict(orient="records")
 
-        logger.info("Event Status Table:")
-        for row in events_status:
-            if row["event_id"] == 13:
-                logger.info(row)
-
         event_status_summary = {}
 
         for row in events_status:
@@ -517,7 +512,6 @@ def add_event():
 def edit_event(id):
     try:
         data = request.json
-        logger.debug(f"Received data for event update: {data}")
         data["id"] = id
 
         date_fields = [
@@ -537,7 +531,6 @@ def edit_event(id):
                     )
                     data[field] = parsed_date.strftime("%Y-%m-%d")
                 except ValueError as ve:
-                    logger.debug(f"Failed to parse date {data[field]} with error: {ve}")
                     try:
                         parsed_date = datetime.strptime(data[field], "%Y-%m-%d")
                         data[field] = parsed_date.strftime("%Y-%m-%d")
@@ -550,7 +543,6 @@ def edit_event(id):
                             400,
                         )
 
-        logger.debug(f"Data after date conversion: {data}")
 
         original_event = get_data(
             """
@@ -560,8 +552,6 @@ def edit_event(id):
             """,
             {"id": id},
         ).to_dict(orient="records")[0]
-
-        logger.debug(f"Original event dates: {original_event}")
 
         def date_range(start_date, end_date):
             return set(
@@ -590,9 +580,6 @@ def edit_event(id):
 
         dates_to_remove = original_dates - new_dates
         dates_to_add = new_dates - original_dates
-
-        logger.debug(f"Dates to remove: {dates_to_remove}")
-        logger.debug(f"Dates to add: {dates_to_add}")
 
         update_event_query = text(
             """

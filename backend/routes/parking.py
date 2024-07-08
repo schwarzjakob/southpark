@@ -176,23 +176,18 @@ def get_parking_space_capacities(parking_lot_id):
     Endpoint to retrieve all capacity entries for a given parking lot ID.
     """
     try:
-        logger.info(f"Fetching capacities for parking lot ID: {parking_lot_id}")
         query = """
         SELECT id, parking_lot_id, capacity, utilization_type, truck_limit, bus_limit, valid_from, valid_to
         FROM public.parking_lot_capacity
         WHERE parking_lot_id = :parking_lot_id
         """
         params = {"parking_lot_id": parking_lot_id}
-        logger.info(f"SQL Query: {query}")
-        logger.info(f"Params: {params}")
 
         capacities = get_data(query, params).to_dict(orient="records")
 
         if not capacities:
-            logger.info(f"No capacities found for parking lot ID: {parking_lot_id}")
             return jsonify({"message": "No capacities found"}), 204
 
-        logger.info("Capacities fetched successfully.")
         return jsonify(capacities), 200
     except Exception as e:
         logger.error("Failed to fetch capacities", exc_info=True)
