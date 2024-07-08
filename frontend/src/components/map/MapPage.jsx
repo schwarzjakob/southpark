@@ -313,7 +313,6 @@ const MapPage = () => {
                 <Typography
                   sx={{
                     fontSize: "1rem",
-                    // fontWeight: "bold",
                     color: "var(--textColor)",
                     padding: "0.3rem",
                     display: "flex",

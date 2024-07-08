@@ -5,7 +5,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import EventIcon from "@mui/icons-material/Event";
 import GarageIcon from "@mui/icons-material/GarageRounded";
 import axios from "axios";
-import dayjs from "dayjs"; // Import dayjs
+import dayjs from "dayjs"; 
 
 function SearchAppBar() {
   const [query, setQuery] = useState("");

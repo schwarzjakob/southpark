@@ -150,10 +150,9 @@ const ParkingSpaceOccupationTable = ({ parkingLotId, selectedDate }) => {
     return `${day}.${month}.${year}`;
   };
 
-  // WIP CHANGE!
   const getContrastingTextColor = (backgroundColor) => {
     if (!backgroundColor) {
-      return "inherit"; // oder ein anderer Standardwert
+      return "inherit"; 
     }
 
     const hex = backgroundColor.replace("#", "");
