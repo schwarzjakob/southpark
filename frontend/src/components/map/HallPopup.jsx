@@ -156,10 +156,7 @@ const HallPopup = ({
         {hallEvents.map((event, index) => {
           const textColor = getContrastingTextColor(event.event_color);
           const status = getEventStatus(event, selectedDate);
-          const parkingLots = event[`${status}_parking_lots`] || "None";
           const isLastElement = index === hallEvents.length - 1;
-
-          console.log(parkingLots);
 
           const entranceMapping = {
             1: "West",
@@ -176,7 +173,11 @@ const HallPopup = ({
                 .join(", ")
             : "None";
 
-          console.log(entrances);
+          const eventParkingLots =
+            parking_lots_allocations
+              .filter((allocation) => allocation.event_id === event.event_id)
+              .map((allocation) => allocation.parking_lot_name)
+              .join(", ") || "None";
 
           const entranceMapping = {
             1: "West",
