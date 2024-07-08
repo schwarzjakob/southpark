@@ -750,6 +750,7 @@ def get_parking_lot_capacities():
 
 
 @events_bp.route("/allocate_demands", methods=["POST"])
+@check_edit_rights
 def allocate_demands():
     try:
         data = request.json
@@ -863,7 +864,6 @@ def allocate_demands():
         logger.error(e)
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
 
 @events_bp.route("/allocations", methods=["DELETE"])
 def delete_allocations_for_dates():

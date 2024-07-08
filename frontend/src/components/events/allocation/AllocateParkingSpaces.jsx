@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Box,
@@ -11,13 +12,12 @@ import {
   CircularProgress,
   Tooltip,
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
 import Demand from "./Demand.jsx";
 import Allocation from "./Allocation";
 import Recommendation from "./Recommendation";
 import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
-import "../styles/events.css";
 import AddAllocationPopup from "./AddAllocationPopup";
+import PermissionPopup from "../../common/PermissionPopup";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 import AssistantRoundedIcon from "@mui/icons-material/AssistantRounded";
@@ -29,9 +29,11 @@ import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
+import "../styles/events.css";
 
 const AllocateParkingSpaces = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [demands, setDemands] = useState([]);
   const [event, setEvent] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -62,7 +64,10 @@ const AllocateParkingSpaces = () => {
     runtime: false,
     disassembly: false,
   });
-  const navigate = useNavigate();
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
+  });
 
   const fetchDemands = useCallback(async () => {
     try {
@@ -246,10 +251,19 @@ const AllocateParkingSpaces = () => {
     });
 
     try {
-      const response = await axios.post("/api/events/allocate_demands", {
-        allocations: formattedAllocations,
-        event_id: id,
-      });
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "/api/events/allocate_demands",
+        {
+          allocations: formattedAllocations,
+          event_id: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.status === 200 || response.status === 201) {
         setSnackbarMessage("Allocations saved successfully");
         setSnackbarSeverity("success");
@@ -259,10 +273,17 @@ const AllocateParkingSpaces = () => {
         setSnackbarSeverity("error");
       }
     } catch (error) {
-      setSnackbarMessage(
-        error.response?.data?.error || "Failed to save allocations"
-      );
-      setSnackbarSeverity("error");
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
+      } else {
+        setSnackbarMessage(
+          error.response?.data?.error || "Failed to save allocations"
+        );
+        setSnackbarSeverity("error");
+      }
     } finally {
       setIsSaving(false);
       setSnackbarOpen(true);
@@ -781,6 +802,11 @@ const AllocateParkingSpaces = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };
