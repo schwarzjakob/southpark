@@ -230,6 +230,124 @@ def get_event_status():
         return jsonify({"error": str(e)}), 500
 
 
+@events_bp.route("/events_status_daily", methods=["GET"])
+def get_event_status_daily():
+    try:
+        event_id = request.args.get("event_id")
+        if not event_id:
+            return jsonify({"error": "Event ID is required"}), 400
+
+        query = text(
+            """
+        WITH daily_capacity AS (
+            SELECT 
+                generate_series(pc.valid_from, pc.valid_to, '1 day'::interval)::date AS date,
+                SUM(pc.capacity) AS total_capacity
+            FROM public.parking_lot_capacity pc
+            GROUP BY date
+        ),
+        daily_demands AS (
+            SELECT 
+                vd.date,
+                SUM(vd.demand) AS total_demand
+            FROM public.visitor_demand vd
+            GROUP BY vd.date
+        ),
+        daily_allocations AS (
+            SELECT 
+                pa.date,
+                SUM(pa.allocated_capacity) AS total_allocated_demand
+            FROM public.parking_lot_allocation pa
+            GROUP BY pa.date
+        ),
+        event_specific_demands AS (
+            SELECT 
+                vd.event_id,
+                vd.date,
+                SUM(vd.demand) AS total_event_demand
+            FROM public.visitor_demand vd
+            WHERE vd.event_id = :event_id
+            GROUP BY vd.event_id, vd.date
+        ),
+        event_specific_allocations AS (
+            SELECT 
+                pa.event_id,
+                pa.date,
+                SUM(pa.allocated_capacity) AS total_event_allocated_demand
+            FROM public.parking_lot_allocation pa
+            WHERE pa.event_id = :event_id
+            GROUP BY pa.event_id, pa.date
+        ),
+        combined AS (
+            SELECT
+                d.date,
+                COALESCE(dc.total_capacity, 0) AS total_capacity,
+                COALESCE(dd.total_demand, 0) AS total_demand,
+                COALESCE(da.total_allocated_demand, 0) AS total_allocated_demand
+            FROM
+                generate_series(
+                    (SELECT MIN(valid_from) FROM public.parking_lot_capacity),
+                    (SELECT MAX(valid_to) FROM public.parking_lot_capacity),
+                    '1 day'::interval
+                ) AS d(date)
+            LEFT JOIN daily_capacity dc ON d.date = dc.date
+            LEFT JOIN daily_demands dd ON d.date = dd.date
+            LEFT JOIN daily_allocations da ON d.date = da.date
+        ),
+        event_periods AS (
+            SELECT
+                e.id AS event_id,
+                e.name,
+                generate_series(e.assembly_start_date, e.disassembly_end_date, '1 day'::interval)::date AS date
+            FROM public.event e
+            WHERE e.id = :event_id
+        ),
+        event_daily_status AS (
+            SELECT
+                ep.event_id,
+                ep.name,
+                ep.date,
+                c.total_capacity,
+                c.total_demand,
+                c.total_allocated_demand,
+                COALESCE(esd.total_event_demand, 0) AS total_event_demand,
+                COALESCE(esa.total_event_allocated_demand, 0) AS total_event_allocated_demand,
+                CASE
+                    WHEN COALESCE(esd.total_event_demand, 0) = 0 THEN 'no_demands'
+                    WHEN c.total_demand > c.total_capacity THEN 'not_enough_capacity'
+                    WHEN COALESCE(esd.total_event_demand, 0) > 0 AND COALESCE(esa.total_event_allocated_demand, 0) < COALESCE(esd.total_event_demand, 0) THEN 'demands_to_allocate'
+                    ELSE 'ok'
+                END AS status
+            FROM
+                event_periods ep
+            LEFT JOIN combined c ON ep.date = c.date
+            LEFT JOIN event_specific_demands esd ON ep.event_id = esd.event_id AND ep.date = esd.date
+            LEFT JOIN event_specific_allocations esa ON ep.event_id = esa.event_id AND ep.date = esa.date
+        )
+        SELECT
+            event_id,
+            name,
+            date,
+            total_capacity,
+            total_demand,
+            total_allocated_demand,
+            total_event_demand,
+            total_event_allocated_demand,
+            status
+        FROM event_daily_status
+        ORDER BY date;
+        """
+        )
+
+        df = pd.read_sql_query(query, db.engine, params={"event_id": event_id})
+        daily_status = df.to_dict(orient="records")
+
+        return jsonify(daily_status), 200
+    except Exception as e:
+        logger.error(e)
+        return jsonify({"error": str(e)}), 500
+
+
 @events_bp.route("/occupied_halls", methods=["GET"])
 def get_occupied_halls():
     try:

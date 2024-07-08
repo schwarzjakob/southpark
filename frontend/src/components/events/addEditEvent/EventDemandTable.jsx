@@ -4,6 +4,7 @@ import {
   Box,
   Typography,
   Paper,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -11,6 +12,7 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  Tooltip,
   Button,
   TextField,
   Alert,
@@ -28,14 +30,17 @@ import {
   NumbersRounded as NumbersRoundedIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
-import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
-import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
-import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
-import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
-import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
-import CircleIcon from "@mui/icons-material/Circle";
-import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
-import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
+import {
+  ArrowCircleUpRounded as ArrowCircleUpRoundedIcon,
+  PlayCircleFilledRounded as PlayCircleFilledRoundedIcon,
+  ArrowCircleDownRounded as ArrowCircleDownRoundedIcon,
+  FunctionsRounded as FunctionsRoundedIcon,
+  LocalParkingRounded as LocalParkingRoundedIcon,
+  Circle as CircleIcon,
+  SaveRounded as SaveRoundedIcon,
+  ClearRounded as ClearRoundedIcon,
+  InfoOutlined as InfoOutlinedIcon,
+} from "@mui/icons-material";
 
 import PropTypes from "prop-types";
 
@@ -49,6 +54,7 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
 
   const [demands, setDemands] = useState([]);
   const [allocations, setAllocations] = useState([]);
+  const [dailyStatuses, setDailyStatuses] = useState([]);
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("date");
   const [notification, setNotification] = useState("");
@@ -83,8 +89,23 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       }
     };
 
-    fetchDemands();
-    fetchAllocations();
+    const fetchDailyStatus = async () => {
+      try {
+        const response = await axios.get(`/api/events/events_status_daily`, {
+          params: { event_id: eventId },
+        });
+        if (response.status === 200) {
+          setDailyStatuses(response.data);
+        } else {
+          setDailyStatuses([]);
+        }
+      } catch (error) {
+        console.error("Error fetching daily status data:", error);
+      }
+    };
+
+    fetchAllocations(), fetchDemands();
+    fetchDailyStatus();
   }, [eventId]);
 
   const handleRequestSort = (property) => {
@@ -195,8 +216,14 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
       const allocation = allocations.find(
         (alloc) => formatDate(alloc.date) === formatDate(demand.date),
       );
-      let status;
-      if (totalDemand === 0) {
+      const dailyStatus = dailyStatuses.find(
+        (status) => formatDate(status.date) === formatDate(demand.date),
+      );
+
+      let status = "no_demands";
+      if (dailyStatus) {
+        status = dailyStatus.status;
+      } else if (totalDemand === 0) {
         status = "no_demands";
       } else if (!allocation || allocation.allocated_capacity === 0) {
         status = "not_allocated";
@@ -298,36 +325,28 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
     return `${totalAllocated}/${demandTotal}`;
   };
 
-  const calculateStatus = (demandDate, demandTotal) => {
-    if (demandTotal === 0) return "no_demands";
-    if (!Array.isArray(allocations)) return "not_allocated";
-
-    const allocationsForDate = allocations.filter(
-      (alloc) => formatDate(alloc.date) === formatDate(demandDate),
-    );
-
-    const totalAllocated = allocationsForDate.reduce(
-      (acc, alloc) => acc + alloc.allocated_capacity,
-      0,
-    );
-
-    const ratio = totalAllocated / demandTotal;
-    if (totalAllocated === 0) return "not_allocated";
-    if (ratio === 1) return "allocated";
-    return "partially_allocated";
+  const getStatusCircle = (status) => {
+    let color;
+    switch (status) {
+      case "ok":
+        color = "green";
+        break;
+      case "not_enough_capacity":
+        color = "red";
+        break;
+      case "demands_to_allocate":
+        color = "orange";
+        break;
+      case "no_demands":
+      default:
+        color = "grey";
+    }
+    return <CircleIcon style={{ color }} />;
   };
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case "no_demands":
-        return (
-          <Box className="status-label">
-            <Typography className="status-label" variant="body2">
-              No demands
-            </Typography>
-          </Box>
-        );
-      case "allocated":
+      case "ok":
         return (
           <Box className="status-label">
             <Typography className="status-label" variant="body2">
@@ -335,43 +354,32 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
             </Typography>
           </Box>
         );
-      case "partially_allocated":
+      case "not_enough_capacity":
         return (
           <Box className="status-label">
             <Typography className="status-label" variant="body2">
-              Partly allocated
+              Not enough capacity
             </Typography>
           </Box>
         );
-      case "not_allocated":
+      case "demands_to_allocate":
         return (
           <Box className="status-label">
             <Typography className="status-label" variant="body2">
-              Not allocated
+              Demands to allocate
             </Typography>
           </Box>
         );
+      case "no_demands":
       default:
-        return null;
+        return (
+          <Box className="status-label">
+            <Typography className="status-label" variant="body2">
+              No demands
+            </Typography>
+          </Box>
+        );
     }
-  };
-
-  const getStatusCircle = (status) => {
-    let color;
-    switch (status) {
-      case "allocated":
-        color = "green";
-        break;
-      case "partially_allocated":
-        color = "orange";
-        break;
-      case "not_allocated":
-        color = "red";
-        break;
-      default:
-        color = "grey";
-    }
-    return <CircleIcon style={{ color }} />;
   };
 
   return (
@@ -519,6 +527,28 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                     className="header-icon"
                   />
                   Status
+                  <Tooltip
+                    title={
+                      <>
+                        Fully allocated: All demands are allocated.
+                        <br />
+                        Demands to allocate: Some demands need to be allocated.
+                        <br />
+                        Not enough capacity: There is not enough capacity to
+                        meet the demands for all events on this day.
+                        <br />
+                        Demands missing: No demands have been recorded.
+                      </>
+                    }
+                    arrow
+                  >
+                    <IconButton size="small" className="infoHover__Container">
+                      <InfoOutlinedIcon
+                        fontSize="small"
+                        className="infoHover__Icon"
+                      />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </TableCell>
             </TableRow>
@@ -612,10 +642,18 @@ const EventDemandTable = ({ eventId, setIsEditingDemands }) => {
                         <TableCell>
                           <Box display="flex" alignItems="center">
                             {getStatusCircle(
-                              calculateStatus(demand.date, demand.demand),
+                              dailyStatuses.find(
+                                (status) =>
+                                  formatDate(status.date) ===
+                                  formatDate(demand.date),
+                              )?.status,
                             )}
                             {getStatusLabel(
-                              calculateStatus(demand.date, demand.demand),
+                              dailyStatuses.find(
+                                (status) =>
+                                  formatDate(status.date) ===
+                                  formatDate(demand.date),
+                              )?.status,
                             )}
                           </Box>
                         </TableCell>
