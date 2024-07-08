@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import DateRangePicker from "../controls/DateRangePicker";
+import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
+import PermissionPopup from "../common/PermissionPopup.jsx";
 import axios from "axios";
+import dayjs from "dayjs";
 import {
   Box,
   Typography,
@@ -15,8 +20,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Alert,
 } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
 import {
   DirectionsCarFilledRounded as DirectionsCarFilledIcon,
   LocalParkingRounded as LocalParkingRoundedIcon,
@@ -26,11 +31,8 @@ import {
   EditRounded as EditRoundedIcon,
   DeleteForeverRounded as DeleteForeverRoundedIcon,
   SaveRounded as SaveRoundedIcon,
+  ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBackRounded";
-import dayjs from "dayjs";
-import DateRangePicker from "../controls/DateRangePicker";
-import CustomBreadcrumbs from "../common/BreadCrumbs.jsx";
 import "./styles/parkingSpaces.css";
 
 const TITLE = "Edit Capacity";
@@ -53,11 +55,14 @@ const EditParkingSpaceCapacity = () => {
   const [open, setOpen] = useState(false);
   const [existingCapacities, setExistingCapacities] = useState([]);
   const navigate = useNavigate();
-
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const parkingLotId = searchParams.get("parkinglotId");
   const capacityId = searchParams.get("capacityId");
+  const [permissionError, setPermissionError] = useState({
+    open: false,
+    message: "",
+  });
 
   useEffect(() => {
     const fetchCapacity = async () => {
@@ -165,6 +170,7 @@ const EditParkingSpaceCapacity = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
 
     const overlappingCapacities = checkForOverlaps();
 
@@ -201,17 +207,36 @@ const EditParkingSpaceCapacity = () => {
       : null;
 
     try {
-      await axios.put(`/api/parking/capacities/${capacityId}`, {
-        ...capacity,
-        valid_from: updatedValidFrom,
-        valid_to: updatedValidTo,
-      });
+      await axios.put(
+        `/api/parking/capacities/${capacityId}`,
+        {
+          ...capacity,
+          valid_from: updatedValidFrom,
+          valid_to: updatedValidTo,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.error) {
-        setError(error.response.data.error);
+      if (error.response && error.response.status === 403) {
+        setPermissionError({
+          open: true,
+          message: "You do not have permission to perform this action.",
+        });
       } else {
-        setError("Error updating capacity.");
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          setError(error.response.data.error);
+        } else {
+          setError("Error updating capacity.");
+        }
       }
     }
   };
@@ -257,12 +282,10 @@ const EditParkingSpaceCapacity = () => {
           </Typography>
         </Box>
         {error && (
-          <Typography
-            color="error"
-            variant="body1"
-            dangerouslySetInnerHTML={{ __html: error }}
-          />
-        )}
+          <Alert severity="error">
+            <span dangerouslySetInnerHTML={{ __html: error }} />
+          </Alert>
+        )}{" "}
         <Box mb={2} display="flex" gap="10px" alignItems="center">
           <Typography variant="h6" className="parking-lot-box">
             {parkingLot.name}
@@ -399,6 +422,11 @@ const EditParkingSpaceCapacity = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <PermissionPopup
+        open={permissionError.open}
+        onClose={() => setPermissionError({ ...permissionError, open: false })}
+        message={permissionError.message}
+      />
     </Box>
   );
 };
