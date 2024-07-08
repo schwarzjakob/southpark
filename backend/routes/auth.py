@@ -14,14 +14,13 @@ logger = logging.getLogger(__name__)
 
 SECRET_KEY = "XP&O%<w}?g,uqY[lM/s/kc=?wU2Mj$"
 
-ACCESS_TOKENS = {"MMT"}
-
+ACCESS_TOKENS = {"mmt"}
+ADMIN_TOKENS = {"southpark_admin!"}
 
 def check_edit_rights(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get("Authorization")
-        print(f"Authorization Header: {auth_header}")
         if not auth_header:
             return jsonify({"message": "Authorization header is missing!"}), 403
         try:
@@ -46,9 +45,9 @@ def check_edit_rights(f):
 @auth_bp.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
-    access_token = data.get("access_token")
+    access_token = data.get("access_token").lower()
 
-    if not access_token or access_token not in ACCESS_TOKENS:
+    if not access_token or (access_token not in ACCESS_TOKENS and access_token not in ADMIN_TOKENS):
         return jsonify({"message": "Invalid or missing access token"}), 403
 
     username = data.get("username")
@@ -71,14 +70,14 @@ def register():
         return jsonify({"message": "Password must contain at least 1 digit"}), 400
 
     if len(re.findall(r"\W", password)) < 1:
-        return (
-            jsonify({"message": "Password must contain at least 1 special character"}),
-            400,
-        )
+        return jsonify({"message": "Password must contain at least 1 special character"}), 400
 
     hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
 
     new_user = User(username=username, email=email, password_hash=hashed_password)
+
+    if access_token in ADMIN_TOKENS:
+        new_user.edit_rights = True
 
     db.session.add(new_user)
     db.session.commit()
@@ -99,8 +98,6 @@ def register():
     db.session.commit()
 
     return jsonify({"message": "User registered and logged in successfully", "token": token, "username": new_user.username, "email": new_user.email}), 201
-
-
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -164,6 +161,7 @@ def refresh_token():
         return jsonify({"message": "Token has expired"}), 401
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
+
 
 @auth_bp.route("/user", methods=["GET"])
 def get_user():
