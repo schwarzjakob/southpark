@@ -99,7 +99,7 @@ const getStatusText = (status) => {
     case "no_demands":
       return "Demands missing";
     case "ok":
-      return "O.K.";
+      return "Fully allocated";
     case "demands_to_allocate":
       return "Demands to allocate";
     case "not_enough_capacity":
