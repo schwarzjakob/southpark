@@ -68,55 +68,57 @@ const EditParkingSpaceCapacity = () => {
     const fetchCapacity = async () => {
       try {
         const response = await axios.get(
-          `/api/parking/capacities/${parkingLotId}`
+          `/api/parking/capacities/${parkingLotId}`,
         );
-        setExistingCapacities(response.data);
         const capacityData = response.data.find(
-          (item) => item.id === parseInt(capacityId)
+          (item) => item.id === parseInt(capacityId),
         );
-        if (capacityData) {
-          setCapacity({
-            ...capacityData,
-            utilization_type: capacityData.utilization_type || "parking",
-            valid_from: capacityData.valid_from
-              ? dayjs(capacityData.valid_from)
-              : null,
-            valid_to: capacityData.valid_to
-              ? dayjs(capacityData.valid_to)
-              : null,
-          });
-          setOriginalCapacity({
-            ...capacityData,
-            utilization_type: capacityData.utilization_type || "parking",
-            valid_from: capacityData.valid_from
-              ? dayjs(capacityData.valid_from)
-              : null,
-            valid_to: capacityData.valid_to
-              ? dayjs(capacityData.valid_to)
-              : null,
-          });
-        } else {
-          setError("Capacity not found.");
+        if (!capacityData) {
+          navigate("/404");
+          return;
         }
+        setExistingCapacities(response.data);
+        setCapacity({
+          ...capacityData,
+          utilization_type: capacityData.utilization_type || "parking",
+          valid_from: capacityData.valid_from
+            ? dayjs(capacityData.valid_from)
+            : null,
+          valid_to: capacityData.valid_to ? dayjs(capacityData.valid_to) : null,
+        });
+        setOriginalCapacity({
+          ...capacityData,
+          utilization_type: capacityData.utilization_type || "parking",
+          valid_from: capacityData.valid_from
+            ? dayjs(capacityData.valid_from)
+            : null,
+          valid_to: capacityData.valid_to ? dayjs(capacityData.valid_to) : null,
+        });
       } catch (error) {
         console.error("Error fetching capacity data:", error);
         setError("Error fetching capacity data.");
+        navigate("/404");
       }
     };
 
     const fetchParkingLot = async () => {
       try {
         const response = await axios.get(`/api/parking/space/${parkingLotId}`);
+        if (!response.data) {
+          navigate("/404");
+          return;
+        }
         setParkingLot(response.data);
       } catch (error) {
         console.error("Error fetching parking lot data:", error);
         setError("Error fetching parking lot data.");
+        navigate("/404");
       }
     };
 
     fetchCapacity();
     fetchParkingLot();
-  }, [parkingLotId, capacityId]);
+  }, [parkingLotId, capacityId, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -146,7 +148,7 @@ const EditParkingSpaceCapacity = () => {
           (currentTo >= dayjs(cap.valid_from) &&
             currentTo <= dayjs(cap.valid_to)) ||
           (currentFrom <= dayjs(cap.valid_from) &&
-            currentTo >= dayjs(cap.valid_to)))
+            currentTo >= dayjs(cap.valid_to))),
     );
 
     return overlappingCapacities;
@@ -160,7 +162,7 @@ const EditParkingSpaceCapacity = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       )
     ) {
       return;
@@ -181,13 +183,13 @@ const EditParkingSpaceCapacity = () => {
             `<a href="/parking_space/capacity/edit/?capacityId=${
               cap.id
             }&parkinglotId=${parkingLotId}" target="_blank">${dayjs(
-              cap.valid_from
+              cap.valid_from,
             ).format("DD/MM/YYYY")} - ${dayjs(cap.valid_to).format(
-              "DD/MM/YYYY"
-            )}</a><br>`
+              "DD/MM/YYYY",
+            )}</a><br>`,
         )
         .join(
-          ", "
+          ", ",
         )}. Please choose a different time range or edit the conflicting capacities first. <br>`;
       setError(errorMessage);
       return;
@@ -218,7 +220,7 @@ const EditParkingSpaceCapacity = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       navigate(`/parking_space/${parkingLotId}`);
     } catch (error) {

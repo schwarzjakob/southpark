@@ -39,6 +39,10 @@ const ParkingSpace = () => {
     const fetchParkingSpace = async () => {
       try {
         const response = await axios.get(`/api/parking/space/${id}`);
+        if (response.status === 204 || !response.data) {
+          navigate("/404");
+          return;
+        }
         setParkingSpace(response.data);
         setBreadcrumbLinks([
           { label: "Parking Spaces", path: "/parking_spaces" },
@@ -47,13 +51,14 @@ const ParkingSpace = () => {
       } catch (error) {
         console.error("Error fetching parking space data:", error);
         setError("Error fetching parking space data.");
+        navigate("/404");
       } finally {
         setLoading(false);
       }
     };
 
     fetchParkingSpace();
-  }, [id]);
+  }, [id, navigate]);
 
   if (loading) {
     return (
