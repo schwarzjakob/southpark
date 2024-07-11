@@ -18,6 +18,7 @@
 
 .outer-container {
   padding: 2rem !important;
+  margin-bottom: 1rem !important;
 }
 @media screen and (min-width: 768px) {
   .sub-heading-text {
@@ -33,5 +34,9 @@
   padding-bottom: 1rem !important;
 }
 .team-members-conter {
+  justify-content: center !important;
+}
+
+.team-members-container {
   justify-content: center !important;
 }
