@@ -1,20 +1,21 @@
 import datetime
 import logging
 import re
+from functools import wraps
+
 import jwt
 from extensions import db
 from flask import Blueprint, jsonify, request
+from models import User
 from utils.helpers import log_user_activity
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import User 
-from functools import wraps
 
 auth_bp = Blueprint("auth", __name__)
 logger = logging.getLogger(__name__)
 
 SECRET_KEY = "XP&O%<w}?g,uqY[lM/s/kc=?wU2Mj$"
 
-ACCESS_TOKENS = {"mmt"}
+ACCESS_TOKENS = {"mmt", "cup24"}
 ADMIN_TOKENS = {"southpark_admin!"}
 
 def check_edit_rights(f):

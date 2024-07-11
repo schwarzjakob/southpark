@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link as RouterLink, useLocation } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -27,6 +27,15 @@ const Register = () => {
   const [message, setMessage] = useState(null);
   const [severity, setSeverity] = useState("success");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    if (token) {
+      setAccessToken(token);
+    }
+  }, [location.search]);
 
   const passwordRules = [
     {
