@@ -364,7 +364,40 @@ const TimelineSlider = ({
       ) : null}
       <Box
         className="timeline-container"
-        sx={{ height: `${eventRows.length * ROW_HEIGHT + OFFSET + 4}px` }}
+        sx={{
+          height: `${
+            (Math.max(
+              ...events
+                .filter(
+                  (event) =>
+                    dayjs(event.assembly_start_date).isBetween(
+                      dayjs(selectedDate).subtract(18, "day"),
+                      dayjs(selectedDate).add(18, "day"),
+                      "day",
+                      "[]",
+                    ) ||
+                    dayjs(event.runtime_start_date).isBetween(
+                      dayjs(selectedDate).subtract(18, "day"),
+                      dayjs(selectedDate).add(18, "day"),
+                      "day",
+                      "[]",
+                    ) ||
+                    dayjs(event.disassembly_end_date).isBetween(
+                      dayjs(selectedDate).subtract(18, "day"),
+                      dayjs(selectedDate).add(18, "day"),
+                      "day",
+                      "[]",
+                    ),
+                )
+                .map((event) => event.row),
+              0,
+            ) +
+              3) *
+              ROW_HEIGHT +
+            OFFSET +
+            4
+          }px`,
+        }}
       >
         {typeof selectedEventId === "undefined" ? (
           <Box
