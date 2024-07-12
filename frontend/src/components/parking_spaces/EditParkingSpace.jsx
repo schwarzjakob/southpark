@@ -45,7 +45,6 @@ const EditParkingSpace = () => {
 
   const [originalParkingSpace, setOriginalParkingSpace] = useState(null);
   const [error, setError] = useState("");
-  const [notFound, setNotFound] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -55,7 +54,7 @@ const EditParkingSpace = () => {
         const response = await axios.get(`/api/parking/space/${id}`);
         const data = response.data;
         if (!data) {
-          setNotFound(true);
+          navigate("/404");
           return;
         }
         if (!["asphalt", "gravel", "field"].includes(data.surface_material)) {
@@ -66,12 +65,12 @@ const EditParkingSpace = () => {
       } catch (error) {
         console.error("Error fetching parking space data:", error);
         setError("Error fetching parking space data.");
-        setNotFound(true);
+        navigate("/404");
       }
     };
 
     fetchParkingSpace();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -106,7 +105,7 @@ const EditParkingSpace = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       )
     ) {
       return;
@@ -150,23 +149,6 @@ const EditParkingSpace = () => {
     { label: parkingSpace.name, path: `/parking_space/${id}` },
     { label: "Edit", path: `/parking_space/${id}/edit` },
   ];
-
-  if (notFound) {
-    return (
-      <Box className="form-width">
-        <Typography color="error" variant="h4">
-          Parking Space Not Found
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/parking_spaces")}
-        >
-          Back to Parking Spaces
-        </Button>
-      </Box>
-    );
-  }
 
   return (
     <Box className="form-width">

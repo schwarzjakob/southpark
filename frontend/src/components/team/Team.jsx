@@ -16,6 +16,24 @@ import eric from "../../assets/team/eric.jpeg";
 import tuong from "../../assets/team/tuong.jpeg";
 import kenny from "../../assets/team/kenny.jpeg";
 
+const iframeContainerStyle = {
+  position: "relative",
+  paddingBottom: "56.25%",
+  height: 0,
+  overflow: "hidden",
+  maxWidth: "100%",
+  background: "#000",
+};
+
+const iframeStyle = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  border: 0,
+};
+
 const CONTENT = {
   headline: "Meet the Team Behind Project SouthPark",
   description:
@@ -144,6 +162,25 @@ const renderTeam = () => {
               </Card>
             </Grid>
           ))}
+        </Grid>
+        <Grid item xs={12}>
+          <Typography
+            textAlign="left"
+            marginBottom="1.5rem"
+            variant="h4"
+            fontWeight="bold"
+            className="section-title"
+          >
+            After Movie
+          </Typography>
+          <div style={iframeContainerStyle}>
+            <iframe
+              style={iframeStyle}
+              src="https://www.youtube.com/embed/aKIz6rKQoCw?si=aHi_BXNF5RlrHodt"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            ></iframe>
+          </div>
         </Grid>
         <Grid
           display="flex"

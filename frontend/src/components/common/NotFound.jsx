@@ -1,17 +1,8 @@
-import Lottie from "react-lottie";
-import animationData from "../../assets/404.json";
 import Box from "@mui/material/Box";
+import gif404 from "../../assets/404.gif";
+import { useEffect } from "react";
 
 const NotFound = () => {
-  const defaultOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
-  };
-
   const containerStyle = {
     display: "flex",
     justifyContent: "center",
@@ -21,16 +12,20 @@ const NotFound = () => {
     margin: "5 ",
   };
 
-  const animationStyle = {
+  const gifStyle = {
     width: "100%",
     maxWidth: "600px",
   };
 
+  useEffect(() => {
+    document.body.style.backgroundColor = "#FDFDFD";
+  }, []);
+
   return (
     <Box maxWidth="30rem" marginLeft="auto" marginRight="auto">
       <div style={containerStyle}>
-        <div style={animationStyle}>
-          <Lottie options={defaultOptions} />
+        <div style={gifStyle}>
+          <img src={gif404} alt="404 Not Found" style={gifStyle} />
         </div>
       </div>
     </Box>

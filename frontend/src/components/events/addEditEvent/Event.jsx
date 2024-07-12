@@ -6,6 +6,7 @@ import CustomBreadcrumbs from "../../common/BreadCrumbs.jsx";
 import EventDemandTable from "./EventDemandTable.jsx";
 import EventMapSection from "./EventMapSection.jsx";
 import Allocations from "./Allocations.jsx";
+
 import {
   Box,
   Typography,
@@ -53,6 +54,11 @@ const Event = () => {
         const response = await axios.get(`/api/events/event/${id}`);
         const eventData = response.data;
 
+        if (!eventData) {
+          navigate("/404");
+          return;
+        }
+
         eventData.assembly_start_date = formatDateToISO(
           eventData.assembly_start_date,
         );
@@ -95,13 +101,14 @@ const Event = () => {
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
+        navigate("/404");
       } finally {
         setEventLoading(false);
       }
     };
 
     fetchEvent();
-  }, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
     if (location.state?.selectedDate) {

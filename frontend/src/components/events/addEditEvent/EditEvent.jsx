@@ -75,21 +75,29 @@ const EditEvent = () => {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/events/event/${id}`);
-        setEvent(response.data);
-        setOriginalEvent(response.data);
+        const eventData = response.data;
+
+        if (!eventData) {
+          navigate("/404");
+          return;
+        }
+
+        setEvent(eventData);
+        setOriginalEvent(eventData);
         fetchOccupiedHalls(
           id,
-          response.data.assembly_start_date,
-          response.data.disassembly_end_date
+          eventData.assembly_start_date,
+          eventData.disassembly_end_date,
         );
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Error fetching event data.");
+        navigate("/404");
       }
     };
 
     fetchEvent();
-  }, [id]);
+  }, [id, navigate]);
 
   const fetchOccupiedHalls = async (eventId, startDate, endDate) => {
     if (!startDate || !endDate) return;
@@ -102,7 +110,7 @@ const EditEvent = () => {
             start_date: startDate,
             end_date: endDate,
           },
-        }
+        },
       );
       setOccupiedHalls(response.data);
     } catch (error) {
@@ -118,7 +126,7 @@ const EditEvent = () => {
     if (
       hasUnsavedChanges() &&
       !window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       )
     ) {
       return;
@@ -208,7 +216,7 @@ const EditEvent = () => {
     setEvent(updatedEvent);
     fetchOccupiedHalls(
       updatedEvent.assembly_start_date,
-      updatedEvent.disassembly_end_date
+      updatedEvent.disassembly_end_date,
     );
   };
 
@@ -236,10 +244,10 @@ const EditEvent = () => {
       ];
 
       const originalPhase = phases.findIndex(
-        (phase) => originalDate >= phase.start && originalDate <= phase.end
+        (phase) => originalDate >= phase.start && originalDate <= phase.end,
       );
       const newPhase = phases.findIndex(
-        (phase) => newDate >= phase.start && newDate <= phase.end
+        (phase) => newDate >= phase.start && newDate <= phase.end,
       );
 
       return originalPhase !== newPhase;
@@ -382,7 +390,7 @@ const EditEvent = () => {
             }}
           >
             {hall}
-          </TableCell>
+          </TableCell>,
         );
       }
       hallMatrix.push(<TableRow key={row}>{rowData}</TableRow>);
