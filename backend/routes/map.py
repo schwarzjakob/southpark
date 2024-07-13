@@ -1,17 +1,31 @@
 import logging
 from datetime import datetime, timedelta
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, current_app, jsonify
+from flask_caching import Cache
 from utils.helpers import get_data
 
 map_bp = Blueprint("map", __name__)
 logger = logging.getLogger(__name__)
 
+cache = Cache(config={'CACHE_TYPE': 'simple'})
 
-@map_bp.route("/map_data/<date>", methods=["GET"])
-def get_map_data(date):
+def cache_initial_data():
+    for year in range(2024, 2024):
+        for quarter in range(1, 5):
+            print(f"Caching map-data for {year}-Q{quarter}")
+            year_quarter = f"{year}-Q{quarter}"
+            cache_key = f"view/{year_quarter}"
+            with current_app.app_context():
+                if not cache.get(cache_key):
+                    data = fetch_data_for_quarter(year_quarter)
+                    cache.set(cache_key, data, timeout=86400)
+
+def fetch_data_for_quarter(year_quarter):
     try:
-        date = datetime.strptime(date, "%Y-%m-%d").date()
+        year, quarter = map(int, year_quarter.split('-Q'))
+        quarter_start_month = 3 * (quarter - 1) + 1
+        date = datetime(year, quarter_start_month, 15).date()
         start_date = date - timedelta(days=365)
         end_date = date + timedelta(days=365)
 
@@ -131,8 +145,18 @@ def get_map_data(date):
                 "entrances": entrances_data,
             },
         }
-
-        return jsonify(data), 200
+        
+        return data
     except Exception as e:
-        print("Error occurred:", str(e))
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error occurred: {str(e)}")
+        return {"error": str(e)}
+
+@map_bp.route("/map_data/<year_quarter>", methods=["GET"])
+@cache.cached(timeout=604800)
+def get_map_data(year_quarter):
+    cache_key = f"view/{year_quarter}"
+    data = cache.get(cache_key)
+    if not data:
+        data = fetch_data_for_quarter(year_quarter)
+        cache.set(cache_key, data, timeout=86400)
+    return jsonify(data), 200

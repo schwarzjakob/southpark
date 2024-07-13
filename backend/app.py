@@ -16,14 +16,16 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    from routes.allocation import allocation_bp
     from routes.auth import auth_bp
     from routes.dashboard import dashboard_bp
     from routes.data import data_bp
     from routes.events import events_bp
-    from routes.map import map_bp
+    from routes.map import cache, cache_initial_data, map_bp
     from routes.parking import parking_bp
     from routes.recommendation import recommendation_bp
-    from routes.allocation import allocation_bp
+
+    cache.init_app(app)
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(events_bp, url_prefix="/events")
@@ -37,6 +39,8 @@ def create_app():
     with app.app_context():
         for rule in app.url_map.iter_rules():
             print(f"{rule.endpoint}: {rule}")
+            
+        cache_initial_data()
 
     return app
 

@@ -20,7 +20,7 @@ const filterDataForSelectedDay = (data, date) => {
   ).filter((allocation) => dayjs(allocation.date).isSame(selectedDay, "day"));
 
   const filteredParkingLotsCapacity = (data.parking_lots_capacity || []).filter(
-    (capacity) => dayjs(capacity.date).isSame(selectedDay, "day")
+    (capacity) => dayjs(capacity.date).isSame(selectedDay, "day"),
   );
 
   const filteredParkingLotsOccupancy = (
@@ -64,9 +64,12 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
         setReloading(true);
       }
       try {
-        const { data } = await axios.get(
-          `/api/map/map_data/${dayjs(date).format("YYYY-MM-DD")}`
-        );
+        const year = dayjs(date).year();
+        const month = dayjs(date).month();
+        const quarter = Math.floor(month / 3) + 1;
+        const formattedDate = `${year}-Q${quarter}`;
+
+        const { data } = await axios.get(`/api/map/map_data/${formattedDate}`);
         setMapData(data);
 
         const start = dayjs(date).subtract(365, "days");
@@ -82,7 +85,7 @@ const EventMapSection = ({ event, events, selectedDate, setSelectedDate }) => {
         setReloading(false);
       }
     },
-    [initialLoading]
+    [initialLoading],
   );
 
   useEffect(() => {

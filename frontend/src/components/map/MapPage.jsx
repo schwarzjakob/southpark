@@ -50,7 +50,12 @@ const MapPage = () => {
         setReloading(true);
       }
       try {
-        const { data } = await axios.get(`/api/map/map_data/${date}`);
+        const year = dayjs(date).year();
+        const month = dayjs(date).month();
+        const quarter = Math.floor(month / 3) + 1;
+        const formattedDate = `${year}-Q${quarter}`;
+
+        const { data } = await axios.get(`/api/map/map_data/${formattedDate}`);
         setMapData(data || {});
 
         const start = dayjs(date).subtract(365, "days");
@@ -61,7 +66,6 @@ const MapPage = () => {
       } finally {
         if (initialLoading) {
           setLoading(false);
-
           setInitialLoading(false);
         }
         setReloading(false);
