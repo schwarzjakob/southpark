@@ -66,6 +66,8 @@ cd southpark
 
 ### Setting Up a Python Virtual Environment
 
+#### Using venv
+
 After cloning the repository, set up a Python virtual environment by running:
 
 ```bash
@@ -76,7 +78,20 @@ pip install -r backend/requirements.txt
 
 Make sure the virtual environment is running while you are working on the project.
 
-**Disclaimer:** The choice of technology and environment setup may change as the project evolves and the full tech stack is finalized. Future updates may shift the development requirements, which will be reflected in this documentation accordingly.
+#### Using conda
+
+For users who prefer using conda, you can set up a virtual environment by running:
+
+```bash
+conda create --name env-name python=3.x
+# Replace 'env-name' with your environment name and '3.x' with the desired Python version
+conda activate env-name
+pip install -r backend/requirements.txt
+```
+
+Ensure the conda environment is active while working on the project.
+
+**Disclamer:** The choice of technology and environment setup may change as the project evolves and the full tech stack is finalized. Future updates may shift the development requirements, which will be reflected in this documentation accordingly.
 
 ### Setting up the Backend
 
