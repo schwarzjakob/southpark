@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 
 def cache_initial_data():
-    for year in range(2024, 2024):
+    for year in range(2020, 2035):
         for quarter in range(1, 5):
             print(f"Caching map-data for {year}-Q{quarter}")
             year_quarter = f"{year}-Q{quarter}"
