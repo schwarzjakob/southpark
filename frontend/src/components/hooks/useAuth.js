@@ -8,12 +8,13 @@ const useAuth = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
+    const demoToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ik1NVCBTdHVkZW50IiwiZW1haWwiOiJtbXRAc291dGh2YXJrLnRpcnRleS5jb20ifQ.s5fKBr0Pn8iQ8Nz9IUPm9J6-kRAgphJ0Y1dE3_NsQZI";
+  
+    localStorage.setItem("token", demoToken);
+    localStorage.setItem("auth", "true");
+    localStorage.setItem("user", "MMT Student");
+    localStorage.setItem("email", "mmt@southpark.tirtey.com");
+    setIsAuthenticated(true);
   }, []);
 
   useEffect(() => {

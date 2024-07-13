@@ -5,7 +5,7 @@ from functools import wraps
 
 import jwt
 from extensions import db
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 from models import User
 from utils.helpers import log_user_activity
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -164,6 +164,7 @@ def refresh_token():
         return jsonify({"message": "Invalid token"}), 401
 
 
+
 @auth_bp.route("/user", methods=["GET"])
 def get_user():
     token = request.headers.get("Authorization").split()[1]
@@ -186,49 +187,7 @@ def get_user():
 
 @auth_bp.route("/user/password", methods=["PUT"])
 def update_password():
-    token = request.headers.get("Authorization").split()[1]
-
-    if not token:
-        return jsonify({"message": "Token is missing!"}), 403
-
-    try:
-        data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        user = User.query.filter_by(username=data["username"]).first()
-        if not user:
-            return jsonify({"message": "User not found"}), 404
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token has expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
-
-    data = request.get_json()
-    current_password = data.get("current_password")
-    new_password = data.get("new_password")
-    confirm_new_password = data.get("confirm_new_password")
-
-    if not check_password_hash(user.password_hash, current_password):
-        return jsonify({"message": "Current password is incorrect"}), 400
-
-    if new_password != confirm_new_password:
-        return jsonify({"message": "New passwords do not match"}), 400
-
-    if len(new_password) < 8:
-        return jsonify({"message": "Password must be at least 8 characters long"}), 400
-
-    if len(re.findall(r"\d", new_password)) < 1:
-        return jsonify({"message": "Password must contain at least 1 digit"}), 400
-
-    if len(re.findall(r"\W", new_password)) < 1:
-        return (
-            jsonify({"message": "Password must contain at least 1 special character"}),
-            400,
-        )
-
-    user.password_hash = generate_password_hash(new_password, method="pbkdf2:sha256")
-
-    db.session.commit()
-    return jsonify({"message": "Password updated successfully"}), 200
-
+    return jsonify({"message": "Password update is disabled for this demo"}), 403
 
 @auth_bp.route("/log", methods=["POST"])
 def log_activity():
@@ -251,3 +210,25 @@ def log_activity():
     except Exception as e:
         logger.error(f"Error logging activity: {e}")
         return jsonify({"message": "Internal server error"}), 500
+
+@auth_bp.before_request
+def auto_login_user():
+    user = User.query.get(42)  # Benutzer-ID ist 42
+    if user:
+        g.user = user
+        g.user.token = jwt.encode(
+            {
+                "username": g.user.username,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+            },
+            SECRET_KEY,
+            algorithm="HS256",
+        )  # Generiere und setze den Token
+        request.headers.environ['HTTP_AUTHORIZATION'] = f"Bearer {g.user.token}"
+    else:
+        return jsonify({"message": "Demo user not found"}), 404
+
+
+@auth_bp.route("/logout", methods=["POST"])
+def logout():
+    return jsonify({"message": "Logout is disabled for this demo"}), 403

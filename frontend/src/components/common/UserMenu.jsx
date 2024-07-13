@@ -5,10 +5,12 @@ import PropTypes from "prop-types";
 import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import PermissionPopup from "./PermissionPopup"; // Import the new component
 
-const UserMenu = ({ onLogout }) => {
+const UserMenu = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [user, setUser] = useState({ username: "", email: "" });
+  const [popupOpen, setPopupOpen] = useState(false); // State for controlling the popup
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
 
@@ -30,9 +32,9 @@ const UserMenu = ({ onLogout }) => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    onLogout();
-    navigate("/login");
+    handleClose(); // Close the menu
+    setPopupOpen(true); // Open the popup
+    setTimeout(() => setPopupOpen(false), 5000); // Close the popup after 5 seconds
   };
 
   return (
@@ -79,6 +81,11 @@ const UserMenu = ({ onLogout }) => {
           </Box>
         </MenuItem>
       </Menu>
+      <PermissionPopup
+        open={popupOpen}
+        onClose={() => setPopupOpen(false)}
+        message="Logout is disabled for demo purposes"
+      />
     </>
   );
 };

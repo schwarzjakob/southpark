@@ -10,7 +10,6 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import axios from "axios";
 import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
 import AlternateEmailRoundedIcon from "@mui/icons-material/AlternateEmailRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
@@ -25,21 +24,21 @@ const Account = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState(null);
-  const [severity, setSeverity] = useState("success");
+  const [severity, setSeverity] = useState("info");
   const [passwordStatus, setPasswordStatus] = useState([]);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const response = await axios.get("/api/auth/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        // Temporäre Demodaten für Benutzername und E-Mail
+        const response = {
+          data: {
+            username: "MMT Student",
+            email: "mmt@southpark.tirtey.com",
           },
-        });
+        };
+
         setUserName(response.data.username);
         setEmail(response.data.email);
       } catch (error) {
@@ -51,68 +50,35 @@ const Account = () => {
     fetchData();
   }, []);
 
-  const validateCurrentPassword = async (password) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        "/api/auth/user/password",
-        {
-          current_password: password,
-          new_password: password,
-          confirm_new_password: password,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return response.status === 200;
-    } catch (error) {
-      return false;
-    }
-  };
+  const checkPasswordRules = useCallback(() => {
+    const passwordRules = [
+      {
+        rule: "New Passwords match",
+        test: () =>
+          newPassword.length > 0 &&
+          confirmNewPassword.length > 0 &&
+          newPassword === confirmNewPassword,
+      },
+      {
+        rule: "At least 8 characters",
+        test: () => newPassword.length >= 8,
+      },
+      { rule: "At least 1 digit", test: () => /\d/.test(newPassword) },
+      {
+        rule: "At least 1 special character",
+        test: () => /\W/.test(newPassword),
+      },
+    ];
 
-  const handleCurrentPasswordBlur = async () => {
-    const isValid = await validateCurrentPassword(currentPassword);
-    if (!isValid) {
-      setMessage("Current password is incorrect");
-      setSeverity("error");
-    } else {
-      setMessage(null);
-    }
-  };
-
-  const checkPasswordRules = useCallback(
-    async (pwd) => {
-      const passwordRules = [
-        {
-          rule: "New Passwords match",
-          test: (pwd) =>
-            newPassword.length > 0 &&
-            confirmNewPassword.length > 0 &&
-            pwd === confirmNewPassword,
-        },
-        { rule: "At least 8 characters", test: (pwd) => pwd.length >= 8 },
-        { rule: "At least 1 digit", test: (pwd) => /\d/.test(pwd) },
-        { rule: "At least 1 special character", test: (pwd) => /\W/.test(pwd) },
-      ];
-
-      const results = await Promise.all(
-        passwordRules.map(async (rule) => ({
-          rule: rule.rule,
-          passed: await rule.test(pwd),
-        }))
-      );
-      return results;
-    },
-    [newPassword, confirmNewPassword]
-  );
+    return passwordRules.map((rule) => ({
+      rule: rule.rule,
+      passed: rule.test(newPassword),
+    }));
+  }, [newPassword, confirmNewPassword]);
 
   useEffect(() => {
-    const validateFields = async () => {
-      const allRules = await checkPasswordRules(newPassword);
+    const validateFields = () => {
+      const allRules = checkPasswordRules();
       setPasswordStatus(allRules);
       const allPassed = allRules.every((r) => r.passed);
       setAllFieldsFilled(
@@ -121,7 +87,7 @@ const Account = () => {
           currentPassword &&
           newPassword &&
           confirmNewPassword &&
-          allPassed
+          allPassed,
       );
     };
 
@@ -135,34 +101,10 @@ const Account = () => {
     checkPasswordRules,
   ]);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        "/api/auth/user/password",
-        {
-          current_password: currentPassword,
-          new_password: newPassword,
-          confirm_new_password: confirmNewPassword,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setMessage(response.data.message);
-      setSeverity("success");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmNewPassword("");
-    } catch (error) {
-      setMessage(error.response.data.message || "Update failed");
-      setSeverity("error");
-    }
+    setMessage("Password update is disabled for this demo.");
+    setSeverity("info");
   };
 
   return (
@@ -183,6 +125,9 @@ const Account = () => {
           <AlternateEmailRoundedIcon />
           <Typography variant="body1">E-Mail: {email}</Typography>
         </Box>
+        <Alert severity="warning">
+          Password update functionality is disabled for this demo.
+        </Alert>
         {message && <Alert severity={severity}>{message}</Alert>}
 
         <form onSubmit={handleSubmit}>
@@ -194,7 +139,6 @@ const Account = () => {
             margin="normal"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            onBlur={handleCurrentPasswordBlur}
             autoComplete="off"
             required
           />
